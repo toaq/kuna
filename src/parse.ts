@@ -140,11 +140,8 @@ DP.setPattern(
 Serial.setPattern(apply(rep_sc(V), makeRose('Serial*')));
 
 vP.setPattern(apply(seq(Serial, rep_sc(DP)), makeRose2('𝑣P*')));
-
 AspP.setPattern(apply(seq(Aspopt, vP), makeBranch('AspP')));
-
 TP.setPattern(apply(seq(Topt, AspP), makeBranch('TP')));
-
 CP.setPattern(apply(seq(Copt, TP), makeBranch('CP')));
 
 export const SAP = rule<POS, Tree>();
