@@ -1,15 +1,7 @@
-import { rep, Token, TokenPosition } from 'typescript-parsec';
-
-import {
-	buildLexer,
-	expectEOF,
-	expectSingleResult,
-	rule,
-} from 'typescript-parsec';
-import { alt, apply, kmid, lrec_sc, seq, str, tok } from 'typescript-parsec';
-import { rapply, Result } from './combinators';
-import { dictionary, Entry, WordType } from './dictionary';
+import { buildLexer, Token } from 'typescript-parsec';
+import { dictionary, WordType } from './dictionary';
 import { Tone } from './types';
+
 enum TokenKind {
 	Word,
 	Space,

@@ -8,7 +8,9 @@ import * as fs from 'fs';
 console.log(parse);
 
 const tree = expectSingleResult(
-	expectEOF(SAP.parse(preprocess(lexer.parse("Ꝡa chum leo fıeq jí sá nıq da")!))),
+	expectEOF(
+		SAP.parse(preprocess(lexer.parse('Ꝡa chum leo fıeq jí sá nıq da')!)),
+	),
 );
 
 fs.writeFileSync('output.tex', toDocument(tree));

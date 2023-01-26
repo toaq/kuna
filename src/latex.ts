@@ -38,7 +38,7 @@ ${latex}
 
 export function toDocument(tree: Tree): string {
 	const latex = toLatex(tree);
-    const lightMode = false;
+	const lightMode = false;
 	return `\\documentclass[preview,border=30pt]{standalone}
 \\usepackage{amssymb}
 \\usepackage{ulem}
