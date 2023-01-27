@@ -17,15 +17,15 @@ export function bare(word: string): string {
 }
 
 export function tone(word: string): Tone {
-	const norm = word.normalize('NFKD');
-	if (norm.indexOf('\u0301') > -1) {
-		return Tone.T2;
-	} else if (norm.indexOf('\u0308') > -1) {
-		return Tone.T3;
-	} else if (norm.indexOf('\u0302') > -1) {
-		return Tone.T4;
+	const norm = word.normalize('NFKD').match(/[\u0301\u0308\u0302]/);
+	if (!norm) {
+		return Tone.T1;
 	}
-	return Tone.T1;
+	return {
+		'\u0301': Tone.T2,
+		'\u0308': Tone.T3,
+		'\u0302': Tone.T4,
+	}[norm[0]]!;
 }
 
 export function preprocess(token: Token<TokenKind>): Token<WordType> {
