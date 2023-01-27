@@ -5,7 +5,7 @@ import { lexer, preprocess } from './tokenize';
 import * as fs from 'fs';
 import { alignGlossSentence } from './gloss';
 
-console.log(alignGlossSentence('Ꝡa chum leo fıeq jí sá nıq da.'));
+console.log(alignGlossSentence('Fạchuq. Ꝡa chum leo fıeq jí sá bu-nıq da.'));
 
 const tree = expectSingleResult(
 	expectEOF(

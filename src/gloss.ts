@@ -11,26 +11,60 @@ function displayLength(text: string): number {
 	return text.normalize('NFKD').replace(/\p{Diacritic}/gu, '').length;
 }
 
-function glossWord(word: string): string {
-	word = word
-		.replace(/\p{P}/gu, '')
-		.toLowerCase()
-		.replace(/i/gu, 'ı')
-		.replace(/vy?|wy?|y/gu, 'ꝡ');
+function splitIntoRaku(word: string): string[] {
+	return [...word.matchAll(/'?[^aeiıou][aeiıou+][qm]?/gu)].map(m => m[0]);
+}
 
-	const entry = dictionary.get(word);
+function splitPrefixes(word: string): { prefixes: string[]; root: string } {
+	const parts = word
+		.normalize('NFKD')
+		.replace(/\u0323/gu, '-')
+		.normalize('NFC')
+		.split('-');
+	const root = parts.pop()!;
+	return { prefixes: parts.flatMap(splitIntoRaku), root };
+}
+
+function glossPrefix(prefix: string): string {
+	const entry = dictionary.get(prefix + '-');
+	if (entry) {
+		return (entry.gloss_abbreviation || entry.gloss) + '-';
+	}
+
+    // hack
+    const rootEntry = dictionary.get(prefix);
+	if (rootEntry) {
+		return (rootEntry.gloss_abbreviation || rootEntry.gloss) + '-';
+	}
+
+	return '?-';
+}
+
+function glossRoot(root: string): string {
+	const entry = dictionary.get(root);
 	if (entry) {
 		return entry.gloss_abbreviation || entry.gloss;
 	}
-	const bareEntry = dictionary.get(bare(word));
+	const bareEntry = dictionary.get(bare(root));
 	if (bareEntry) {
 		if (bareEntry.type === 'predicate') {
-			return (tone(word) === Tone.T2 ? 'the-' : 'A-') + bareEntry.gloss;
+			return (tone(root) === Tone.T2 ? 'the-' : 'A-') + bareEntry.gloss;
 		} else {
 			return bareEntry.gloss;
 		}
 	}
 	return '?';
+}
+
+function glossWord(word: string): string {
+	word = word
+		.replace(/[.,;()]/gu, '')
+		.toLowerCase()
+		.replace(/i/gu, 'ı')
+		.replace(/vy?|wy?|y/gu, 'ꝡ');
+
+	const { prefixes, root } = splitPrefixes(word);
+	return prefixes.map(glossPrefix).join('') + glossRoot(root);
 }
 
 export function glossSentence(sentence: string): Gloss[] {
