@@ -11,9 +11,10 @@ export function pngGlossSentence(sentence: string): Buffer {
 	ctx.textBaseline = 'top';
 	ctx.textAlign = 'left';
 	ctx.fillStyle = '#000080';
-	const margin = 40;
-	let x = margin;
-	let y = margin;
+	const xMargin = 40;
+	const yMargin = 20;
+	let x = xMargin;
+	let y = yMargin;
 	const toaqFont = 'bold 20pt Segoe UI';
 	const englishFont = 'italic 18pt Segoe UI';
 	let clipWidth = 0;
@@ -24,8 +25,8 @@ export function pngGlossSentence(sentence: string): Buffer {
 		ctx.font = englishFont;
 		const ew = ctx.measureText(english).width;
 		const mw = Math.max(tw, ew) + 20;
-		if (x + mw > width - margin) {
-			x = margin;
+		if (x + mw > width - xMargin) {
+			x = xMargin;
 			y += 110;
 			if (y > height) {
 				break;
@@ -38,14 +39,14 @@ export function pngGlossSentence(sentence: string): Buffer {
 		ctx.fillStyle = '#bbbbbb';
 		ctx.fillText(english, x, y + 40);
 		x += mw;
-		if (x + margin - 20 > clipWidth) {
-			clipWidth = x + margin - 20;
+		if (x + xMargin - 20 > clipWidth) {
+			clipWidth = x + xMargin - 20;
 		}
 	}
 
 	let temp = ctx.getImageData(0, 0, width, height);
 	canvas.width = clipWidth;
-	canvas.height = y + 80 + margin;
+	canvas.height = y + 80 + yMargin;
 	ctx.putImageData(temp, 0, 0);
 	const imgBuffer = canvas.toBuffer('image/png');
 	return imgBuffer;
