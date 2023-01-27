@@ -31,8 +31,8 @@ function glossPrefix(prefix: string): string {
 		return (entry.gloss_abbreviation || entry.gloss) + '-';
 	}
 
-    // hack
-    const rootEntry = dictionary.get(prefix);
+	// hack
+	const rootEntry = dictionary.get(prefix);
 	if (rootEntry) {
 		return (rootEntry.gloss_abbreviation || rootEntry.gloss) + '-';
 	}
@@ -58,7 +58,7 @@ function glossRoot(root: string): string {
 
 function glossWord(word: string): string {
 	word = word
-		.replace(/[.,;()?!]/gu, '')
+		.replace(/[\p{Pe}\p{Pf}\p{Pi}\p{Po}\p{Ps}]/gu, '')
 		.toLowerCase()
 		.replace(/i/gu, 'ı')
 		.replace(/vy?|wy?|y/gu, 'ꝡ');
