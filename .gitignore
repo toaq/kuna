@@ -1,7 +1,3 @@
 build/
 node_modules/
-output.aux
-output.log
-output.pdf
-output.synctex.gz
-output.tex
+output.*
