@@ -24,11 +24,13 @@
 	},
 	"homepage": "https://github.com/toaq/kuna#readme",
 	"dependencies": {
-		"typescript-parsec": "^0.3.2"
+		"@types/yargs": "^17.0.20",
+		"typescript-parsec": "^0.3.2",
+		"yargs": "^17.6.2"
 	},
-  "jest": {
-    "testRegex": "build/index.js",
-    "verbose": true,
-    "testEnvironment": "node"
-  }
+	"jest": {
+		"testRegex": "build/index.js",
+		"verbose": true,
+		"testEnvironment": "node"
+	}
 }
