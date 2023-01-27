@@ -1,6 +1,19 @@
 import { dictionary } from './dictionary';
 import { bare, tone } from './tokenize';
 import { Tone } from './types';
+import * as fs from 'fs';
+
+let toaduaGlosses = new Map();
+for (const line of fs
+	.readFileSync('data/toadua-glosses.txt')
+	.toString()
+	.split('\n')) {
+	const fields = line.split('\t');
+	if (fields.length === 2) {
+		const [word, gloss] = fields;
+		toaduaGlosses.set(word, gloss.replace(/\s+/g, '.'));
+	}
+}
 
 interface Gloss {
 	toaq: string;
@@ -52,6 +65,11 @@ function glossRoot(root: string): string {
 		} else {
 			return bareEntry.gloss;
 		}
+	}
+	const fromToadua = toaduaGlosses.get(root) ?? toaduaGlosses.get(bare(root));
+	console.log(fromToadua);
+	if (fromToadua) {
+		return fromToadua;
 	}
 	return '?';
 }
