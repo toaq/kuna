@@ -25,6 +25,7 @@
 	"homepage": "https://github.com/toaq/kuna#readme",
 	"dependencies": {
 		"@types/yargs": "^17.0.20",
+		"canvas": "^2.11.0",
 		"typescript-parsec": "^0.3.2",
 		"yargs": "^17.6.2"
 	},

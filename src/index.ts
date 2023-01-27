@@ -3,8 +3,9 @@ import { toDocument } from './latex';
 import { SAP } from './parse';
 import { lexer, preprocess } from './tokenize';
 import * as fs from 'fs';
-import { alignGlossSentence } from './gloss';
+import { alignGlossSentence, glossSentence } from './gloss';
 import yargs from 'yargs';
+import { pngGlossSentence } from './png-gloss';
 
 yargs
 	.scriptName('kuna')
@@ -21,6 +22,23 @@ yargs
 		},
 		function (argv) {
 			console.log(alignGlossSentence(argv.sentence!));
+		},
+	)
+	.command(
+		'gloss-png',
+		'Gloss to PNG format',
+		yargs => {
+			yargs.demandOption('sentence');
+			yargs.option('output', {
+				type: 'string',
+				describe: 'Path for PNG output',
+				default: 'output.png',
+			});
+		},
+
+		function (argv) {
+			const imgBuffer = pngGlossSentence(argv.sentence!);
+			fs.writeFileSync('output.png', imgBuffer);
 		},
 	)
 	.command(

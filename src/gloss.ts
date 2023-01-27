@@ -48,7 +48,7 @@ function glossRoot(root: string): string {
 	const bareEntry = dictionary.get(bare(root));
 	if (bareEntry) {
 		if (bareEntry.type === 'predicate') {
-			return (tone(root) === Tone.T2 ? 'the-' : 'A-') + bareEntry.gloss;
+			return (tone(root) === Tone.T2 ? 'the\\' : 'A\\') + bareEntry.gloss;
 		} else {
 			return bareEntry.gloss;
 		}
@@ -58,7 +58,7 @@ function glossRoot(root: string): string {
 
 function glossWord(word: string): string {
 	word = word
-		.replace(/[.,;()]/gu, '')
+		.replace(/[.,;()?!]/gu, '')
 		.toLowerCase()
 		.replace(/i/gu, 'ı')
 		.replace(/vy?|wy?|y/gu, 'ꝡ');
