@@ -15,6 +15,14 @@ for (const line of fs
 	}
 }
 
+const words = [...toaduaGlosses.keys()].concat([...dictionary.keys()]);
+words.sort((a, b) => b.length - a.length);
+const partRegExp = new RegExp(
+	words.join('|') + "(?=[bcdfghjklmnpqrstvwxzꝡ']|$)",
+	'gui',
+);
+const compoundRegExp = new RegExp(`^((${partRegExp.source})){1,3}$`, 'ui');
+
 interface Gloss {
 	toaq: string;
 	english: string;
@@ -58,7 +66,8 @@ function glossRoot(root: string): string {
 	if (entry) {
 		return entry.gloss_abbreviation || entry.gloss;
 	}
-	const bareEntry = dictionary.get(bare(root));
+	const bareRoot = bare(root);
+	const bareEntry = dictionary.get(bareRoot);
 	if (bareEntry) {
 		if (bareEntry.type === 'predicate') {
 			return (tone(root) === Tone.T2 ? 'the\\' : 'A\\') + bareEntry.gloss;
@@ -66,12 +75,19 @@ function glossRoot(root: string): string {
 			return bareEntry.gloss;
 		}
 	}
-	const fromToadua = toaduaGlosses.get(root) ?? toaduaGlosses.get(bare(root));
-	console.log(fromToadua);
+	const fromToadua = toaduaGlosses.get(root) ?? toaduaGlosses.get(bareRoot);
 	if (fromToadua) {
 		return fromToadua;
 	}
-	return '?';
+
+	const match = bareRoot.match(compoundRegExp);
+	if (match) {
+		const last = match[1];
+		const butLast = bareRoot.slice(0, bareRoot.length - last.length);
+		return glossRoot(butLast) + '-' + glossRoot(last);
+	}
+
+	return bareRoot;
 }
 
 function glossWord(word: string): string {
