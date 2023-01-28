@@ -19,10 +19,10 @@ def gloss(body, head):
     body = re.sub(r" (of|for|to|by|from)? ▯$", "", body)
     m = re.search(r"^▯ (?:is|are) (?:(?:a|an|the) )?([^▯]+)$", body)
     if m:
-        return m.group(1).split("/")[0].strip()
+        return m.group(1).split("/")[0].strip().replace("(","").replace(")","")
     m = re.search(r"^▯ ([^▯]+)( ▯)?$", body)
     if m:
-        return m.group(1).split("/")[0].strip()
+        return m.group(1).split("/")[0].strip().replace("(","").replace(")","")
     return None
 
 
@@ -30,5 +30,5 @@ for entry in sorted(json.load(open("toadua-basic.json")), key=lambda x: x["head"
     head = entry["head"]
     body = entry["body"]
     g = gloss(body, head)
-    if g and 1 <= len(g) <= 16 and len(head) <= 30:
+    if g and 1 <= len(g) <= 22 and len(head) <= 30:
         print(head, g, sep="\t")

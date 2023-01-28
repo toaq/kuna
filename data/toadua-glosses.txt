@@ -1,5 +1,6 @@
 (sheı)muoıkea	gyroscope
 @toacıa	flaccid
+@toacıa	is supposed to be
 @toacıa	chaotic
 @toacıa	direct
 @toacıa	disturbs
@@ -16,22 +17,34 @@
 @toacıa	suffers stress
 @toacıa	frame
 @toacıa	layer
+@toacıa	applies material
 @toacıa	pastry
 @toacıa	fertilized egg
 @toacıa	unfertilized egg
 @toacıa	membrane
 @toacıa	spiritist
+Aofatoaq	pertains to Toaq Alpha
+Aotearoagua	country New Zealand
 Aqtatıka	Antarctica
 Arabızu	Arabic language
 Babadogua	country Barbados
+Bakuqtoaı	imperative sentence
 Belıjegua	country Belize
 Beroamerıka	North America
+Betatoaq	pertains to Toaq Beta
+Bufıeqfuaqgoalaı	uncharted according
 Bıetoaq	post-Toaqic
+Bıetyzu	Vietnamese language
+Chekagua	country Czech Republic
 Chuamerıka	Central America
+Dakuqtoaı	assertive sentence
+Deotatoaq	pertains to Toaq Delta
 Deranı	Derani
 Doıche	German
 Doıchegua	Germany
+Dıne	pertains to the Navajo
 Ebetoaq	Ewe language
+Erıegua	country Ireland[25]
 Eseperaqto	Esperantic
 Eseperaqtozu	Esperanto
 Esyperaqto	Esperantic
@@ -39,11 +52,15 @@ Esyperaqtogua	"Esperantujo"
 Esyperaqtozu	Esperanto
 Faraqse	French
 Faraqsegua	France
+Fuaqguolaı	is a map of 3D space
+Fıeqfuaqguolaı	space that was mapped
 Fıetoaq	Vietoaq
 Fıosazu	Viossa language
+Gaqmatoaq	pertains to Toaq Gamma
 Guobasa	Globasa language
 Gutaq	Gothic
 Haı'ataqgua	Armenia
+Hoqkoq	pertains to Hong Kong
 Huıgıdezu	ygyde language
 Hıqdıagua	India
 Iqlaqgua	England
@@ -54,12 +71,16 @@ Jamaıkagua	country Jamaica
 Junıko	Unicode
 Juqguo	Chinese
 Juqguogua	China
+Kakuqtoaı	performative sentence
+Kanadagua	country Canada[k]
 Kuenhazu	Quenya language
 Kısymasy	Christmas
 Latınazu	Latin language
 Logalaqzu	Loglan language
 Majaragua	country Hungary
+Moqkuqtoaı	interrogative sentence
 Myleısıygua	country Malaysia
+Nabeho	pertains to the Navajo
 Namıamerıka	South America
 Namıguaq	Antarctica
 Nedelaq	Dutch
@@ -68,6 +89,7 @@ Nedelaqzu	Dutch language
 Nıhoq	Japanese
 Nıhoqgua	Japan
 Nıhoqgua	country Japan
+Oseılıagua	country of Australia
 Pasyka	Easter
 Ponagua	ma pona
 Puıpoqduq	is popular among
@@ -79,6 +101,7 @@ Seperaqto	Esperantic
 Seperaqtozu	Esperanto
 Suloenı	Slavic
 Sıaomerıka	Native American
+Sıqdarıqzu	Sindarin language
 Toaq'aofa	Toaq Alpha
 Toaqbeta	Toaq Beta
 Toaqdeota	Toaq Delta
@@ -91,6 +114,7 @@ Zaıche	Esperantist
 a	ah
 aba	father
 abugıda	abugida
+achoa	utters an ‘ah’ sound
 achoqrıeq	saves on
 achoqte	has been used up
 achu	sneezes
@@ -115,6 +139,7 @@ ajı	bow
 ajıche	archer
 ajıkea	crossbow
 aka	root
+aka	is a root of plant
 akacıa	acacia tree
 akahua	tuber
 akanose	AMAB
@@ -135,6 +160,8 @@ alumıq'ıum	aluminium
 alıu	allium
 am	chomp
 amabo	our
+amasoqdepı	Amazon river dolphin
+amasoqdepısıu	Amazon river dolphin
 amerıkakenobo	Nearctic deer
 amerıkamelı	American badger
 amerıkamusela	New World weasel
@@ -153,6 +180,7 @@ anı	sand
 anı	sand
 anıguaq	desert
 anıguaq	desert
+anıguaq'eloatoejı	Grant's golden mole
 anıhı	sandwhich
 anıjıeq	pyramid
 anıjıo	sand.castle
@@ -170,6 +198,7 @@ aobıgaı	hallucinates
 aobıge	hallucination
 aobıgı	imaginative
 aobıhuı	unimaginative
+aobıjoe	imaginative person
 aobıjua	absurd
 aobıjıaq	fictional world
 aobıkuq	says lie
@@ -178,6 +207,8 @@ aobılua	fictional story
 aobıluaı	dadaistic
 aobımoı	imagines
 aobımoı	has fantasy
+aobınıeq	unimaginative person
+aobızu	fictional language
 aofabeta	alphabet
 aoga	frame
 aoja	detached
@@ -218,6 +249,7 @@ asaı	dirt
 asaıdashı	mud
 asaızeo	vegetable
 asenı	arsenic
+asheadaı	conditional operator
 asheadaıdıu	modal logic
 ashelaı	letter Æ
 asholo	axolotl
@@ -228,9 +260,11 @@ asımıqzeo	pawpaw
 atom	atom
 atomchu	atomic nucleus
 atı	on
+aı	has the nature of
 aı'aı	smacks
 aı'aıpu	letter Aı
 aıba	mon
+aıca	experiences punishment
 aıcha	resembles
 aıcy	integer
 aıdao	essence
@@ -251,6 +285,7 @@ aıse	impression
 aısopo	isopod
 aıueo	set
 aızy	letter Y
+babue	member of genus Papio
 bafaq	should
 baga	pulls
 bagacaha	breathes in
@@ -273,12 +308,15 @@ baobaokenobo	muntjac
 baoguı	rice
 baoguıcıepabakashunaonıubıu	sushi
 baoguıtaqraka	rice tenrec
+baokafe	flat white coffee
 baoketo	beluga
 baokuodepı	killer whale
+baokuodepınuı	pygmy killer whale
 baokıa	pink
 baoluaq	white player
 baopo	white player’s
 baoruı	silver
+baorıhı	milled white rice
 baosıaıtoaı	white blood cell
 baozu	Cantonese
 baqjo	banjo
@@ -300,13 +338,15 @@ baso	bass
 basue	commands
 basue'eı	high-handed
 basuehe	haughty
-basueruo	(being) superior
+basueruo	being superior
 basuetoı	is dominant
 basıle	basil
 bata	watt
 batata	potato
 batata	sweet potato
 batıny	Beltane
+baukahuhepete	white-tailed mongoose
+bazaqrıo	conspiracy theory
 baı	build
 baıgıq	disassembles
 baıhıu	canal
@@ -314,6 +354,7 @@ baıloha	metal iron
 baıpaq	is a part
 baırıaı	scaffolding
 baıtoaı	brick
+baızu	constructed language
 be	infant
 be'ı	grapevine
 be'ıtı	grapevine
@@ -321,6 +362,7 @@ bea	hinge.joint
 beagoa	corner
 beajıoqkea	laptop
 beamuao	cypress tree
+beanoso	suffers from arthritis
 beapue	arthropod
 beapueq	knuckle-walks
 beapueqhe	knuckle-walker
@@ -329,23 +371,28 @@ beaqchea	umbrella
 beaqcıoq	lever
 beaqfua	column
 beaqgoeq	fence
+beaqjıo	tower or skyscraper
 beaqluoq	scales
 beaqme	ladder
 beaqnaby	breadstick
 beaqnhuo	ladder
 beaqnıu	bamboo
 beaqtıaı	cage
+beatıaı	box with a hinged lid
 beaı	hangs on
 beaıgıo	pendant light
 beaıpıo	pendant
 bebe	baby
 bebehaq	baby food
 bebere	weber
+beberenuı	small Indian civet
 beberesıu	viverrid
 bebo	pregnant
 becıoq	lever
 bede	is
+befe	dissolves in solvent
 bege	meh
+bego	member of genus Fagus
 beheq	pregnant
 bekerele	becquerel
 bele	bel
@@ -355,11 +402,13 @@ bem	infant
 benhoq	umbilical cord
 beo	change
 beochua	variable
+beocıa	stays the way it is
 beodama	unstable
 beodaı	variable
 beodo	variable
 beojeqda	genderfluid
 beojey	genderfluid
+beokopı	fork modified copy
 beoq	base, foundation
 beoqsaı	chemical
 beoreaı	being stubborn
@@ -378,6 +427,7 @@ beqgıu	ridge
 beqheq	convex hull
 beqjeoq	bumpy
 beqra	date palm
+beqrabebere	African palm civet
 beqrabeberesıu	nandiniid
 beqse	tumor
 beqsıu	swollen
@@ -386,6 +436,8 @@ beqzeq	benzene
 bero	north
 berohochu	north-east
 berohore	north-west
+berohuohuanuı	northern sea lion
+berokıaqpoke	northern fur seal
 beromerıka	North America
 beromoa	north pole
 beropoq	northerner
@@ -394,6 +446,7 @@ beryzu	eberban
 berılysaı	beryllium
 berılıum	beryllium
 betaruaıcheabıso	betacoronavirus
+betoaı	egg cell or a spore
 betoq	concrete
 betoqpuo	concrete powder
 beuq	pulls
@@ -445,6 +498,8 @@ boetuo	sloth
 bofaı	common to own
 bogı	Bhogi
 bohıaq	poor
+bojea	purchases possession
+bojuq	receives possession
 boko	shoves
 boku	me
 bokuaı	feels greed
@@ -458,6 +513,7 @@ bone	wealth
 bonuamy	loot
 bopıosaı	boron
 boq	prevent
+boqcıra	ring-tailed vontsira
 boqdua	indeterminate
 boqgoaıcha	affricate
 boqko	finds
@@ -490,6 +546,7 @@ boteqdoa	sells, for money
 bouba	lumpy
 boı	since
 bua	inhabit
+buabeo	moves house, relocates
 buachao	van
 buachıjıo	abbey
 buafa	moves house
@@ -519,6 +576,7 @@ buaırueq	taut
 buaısıoq	ellipse
 buaıtoaı	unit of length
 buaıtoq	plank
+bubaokuodepı	false killer whale
 bubeı	indeed not so
 bubu	not not the case
 buby	feels good
@@ -529,6 +587,7 @@ budachuaq	Buddhism
 budachı	Buddhist
 budajıuchaq	Buddha Jayanti
 budakoko	Buddhist
+budo	is a noodles of type
 buduoceaq	cheetah
 buduı	not enough
 budıe	warns
@@ -542,6 +601,7 @@ buetı	at home
 buhuı	nice
 buja	kiss
 bujao	far from false
+bujuoqtao	commits misdemeanour
 bujuı	barely the case
 bujıqjeosuq	gatekeeps
 buka	dares to do
@@ -549,14 +609,18 @@ bukache	adventurer
 bula	bubble
 bulahıu	stream
 bulame	foam
+bulaı	Deranı glyph for B
 bulua	fiction
 bulureıfeoq	Blu-ray disk
+bulututy	pertains to Bluetooth
 bumeraq	boomerang
 bumuojuı	hardly
 buo	ready
+buofuq	clean laundry, ready-
 buojuq	accepts property
 buoqgaq	hangs out with
 buoqjı	case
+buoqkuq	says non-serious thing
 buoqlaı	glyph
 buoqlua	comedy
 buoqse	folly
@@ -567,11 +631,13 @@ buq	mouth
 buqbeq	muzzle
 buqbıu	proboscis
 buqchulaq	schwa vowel
+buqchulaı	glyph indicating schwa
 buqhıao	bites
 buqjeoq	oral cavity
 buqjıaı	bites
 buqjıaı	kisses
 buqkuoq	tooth
+buqkıaq	lower facial hairs
 buqkıaqkaro	serow
 buqkıaqnua	shaves
 buqkıaqpoke	bearded seal
@@ -582,6 +648,7 @@ buqlıasho	debuccalizes
 buqnao	saliva
 buqne	mouthful
 buqpıo	tooth
+buqseaq	performs oral sex on
 buqshaıca	gobstopper
 buqsoı	pigs out on
 buqtuaq	beak
@@ -591,6 +658,7 @@ buraqsaı	is
 burasıhebe	rubber tree
 buruaq	denies
 buruaq	deny
+buruo	abstains from doing
 buruo	moss
 buruonıu	bryophyte
 buruotıe	mossy
@@ -601,6 +669,7 @@ burıu	returns
 bushu	holy
 bushudoı	worships
 bushumıochaq	Holy Saturday
+butao	abstains from doing
 butıduo	moves away
 buzolokıa	ghost pepper
 buı	outside
@@ -611,12 +680,14 @@ buıduotaq	expands
 buıduotaqtua	expands
 buıfa	exit
 buıgaja	extraterrestrial
+buıhoq	next outer proposition
 buıjıaı	bacteria
 buıkoe	excludes
 buıku	uterus
 buıkuboaq	placenta
 buıkuboaq	placenta
 buıkubıu	fallopian tube
+buılaq	peripheral consonant
 buısetıeq	exhaust
 buısha	gets out
 buıshuaq	emits
@@ -628,15 +699,19 @@ bóekıoqmuteı	circular
 bıa	sick
 bıaca	illness
 bıacuaq	illness
+bıadekı	disease testing device
+bıadoa	infects with property
 bıafoa	feels sick
+bıagetea	has illness anxiety
 bıahıeq	throws up
 bıajıo	hospital
 bıakaı	virus
 bıakuaı	has a sick
 bıalaı	symptom
 bıaloq	has fever
-bıalıao	mo(u)ld
+bıalıao	mould
 bıamuasaı	vaccine
+bıanuıbıru	of genus Morbillivirus
 bıao	confused
 bıaobıa	drunk
 bıaoca	confuses
@@ -650,10 +725,12 @@ bıaopıaq	surprised
 bıaotoa	riddle
 bıapoe	quarantined
 bıaq	enough
+bıaq	satisfies property
 bıaqbu	not enough
 bıaqpuoq	satisfies
 bıarıo	miasma
 bıasaı	toxic
+bıasaıbo	poisonous or venomous
 bıasaıbıa	poisoned
 bıatuataqtua	makes
 bıdeo	video
@@ -666,6 +743,9 @@ bıejearıaq	bar
 bıejuı	shortly.after
 bıekao	will
 bıekıe	thanks
+bıeleaq	comes right after
+bıemıe	lives an afterlive
+bıene	is the time distance
 bıeseudıu	aftermath
 bıeshata	disposable
 bıfı	wifi
@@ -691,8 +771,11 @@ bıqbıq	million
 bıra	beer
 bıraı	topic
 bıru	virus
+bırumabebere	masked palm civet
 bırushı	virion
 bırutoaı	virion
+bırıqjı	member of genus Oryza
+bısaq	member of genus Bison
 bıso	virus
 bıtı	grapevine
 bıtızeo	grape
@@ -712,6 +795,8 @@ bọtua	brought about
 ca	cause
 caberubıso	sarbecovirus
 cabıaq	enough.to
+caca	indirectly causes
+cacıa	happens for no reason
 cadaı	potential energy
 cadıu	physics
 cagıle	conducive
@@ -720,9 +805,11 @@ cahahua	lung
 cajoq	directly causes
 cake	treat
 cale	tends to cause
+cana	involved in the cause
 canhu	chestnut
 canhy	chestnut
 cao	season
+capaq	part of the cause
 capaq	counts
 capo	mamey sapote
 caq	conduct
@@ -741,9 +828,11 @@ caqme	staff
 caqruaq	decrees
 caqsoı	rebels against
 caqsoıche	rebellious
+caqtaq	exercises self-control
 caqtoaı	instruction
 cara	shoots
-cara	(agent) shoots
+cara	agent shoots
+caramuaq	has been shot dead
 caramy	firearm
 caruaı	tzar
 caruoq	directly causes
@@ -752,7 +841,10 @@ casaı	energetic
 casaı'aı	nutritious
 case	process
 cası	almost the case
+casıa	happens without result
 casıao	source
+cataq	happens automatically
+cataq	happens automatically
 cateleq	Scottish
 cateleqgua	Scotland
 caı	strong
@@ -768,10 +860,12 @@ caıhıo	hails
 caıjıo	castle
 caıkoy	flexes
 caıkoı	strides
+caılaq	affricate or plosive
 caınıao	snow storm
 caıreo	brightly colored
 caıseaı	liquor
 caıseoqtue	storm
+caısho	does physical exercise
 caıshıy	becomes foggy
 caıtao	uses strength in
 caızaq	comes into focus
@@ -784,6 +878,7 @@ ceahaq	dumpling
 ceahua	pouch
 ceakea	pocket device
 ceanıaı	marsupial
+ceaq	nail, claw or hoof
 ceaqpueqhe	unguligrade
 ceaqpıo	onyx
 ceaqtechuo	nail clippers
@@ -799,10 +894,11 @@ ceocıa	unbegun
 ceokıao	entrance
 ceoq	electrical
 ceoqce	outlet
-ceoqchua	nick (nickname)
+ceoqchua	nick nickname
 ceoqchuoı	electric cord
 ceoqchuoı	wire
 ceoqgıu	wire
+ceoqjeaq	electrically charges
 ceoqkaıdeoq	e-mails
 ceoqkue	e-book
 ceoqloha	electrum
@@ -810,12 +906,14 @@ ceoqnhoq	electric cord
 ceoqpeq	e-mail
 ceoqshea	out of battery
 ceoqshuo	battery
+ceoqsusıgıaq	electro swing music
 ceotuao	resumes
 ceqbudachuaq	Zen Buddhism
 ceqbudısuq	Zen Buddhism
 cesa	sizzles
 cesanao	sparkling water
 cesasha	boils
+cesebe	tsessebe or bontebok
 ceu	breathes
 cha	manner
 chacha	go.ahead
@@ -840,9 +938,12 @@ chaq	day
 chaqbıe	afternoon
 chaqdıaq	occurs daily
 chaqgu	two-day period
+chaqgudıaq	occurs every other day
 chaqkue	day calendar
 chaqmoa	time of day
 chaqnaı	happens today
+chaqne	duration of a day
+chaqrao	happens at time of day
 chaqraomu	time of day
 chaqtu	daily
 chaqtıa	afternoon
@@ -863,6 +964,8 @@ chaıtıaq	tea-brown
 chaıtıq	heart
 chea	hat
 chealaı	diacritic
+chealaıchea	circumflex diacritic
+chealaıpaq	circumflex diacritic
 chealıao	mushroom
 cheaq	trusty
 cheaqchıa	trusts that
@@ -872,11 +975,13 @@ cheaqzua	betrays
 checu	and
 checy	unstably
 chedu	tricks
+chedutao	performs trickery
 chefuaı	committee
 chemegeqjıo	community center
 cheo	reciprocally
 cheocuoı	and
 cheodoa	exchanges
+cheodoa	exchanges service
 cheohıao	and
 cheomudaı	relation
 cheoq	bottle
@@ -885,17 +990,22 @@ cheosoa	and
 cheoteq	barters
 cheqbo	s
 cheu	deceitfully
+cheuhepete	Pousargues's mongoose
 chey	tricks
 cheychuo	trap
 cheycua	falls for trick
 cheynhoy	hoax
+cheytao	performs trickery
+cheytaı	socially engineers
 cheyteoq	trick question
 cheı	digit
 cheıbea	knuckle
 cheıbıo	cup
 cheıbıu	ring
+cheıceaq	fingernail or toenail
 cheıpueq	walks
 cheıpueqhe	digitigrade
+cheıruedea	drums their fingers
 cheıse	finger print
 cheısheaq	stands on his
 cheısheaqhe	digitigrade
@@ -904,24 +1014,28 @@ cho	like
 choa	utter
 choaboq	consonant
 choachuo	microphone
+choade	phonetically pleasing
 choadedıu	phonaesthetics
 choadeoq	talk
+choadeoq	communicates vocally
 choafua	podium
 choahua	udder
 choakao	voice recording
 choakuq	says vocally
 choakuqse	voice message
+choakuqtoaıme	phoneme inventory
 choalaq	voice
 choapoa	consonant
 choaq	guest
 choaqchao	taxi
 choaqdoa	hospitable
 choaqfa	visits
+choaqfoaq	feels welcome visiting
 choaqgı	welcome
 choaqhuı	unwelcome
 choaqhıo	welcomes
 choaqhıo	welcomes
-choaqjuq	has guest(s)
+choaqjuq	has guests
 choaqjıo	hotel
 choaqsheı	is welcome
 choaqsue	invites
@@ -943,6 +1057,7 @@ choaısao	expensive
 choaısoq	extravagant
 choaısıa	free
 choaıtuao	cheap
+chocheo	plural like each other
 chochı	chip
 chodıe	recommends
 choe	until
@@ -951,6 +1066,7 @@ chogıq	dislikes
 choha	base
 choha'aı	basic
 choko	chocolate
+chokochıfakukı	chocolate chip cookie
 chokokafe	caffe mocha
 chokola	chocolate
 chokopıehaq	cocoa
@@ -971,11 +1087,13 @@ choq	use
 choq	uses
 choqcha	is done using
 choqchua	username
+choqchıe	learns how to use
 choqdo	Cheondoist
 choqdıe	offers tool
 choqgeo	worn
 choqgı	useful
 choqhuı	useless
+choqjuaokao	copyright license file
 choqkıu	available
 choqkıu	usable
 choqmuı	is the intent
@@ -995,7 +1113,9 @@ choıbeq	thorn
 choıbeqlaı	letter Þ
 choıceaq	claw
 choıceaqjo	paw
-choıdea	(agentive) stabs
+choıcoe	is pinned to support
+choıdea	agentive stabs
+choıfuo	not agentive stabs
 choıgoaı	scratches
 choıgıu	sharp edge
 choıhua	thorn
@@ -1030,6 +1150,7 @@ chuaq	ism
 chuaqbeo	revolutionizes
 chuaqfuaı	committee
 chuaqmıu	classifies
+chuaqshı	are united in ideology
 chuasıa	nameless
 chuasıagıqtua	doxxes
 chuataq	calls themselves
@@ -1040,12 +1161,13 @@ chuaıdıa	thaws
 chuaıhıao	ice-burns
 chuaıkea	freezer
 chuaıketo	bowhead whale
-chuaımy	(a) solid
+chuaımy	a solid
 chuaınao	ice
 chuaınaopoke	harp seal
 chuaınoaı	custard
 chuaıruq	hail
 chuaıruqshua	hail
+chuchu	imitates a train sound
 chuchua	middle name
 chucuao	limb
 chue	train
@@ -1056,17 +1178,22 @@ chuechue	choo-choo train
 chuefa	follows
 chuekıq	movie episode
 chuelua	episodic story
+chueme	sequence comprised
 chuepatı	procession
 chuetao	does things
 chuetıeq	railway
 chufaqkuq	interrupts
 chuge	sexual
 chugua	China
+chuha	sexually explicit
 chuhaq	lunch
+chuhe	conventionally sexy
 chujıurıoq	intersex
 chukuq	mediates between
 chumoalaı	interpunct
+chunemıeq	counts from number
 chunı	lewd
+chunıcho	sexually attracted
 chunıcholeı	has a fetish
 chunıde	sexy
 chunıhuı	perverted
@@ -1080,6 +1207,7 @@ chuoı	thread
 chuoıcoe	fastened
 chuoıfurı	swings
 chuoınhuo	filter, sieve
+chuoınhuopeo	sieve sifts through
 chuoınıu	vine
 chuoısaı	fibre
 chupaq	middle
@@ -1089,6 +1217,8 @@ chuqbeaq	chopsticks
 chuqcheı	chopstick
 chuqchuo	cutlery
 chuqchuosıqkea	dishwasher
+chuqchuosıqtua	washes the dishes
+chuqdere	obsessed with eating
 chuqdoa	gives food
 chuqfurı	has bulimia
 chuqguao	fork
@@ -1100,6 +1230,8 @@ chuqjeoq	spoon
 chuqjuao	diet
 chuqkua	dining room
 chuqkuaı	hungry
+chuqmuaq	dead from starvation
+chuqmuaq(sho)	dies from starvation
 chuqnıu	vegetable
 chuqroe	healthy to eat
 chuqrıeq	fasts
@@ -1110,6 +1242,8 @@ churıohua	diaphragm
 churıoq	is a hybrid
 churıqkea	Turing machine
 churıqkeajeq	Turing-complete
+chushuacao	Mid-Autumn Festival
+chute	sexually stimulated
 chutı	in the middle
 chuzu	Chinese language
 chuı	early
@@ -1125,9 +1259,11 @@ chyreıq	TR-affrication
 chı	believe
 chı(jıo)joaq	priest
 chıa	need
+chıamoe	feels compelled to do
 chıapoaı	chia seeds
 chıaq	aware
 chıaqbıa	sentient
+chıaqcha	reasons by mindset
 chıaqduı	hypervigilant
 chıaqdıeq	notifies
 chıaqgaı	intuits
@@ -1135,15 +1271,19 @@ chıaqhe	personality
 chıaqhua	mind
 chıaqlıaq	plural system
 chıaqme	plural system
+chıaqnuo	is having lucid dream
 chıaqrue	not very aware
 chıaqsea	meditates
 chıaqsho	notices
+chıaqsuı	loses track of object
 chıaqtı	conscious
+chıashe	case if you need to
 chıaı	wrong
 chıaıchua	pseudonym
 chıaıgaı	hallucinates
 chıaıgaıno	synaesthetic
 chıaıjıao	false god
+chıaıjıoq	errs in reckoning
 chıaımıutua	misinforms
 chıaınoaq	misreads
 chıaıretao	recovers
@@ -1161,11 +1301,14 @@ chıcıa	skeptical
 chıduı	naive
 chıdıe	suggests
 chıe	learn
+chıe'eı	is a student of course
+chıe(tua)shynue	enrolls in course
 chıecha	learns
 chıeche	learner
 chıechefuaı	student council
 chıechekata	student ID card
 chıecheme	school
+chıechepaqtao	is enrolled in school
 chıecoaq	tame
 chıedoaq	campus
 chıedoasue	enrolls in
@@ -1192,8 +1335,10 @@ chıeqfa	cross
 chıeqgao	is over
 chıeqgaıno	has synesthesia
 chıeqgaıno	synesthetic
+chıeqrıe	is a corner between
 chıeqteı	cross
 chıeqtıeq	crossroad
+chıesoachuo	learning material
 chıetao	studies
 chıetoaı	lesson
 chıetua	teach
@@ -1208,6 +1353,7 @@ chıkenueq	chicken wing
 chıkola	chocolate
 chılua	myth
 chıluajıq	mythical
+chılı	chili con carne
 chımuo	certain
 chınoa	unbelievable
 chıo	repeat
@@ -1215,12 +1361,14 @@ chıobo	repetitive
 chıokaodoakıubulureıfeoq	BD-RE
 chıokaodoakıudıbıdı	DVD-RW
 chıokaodoakıusıdı	CD-RW
+chıotoaı	is a smallest cycle
 chıqchuq	insectivorous
 chıqshıqhua	antennae
 chırala	hog deer
 chıro	damn
 chırıeq	critical
 chıse	belief
+chısha	comes to conclusion
 chıshuaı	naive
 chısıa	skeptic
 chısıa	skeptical
@@ -1233,6 +1381,7 @@ chıtuafuı	naive
 chıtuafuı	gullible
 chıu	address
 chıu'aba	Chihuahua
+co'ukuq	broadcasts message
 coa	bridge
 coachuao	underpass
 coaq	tamed
@@ -1255,6 +1404,7 @@ coeme	structure
 coemuo	connected
 coepeq	sticky note
 coepotısa	slime mold
+coerıe	is a connector for
 coesaı	glue
 coese	is
 coetano	clay
@@ -1264,6 +1414,7 @@ coetıe	seals
 coezo	pin
 coezy	glue
 cokı	institution
+comoq	‘co… moq’ question
 coq	representation
 coqjıe	is deemed to be
 cotoa	quantifier
@@ -1280,8 +1431,9 @@ cuakuq	respond
 cuakuqse	response
 cuamoe	relates to
 cuao	beyond
-cuaodıu	(a) metaphysics
+cuaodıu	a metaphysics
 cuaojıqzıu	hyperreal number
+cuaolıq	transgender woman
 cuaonaq	transgender man
 cuaq	concept
 cuaq	is the property
@@ -1295,8 +1447,10 @@ cuaqko	fills in the
 cuaqkotoa	noun
 cuaqkueqse	compound concept
 cuaqkueqtoaı	primitive
+cuaqkueqtua	derives from words
 cuaqluaq	plays game
 cuaqmaı	fan
+cuaqmuoq	compound predicate
 cuaqmuıbo	verb
 cuaqpıe	raises a toast
 cuaqraı	abstract
@@ -1304,6 +1458,8 @@ cuaqsao	huge
 cuaqtao	celebrates
 cuaqtue	event
 cuase	response
+cuasho	internalizes response
+cuatıe	healing, ailing wound
 cuaı	wet
 cuaı	wet
 cuaıcey	sniffles
@@ -1318,10 +1474,13 @@ cucujı	azalea
 cue	reign
 cueche	politician
 cuecheme	political party
+cuechıtuachuo	political propaganda
 cuedıu	politics
+cuedıuche	political scientist
 cuefuaı	government
 cuejoaq	ruler
 cuekoeguo	election
+cuekoete	has been elected
 cuekoy	talks
 cueluaq	doms
 cueme	state
@@ -1337,6 +1496,7 @@ cuga	hemlock tree
 cuhybıa	has asthma
 cukı	nods
 cula	is an image
+cum	responds to stimulus
 cunamı	tsunami
 cuo	assume
 cuokeo	real
@@ -1347,11 +1507,13 @@ cuoısoq	satisfies with
 cupı	mucosa
 cuq	leaves
 cuqdere	tsundere
+cuqga	responds with answer
 cuse	spit
 cutao	spit
 cutaq	with
 cutua	satisfies with
 cuı	magenta
+cuıkuq	tweets as on Twitter
 cuıkıa	colour rose
 cuıkıa	of color
 cuıq	profane
@@ -1363,6 +1525,7 @@ cytao	spits
 cı	six
 cıa	lack
 cıakuq	omits
+cıalaı	null.complement.mark
 cıaluq	at peace
 cıamoe	feels empty
 cıane	zero amount
@@ -1370,6 +1533,7 @@ cıanhe	has zero extent
 cıaodua	has cultural
 cıaojeo	culturally true
 cıaolu	is a cultural
+cıasıaıbıa	suffers from anemia
 cıcı'a	cringes
 cıe	fish
 cıebeaq	fishing rod
@@ -1381,6 +1545,7 @@ cıeduy	wriggles
 cıejuku	fishing
 cıejuku	fishes
 cıejıaıgue	fishing hook
+cıepoq	half-fish, half-human
 cıereq	merfolk
 cıetuo	Water Moccasin
 cıfujuao	Zipf's law
@@ -1391,6 +1556,7 @@ cıjıeq	hexagon
 cıkata	six
 cıko	sixth
 cılaqteı	sixth tone
+cılaı	Deranı glyph for C
 cım	dislikes
 cıo	adolescent
 cıobeo	goes through
@@ -1412,6 +1578,7 @@ cıugıq	absorbs
 cıurıaq	toilet
 cıuse	excretion
 dada	chest
+dakuq	asserts utterance
 dakı	forehead
 dalatoq	dalton
 dalaı	assertion.mark
@@ -1433,6 +1600,7 @@ daofeoqme	hard drive
 daofoq	smartphone
 daogaı	has perception
 daojaolaq	smartphone
+daojoaı	researches question
 daojuao	logic
 daojuaodıu	study
 daojuq	accesses
@@ -1443,8 +1611,12 @@ daokaı	inputs data
 daokaıchuo	input device
 daokea	computer
 daokoko	Taoist
+daolu	synthetic proposition
 daomıeq	checks
+daone	is the size of file
 daoraq	links
+daorıoq	is the type computing
+daoshuo	is a file storing data
 daosue	wants to know
 daosı	interested
 daosıca	interests
@@ -1452,23 +1624,33 @@ daoteı	file format
 daoteıdıu	statistics
 daotoaı	word
 daotoq	table
+daotıaı	data storage device
 daozu	data format
+daozubo	is data in format
+daozumuı	is the meaning of data
 dapa	hand palm
+dapapueq	walks plantigradally
 dapapueqhe	plantigrade
+dapasheaq	walks plantigradally
 dapasheaqhe	plantigrade
 daq	time
 daqboe	wall clock
+daqbuaı	lasts for a long time
 daqbıo	hourglass
+daqchoq	spends time to do
+daqchue	temporal succession
 daqchuq	chronophage
 daqchıu	time address
 daqchıu	time.address
 daqdeaı	worthwhile
 daqdekı	timer
 daqduaı	due
+daqdue	happens punctually
 daqfa	time-travels
 daqfao	temporal.end
 daqfıa	previous
 daqgoa	spacetime
+daqgoamoa	point in spacetime
 daqguaı	works full-time
 daqguo	time
 daqgı	is
@@ -1479,6 +1661,7 @@ daqjeqme	state
 daqjuı	temporally close
 daqkea	clock
 daqko	is the
+daqleaqfıa	immediately precedes
 daqlıa	timeless
 daqme	time period
 daqmeoq	happens slowly
@@ -1491,6 +1674,7 @@ daqmıqjeo	universally true
 daqne	amount of time
 daqne	duration
 daqnuı	short in time
+daqnıe	within the time-span
 daqpaq	temporal slice
 daqpuı	happens often
 daqrea	deadline
@@ -1501,11 +1685,15 @@ daqsheı	free
 daqsheıbo	has free time
 daqshıkogıq	is, among
 daqsuaı	happens quickly
+daqsıao	temporal.beginning
 daqsıe	following
+daqtuao	short in duration
 daragoq	dragon
 daruma	snowman
 dasho	me
+dashı	rheological paste
 datoa	illocution
+datoame	illocution phrase
 dazı	Druze
 daı	possible
 daıchı	hope
@@ -1535,6 +1723,7 @@ deaıdoa	gives reward
 deaıhıo	recognizes
 deaıjuq	gets reward
 deaıne	status
+deaıtaı	is rewarded of his
 debıo	vase
 decha	happens
 dechey	charms
@@ -1552,6 +1741,7 @@ delua	poem
 dem	pushes
 demeo	beautifully sad
 demeoca	beautifully sad
+demoe	experiences the beauty
 demy	decoration
 denımy	denim
 deo	child
@@ -1564,6 +1754,8 @@ deoqchuaq	society
 deoqkoy	uses
 deoqpeq	letter
 deoqrıaq	chatroom
+deoqsıju	moderates content
+deoqsıjuche	content moderator
 deoqtea	shy, reserved
 depaq	ornament
 depı	common dolphin
@@ -1576,6 +1768,7 @@ deqcaı	mighty
 deqchıe	learns the skill
 deqcıa	disabled
 deqcıatıao	accessible
+deqgı	has the ability to do
 deqkuaqsue	challenges
 deqmıq	omnipotent
 deqne	ability
@@ -1599,6 +1792,7 @@ doagı	generous
 doahuı	ungenerous
 doajuoq	owes property
 doakata	pre-paid
+doamu	recieves property
 doaq	settlement
 doaqbua	inhabits town
 doaqcokı	city government
@@ -1609,25 +1803,33 @@ doashoe	accepts
 doasoa	donates
 doasıaıbıu	artery
 doatao	devotes
-doateaı	(being) stingy
+doateaı	being stingy
 doaıbıu	loaf of bread
 doaıtoq	breadboard
 doe	function
 doecıa	useless
+doefıeq	engineers program
 doegaq	partner
 doegoı	repairs
 doegıtua	fixes
+doeheno	replacement e.g., part
 doehua	organ
 doejeaq	enhances
 doekao	program
+doekaozu	programming language
 doekaıche	programmer
+doekaızu	programming language
+doeme	is a system of parts
 doeme	system
 doemıatoa	contentive word
+doemıatoame	contentive phrase
 doemıeq	tests if
 doepaq	component
 doeshe	does
 doetoa	particle
 doetua	turns on
+doetıao	is effective against
+doezu	programming language
 doezua	turns off
 dohe	replaces
 doje	enhances
@@ -1637,6 +1839,7 @@ doka	hits
 dola	one dollar
 dolom	drum
 dom	inactive
+domeı	tamed, domesticated
 domu	is busy
 donata	donut
 doq	short
@@ -1646,9 +1849,11 @@ doqhey	abbreviation
 doqhuoıpoke	crabeater seal
 doqjoq	dungeon
 doqkopı	summary
+doqkıaqnaomusela	smooth-coated otter
 doqmuı	concise
 doqnuo	naps
 doqshaı	interrupts
+doqshıu	happened recently
 doqte	abbreviation
 doqzobo	shorts
 dote	present
@@ -1685,7 +1890,9 @@ duahıaq	uneducated
 duajaq	certain
 duajua	mysterious
 duakuaı	knowledge-lust
+duakuaı	feels knowledge-hungry
 duamaı	philosopher
+duamaıpıo	Philosopher's Stone
 duamuo	certain
 duao	sweet
 duaoboe	cookie
@@ -1699,6 +1906,7 @@ duaohea	candy
 duaoloha	is
 duaomara	cotton candy
 duaomuoıhaq	donut
+duaonaby	sweet baked goods
 duaonıu	sugarcane
 duaopuao	cotton candy
 duaopuo	sugar
@@ -1712,12 +1920,14 @@ duasho	find.out
 duasuao	important
 duasue	ask
 duasuq	you-know-what
+duasuqhı	a you-know-what
 duasıa	unknown
 duatuataq	tells
 duatuatoeq	passes down onto
 duaı	must be the case
 duaıdao	tautology
 duaıdaotaı	proves that
+duaımoe	feels compelled to do
 duaıse	chore
 dubo	typhus
 due	correct
@@ -1730,6 +1940,7 @@ dueseı	mathematical
 duetıao	answers
 dufaq	phenomenon
 dufuq	disguise
+duga	has the appearance
 dugaı	takes
 dujıq	virtual
 dula	doula
@@ -1741,6 +1952,7 @@ duocaheqcıa	lax
 duocanoa	has impetus
 duodeaq	vehicle
 duodıe	insists on
+duofey	has lasting stress
 duogoı	nurses
 duohuame	muscular system
 duokea	robot
@@ -1752,13 +1964,17 @@ duosuaı	fast
 duotaq	vibrates
 duotaqkea	vibrator
 duotoaq	sign language
+duotoaı	is a force pulling
 duoı	gestures with
 duoıjuı	lasts
 duq	habitually
 duqgıao	has drought
 duqkuaı	craves
+duqruq	has very rainy weather
 duqse	habit
 duru	larva
+durubu	seemingly the case
+dusy	dozen 12 in number
 dutao	feigns
 duy	moves
 duybo	displaced
@@ -1769,31 +1985,42 @@ duyhua	muscle
 duykoy	gestures
 duykuq	signs
 duylaı	gesture
+duyluaq	plays physical sport
+duysoı	compete in athletic
 duzoaıge	unconvincing
 duı	too.much
 duıbokuaı	greedy
 duıbokuaı	greedy
+duıcha	happens overwhelmingly
 duıcharuaq	Gish-gallops
 duıdoa	overwhelms
+duıduaosıaıbıa	suffers from diabetes
 duıge	overstimulating
 duıgegaı	overstimulated
 duıgıq	not enough
 duıhıoq	cocky
 duıjuo	spam
 duıme	is too much
+duımoı	has an panic attack
 duıpaq	excessive part
 duıruq	rainfall flood
 dı	may be the case
 dıa	decrease
+dıabete	suffers from diabetes
 dıabuchuo	ratchet
 dıao	drop
 dıao	drop
+dıaobıa	suffers from gout
 dıaokua	toilet room.
 dıaopıo	dripstone
 dıaq	regular
 dıaq	regular
+dıaqgıq	occurs irregularly
 dıaqkao	diary
+dıaqko	is an nth thing among
+dıaqkoaı	regular grid pattern
 dıaqkue	journal
+dıaqnhe	happens at frequency
 dıaı	seven
 dıaıjue	July
 dıaıkata	seven
@@ -1804,6 +2031,7 @@ dıba	replaces
 dıbu	disallowed
 dıbutı	trespasses
 dıbıdı	DVD
+dıcuao	crossing the line
 dıe	suggest
 dıecaq	pressures
 dıechoaı	costs
@@ -1823,6 +2051,7 @@ dıeqne	is the size
 dıeqnua	downloads
 dıeqrıaq	accessible from
 dıesoı	argues with
+dıetaq	volunteers for doing
 dıetaq	volunteer
 dıetaı	convinces
 dıgıq	disallowed
@@ -1853,13 +2082,18 @@ dıqmıa	rough, bumpy
 dıqmıasuhu	warthog
 dıqmınu	arcminute
 dıqne	degree.of.arc
+dıqnhuo	accordion bellows
 dıqnhuochao	articulated bus
+dıqruoq	triangle-wave-shaped
 dıqsaq	triangle
 dıqsekuq	arcsecond
 dıu	science
 dıuche	scientist
 dıuche	researcher
+dıuchua	is a formal name of
 dıucuaq	theory
+dıulu	synthetic proposition
+dıurıaq	research facility
 dıuse	research
 dıusı	analyzes
 dıyq	colour pink
@@ -1872,6 +2106,7 @@ echı	key
 ecogeq	estrogen
 ego	self-image
 eju	s.see
+eka	takes place abruptly
 eku	equine
 eku	equine
 ekuchuoı	whip
@@ -1890,7 +2125,7 @@ elu	elephant
 embı	nonbinary
 emojı	emoji
 enı	here
-eo	(ignoring
+eo	ignoring
 eoropa	Europe
 epı	hooray
 epımoe	excited
@@ -1904,7 +2139,7 @@ esa	exa
 esagı	rocks
 eserojeq	estrogen
 eso	pike
-ezuı	(the abstract
+ezuı	the abstract
 eı	plays role
 eı'eıchı	letter Eı
 eıchı	ant
@@ -1924,6 +2159,7 @@ fajeo	piece of trivia
 fajuı	passes
 fakea	robot
 fakıu	reachable
+fakıu	pees into the toilet
 falafeo	falafel
 falanuka	falanouc
 falanukasıu	euplerid
@@ -1934,7 +2170,9 @@ fanılapaq	vanilla extract
 fao	end
 faocıa	eternal
 faojıaq	collapsing
+faotoa	terminating particle
 faq	happen
+faqbo	is an event involving
 faqdekı	alarm
 faqgıq	unhappens
 faqjuı	on the brink
@@ -1942,6 +2180,7 @@ faqtoa	verb
 faqtoame	verb phrase
 faqtoany	verb complex
 farada	farad
+fareqhaı	degree Fahrenheit
 fareı	encircles
 fase	trip
 faseo	bean
@@ -1966,6 +2205,7 @@ faıjı	earliest element
 faılıao	common
 faımuı	common
 faıne	frequency
+faıneme	frequency distribution
 faıpoq	normal person
 faıpy	normal person
 faıraq	vandal
@@ -1978,6 +2218,7 @@ fea	endure
 feahuaq	outlives
 feamy	residue
 feao	feels distress
+feaofurı	shakes of **feao**ness
 feaojua	eerie
 feaolao	dreads
 feaomoaq	has flashback
@@ -1996,7 +2237,9 @@ fejınoaq	mind-reads
 fekata	five
 feko	fifth
 felaqteı	fifth tone
+felaı	Deranı glyph for F
 felegyreıdueq	Flegrean Fields
+fenuaıpeq	five-unit money note
 fenusı	ex forma
 feo	direction
 feobo	faces direction
@@ -2011,26 +2254,33 @@ feomıeq	navigates
 feoq	circular
 feoqcake	cookie
 feoqkahu	ringtail
+feosıy	happens from direction
+feosıy	happens into direction
 feotua	directs
+feotı	is at the direction
+feq	pertains to intuition
 feqnoaq	reads the room
 fetıq	pentomino
 feu	disown
 fey	solid
 fey	feels stressed
 feyjaı	excited
-feyjoaısı	(hyper)vigilant
+feyjoaısı	hypervigilant
 feı	angry
+feıcua	lashes out at property
 feıjaq	furious
 feıkuaı	irascible
 feıloq	boiling
 feıluaq	bully
 feılı	fairy
 feımeo	sulks
+feınotuq	loses their temper
 feırıome	wind storm
 feıseoq	storm
 foa	feel
 foa	feels
 foajeo	"rings true"
+foajeq	feels the same as
 foaq	comfortable
 foaqfua	cushion
 foaqfuı	convenient
@@ -2041,11 +2291,15 @@ foatıao	is in the right
 foazameme	vibe checks
 foaı	is a detail of
 foaı'ıdeı	detail-panics
+foaıdoa	gives description
+foaımıa	detailed, precise
 foaısıduı	is petty about
 foka	vodka
 fokeı	feels okay
 fomo	strict
 foq	phone
+foqcua	picks up the phone
+foqjuq	answers the phone
 foqlaq	ringtone
 foqpaı	contact
 foqsue	phones
@@ -2060,6 +2314,7 @@ fou	by.the.way
 foı	bored
 foıca	boring
 foıfaı	cliché
+foıguaı	on to a menial task
 foımoe	bored
 fu	offspring
 fu	child
@@ -2088,6 +2343,8 @@ fubupu	dove
 fue	hundred
 fufu	grandchild
 fufufu	grand-grandchild
+fuheq	is pregnant with child
+fukaqmuq	does the Vulcan salute
 fukıoq	egg
 fuluo	fluorine
 fumefıtı	hog-nosed skunk
@@ -2100,6 +2357,7 @@ fuofuaq	print
 fuofuaqkea	printer
 fuoke	fidgets with
 fuokuaı	touch-starved
+fuorue	soft to the touch
 fuq	clothing
 fuqcea	pocket
 fuqcıa	naked
@@ -2115,6 +2373,8 @@ fuqsaıchuo	loom
 fuqtıaoche	tailor
 fuqtıaı	drawer
 furı	oscillates
+furıjıba	shivers, shudders
+furılaq	sound of a vibration
 furınuofua	hammock
 furısa	voiced
 furısıa	voiceless
@@ -2129,6 +2389,7 @@ fıakaıse	foreword
 fıamaq	it
 fıamaq	it
 fıasoq	primate
+fıasıa	is last in sequence
 fıchoılaı	letter V
 fıe	ugly
 fıeq	create
@@ -2139,13 +2400,17 @@ fıeqkuı	is an
 fıeqno	canvas
 fıeqnıeq	uncreative
 fıeqse	creation
+fıeqzu	constructed language
 fıete	hits on
 fıkuzeo	fig fruit
+fıme	grammatical subject
 fımeteı	nominative case
 fıo	colour beige
+fıqza	spear
 fısoq	is up next
 fıu	shallow
 fıunuo	sleeps lightly
+fıuq	is an institution
 fıutoe	notches
 fıutoe	notches
 ga'achaq	Earth Day
@@ -2169,10 +2434,14 @@ ganechuo	stick of chalk
 gao	above
 gaodeaq	ceiling
 gaodıaopıo	stalactite
+gaofası	faces up with face
 gaofeo	direction “up”
+gaofeonuo	sleeps on their back
 gaofuo	on top
+gaofuq	upper body clothing
 gaogureq	adrenal gland
 gaojeaq	rises
+gaojıaı	reaches up to grab
 gaojıqzıu	surreal number
 gaokoı	climb
 gaokoıchuo	ladder
@@ -2182,6 +2451,7 @@ gaopaq	top
 gaorea	upper surface
 gaoshıaq	upper leg
 gaozıu	positive number
+gapygıba	appears out-of-place
 gaq	accompany
 gaqbıa	feels lonely
 gaqcıa	alone
@@ -2189,6 +2459,8 @@ gaqcıa	alone
 gaqcıamoe	feels lonely
 gaqdaka	sulfur
 gaqdoa	shares with
+gaqduımoe	feels anti-lonely
+gaqfeaobıa	has social anxiety
 gaqguru	kangaroo
 gaqguru	kangaroo
 gaqgurugua	Australia
@@ -2210,6 +2482,7 @@ garabıa	feels nauseous
 garaluce	gastric ulcer
 garam	gram
 garam	gram
+garanoso	suffers from gastritis
 garapue	gastropod
 garapuekato	slug-cat
 garu	combs
@@ -2226,6 +2499,7 @@ gaıgıu	nerve
 gaıgıume	nervous system
 gaıhua	sensory organ
 gaıjuq	audience
+gaıjuqmoe	feels spotlighted
 gaıkoy	acknowledges
 gaıkuq	relates
 gaıkıu	perceptible
@@ -2246,8 +2520,10 @@ geachua	caption
 geafa	ascends
 geahoefeo	oriented
 geajeaqkea	lift
+geajıo	tower or skyscraper
 geameı	mountain
 geanua	lift
+geanıa	has its ups and downs
 geaq	dirty
 geaqsaınao	mud
 geaqzeo	vegetable
@@ -2263,14 +2539,18 @@ gegu	cartilage
 gehıaq	dull
 gekuaı	sensory-deprived
 gekuaıtoı	fidgets with
+gekuı	stems from stimulus
 gelı	bile
 gem	happens with
 gemanıum	germanium
+gemo	member of genus Homo
 gemuaq	desensitized
 gemıa	bright
 geneta	genet
+geno	exhibits genotype
 genolaı	gene
 genome	genome
+genomedıu	study of genetics
 geo	old
 geo'aı	archaic
 geobıa	senecent
@@ -2294,6 +2574,7 @@ geqsoa	introduces
 geqsıa	alone
 gere	hedgehog
 gereba	crawfish
+geretaqrakanuı	lesser hedgehog tenrec
 gereı	gray
 gero	crane
 gerou	crane
@@ -2311,6 +2592,7 @@ geıdutao	dresses up as
 geıfao	outerwear
 geınua	takes clothing
 geıse	outfit
+geısho	puts on starts wearing
 geısıa	naked
 geısıao	underwear
 goa	space
@@ -2334,9 +2616,13 @@ goaraı	physical thing
 goasao	spatially big
 goashea	void
 goateı	spatial
+goatuao	has a small volume
 goaı	rub
 goaıboe	tissue
+goaıboqlaq	fricative consonant
 goaıca	rub
+goaıcheo	rub.against.each.other
+goaıcıa	is slippery against
 goaıcıaduy	slithers
 goaıfuq	towel
 goaıgoaq	slippery
@@ -2348,6 +2634,7 @@ goaınua	scrapes
 goaıpıo	grindstone
 goaıse	friction
 goaısıaduo	slips
+goaıteı	chiselled sculpture
 goaıtua	rub
 goaızeo	berry
 godoı	pika
@@ -2364,13 +2651,16 @@ goeqtoaı	brick
 goeqtıesaı	plaster
 gohoshao	propositions
 golaq	golem
+golaı	Deranı glyph for G
 golofe	golf
 gom	err
 gometeı	accusative case
 gomo	government
 goqfe	golf
+gory	gross 144 in number
 gorılaı	gorilla
 gorılaı	gorilla
+goso	member of genus Gallus
 goso	chicken
 gosokubo	chicken egg
 gosonage	chicken nugget
@@ -2382,7 +2672,9 @@ goutıao	and
 goı	treat
 goı	treats
 goıchoq	takes medication
+goıchuq	intakes medication
 goıdıu	medicine
+goıluıbıa	has withdrawal symptom
 goımuo	cures
 goınuo	under narcosis
 goıpoaı	medicine pill
@@ -2402,7 +2694,9 @@ gu'aı	split
 gua	country
 guabua	inhabits country
 guache	monarch
+gualy	is a state in country
 guao	furcation
+guaokopı	fork modified copy
 guaotuaq	pronghorn
 guaotuaqsıu	pronghorn
 guaq	land
@@ -2420,23 +2714,30 @@ guaqfurıdıu	seismology
 guaqguaı	farmer
 guaqguqnıefa	chimpanzee
 guaqgıaıchuo	hoe
+guaqhoaq	land-burning fire
 guaqhuaı	digs
 guaqjeoq	cave
 guaqkuoq	stone
 guaqkıaq	grass
+guaqkıoqpıu	crust of a planet
 guaqlabı	true chameleon
 guaqlabı'aı	chameleon
 guaqlabısıu	chameleon
 guaqleoq(tao)kuaı	territorial
+guaqloe	land-burning fire
 guaqmuoq	ceramic
 guaqmıq	continent
 guaqnao	lake
 guaqnueq	stomach
 guaqnulı	crude oil
+guaqnıe	is buried in land
 guaqnıejeoq	cave or cavern
+guaqpoke	ringed or inland seal
 guaqpuao	sea of clouds
+guaqpıanete	terrestrial planet
 guaqsaı	soil
 guaqsaımuoq	earthen
+guaqsaıtaqraka	large-eared tenrec
 guaqshamu	potato
 guaqteıdıu	geomorphology
 guaqteıdıu	topography
@@ -2453,6 +2754,8 @@ guaıchaq	weekday
 guaıdaq	work-time
 guaıduo	work shift
 guaıduıbıa	burnt out
+guaıduımuaq	dies from overworking
+guaıduımuaqsho	dies from overworking
 guaıgaq	co-worker
 guaıguo	task
 guaıhua	muscle
@@ -2469,6 +2772,7 @@ guaırıaq	workplace
 guaırıeq	puts off
 guaıse	work
 guaıshaı	labor.strike
+guaısıo	property is a project
 guaıtoqfua	workbench
 guaıtıgaq	body-doubles
 gubu	and
@@ -2488,10 +2792,13 @@ guepoaqle	brittle
 guesheaq	kneels
 guesheaq	leans
 gueteı	bend
+guetu	member of genus Betula
 guezueq	warped
+gugoa	two-dimensional space
 gugunobı	AFAB
 guheı	twenty in number
 guheıcıpeoq	iron
+guheıpy	in their twenties
 guhuaq	more related
 guja	is the relation
 gujeo	and
@@ -2499,15 +2806,18 @@ gujeo	and
 gujeqda	bigender
 gujey	bigender
 gujue	February
+gujıeq	finite straight line
 gukata	two
 guko	second
 gukojuju	double-jumps
 gulaq	gland
 gulaqteı	second tone
 guluao	bilabial
+guluaolaq	bilabial consonant
 guluaqmu	two-player game
 gulueq	serves
 gulıaq	pair
+gumuq	someone's both hands
 gumıe	amphibian
 gumıedaosaı	DNA
 gunu	gnu
@@ -2520,14 +2830,18 @@ guobenueq	beef
 guobesıu	bovid
 guobo	pattern
 guobo	is a form
+guobo'ıq	satisfies essential
+guofıa	previous occurrence
 guojuaq	happens *again*
 guoko	is the
 guola	wolverine
+guoleaqbıe	is the next one after
 guom	wall
 guomkoꝡam	wall clock
 guonıq	new
 guoq	anus
 guoqpoq	asshole
+guoqseaq	has anal sex with
 guoraq	specific
 guosa	sometimes
 guoso	cattle
@@ -2542,6 +2856,7 @@ gupaqkaro	Himalayan tahr
 gupeoq	helium
 gupoaı	testis
 gupu	rots
+gupue	someone's both feet
 gupuguaqsaı	composte
 gupuheqmy	composter
 gupuloha	rust
@@ -2551,6 +2866,7 @@ guqchuechao	subway train
 guqcoe	hangs
 guqdıaopıo	stalagmite
 guqfa	descends
+guqfası	faces down with face
 guqfuq	undergarment
 guqjeoq	bowl
 guqjıaq	underworld
@@ -2563,8 +2879,11 @@ guqtıeqhuaı	digs a tunnel
 gure	both or none
 gureq	kidney
 gureq	kidney
+gureqgoıcua	suffers from nephritis
 gureqneogulaq	adrenal gland
 gureqneosaı	adrenaline
+gureqnoso	suffers from nephritis
+gureubebere	Hose's palm civet
 guru	guru
 gurugu	croaks
 gurıopıe	lungfish
@@ -2580,7 +2899,9 @@ gushı	is either
 gusıa	neither
 gusıeme	ordered pair
 gusıoq	bicycle
+gusıoqcaısho	works out with a bike
 gusıoqfa	bikes
+gusıoqfa	goes [FA] by bike
 gutoemy	pair of scissors
 gutoeqnhuo	matrix
 gutoeqpao	grandparent
@@ -2589,6 +2910,7 @@ gutu	both
 gutıq	domino
 guy	cloth
 guyboe	cloth sheet
+guzıu	binary base-2 number
 guı	grain
 guıbeaq	pitchfork
 guıbıu	sushi
@@ -2597,12 +2919,15 @@ guıcoe	gluten
 guıdıu	serial science
 guımuoq	dough
 guınhoq	pasta
+guınıu	a kind of wheat
 guıpuo	flour
 gı	good
 gıa	ribbon
 gıa'eku	zebra
+gıabebere	banded palm civet
 gıaboqcıra	striped vontsira
 gıachea	turban
+gıagazala	side-striped gazelle
 gıakaq	strip
 gıakıao	gateway
 gıakıaotoq	gate
@@ -2615,9 +2940,13 @@ gıaq	music
 gıaqbaı	produces
 gıaqbıu	flute
 gıaqche	musician
+gıaqchea	pair of headphones
+gıaqchuo	musical.instrument
 gıaqdoa	performs music
 gıaqduo	dances to music
 gıaqduy	dances
+gıaqdıaq	happens rhythmically
+gıaqdıaqne	is the tempo of music
 gıaqfıeq	composes music
 gıaqjaı	vibing
 gıaqkaı	composes music
@@ -2628,7 +2957,9 @@ gıaqshuaq	plays music
 gıaqshuaq	plays music
 gıaqshuaq	produces music
 gıaqteı	melody
+gıaqtoaı	musical note or tone
 gıaqtua	makes music
+gıaqtıao	is in sync with music
 gıarueqluaq	play tug of war
 gıaı	incise
 gıaıchuo	pickaxe
@@ -2640,6 +2971,8 @@ gıaıreosheq	pencil sharpener
 gıaıreoshuo	automatic pencil
 gıaıte	carved
 gıaıtedıu	entomology
+gıba	expresses well-wishes
+gıbıaqhuı	"so bad it's good"
 gıcacıa	in vain
 gıcıa	free.of
 gıdaıtue	opportunity
@@ -2647,6 +2980,7 @@ gıdoa	rewards property
 gıe	arm
 gıebea	elbow
 gıebıu	sleeve
+gıegu	one's both arms
 gıejeoq	armpit
 gıekea	robotic arm
 gıekoꝡam	wristwatch
@@ -2657,6 +2991,7 @@ gıfaq	good occurrence
 gıga	giga
 gıhuaq	better than
 gıjao	is safe
+gıjıetao	does as they please
 gıkoy	praises
 gıkuaochaq	Good Friday
 gılıe	has positive
@@ -2667,6 +3002,7 @@ gıne	has worth
 gıneq	fortunate
 gıneqjuq	gets lucky
 gıneqnu	fortunately
+gınetoaı	point [in a game]
 gınu	fortunately
 gınue	promise
 gınıq	fresh
@@ -2682,6 +3018,7 @@ gıohua	photophore
 gıohıaq	dark
 gıojıo	lighthouse
 gıokea	lamp
+gıokuaı	has the winter blues
 gıokusu	jack-o'-lantern
 gıokıoq	lightbulb
 gıolıeq	prism
@@ -2694,7 +3031,8 @@ gıopoa	opaque
 gıorıa	transparent
 gıoshuaq	shines
 gıosoaı	ray of light
-gıotı	(object
+gıotı	object
+gıotıca	illuminates object
 gıotıcıa	unilluminated
 gıotıe	opaque
 gıotıtuao	ill-lit
@@ -2706,8 +3044,10 @@ gıqbuoq	ironic
 gıqduı	not enough
 gıqkuq	sarcastic
 gıqmıaı	alliterates with
+gıqpoaqzıu	irrational number
 gıqtı	absent
 gıqtısha	departs
+gıruo	a disease is benign
 gıruo'oma	benign tumor
 gısoq	is the best
 gısıo	good idea
@@ -2721,6 +3061,7 @@ gıufa	goes along path
 gıumeı	ridge
 gıunhuo	line
 gıunuı	narrow
+gıunuıkuoqbuq	rough-toothed dolphin
 gıureq	stickman
 gıusao	wide
 habanero	habanero pepper
@@ -2744,11 +3085,13 @@ hamonıka	harmonica
 hamoıgua	amoeba
 hanuka	Hanukkah
 hanumaqjıu	Hanuman Jayanti
+hany	member of genus Anas
 hao	stuff
 haogaq	hangs out with
 haogı	welcome
 haohao	thingamajig
 haohuı	unwelcome
+haope	relatively the case
 haotao	does the salient
 hapaka	alpaca
 hapı	bee
@@ -2763,10 +3106,12 @@ haqbaıkua	kitchen
 haqbaıkua	kitchen
 haqbaırıoq	farm
 haqbaıse	meal
+haqbo	has food to get by
 haqboe	menu
 haqbuchuq	has pica
 haqbygy	hamburger
 haqbıu	esophagus
+haqbıubıru	of genus Enterovirus
 haqchaı	soup
 haqche	cook
 haqchuq	eats food
@@ -2801,6 +3146,7 @@ haqpaodıu	agriculture
 haqpaoguaq	farmland
 haqpaorıaq	farm
 haqpaq	ingredient
+haqpaq	is an ingredient for
 haqpuı	feast
 haqsaokua	dining hall
 haqshuaq	farms
@@ -2808,14 +3154,18 @@ haqshuo	food supply
 haqsoy	plate
 haqsue	orders
 haqsıa	vampire
+haqte	member of genus Anas
 haqtoaı	nutrient
 haqtoq	plate
 haqtoq	plate
+haqtu	spirit, soul or ghost
+haqtı	member of genus Anas
 haqtıao	food
 haqzu	CJK language
 haqzy	hanzi
 hara	scorpion
 haranekoaı	spiderweb
+haranıka	member of genus Arnica
 harı	wizard
 hasa	sighs
 hashu	sneezes
@@ -2842,28 +3192,35 @@ hekero	maple tree
 heketare	hectare
 hekuchuoı	whip
 hekuq	says
+helekı	member of genus Alces
 helemo	elm
 heleq	elbow bone
 helıum	helium
 heno	version
+henıao	covered in permafrost
 heo	different
 heo	different
 heo	and
+heo-	different subject
 heocuage	allergen
 heocuahe	allergic
 heodua	can distinguish
+heogaı	manifests property
 heohueq	is a mark
 heojeymaı	heterosexual
+heojıaq	alternate universe
 heomaı	straight
 heomaı	heteromantic
 heome	heterogenous
 heomıa	varied
 heomıu	act of hypocrisy
 heopoq	outsider
+heopıa	opposite-sex sibling
 heoq	waist
 heoqgıa	belt
 heoqgıabo	armadillo
 heoqshaq	belly
+heoraı	some other thing.
 heose	is a byproduct
 heoseaq	heterosexual
 heoseje	LGBTQ
@@ -2891,11 +3248,14 @@ heqnıu	potted plant
 heqruaq	asserts
 heqrı	henry
 heqshea	empty
+heqtaı	succeeds at containing
+heqtı	member of genus Anas
 heqtı	duck
 herece	hertz
 heroe	heroic
 heroe'aı	heroic
 heruo	arrow
+hesareo	near-ultraviolet color
 heseoq	climate
 hesıa	empty set
 hey	and
@@ -2903,12 +3263,15 @@ hey	instance
 heydaı	alternative
 heytou	is nonfungible
 heytuqfuaq	NFT
+heytıao	potential replacement
 hezı	plasma
 hezıkıoq	plasma ball
 heı	ten
+heıchıejoene	high school sophomore
 heıga	oak
 heıgazeo	acorn
 heıgucheı	duodenum
+heıguchıejoene	high school senior
 heıgujue	December
 heıgutuaq	Asian swamp deer
 heıgıe	squid.
@@ -2917,13 +3280,16 @@ heıjue	October
 heıkata	ten
 heıko	tenth
 heıpy	teenager
+heıshıchıejoene	high school junior
 heıshıjue	November
 heıshıjue'aramoshıcıaguo	No Nut November
+heızıu	decimal base-10 number
+hoaq	burns in oxidizer
 hoaq	burn
 hoaqdoaı	toast
 hoaqfuı	flammable
 hoaqgıo	firelight
-hoaqhıao	burns (injury)
+hoaqhıao	burns injury
 hoaqkea	lighter
 hoaqkıu	flammable
 hoaqleq	flame
@@ -2939,6 +3305,7 @@ hoaqrıo	plasma
 hoaqrıo	smoke
 hoaqshuao	phoenix
 hoaqtue	fire
+hoaraı	resumptive antecedent
 hoaıduoı	goes on and on
 hoaıhaq	leftover food
 hoaınu	still the case
@@ -2948,6 +3315,7 @@ hobıche	shepherd
 hobıkıaq	wool
 hobınueq	mutton
 hochu	east
+hochueloatoejı	cryptic golden mole
 hochupoq	easterner
 hoe	sun
 hoe'achu	sun-sneezes
@@ -2981,9 +3349,11 @@ hoerua	sunflower
 hoerıqpıo	chrysoberyl
 hoesaı	helium
 hoesaı	helium
+hoesea	lies in the open sun
 hoeshıy	sunset
 hoesoaı	sunbeam
 hoesıoq	galaxy
+hoesıoqme	cluster of galaxies
 hoesıu	shiny
 hoetoa	word in Toaq
 hoetoq	solar panel
@@ -3006,19 +3376,23 @@ homo	human
 homopapy'omabıru	HPV
 honı	is this
 hopa	satisfied by him
+hopoı	event in which he
 hoqbo	its
 hoqbıe	afterwards
 hoqkeo	however the case
 hoqraı	abstract
 hoqsa	jaguar
+hoqshıu	takes place beforehand
 hoqsıe	case afterwards
 hoqtekı	computer
 hora	hour
+horabaq	is the hour numbered
 horachıu	is the time
 horaı	animate
 hore	west
 horepoq	westerner
 horolo	Xorlo
+hosuqjı	you, I and the others
 hota	=
 hoto	bone
 house	suggestion 🏡
@@ -3047,16 +3421,19 @@ huapaq	body part
 huaq	more
 huaqcho	prefer
 huaqchua	a
+huaqjeq	is just as more than
 huaqloı	envies
 huaqmea	majority
 huaqmoe	feels arrogant
 huaqsho	surpasses
 huaqsoı	tries to one-up
+huaqtojemu	amazingly fantastic
 huarueqduo	stretches
 huaı	scoop
 huaıchao	excavator
 huaıchuo	spoon
 huaıchuo	shovel
+huaıchuofuaq	picture of a spoon
 huaıchuokenobo	fallow deer
 huaılyjıaı	spoons
 huaılyreaq	spoon
@@ -3103,11 +3480,13 @@ huonueqhua	earlobe
 huopuao	muffled
 huosoakea	hearing aid
 huosı	listen
+huosınaraq	Mardi Gras festival
 huosıu	sounds like
 huotoaı	phone
 huoı	tail
 huoıbıo	cup
 huoıcıa	frog
+huoıfeotı	at the rear direction
 huoısıa	tailless
 hupa	pushes
 hupa(mıeq)chuo	barometer
@@ -3132,16 +3511,20 @@ huıchoq	wastes
 huıchıaı	morally wrong
 huıchıchuaq	cult
 huıcıa	lack
+huıdaımeoq	proceeds with care
 huıdaımoe	feels anxiety
 huıdaımoı	feels anxiety
 huıdaısı	worries
+huıdoa	doles out punishment
 huıfaq	goes wrong
+huıgı	bad in a good way
 huıhota	metastasizes
 huıjua	silly person
 huıjua	abnormal
 huıjuıshaı	abandons
 huıkoe	blames
 huıkoy	condemns
+huıkoybo	has a bad track record
 huıkuaı	sadistic
 huıkuıhuı	punishes
 huıloeq	rots
@@ -3168,14 +3551,18 @@ huıpaq	discontent
 huıpoqnua	abducts
 huıpueq	commits treason
 huıpıotuı	dinosaur
+huıruo	a disease is malignant
 huıruo'oma	malignant tumor
 huısao	intimidating
 huıseoq	storm
 huıseoqjaomoe	feels chrysalism
 huıshao	is malicious
 huıshaofey	paranoid
+huıshaosı	is distrustful towards
 huıshıq	stinks
 huıshıqmelı	stink badger
+huıshıutoı	discriminates against
+huısoq	is the worst among
 huıtaoheq	jail
 huıtaojıo	jail
 huıtoaı	penalty point
@@ -3197,6 +3584,7 @@ hıaocıa	safe
 hıaocıasıo	idea of safety
 hıaodaı	dangerous
 hıaodaımoe	feels unsafe
+hıaodaıruaq	warns that danger
 hıaodaıruaqse	warning
 hıaodaısıamoe	feels safe
 hıaodea	batters
@@ -3208,9 +3596,12 @@ hıaojoaısı	vigilant
 hıaojuqcho	masochist
 hıaokea	virus
 hıaokuaı	aggressive
+hıaokuaıruo	behaves aggressively
+hıaokucho	ballistic gelatin
 hıaole	dangerous
 hıaoleo	attacks
 hıaomoe	feels hurt
+hıaomıetoaı	harmful cell organism
 hıaonuı	pathogen
 hıaopuo	gunpowder
 hıaorıeq	escape
@@ -3219,6 +3610,7 @@ hıaorıeqsoache	rescuer
 hıaosaıbıa	poisoned
 hıaose	wound
 hıaoshao	is cruel towards
+hıaosoa	is disadvantaged while
 hıaosuao	severe
 hıaotaocho	sadist
 hıaote	hurt
@@ -3243,13 +3635,17 @@ hıeheku	hippopotamus
 hıejeoq	bucket
 hıejeoqny	bucketful
 hıekebo	hippopotamus
+hıekebonuı	pygmy hippopotamus
 hıeku	liver
+hıekunoso	suffers from hepatitis
+hıekutıaqbıa	suffers from cirrhosis
 hıena	hyena
 hıeq	throws
 hıeqboe	frisbee
 hıeqbıa	feels nauseous
 hıeqbıu	cannon
 hıeqbıukea	gun
+hıeqchoq	makes shooting device
 hıeqfuo	pushes on
 hıeqgıqfuo	pulls on
 hıeqjuq	catches
@@ -3265,6 +3661,7 @@ hıesıaıbıu	artery
 hıetısha	brings
 hıguana	iguana
 hıgıe	hygienic
+hımoq	‘hi… moq’ question
 hımıeq	classifies
 hıo	greet
 hıodıeq	sends greetings
@@ -3278,7 +3675,11 @@ hıoqshuıkuq	humble brags
 hıota	yotta
 hıpı	hippie
 hıpı	hippie
+hıqbo	has newly acquired
 hıqdu	Hindu
+hıqdıamaqkaıheaq	common mango tree
+hıqshuı	happens right before
+hıqshıu	happened immediately
 hıqsoq	is the latest
 hıraı	is
 hıu	river
@@ -3304,7 +3705,7 @@ jao[kaq]bıu	telescope
 jaocaqkea	remote control
 jaocaqrıochao	drone
 jaochuo	television
-jaocua	is (being) cold
+jaocua	is being cold
 jaodoa	sends
 jaofa	goes away
 jaoheo	exotic
@@ -3315,8 +3716,10 @@ jaolaq	telephone
 jaolaq	phone
 jaolaqlaq	ringtone
 jaolaqsue	phones
+jaolaqtao	talk.on.the.phone
 jaome	sparse
 jaomuo	is unlike
+jaonoı(lıe)	experiences wanderlust
 jaonı	far.away
 jaoshuao	turkey
 jaotaq	sparse
@@ -3324,6 +3727,7 @@ jaotoa	SMS
 jaq	very
 jaq'acı	strong acid
 jaqbeı	so much the case
+jaqbu	not very much the case
 jaqbu'eqbı	demi-non-binary
 jaqbulıq	demi-female
 jaqbunaq	demi-male
@@ -3332,8 +3736,11 @@ jaqchoaımute	apple product
 jaqchu	mildly the case
 jaqchuaqpoq	egalitarian
 jaqgala	jungle
+jaqheo	to.different.degree
 jaqhıao	injured
 jaqhıaote	injured
+jaqjaq	extremely the case
+jaqjuı	is about the same as
 jaqkafe	red-eye
 jaqmaıchıtoı	love-bombs
 jaqnu	so much the case
@@ -3353,7 +3760,10 @@ jaıbıa	manic
 jaıgaq	happy
 jaıjaı	shares the joy
 jaıjaıkuaq	congratulates
+jaıpoaısıaıcıu	menstruates joyfully
+jaıroq	cries out of happiness
 jea	buys
+jea	purchases property
 jea	buy
 jeachoaq	customer
 jeadoaqpaq	shopping
@@ -3371,33 +3781,38 @@ jeaqdaıbu	cannot increase
 jeaqdo	add
 jeaqdıakaı	WriTEs
 jeaqfıeq	copies
+jeaqfıeqge	source of inspiration
 jeaqfıeqkuaı	feels inspired
 jeaqjuoı	elaborates on
 jeaqjıqzıu	hyperreal number
 jeaqkuq	adds
 jeaqlıao	yeast
 jeaqnaby	sandwich
-jeaqnao	(a) sauce
+jeaqnao	a sauce
 jeaqshuaq	copies
 jeaqshue	dust
 jearıaq	market
 jeatoaı	transaction
 jeatıaı	is a package
 jeaı	is the same as
+jeda	assertive sentence
 jedaı	jedi
 jeha	is* the case
 jehua	is a
 jehudı	Jewish
 jehudıchuaq	Judaism
+jehudıchuaqchı	of the Jewish religion
 jeku	liver
 jemusao	gigantic
 jemy	glue
 jenalıq	adrenaline
+jeo	satisfies property
 jeo'aı	honest
 jeobo	has truth value
 jeobıdaqmıqmaıraqpoqjı	aphorism
 jeocuaq	proposition
 jeodaı	proposition
+jeoduq	habitually the case
 jeogaı	perceives
 jeogı	is suitable
 jeogı	good for one
@@ -3407,6 +3822,9 @@ jeojeo	for sure
 jeojeo	indeed
 jeojuı	almost
 jeoketo	right whale
+jeoketonuı	pygmy right whale
+jeoketonuısıu	pygmy right whale
+jeoketosıu	right or bowhead whale
 jeomao	also the case
 jeomucuaq	property
 jeomudaı	property
@@ -3423,6 +3841,8 @@ jeoru	and
 jeotoa	verb
 jeotoa	"atomic verb"
 jeotoachue	serial
+jeotoachuerıoq	serial verb frame
+jeotoamuırıoq	semantic verb frame
 jeotoarıoq	frame
 jeotoı	is with
 jeq	same
@@ -3433,9 +3853,13 @@ jeqbunıoq	anisodon
 jeqchoq	shares
 jeqchoqjuao	copyright
 jeqchoqkeaıjuao	open licence
+jeqchoqshejuao	copyright licence
 jeqchuaq	egalitarianism
 jeqda	gender
 jeqdabeo	transgender
+jeqdabeolaı	transgender sign ⚧
+jeqdabo	has gender property?
+jeqdachıeq	binarily transgender
 jeqdacıa	agender
 jeqdajeı	cisgender
 jeqdakuaı	gender-envies
@@ -3460,18 +3884,28 @@ jeqseaq	homosexual
 jeqshuaq	copy
 jeqtoe	cuts
 jeqtu	identical
+jeqtıaı	rectangular cuboid
 jey	gender
+jey'unou	feels gender dysphoria
+jey'ıjı	feels gender euphoria
 jeyboq	cassgender
 jeycuao	genderqueer
 jeycıa	agender
+jeyde	cute in a gay way
 jeyfaı	cisgender
 jeygoısaı	HRT
 jeyhuaqloı	gender-envies
+jeykuaı	craves gender property
+jeykıeq	feels gender dysphoria
 jeyleı	transgender
 jeymaıcıa	asexual
 jeyrıe	intergender
+jeysıeq	feels gender euphoria
 jeı	identical
+jeı'aı	has identity trait
 jeıbu	different thing
+jeıchıaq	recognises recognizes
+jeıdu	indistinguishable
 jeıga	same
 jeıgaı	recognizes
 jeıheo	another
@@ -3489,6 +3923,7 @@ joamoa	time of the week
 joanhuo	weekly timetable
 joaq	leader
 joaqmı	king
+joasaq	three-week period
 joaı	seek
 joaıjıoq	finds that
 joaısı	on the lookout
@@ -3498,18 +3933,22 @@ joe	skilled
 joefoq	smartphone
 joegı	is a master at
 joekea	smart device
+joemıa	skilled at many things
 joene	is
 joenetoaı	experience point
 joetao	practice
 joga	does yoga
+jogoa	four-dimensional space
 jogoashaha	4D chess
 jogu	yogurt
 joguchuaı	frozen yogurt
 joguru	yoghurt
 joheıbushuchaq	Lent
+joja	quaternary relation
 jojue	April
 jojue'ahochaq	April Fool's Day
 jojıeq	square
+jokaqgı	experiences rapturous
 jokaqhua	hirola
 jokata	four
 joko	fourth
@@ -3517,6 +3956,7 @@ jolaqteı	fourth tone
 jolıaq	quartet
 jom	demon
 jonapu	on the ball
+jonıoqketo	four-toothed whale
 jopue	tetrapod
 joq	main
 joq'ıq	primary one
@@ -3525,6 +3965,7 @@ joqbuchua	side name
 joqcuoı	satisfies with
 joqdao	essence
 joqdoaq	capital
+joqgıaqtoa	is the chorus of song
 joqhaq	entrée
 joqhua	head
 joqhuacholı	pillow
@@ -3551,12 +3992,15 @@ joqtoaı	protein
 joqtoaıhuı	prion
 joro	sin
 josekı	joseki
+josheaq	stands quadrupedally
 josheaqhe	quadrupede
 jotoq	tetrahedron
+jotuaq	four-horned antelope
 jotıq	tetromino
 jouchoq	uses
 joutue	state
 joı	along.with
+joıgı	is compatible with
 joıgıq	case instead
 joılıaq	is the situation
 joımoı	considers
@@ -3569,6 +4013,7 @@ juahıaq	typical
 juajua	aberration
 juakuaı	feels playful
 juamıa	atypical
+juamıekaze	heart palpitation
 juao	rule
 juaobue	abode
 juaobuı	exception
@@ -3579,18 +4024,24 @@ juaochıaıjoaı	prosecutes
 juaochıaıjuku	prosecutes
 juaochıaıjıaı	arrests
 juaochıaıruaq	accuses
+juaochıaıtao	commits illegal deed
 juaocokı	legal system
+juaocue	is an authority over
 juaocuegı	official
 juaocıao	society
 juaodaı	legal
+juaoduaı	legally necessitated
 juaodue	legal
 juaoduebo	legal
 juaodı	legal
 juaodıu	judisprudence
 juaofıeq	legislate
 juaofıeqche	legislator
+juaofıeqfuaı	law-making committee
+juaofıeqfıuq	law-making institution
 juaofıeqpoq	juridical person
 juaohuı	irregular
+juaohuıdıu	a pseudoscience
 juaojıo	court
 juaokache	judge
 juaokakuaq	judges
@@ -3604,6 +4055,7 @@ juaomıeqfıuq	law-interpreting
 juaopoq	legal person
 juaopıao	irregular
 juaoruaqjoe	is a
+juaoruo	behaves according to
 juaorıaq	court
 juaoshaıche	abolitionist
 juaoshuaı	regular
@@ -3621,10 +4073,12 @@ jucıkao	criminal record
 jue	month
 juedıaq	monthly
 juegu	two-month period
+juene	duration of a month
 jueq	stirs
 jueqchoarıa	diphthong
 jueqchı	crank
 jueqfuaq	jigsaw puzzle
+jueqfuaqtoaı	jigsaw puzzle piece. 🧩
 jueqkafe	cafe frappe
 jueqseaı	cocktail
 juju	jumps
@@ -3649,20 +4103,25 @@ juodeoq	communicates
 juoheq	envelope
 juojıo	post office
 juoq	should
+juoq	should be the case
 juoqcuagı	responsible
+juoqshaı	rejects obligation
 juotoq	sign
 juoı	describe
 juoıgı	exact
 juoıhuı	inexact
 juoıjıe	ascribes
+juoıkaıse	written description
 juoıkoy	describes
 juoıkuq	describes
+juoıkuq	gives description
 juoıkuq	describes
 juoıkuı	makes sense
 juoıkıu	is characterized
 juoımu	described
 juoısoa	explains
 juoıtaqse	self-description
+juoıtua	presents themselves as
 jupu	skips
 juq	acquire
 juq'aıdoaq	Chinatown
@@ -3671,6 +4130,10 @@ juqca	has an effect on
 juqcaha	breathes in
 juqdeaı	deserves
 juqfa	goes to get
+juqguokame	Camellia sinensis
+juqguokameraq	Camellia sinensis
+juqguokedoro	sweet orange tree
+juqguokero	sweet orange tree
 juqguolaı	sinogram
 juqguose	made in China
 juqgı	is good for
@@ -3683,15 +4146,17 @@ juqjoaı	on the lookout
 juqkea	client machine
 juqkuaq	accepts property
 juqkuaı	long.for
+juqtekıbucıamıalaıbıa	suffers from AIDS
 juqtoateı	dative case
 jutaq	identifies as
 juy	is the same as
 juı	near
 juıbu	barely the case
-juıcua	is (being) warm
+juıcua	is being warm
 juıduo	passes
 juıfa	passes
 juıkoı	passes
+juılıe	is exposed to property
 juıme	dense
 juıme	dense
 juımlaı	Zhuyin
@@ -3699,6 +4164,7 @@ juımlaıcha	Zhuyin
 juını	nearby
 juıpeo	passes
 juıshaı	leaves behind
+juıshıu	in the recent past
 juıtaq	dense
 jyq	is common with
 júaq	even
@@ -3709,6 +4175,7 @@ jıadıo	today
 jıadıu	futurology
 jıajoa	next week
 jıajue	next month
+jıajıachaq	day after tomorrow
 jıakoe	plans to do
 jıakoekao	to-do list
 jıakuaı	restless
@@ -3722,7 +4189,8 @@ jıaodeoq	prays
 jıaodoı	worships
 jıaodıu	theology
 jıaogoafuaq	idol
-jıaogı	(event) is pious
+jıaogı	event is pious
+jıaohuı	event is blasphemous
 jıaojıo	temple
 jıaokeq	gold
 jıaokuq	preaches
@@ -3732,6 +4200,7 @@ jıaonulıruaı	Christ
 jıaoraq	divine
 jıaq	world
 jıaq'aobı	imaginary world
+jıaqbu	is false in world
 jıaqbıatue	pandemic
 jıaqfao	end of the world
 jıaqheoq	equator
@@ -3745,6 +4214,7 @@ jıaqkıoq	globe
 jıaqloqtue	climate change
 jıaqtu	universe
 jıashao	hope
+jıasıa	will never be the case
 jıataı	remembers to do
 jıaı	grasp
 jıaıdeq	prehensile
@@ -3757,21 +4227,28 @@ jıaıkoımy	ladder
 jıaımy	handle
 jıaınua	remove
 jıaınıoq	canine teeth
+jıaınıu	vine, a climbing plant
 jıaıpaq	handle
 jıaıse	handful
+jıaıshıqhua	prehensile nose trunk
 jıaıtaı	catches
 jıbo	my
+jıcho	something I like.
+jıchosoq	is my favorite among
 jıdao	fennec
 jıe	deemed
 jıegı	well-respected
 jıehuı	ill-respected
+jıejı	case according to me
 jıekıu	subjective
 jıekıugıq	objective
 jıelu	subjective
 jıemıa	common opinion
+jıemıajoe	is a professional at
 jıeq	tip
 jıeqbo	pointy
 jıeqguese	angle
+jıesuq	case according to you
 jıfuaq	solo selfie
 jıhao	us
 jıjeı	me
@@ -3783,6 +4260,7 @@ jıkorı	website
 jıkorıaq	website
 jıme	us
 jımnuo	naps
+jını	this thing near me
 jıo	building
 jıobuı	outdoors
 jıobıu	chimney
@@ -3793,6 +4271,8 @@ jıoluko	dog
 jıonıe	indoors
 jıopuefuq	slipper
 jıoq	calculate
+jıoqbıu	mathematical ring
+jıoqchuao	computer terminal
 jıoqdaotoq	spreadsheet
 jıoqdıu	mathematics
 jıoqfıeq	devises
@@ -3803,15 +4283,19 @@ jıoqjuaogoı	debugs program
 jıoqkea	computer
 jıoqkea	computer
 jıoqkea	calculator
+jıoqlu	analytic proposition
 jıoqseı	mathematical
 jıoqtaı	calculates that
+jıoqtoaq	programming language
 jıotanı	pillar
 jıpa	satisfied by me
 jıq	actual
 jıqbıao	has psychosis
+jıqbıaohe	has schizophrenia
 jıqchoq	uses
 jıqchuaq	existentialism
 jıqcuao	transcendent
+jıqcı	property is inherent
 jıqdua	know
 jıqhako	bear
 jıqhaı	already exists
@@ -3820,12 +4304,14 @@ jıqjeo	legitimately
 jıqjıao	True God
 jıqjıaq	real world
 jıqjıaq	reality
+jıqkame	Camellia sinensis
 jıqkaq	real
 jıqlua	true story
 jıqluı	extinct
 jıqnaı	extant
 jıqsho	comes true
 jıqshı	entity
+jıqshıy	vanishes from reality
 jıqtue	fact
 jıqtuq	universe
 jıqtıao	accurate
@@ -3838,12 +4324,14 @@ jıuchaq	birthday
 jıucoaq	domesticated
 jıucupı	endometrium
 jıudoa	gives birth
+jıufu	biological offspring
 jıuhaqhua	placenta
 jıuhua	womb
 jıuhuacupı	endometrium
 jıuhuacıu	menstruates
 jıujeq	twin
 jıujıa	embryo
+jıupune	is the age of person
 jıuse	litter
 jıushoe	bears
 jıusıao	births
@@ -3863,10 +4351,12 @@ kadamompoaı	cardamom.seed
 kadamomreıtaq	cardamom.roll
 kadeoq	declares
 kadeoq	declares
+kadıo	does cardio exercise
 kafaq	hereby the case
 kafe	coffee
 kafepuo	coffee grounds
 kafesaı	caffeine
+kafo	true for the most part
 kafyka'aı	Kafkaesque
 kafykyhese	Kafkaesque
 kagajeq	is just like
@@ -3874,6 +4364,7 @@ kaha	cough
 kahahua	throat
 kahu	tail
 kahıa	great
+kajaja	makes loud smashing
 kajıa	swears oath
 kakao	cacao
 kakaofaseo	cocoa bean
@@ -3882,6 +4373,7 @@ kakoe	decides
 kakotosıu	cactus
 kala	cringe
 kalu	hereby the case
+kalıpu	caribou or reindeer
 kalıum	potassium
 kamaqbe	pie chart
 kamechaı	Camellia tea
@@ -3892,6 +4384,7 @@ kamparıaq	campsite
 kanoa	canoe
 kanı	rabbit
 kanınueq	rabbit meat
+kanıtu	spirit, soul or ghost
 kao	record
 kaochıo	logs into
 kaodoa	stores
@@ -3921,6 +4414,8 @@ kaqchuao	window
 kaqchuo	optical.tool
 kaqcıa	blind
 kaqdao	view
+kaqdaogaı	has visual perception
+kaqde	visually beautiful
 kaqdela	candela
 kaqdeq	can see
 kaqdeqbu	blind
@@ -3935,6 +4430,8 @@ kaqgaıkea	film camera
 kaqgaıkıu	visible
 kaqgaıtaqchuo	mirror
 kaqge	has appearance
+kaqgegaı	has visual perception
+kaqgegaı	has visual perception
 kaqgı	look.good
 kaqhua	eye
 kaqhuacıuse	rheum
@@ -3944,10 +4441,13 @@ kaqhuı	looks bad
 kaqjua	looks weird
 kaqjı	kanji
 kaqjı	congee
+kaqjıe	visually interprets
 kaqkıu	visible
 kaqkıubu	invisible
 kaqkıubu	invisible
 kaqmuoı	rolls their eyes
+kaqnhuaı	view, a visual quale
+kaqnhuaıgaı	has visual perception
 kaqnuao	brow
 kaqnuaokıaq	eyebrow
 kaqpoarıa	blinks
@@ -3987,6 +4487,7 @@ katochea	cat-ears hat
 katojaıchoa	purrs
 katopuenuı	red panda
 katopuenuısıu	ailurid
+katoro	member of genus Castor
 katosoı	catfights with
 katosıu	cat
 kaze	beat
@@ -3997,6 +4498,7 @@ kaı	records
 kaıce	article
 kaıche	scribe
 kaıchoımy	pencil sharpener
+kaıchuo	writing.implement
 kaıdoa	posts message
 kaıfua	desk
 kaıfıeq	writes
@@ -4021,15 +4523,20 @@ kaıpıo	graphite
 kaırıoq	font
 kaıse	text
 kaısebe	stub article
+kaısedeo	non-final draft
 kaısekoaq	final draft
 kaıshea	blank
 kaısho	print
+kaıte	has been written on
 kaıtoaq	written language
 kaıtoaı	written stroke
 kaıtoq	whiteboard
 kea	machine
 keacaq	operates
 keafuaq	screenshot
+keafuaqtao	takes a screenshot
+keafuq	mechanical exoskeleton
+keajuao	machine instruction
 keakaı	types text
 keakaıteı	keyboard layout
 keakue	webpage
@@ -4043,13 +4550,16 @@ keaqloeq	pickled
 keaqsaı	salt
 keaqsaıheq	salt shaker
 keaqze	brine
+keazu	programming language
 keazu	machine language
 keaı	have.right
+keaıcoı	has universal right
 keaılaı	is a ticket
 keaıleı	is privileged in
 kebo	horse
 kebo'aqshe	hinny
 kebogama	huemul or taruca
+kebokaro	roan or sable antelope
 kebıq	kelvin
 kechapy	ketchup
 keho	Hell
@@ -4057,15 +4567,20 @@ keleo	clitoris
 kena	stork
 keneıda	cnidarian
 keno	horn
+kenobo	deer of genus Cervus
 kenobonuı	pudu
 kenobosa	European hornet
 keobusuaojıejı	never.mind
+keoko	member of genus Cygnus
 keopı	quasi-copy
+keopıshuaq	creates a quasi-copy
 keoruaq	retorts, objects
 keoı	talks
 kepa	onion
+kepuo	a quantity of alcohol
 keq	feces
 keqcıu	defecate
+keqjeq	is shitty in property
 keqjuo	shitpost
 keqkaju	kinkajou
 keqkea	shitter.
@@ -4100,10 +4615,12 @@ koakafe	cold brew coffee
 koakea	refrigerator
 koakea	air conditioning
 koakuakea	air conditioner
+koaloa	of lavender color
 koaloy	raw
 koalıe	feels cold
 koamoe	cool
 koamuao	Aspen tree
+koamuaq	dead from hypothermia
 koaq	mature
 koaq'ocha	adult
 koaqjeaq	grows
@@ -4115,7 +4632,9 @@ koatı	coati
 koatınuı	mountain coati
 koaı	net
 koaıfachuo	web browser
+koaıkero	mandarin orange tree
 koaınoaqchuo	web browser
+koaınuıbokedoro	mandarin orange tree
 kobala	cobalt
 kobodo	Kobold
 kobıde	COVID
@@ -4130,11 +4649,16 @@ koe'e	choose
 koecachuaq	determinism
 koecaı	is confident
 koechuaq	existentialism
+koejoaı	considers which among
 koekuaq	votes
 koekıu	available
+koelao	waits their turn to do
+koelao	hesitates between
 koemea	option
+koemoı	hesitates between
 koenoa	is at a dilemma
 koerue	is vacillating
+koese	was chosen from a set
 koese	was chosen
 koesheı	has a choice
 koeteoq	closed question
@@ -4144,12 +4668,14 @@ koja	captures
 kojuao	ko rule
 koko	related
 kokozeo	coconut
+kola	member of genus Cola
 kolakası	kola nut
 kolaze	cola
 kolera	cholera
 komodobarala	Komodo dragon
 komorebı	is komorebi
 kompıuta	computer
+konosho	pertains to Qo'noS
 konı	European rabbit
 konıly	bnuuy
 konıq	European rabbit
@@ -4175,10 +4701,14 @@ korotu	spotted hyena
 koruo	raven
 korıo	hazel
 koselo	hazel
+kosoı	has a ko-fight with
 kosı	= cos
 kotua	sorts
+koycheo	talk among each other
 koychue	exchange
 koyhao	interacts with
+koyjoe	has good social skills
+koynıeq	has bad social skills
 koyrıaq	chatroom
 koyrıoq	social identity
 koı	ambulate
@@ -4189,6 +4719,7 @@ koıceaqbo	ungulate
 koıfa	goes
 koıhua	leg
 koıka	farewell
+koıpeo	ambulates through
 koısoıche	infantry soldier
 koıtıeq	path
 koꝡam	clock
@@ -4196,6 +4727,7 @@ ku'aı	orientation
 ku'aı	is
 kua	room
 kuabue	appartment
+kuabuejıo	apartment building
 kuajeq	roommate
 kuane	roomful
 kuao	cyan
@@ -4214,6 +4746,7 @@ kuaqza	Kwanzaa
 kuasu	kvass
 kuaı	urge.for
 kuaıboaıle	impulsive
+kuaıbuzao	loses the "magic"
 kuaıca	tempting
 kuaıcaq	controls
 kuaıge	inspiration
@@ -4222,6 +4755,7 @@ kuaıluaq	teases
 kuaıruo(he)	impulsive
 kuaıshaı	gets bored of
 kuaıtuagezıa	suggests
+kuaıtue	is a state of hunger
 kubakafe	cafe cubano
 kubo	egg
 kubobao	egg white
@@ -4246,6 +4780,7 @@ kuemuı	definition
 kueneotoq	bookshelf
 kuepaq	chapter
 kuepo	vagina
+kueponao	vaginal discharge
 kueq	gather
 kueqbeq	heap
 kueqboche	collector
@@ -4264,6 +4799,7 @@ kuha	cheese
 kuhachochı	nachos
 kuhachıkyq	nacho
 kuhapoaı	omelette
+kujeo	is what satisfies
 kuku	typical cuckoo
 kukı	cookie
 kulo	mosquito
@@ -4273,6 +4809,7 @@ kumı	worm
 kuna	sentence
 kune	dog
 kunechoa	barks
+kunehepete	Selous's mongoose
 kunehupı	crab-eating fox
 kunemuse	prairie dog
 kunesıu	canid
@@ -4290,6 +4827,7 @@ kuoqbue	shell
 kuoqbuq	beak
 kuoqchu	bone marrow
 kuoqhuna	cartilage
+kuoqhunacıe	cartilaginous fish
 kuoqleoq	shell
 kuoqme	skeleton
 kuoqnhuo	ribcage
@@ -4302,6 +4840,7 @@ kuoshuao	crow
 kuosoq	neck
 kuoı	less
 kuoıchoaı	is discounted
+kuoıchua	less preferred name
 kuoımea	minority
 kupı	carp
 kuq	say
@@ -4313,6 +4852,8 @@ kuqceme	chat server
 kuqchedu	tells lie
 kuqcheu	tells lie
 kuqchey	tells lie
+kuqchue	discussion thread
+kuqchuoı	discussion thread
 kuqgıaıkaı	carves writing
 kuqha	as they say
 kuqhuı	tells the lie
@@ -4328,6 +4869,7 @@ kuqpoaqse	fragment
 kuqpuao	speech bubble
 kuqse	text
 kuqtoaı	sentence
+kuqtoaıteı	sentence structure
 kuraı	topic
 kuru	hunts down
 kurum	copper
@@ -4340,6 +4882,7 @@ kushumy	plushie
 kusu	squash
 kusu	gourd
 kusuchaq	Halloween
+kusugaq	queerplatonic partner
 kusukuaı	squishes
 kusunıu	plant
 kusımaqse	kusimanse
@@ -4366,6 +4909,7 @@ kıage	red
 kıakune	dhole
 kıaloa	spectrum
 kıaloha	copper
+kıalıe	sees the red color
 kıamıao	lunar eclipse
 kıanaokusu	watermelon
 kıao	door
@@ -4391,10 +4935,12 @@ kıaqsıqsaı	shampoo
 kıaqteı	hairstyle
 kıaqtoe	cuts hair
 kıarıba	redcurrant
+kıarıqreo	reddish green color
 kıashao	flushes
 kıashaq	blushes
 kıaı	look.after
 kıaıhe	carer
+kıaısho	adopt
 kıboy	keyboard
 kıbu	is impervious
 kıbumıetoaı	immunocyte
@@ -4408,6 +4954,7 @@ kıedoa	rewards
 kıegıq	feels resentment
 kıejuq	gets reward
 kıejuqtıao	merits
+kıekao	gratitude journal
 kıekuq	thank
 kıeq	disgusted
 kıeqca	disgusting
@@ -4417,6 +4964,8 @@ kıeıgam	ice cube
 kıeıkoı	ice-skates
 kıjı	thanks
 kıky	feels bad
+kıkıre	several in number
+kılaı	right parenthesis
 kılo	kilogram
 kılo	kilogram
 kılo	is
@@ -4433,6 +4982,7 @@ kıolaı	left parenthesis
 kıoq	ball
 kıoq'aı	rounded
 kıoqbıu	cylinder
+kıoqgoa	has spherical geometry
 kıoqgupaq	hemisphere
 kıoqgıo	lantern
 kıoqjoqhua	pilot whale
@@ -4453,6 +5003,7 @@ kıqkea	video screen
 kıqluaq	plays videogame
 kıqme	show
 kıqsıeme	video series
+kıqtao	films state of affairs
 kıqtoq	video screen
 kıro	jerk
 kırı	cute
@@ -4464,14 +5015,17 @@ kırısytochuaq	Christianity
 kırısytochuaqkue	bible
 kıta	there we are
 kıtı	fur
+kıtısheq	razor for shaving
 kıtıtoe	shaves
 kızıa	emits a click
+la'ıdıu	field of semiotics
 labı	lion
 labı	lion
 labıbodoa	thrown
 ladoq	lad
 lago	lagomorph
 lagyba'ome	Lag BaOmer
+lahı	indirect question
 lalea	tulip
 lama	llama
 lamıa	lamia
@@ -4490,36 +5044,54 @@ laorue	impatient
 laotao	ditzes
 lapaqdıu	logic
 lapaqjıoq	infers
+lapaqjıoqjuq	deduces proposition
 lapaqmoı	infers
+lapaqtaq	logical tautology
 laq	sound
 laqbıo	bell
+laqbıorua	lily of the valley
 laqcaı	loud
 laqchue	melody
 laqchuo	horn
 laqcıa	silent
 laqdaqchuo	timer
 laqdıeq	podcast
+laqdıeqcaq	is a host of podcast
+laqdıu	field of acoustics
+laqgea	high-pitched sound
 laqgeabıa	has tinnitus
 laqgeateılaı	tone mark
 laqgeateızu	tonal language
 laqguao	tuning fork
 laqgıa	tape
+laqjeq	is homophonous with
 laqjuo	podcast
+laqjuocaq	is a host of podcast
 laqkea	speaker
+laqkeafuq	headphones or earbuds
+laqko	carries the X-th tone
 laqkue	audiobook
 laqkıoq	jingly bell
+laqlaq	echo or reverberation
 laqleaqdıu	phonotactics
 laqleoq	earplugs
 laqluoq	harmony
+laqluoqchue	harmonic progression
 laqme	chord
+laqmechue	chord progression
+laqmoaı	low-pitched sound
 laqnuoq	echo
+laqnıa	low-pitched sound
+laqnıa	low-pitched sound
 laqpaq	gets this bread
 laqrua	orchid
 laqruaq	beeps
 laqrue	low
 laqruoq	monotone
+laqruoı	low-pitched sound
 laqshuaq	emits sound
 laqshuaqdıu	phonics
+laqshuo	phonetic inventory
 laqsy	salmon
 laqteızu	tonal language
 laqtoa	onomatopoeia
@@ -4531,23 +5103,30 @@ laruqbeq	Adam's apple
 lasa	curls up
 lasatuaq	blackbuck
 latoa	complementizer
+latoame	complementizer phrase
+latıqhoe	jumble of characters
 lazanha	lasagna
 lazaqnha	lasagna
 lazulıpıo	lapis lazuli
 laı	letter
 laıbala	garbled text
 laıbaı	spells out
+laıbaı	imprints a symbol
 laıboe	flag
 laıchea	diacritic
+laıchue	character sequence
 laıchuekao	plain text file
 laıcıuse	hormone
 laıdoa	assigns
 laıdıeq	signs
 laıgıu	line of text
 laıhaqgıly	Korean character
+laıhaqjı	Chinese character
+laıjeq	is homographs with
 laıkaı	spells out
 laıkoekea	keyboard
 laılea	calligraphy
+laılo	instance of a sign
 laılua	symbolic story
 laınıaı	allegory
 laıpaq	diacritic
@@ -4564,12 +5143,15 @@ laısıemekao	plain text file
 laısıo	is a metaphor
 laıteı	letterform
 laıteıme	font or typeface
+laıtoaı	non-composite glyph
 laıtıq	Latin
 le	likely
 lea	art
 leabo	artistic
 leache	artist
 leachue	serialized
+leade	aesthetically pleasing
+leadoe	performs property
 leagı	of good quality
 leagıkuaı	perfectionist
 leajıo	art museum
@@ -4577,10 +5159,11 @@ leaq	adjacent
 leaqbua	neighbor
 leaqbua	neighbour
 leaqbueme	neighborhood
+leaqbıe	takes place next after
 leaqfıa	precede
 leaqjıome	neighborhood
 leaqsıe	next
-leata	(an) aesthetic
+leata	an aesthetic
 leatıqme	mosaic
 lecagı	conducive
 lecıa	impossible
@@ -4590,9 +5173,11 @@ leje	cork
 lejeheıga	cork oak
 lemoq	lemon
 lemuo	sure to occur
+lemure	ring-tailed lemur
 lemuresıu	lemur
 lemıu	expect
 lena	dress
+lenedıu	probability theory
 leo	try
 leokaıse	essay
 leoleo	keeps trying
@@ -4618,21 +5203,26 @@ leqfurılaq	trill
 leqhuaı	licks
 leqjıeqcha	apical
 leqlıacha	lateral
+leqshaqcha	coronal consonant
 leqtoqcha	laminal
 lera	liquid
 leı	uncommon
 leı	rare
 leı	seldom
+leıdı	has special permission
+leıguqmuı	overinterpretation
 leımuı	odd
 leısuoı	is exclusive
 loa	purple
 loachaq	sunday
 loachue	forum
+loacuao	ultraviolet color
 loahıupıo	amethyst
 loakepa	red onion
 loanıu	violet
 loaq	buttocks
 loaqdea	spanks
+loaqfeotı	at the rear direction
 loaqjeoq	asscrack
 loaqmoe	feels assertive
 loaı	flow
@@ -4662,6 +5252,7 @@ loaısuaı	runny
 loaıtoa	danmaku comment
 loaıtua	lung
 loaıtuacha	pulmonic
+loaıtuanoso	suffers from pneumonia
 loe	flame
 loebeaq	candle or torch
 loebeaq	match
@@ -4701,6 +5292,7 @@ lohachuoı	wire
 lohagupu	rusts
 lohagıaq	metal
 lohakoaı	chainmail
+lohame	is an alloy of metals
 lohamechuoı	cable
 lohapıo	ore
 lohatıeq	railroad
@@ -4710,6 +5302,7 @@ lojıbo	Lojbanic
 lojıbozu	Lojban language
 lolaqteı	rising.tone
 loq	hot
+loqbıa	suffers heat illness
 loqcao	summer
 loqcıa	raw
 loqdekı	thermometer
@@ -4726,9 +5319,11 @@ loqloaıdaı	molten
 loqloeq	cooked with heat
 loqluı	cooked
 loqlıe	feels hot
+loqmuaq	dead from overheating
 loqne	temperature
 loqnechuo	thermometer
 loqpuefuq	slipper
+loqpıma	spicy chilli pepper
 loqsa	jaguar
 loqsaosa	hot sauce
 loqtue	heat wave
@@ -4745,7 +5340,9 @@ loıcua	avenges property
 loıfea	puts up with
 loıseaq	hatefucks
 lua	story
+luafaq	is the plot of story
 luakoaq	koan
+luakuı	is the moral of story
 luakuı	has moral
 luao	lip
 luaofuo	kisses
@@ -4755,6 +5352,7 @@ luaokıaqketea	baleen whale
 luaolaq	labial consonant
 luaoleoq	lip balm
 luaonhou	kisses
+luaonıoqlaq	labiodental consonant
 luaoroınıoq	labiodental
 luaosaı	lipstick
 luaotoı	kisses
@@ -4769,6 +5367,7 @@ luaqchukao	save file
 luaqchuo	toy
 luaqcuaq	game
 luaqcıtoq	die
+luaqduo	plays physical sport
 luaqduogıaqme	suite
 luaqfıeq	tinkers
 luaqgaq	plays with
@@ -4778,9 +5377,12 @@ luaqhea	is a stage
 luaqjuao	rule of a game
 luaqjuao	game
 luaqkata	playing card
+luaqkea	video game console
+luaqkoe	makes a move in a game
 luaqkoeduaı	in zugzwang
 luaqkıoq	marble
 luaqkıq	videogame
+luaqleoq	plays defensively
 luaqmoe	has fun
 luaqmu	game
 luaqmy	toy
@@ -4789,16 +5391,20 @@ luaqne	game variable
 luaqne	has score
 luaqpoq	piece
 luaqse	game played
-luaqtao	play(s) game
+luaqsoı	plays aggressively
+luaqtao	plays game
 luaqtaı	wins in game
+luaqtaıhuaq	has advantage over
 luaqtoaı	game turn
-luaqtue	(game) position
+luaqtue	game position
+luaqtuegı	has a good position
 luaruaq	tells story
 luaruco	tells story
 luaruo	acts out
 luaruoche	actor
 luası	listens to
 luaı	funny
+luaı'aobı	of the comedy genre
 luaıche	humorist
 luaıcuaq	gag
 luaıde	whimsical
@@ -4812,6 +5418,7 @@ luaıtaose	joke deed
 luce	ulcer
 lucu	game
 lue	yellow
+lue'eloatoejı	yellow golden mole
 luechaq	wednesday
 luehepete	yellow mongoose
 luekıa	orange
@@ -4826,6 +5433,8 @@ lueqmuce	client
 luerıq	of color
 luesaı	sulfur
 lufı	is
+luguo	is a round of game
+luheqdue	pragmatically correct
 lujıoq	infers
 luko	dog
 lukuq	says
@@ -4843,16 +5452,22 @@ luomea	family member
 luoq	balanced
 luoqbeaq	scales
 luoqkea	balance scale
+luoqlaqme	functional chord
 luoqruo	and
+luoqrıoq	has outward behavior
 luoqtua	moderates
 luoraq	related
 luoshı	family member
 luoı	is a target
+luoıkuaı	feels an urge towards
+lupu	suffers from lupus
+lupıe	gets high on knowledge
 luq	calm
 luq'uo	round
 luqbu	waist
 luqdıu	mindfulness
 luqke	lynx
+luqkenıoq	Patagonian weasel
 luqmoe	calm
 luqnao	pond
 lurıaı	justifies
@@ -4863,9 +5478,11 @@ luıgıq	going
 luıne	age
 luısho	reaches
 luısho	passes
+lymao	laughs their ass off
 ló	the
 lıa	beside
 lıadao	tag
+lıafeonuo	sleeps on their side
 lıahua	side
 lıajeo	parallel
 lıakoı	crab-walks
@@ -4881,14 +5498,18 @@ lıaq	tuple
 lıarea	side
 lıaı	swim
 lıaı	floats
+lıaıfuq	article of swimwear
 lıaıhua	fin
 lıaıhua	fine
 lıaıhuapue	pinniped
+lıaıhuazıdepı	right whale dolphin
 lıaımuo	in flux
 lıaırıaq	swimming pool
 lıaısheq	diving knife
 lıaıshoaı	fin
 lıaıshoaı	fine
+lıaızıu	floating-point number
+lıberıahepete	Liberian mongoose
 lıbo	has property
 lıcy	Chinese
 lıda	Litha
@@ -4896,6 +5517,7 @@ lıe	experience
 lıecho	like
 lıefa	explores
 lıegı	enjoyable
+lıejuq	is given to experience
 lıekao	diary
 lıekuaı	craves adventure
 lıeluoq	is used
@@ -4920,15 +5542,18 @@ lıq'aı	feminine
 lıq'ocha	woman
 lıqbaka	cow
 lıqcıo	adolescent girl
+lıqde	has feminine beauty
 lıqdeo	girl
 lıqfu	daughter
 lıqfu	daughter
+lıqgoso	hen of genus Gallus
 lıqguoso	cow
 lıqhupı	vixen
 lıqhupıseo	fox wife
 lıqkata	queen
 lıqky	link
 lıqlaı	female sign ♀
+lıqmaı	attracted to women
 lıqnaq	androgynous
 lıqpa	lymph
 lıqpao	mother
@@ -4939,6 +5564,7 @@ lıqruo	feminine
 lıqsaq	Asiatic linsang
 lıqsaqsuı	prionodontid
 lıqseo	wife
+lıru	satisfies property
 lıshu	Chinese
 lıtere	liter
 lıtıum	lithium
@@ -4957,8 +5583,12 @@ mace	mates with
 macha	matcha
 machachaı	matcha tea
 maduepojıpıo	amirite
+madı	has insight relating
+madıceo	has epiphany relating
+madıjoaı	does divination about
 madıkata	tarot
 madıkatame	tarot
+magarazu	Hungarian language
 mago	olive
 magonulı	olive oil
 magopıo	olivine
@@ -4967,6 +5597,7 @@ maheo	differs
 mahoganı	mahogany tree
 majoneze	mayonnaise
 majı	magic itself
+majıaobı	of the fantasy genre
 majıbeaq	magic wand
 majıbo	enchanted
 majıche	magician
@@ -4981,6 +5612,7 @@ majıpoq	magician
 majısoaı	magical beam
 majıtao	happens by magic
 majıtoa	magical word
+makaka	member of genus Macaca
 makasıq	moccasin
 malahı	angel
 mama	mama
@@ -4990,7 +5622,9 @@ manaopıo	agate
 manha	believes in
 manulu	Pallas's cat
 maodaq	peony
+maoguı	unwanted englishism
 maoja	banana
+maoja	, too, feels detached
 maojanaby	banana bread
 maojanam	banana bread
 maojeo	also the case
@@ -5007,6 +5641,7 @@ maqnesıum	magnesium
 maqnı	is this
 maqpa	satisfied by it
 maqraı	inanimate
+maqtoa	anaphoric pronoun
 mara	fluffy
 marahako	teddy.bear
 marao	dance
@@ -5037,6 +5672,7 @@ maıcoeq	polycule
 maıduı	love-bombs
 maıjuo	love.letter
 maıjıaı	hugs
+maıkuaı	romantically lusts for
 maıloha	magnet
 maılua	romance
 maımu	beloved
@@ -5045,13 +5681,17 @@ maıpaıchaq	Valentine’s Day
 maısuq	you, my love
 me	aggregate
 mea	among
+mea(sho)nue	enrolls in institution
 meadıu	plural logic
 meaga	among
+meagupaq	is half of those among
 meaheo	other
 meahey	copy
 meajeq	same
+meakuaı	wants to feel included
 meakuq	mention
-meakuqse	mention(ing)
+meakuqgı	text is quotable
+meakuqse	mentioning
 meame	set
 meamedıu	set theory
 meametuq	power set
@@ -5062,12 +5702,16 @@ meaq	ship
 meaqboe	sail
 meaqbıa	seasick
 meaqce	harbour
+meaqjoaq	is a captain of ship
 meaqtıeq	canal
 meashoe	admits
+measoq	case the most out
 measuao	special
 meatuq	same
 meazua	excludes
+meaı	star in the night sky
 meaı	celestial object
+mebo	is collectively owned
 mechakucha	absurd
 mechuoı	string
 mechıaqhua	collective mind
@@ -5083,9 +5727,11 @@ mekajıao	deus ex machina
 mekorua	poppy
 meloq	apple tree
 meloq	melon
+meloqdepı	melon-headed whale
 melı	true badger
 mem	among
 meme	meme
+memea	is a member of the set
 memı	proper noun
 meneuchu	arithmetic mean
 menu	menu
@@ -5093,11 +5739,16 @@ menısıu	pangolin
 meo	sad
 meobıa	depressed
 meoca	saddens
+meocaı	emotionally strong
 meojaq	feels sorrow
+meojaıfurı	has bipolar disorder
 meoq	slow
 meoqca	slows
 meoqkoı	walk
+meoqkuaı	in no hurry whatsoever
 meoqmı	pawn
+meoqruo	a disease is chronic
+meoroq	cries out of sadness
 meozu	Lojban
 mepaq	is an element
 mepoaq	splits
@@ -5113,6 +5764,7 @@ meteı	posture
 meı	mountain
 meıdeı	SOS’s
 meıdofuqme	maid outfit
+meıfaı	terrain is mountainous
 meıguaq	mountain range
 meıgıu	mountain range
 meıharanıka	mountain arnica
@@ -5132,6 +5784,7 @@ moa	point
 moafa	teleports
 moanuoı	bites
 moaq	remember
+moaqbaıse	monument to the memory
 moaqchuo	mnemonic
 moaqchıe	memorizes
 moaqge	is a reminder
@@ -5156,14 +5809,19 @@ moefea	tolerates
 moefoa	fickle
 moegaq	empathizes with
 moegaq	sympathizes with
+moege	emotionally moving
 moehua	organ.of.feeling
+moehıao	hurts emotionally
+moekuaq	expresses emotion
 moekuaı	feels deadpan
 moekıaq	eyebrow
 moelaı	emoji
+moemıa	has mixed feelings
 moenotuq	loses their cool
 moenuoq	feels sympathy
 moepıa	soul-sibling
 moeroe	OK
+moerıaq	center.of.emotion
 moese	emotion
 moeshea	emotionally numb
 moetao	vibes experience
@@ -5183,6 +5841,7 @@ moqkoy	questions
 moqkuaq	asks
 moqkuq	ask
 moqlaı	question mark
+moqlaı	interrogative.mark
 moqsuta	monster
 mora	mora
 moraı	text
@@ -5200,18 +5859,25 @@ moıbaq	mind
 moıbıa	mentally ill
 moıbıadıu	psychiatry
 moıbıadıuche	psychiatrist
+moıca	evokes, in the mind
 moıdeoq	telepathic
 moıdeoqkuq	says
+moıduotua	practises telekinesis
 moıfaı	neurotypical
+moıge	intellectual stimulus
+moıge	evokes, in the mind
 moıguaı	does mental work
 moıguaırıaq	office
 moıhaq	food for thought
 moıhua	brain
 moıhuanoı	headache
+moıhuanoıbıa	has cluster headaches
 moıhuanoılıe	has a headache
 moıhuatoaı	braincell
 moıjoe	clever
+moıjoı	happens in recognition
 moıjua	puzzling
+moıkoaq	intellectually mature
 moıkoaı	neural network
 moıkuq	thinks of saying
 moılao	hesitate
@@ -5219,12 +5885,18 @@ moıleı	neurodivergent
 moıluaq	plays puzzle
 moıluaqmu	puzzle game
 moıluq	thoughtful
+moımajı	uses psychic power
+moınoı	feels mental anguish
 moınıeq	stupid
 moıpoaqse	"compartment"
+moıpoe	independent thinker
 moıpuao	thought bubble
+moıruaq	asserts telephatically
+moırue	not sure of themself
 moırıeq	escapes from
 moıse	thought
 moısı	ponder
+moıtıumoı	has intrusive thought
 mu	and
 mu	and
 mua	example
@@ -5273,6 +5945,7 @@ muaqtue	death
 muaqtıaı	coffin
 muaraq	specific
 muaı	umami
+muaısaı	monosodium glutamate
 muchoa	moos
 mueqkea	computer
 muguqrua	hibiscus flower
@@ -5284,11 +5957,13 @@ muochoq	uses up
 muochoqte	used up
 muogoı	cures
 muomıe	living being
+muopaq	forms the entirety
 muoq	made.of
 muoqfıu	sparse
 muoqjaq	massive
 muoqmea	element
 muoqpuı	heterogenous
+muoqrıoq	is of construction
 muoqshoa	dense
 muoqshı	homogenous
 muoqtoaı	atom
@@ -5319,6 +5994,7 @@ muq	hand
 muqbaı	makes by hand
 muqbaıse	handmade
 muqbea	wrist
+muqbea'eloatoejı	Arends's golden mole
 muqbeagıa	wristband
 muqcea	handbag
 muqceaq	fingernail
@@ -5348,6 +6024,7 @@ muqtıoq	handcuff
 muqzu	sign language
 mura	and
 muraq	dark
+musaq	Sulawesi palm civet
 muse	mouse
 musekea	computer mouse
 musekusu	cucumber
@@ -5367,17 +6044,24 @@ muıbo	meaningful
 muıbomıu	perceives
 muıbıao	perplexed
 muıchuo	argument
+muıchıaı	semantically incorrect
 muıcıa	asemic
 muıdao	definition
 muıdeoq	explains
 muıdoa	assigns meaning
 muıdua	understand
+muıdue	semantically correct
+muıdıu	field of Semantics
+muıfaı	true in the usual
+muıgı	positive in meaning
 muıheq	hypernym
 muıhuı	pejorative
 muıhuısheo	feels guilty
 muıjuoı	defines
 muıjuq	understands
 muıkoe	disambiguates
+muıkuq	means through words
+muıleı	true in an unidiomatic
 muılıaq	synonyms
 muılıaqgıq	antonyms
 muılıaqkue	thesaurus
@@ -5400,6 +6084,7 @@ máo	also
 mä	whether
 mıa	rich
 mıajıeq	manic
+mıakuaı	wants to engage in
 mıala	silver
 mıao	moon
 mıao	moon
@@ -5414,6 +6099,7 @@ mıaoluko	werewolf
 mıaonıaq	lunar year
 mıaopıo	moonstone
 mıaozaq	moonrise
+mıapuı	are varied in property
 mıaq	value
 mıaqbo	has value
 mıaqcıa	worthless
@@ -5421,6 +6107,7 @@ mıaqgaı	esteem
 mıaqjıe	appreciate
 mıaqmıa	valuable
 mıaqmıeq	evaluates
+mıaqmıq	infinitely valuable
 mıaqmıq	invaluable
 mıaqsao	valuable
 mıaqtoı	celebrates
@@ -5429,6 +6116,7 @@ mıaı	rhyme
 mıaıfıa	onset
 mıaılaqteı	syllabic tone
 mıaıme	rhyme scheme
+mıaıpaq	is a rime of syllable
 mıaıruo	and
 mıaırıoq	rime
 mıaıse	rhyme
@@ -5447,6 +6135,7 @@ mıefea	survive
 mıegoeq	membrane
 mıeguo	life
 mıegı	well
+mıehaqtu	ghost that is alive
 mıehe	lifeform
 mıehua	heart
 mıehuaq	outlives
@@ -5454,13 +6143,17 @@ mıekaze	heartbeat
 mıelua	bio
 mıelıe	goes about
 mıeme	biome
+mıemuaq	among the living dead
+mıene	amount of hit points
 mıenetoaı	hit point
+mıenıo	biologically young
 mıepıo	fossil
 mıeq	measure
 mıeqsı	analyzes
 mıeqtao	does
 mıeqtaı	determines that
 mıeqtoı	conducts on
+mıerıeq	in a catatonic state
 mıerıo	dioxygen
 mıerıo	dioxygen
 mıerıoq	species
@@ -5479,6 +6172,7 @@ mıezueq	injured
 mıezuy	injured
 mıeı	has
 mıkaqbıa	has migraines
+mılu	Père David's deer
 mımı	meme
 mımı	mime
 mımıy	us
@@ -5492,8 +6186,11 @@ mıohobı	bharal
 mıoketo	rorqual
 mıoketosıu	balaenopterid
 mıoloa	colour blurple
+mıoluereo	bluish yellow color
 mıonıoq	bluetooth
+mıonıoq	pertains to Bluetooth
 mıoroq	elephant seal
+mıosoaı	pertains to Blu-Ray
 mıozeo	blueberry
 mıq	infinite
 mıqdale	almond
@@ -5503,6 +6200,7 @@ mıqjao	infinitely far
 mıqkaqbıu	kaleidoscope
 mıqly	pearl
 mıqnao	seawater
+mıqte	member of genus Mentha
 mıqtekıoq	breath mint
 mırupıo	opal
 mısotuzy	miso soup
@@ -5517,10 +6215,12 @@ mıuheotao	protest
 mıujeq	agree
 mıujeqraq	and
 mıule	plausible
+mıumumıa	widely adopted belief
 mıumıeq	polls
 mıuq	feigns
 mıuse	opinion
 mıushue	maintains that
+mıuteoq	is a poll towards
 mụrom	in danger
 naby	bread
 nabybeaq	breadstick
@@ -5533,9 +6233,11 @@ nabı	spiritual
 nabıpoq	shaman
 nacho	nacho
 nadeq	adder
+naga	member of genus Naja
 naho	garlic
 nam	bread
 nam	bread
+namako	is something extra
 namakocıa	simple
 namakolaı	dingbat
 namdashı	dough
@@ -5544,14 +6246,20 @@ namru	sandwich
 namrukuha	grilled cheese
 namrıaq	bakery
 namı	south
+namıdepı	Antarctic dolphin
 namıhochu	south-east
 namıhore	south-west
+namıhupı	South American fox
 namıkenobo	Pampas deer
+namıkıaqpoke	southern fur seal
 namımerıka	South America
 namımoa	south pole
+namımonachupoke	southern monk seal
 namıpoq	southerner
 namısoq	south pole
+nanasa	member of genus Ananas
 nano	Nano
+nanı	something weebs say
 nao	water
 nao'aı	liquid
 naobebere	otter civet
@@ -5577,14 +6285,17 @@ naokaıchuo	pen
 naokenobo	water deer
 naokeq	diarrhea
 naokua	bathroom
+naokuachoq	uses the bathroom
 naokusu	melon
 naokusu	watermelon
 naoloha	mercury
 naoloqchuo	kettle
 naoloy	boiled
 naolıaı	swims
+naomuaq	dead from drowning
 naomusela	Eurasian otter
-naomy	(a) liquid
+naomuselanuı	spotted-necked otter
+naomy	a liquid
 naomı	ocean
 naomıq	sea
 naomıqmusela	sea otter
@@ -5602,6 +6313,8 @@ naosho	melts
 naoshoaı	fin
 naoshua	waterfall
 naoshuo	water reservoir
+naosore	giant otter shrew
+naosorenuı	dwarf otter shrew
 naosoresıu	otter shrew
 naosueq	water wave
 naosuhu	capybara
@@ -5616,6 +6329,7 @@ naq'aı	masculine
 naq'ocha	man
 naqbaka	bull
 naqcıo	adolescent boy
+naqde	has masculine beauty
 naqdeo	boy
 naqfu	son
 naqfu	son
@@ -5653,10 +6367,11 @@ naıbıjıoq	state machine
 naıbıse	state
 naıchaq	today
 naıdaq	now
+naıdua	becomes disillusioned
 naıjıa	about to happen
 naına	cool
 naınuaq	tonight
-naıshı	widow(er)
+naıshı	widower
 naıteqkata	debit card
 naıtoa	nonce word
 ne	amount
@@ -5666,6 +6381,7 @@ neagıaq	pop music
 neao	ashamed
 neaochıaq	embarrassed
 neaochıaqca	embarrasses
+neaqgoaq	has a fine texture
 neaqpıo	sandstone
 neaqseoqtue	sandstorm
 neaqtoaı	grain of sand
@@ -5674,13 +6390,16 @@ necıoq	knob
 nedao	numerical data
 neheo	differs
 nejeq	and
+nejoq	is prominent among
 neka	filters through
 nemesı	nemesis
+nene	is true in amount
 nenea	spectrum
 neo	on
 neocoeq	stack
 neohaq	cake
 neom	standard
+neomzujuaokao	reference.grammar
 neopaq	layer
 neopaqnuofua	bunk bed
 neoq'ıum	neon
@@ -5691,10 +6410,14 @@ nepe	ratio
 nepere	neper
 neq	luck
 neqcıtoq	die
+neqdoa	wishes to person
 neqfaq	happens randomly
 neqgam	die
 neqgeq	comes across
+neqgıq	determined by fate
 neqjoı	coincidental
+neqkoese	was randomly chosen
+neqkuq	tells the fortune
 neqkuı	random
 neqluaq	gambling game
 neqmy	lucky charm
@@ -5707,6 +6430,7 @@ neuluo	is a family with
 neume	sum of all
 ney	ashamed
 neı	nine
+neıchıejoene	high school freshman
 neıjue	September
 neıkata	nine
 neıko	ninth
@@ -5716,13 +6440,16 @@ nhamo	remembers to do
 nhanabo	their
 nhaobo	their
 nhaojı	us
+nhaotoa	exophoric pronoun
 nhaqchoa	meows
 nhaqdeo	catboy
 nhaqnhaqly	kitty cat
 nhaqpoq	catboy
 nhashaı	drops intention
 nhe	extent
+nhea	takes place gently
 nheakato	serval
+nhefaı	happens to a normal
 nheheo	and
 nhejaı	furry
 nheoınuo	sleeps
@@ -5735,6 +6462,7 @@ nhom	affectionate
 nhoq	cord
 nhoqcıoq	tripwire
 nhoqgu	ingests
+nhoruaq	says something true
 nhou	affectionate
 nhougoaı	pets, strokes
 nhoupaı	romantic
@@ -5742,6 +6470,8 @@ nhoutue	romance
 nhoy	imaginary
 nhoyzıu	imaginary number
 nhu	anyway
+nhuaıgaı	has sensory perception
+nhuaılıe	experiences quale
 nhuo	array, battery
 nhuoby	blankie
 nhuocıoq	tab
@@ -5759,6 +6489,8 @@ nhutoq	newton
 no	in
 noa	difficult
 noaca	is a problem
+noacıy	happens without issue
+noajoı	happens with issues
 noaleı	is averse
 noaq	read
 noaqba	cites
@@ -5777,6 +6509,7 @@ noaıdıou	lactose
 noaıgaq	cereal
 noaıgulaq	mammary gland
 noaıkafe	caffe latte
+noaınoa	lactose intolerant
 noaınua	milks
 noaınulı	butter
 noaıshuaq	produces milk
@@ -5785,9 +6518,13 @@ nobatao	is disposed to
 nodoa	uses medium
 noeqtuoı	is a loophole in
 nofıeq	adapts
+noge	nail, claw or hoof
+noge	nail, claw or hoof
 nogenuınaomusela	clawless otter
 nohenoshuaq	transcribes
 noheo	translation
+noheyfıeq	produces a translation
+nokıu	semantically potent
 noq	gustatory
 noqbo	has the taste
 noqcaı	flavorful
@@ -5800,6 +6537,7 @@ noqgaı	taste
 noqgı	delicious
 noqhuı	taste.bad
 noqhıaq	poor in taste
+noqjeaq	has a refined taste
 noqloq	spicy
 noqmıa	rich in taste
 noqnıu	herb
@@ -5810,7 +6548,9 @@ noqrue	tastes mild
 noqsaı	spice
 noqse	taste
 noqsıu	tastes like
+norega'eku	Norwegian Fjord Horse
 nose	format
+noso	has an inflammation
 noteı	format
 notua	adapts
 notuq	explodes
@@ -5818,6 +6558,7 @@ notuqjeoq	crater
 notuqkea	bomb
 notuqpuo	gunpowder
 notuqsaı	explosive
+nouja	stage-level predicate
 noy	liquid
 noı	pain
 noı	feels pain in
@@ -5849,11 +6590,14 @@ nuaq	night
 nuaq'aıgıaq	nightcore
 nuaqchu	midnight
 nuaqhoe	star
+nuaqmeo	has night-sadness
 nuaqmuo	occurs all night
 nuaqtıqshoaı	moth
 nuaı	money
 nuaıbo	has money
 nuaıboe	bill
+nuaıchey	pulls a financial scam
+nuaıchoq	invests sum of money
 nuaıchuaq	capitalism
 nuaıcokı	financial system
 nuaıdıe	bribes
@@ -5909,6 +6653,7 @@ nulıpıo	asphalt
 nulısao	fat
 nulısaı	butter
 nulıse	is fried
+nunu	expresses sympathy
 nunuq	worm
 nuo	sleep
 nuoboe	blanket
@@ -5928,7 +6673,9 @@ nuogaıse	dream
 nuogaısekoaı	dreamcatcher
 nuoge	dream
 nuohıaq	sleep-deprived
+nuojeoqnao	body of stagnant water
 nuojıaq	dream world
+nuojıra	doable after a nap
 nuokoı	somnambulates
 nuokua	bedroom
 nuokuaı	tired
@@ -5946,8 +6693,10 @@ nuoqrea	shiny
 nuoqse	reflection
 nuoqshıa	mirror
 nuoqsuoı	brilliant
+nuoqsı	uses echolocation
 nuorıaı	mattress
 nuosho	fall.asleep
+nuoshıe	in a hypnotic state
 nuosofa	pullout couch
 nuosoı	has a nightmare
 nuosuaq	sings lullaby
@@ -5971,12 +6720,14 @@ nuı'eku	pony
 nuıbeaq	wand
 nuıchuq	eats a snack
 nuıdao	detail
+nuıdaokoaı	local area network
 nuıdoaq	town
 nuıduo	little.while
 nuıfoq	mobile phone
 nuıhaq	snack
 nuıhoe	photon
 nuıhuaıchuo	teaspoon
+nuıhuaıchuone	volume in teaspoons
 nuıhuı	pathogen
 nuıjaq	tiny
 nuıjaq	tiny
@@ -6019,9 +6770,12 @@ nıaqgu	two-year period
 nıaqheı	decade
 nıaqjue	is calendar
 nıaqjuehoe	solar calendar.
+nıaqjuehoemıao	lunisolar calendar.
 nıaqjuemıao	lunar calendar
+nıaqko	is the year number
 nıaqme	age
 nıaqmoa	time of the year
+nıaqmuo	having their birthday
 nıaqnıqchaq	New Year's Day
 nıaqnıqlaochaq	New Year's Eve
 nıaqshochaq	is
@@ -6034,7 +6788,9 @@ nıaıcho	furry
 nıaıchuoı	leash
 nıaıdıu	zoology
 nıaıgoıche	veterinarian
+nıaıgoıdıu	veterinary medicine
 nıaıguaq	animal farm
+nıaıkuaı	feeling therian
 nıaıkıaq	fur
 nıaıkıaı	has pet
 nıaınhoq	leash
@@ -6073,6 +6829,7 @@ nıenua	empties
 nıeq	unskilled
 nıeqfoq	feature phone
 nıeqluaı	silly
+nıeqmoe	feels like an idiot
 nıerıaq	entrance
 nıeshua	fall.in
 nıetaose	indeed the case
@@ -6083,11 +6840,17 @@ nıgoa	here, this place
 nıgu	knits
 nıhoq'ıum	Nihonium
 nıhu	additive inverse
+nıjao	far away from here
 nıjaofa	goes
+nıjaojeaq	becomes farther away
 nıjaq	case to this
 nıjuı	nearby
 nıjuıfa	comes
+nıjuıjeaq	getting closer to here
 nıjıaq	real world
+nıjıaqjeo	true in this world
+nıjıaqjeo	true in the real world
+nıjıaqjıq	exists in this world
 nıka	indicates
 nıkela	nickel
 nıkyloha	nickel
@@ -6100,6 +6863,7 @@ nıoka	mammal’s paw
 nıokato	kitten
 nıoq	tooth
 nıoqchuo	saw
+nıoqgoaı	brushes their teeth
 nıoqgoaımy	toothbrush
 nıoqgoıche	dentist
 nıoqguka	gnaws
@@ -6109,6 +6873,7 @@ nıoqketea	toothed whale
 nıoqketo	toothed whale
 nıoqkoı	walrus
 nıoqkoısıu	odobenid
+nıoqluaolaq	labiodental consonant
 nıoqnueq	gums
 nıoqsaı	ivory
 nıoqsutıabeqtı	denti-alveolar
@@ -6120,12 +6885,14 @@ nıoqtı	dental
 nıoqtıabeq	alveolar ridge
 nıoqtıabeqtı	alveolar
 nıoqtıasutı	post-alveolar
+nıoroe	manifests youth vigor
 nıoshuaı	innocent
 nıq	new
 nıq	new
 nıq'e	again
 nıqbıao	surprised
 nıqca	update
+nıqceo	resumes taking place
 nıqchoaq	newcomer
 nıqchuq	chews cud
 nıqchıe	is a beginner
@@ -6137,12 +6904,15 @@ nıqguokuaı	miss
 nıqguomute	recyclable trash
 nıqguomuteheq	recycling bin
 nıqguomıe	revived
+nıqguosıa	case for the last time
 nıqgı	has novelty
 nıqgıucıoq	new line
 nıqja	ninja
 nıqjacua	ninjas
 nıqjatao	ninjas
+nıqjatoı	preemptively does
 nıqjey	has xenogender
+nıqjua'aobı	of the new weird genre
 nıqjıu	reborn
 nıqkaı	writes
 nıqkue	news bulletin
@@ -6165,14 +6935,16 @@ nıtojeq	nitrogen
 nıtosaı	is
 nıtuao	case this
 nıtı	here
+nıtırao	case here and now
 nıu	plant
 nıubepoaı	seed
 nıuboe	leaf
-nıuchuaqchuq	(a) vegan
+nıuchuaqchuq	a vegan
 nıudıu	botany
 nıudıuche	botanist
 nıuguaq	farm
 nıuhaq	phosphorus
+nıuheaq	is a seed of plant
 nıuheqmy	planter
 nıukueq	salad
 nıuly	bunny
@@ -6184,6 +6956,7 @@ nıupuo	starch
 nıurıqsaı	chlorophyll
 nıusaı	organic matter
 nıusoaq	botanical garden
+nıusıao	is a root of plant
 nıusıaı	sap
 nıusıaıpıo	amber
 nıy	that over there
@@ -6205,6 +6978,7 @@ oe	hey.there
 oganesoq	Oganesson
 oguı	snake
 oguı	snake
+oguıpoq	half-snake, half-human
 oguıpıu	snake skin
 oka	goodbye
 okeı	OK
@@ -6216,9 +6990,12 @@ oma	lump
 opeolaı	letter Ø
 oqsısaı	is
 oreo	inhuman
+oreo	inhuman but tasty
 oreq	human
 oro	ugh
 orogı	orchid
+orohuı	source of exasperation
+oromoe	annoyed, exasperated
 osaraısıu	true oyster
 ota	oats
 otakocy	oatmeal
@@ -6238,14 +7015,19 @@ paba	avocado tree
 pabahaq	guacamole
 pabanao	guacamole
 pabazeo	avocado fruit
+pabo	member of genus Pavo
 pagaq	pagan
+pagechıbaı	makes a copypasta
 pagechımoqsutachuaq	Pastafarianism
 pagechımoqsutachı	Pastafarian
+pakake	New Zealand sea lion
 paku	wax
 pakutıe	waxed
+pakıra	white-lipped peccary
 pakırasıu	peccary
-pala	(hard) palate
-pala	(hard) palate
+pala	hard palate
+pala	hard palate
+palalaq	palatal consonant
 palaq	hand palm
 palate	palatized
 palatı	palatal
@@ -6255,6 +7037,7 @@ panama	Panamanian
 panamagua	Panama
 pao	parent
 paopao	grandparent
+paotoı	is condescending to
 papa	papa
 paparua	poppy
 papy	papilla
@@ -6264,6 +7047,7 @@ paqbo	has part
 paqboq	interferes with
 paqboshaı	loses part
 paqbosho	gains part
+paqbımuo	pars-pro-toto metonymy
 paqchoq	uses up some
 paqchuo	piece
 paqchıo	take turns doing
@@ -6273,6 +7057,7 @@ paqda	panda
 paqdoa	contributes
 paqdıu	mereology
 paqgo	has part
+paqgue	is a turn in path
 paqkaı	spells out
 paqkygıaq	punk rock
 paqmetuq	power set
@@ -6286,12 +7071,14 @@ paqnua	remove
 paqshaı	lose
 paqsho	meshes into
 paqsho	gains part
+paqsımo	member of genus Pan
 paqtao	participate
 paqtoe	notches
 paqtı	panties
 paruha	pharaoh
 paruhay	pharaoh
 paruq	pharynx
+paruqlaq	pharyngeal consonant
 parıq	pharynx
 parıqtı	pharyngeal
 pasakala	pascal
@@ -6303,11 +7090,13 @@ patı	party
 patıchea	party hat
 pazı	annoyed
 paı	friend
+paıchua	friendly pseudonym
 paıchua	nickname
 paıchıtuq	baiji
 paıchıtuqsıu	baiji
 paıde	cute
 paıfeu	fall.out.with
+paıfoaq	being warm, cordial
 paıfuo	pats
 paıgaq	companion
 paıgoaı	strokes
@@ -6323,22 +7112,29 @@ paınıaı	pet
 paıruo	friendly
 pe	for
 pea	ago
+peasuı	most recent occurrence
 peha	figuratively
 pekaq	fisher
 pele	spot
+pelekaronuı	spotted chevrotain
 pelekato	marbled cat
 peleshıqhua	addax
 peloq	rank
 pelua	pelvis
+peluka	member of genus Falco
+pene	is relatively how much
 peo	through
 peodoa	injects
 peodoazo	syringe
 peokıu	hole
 peonua	extracts
+peopaq	is a hole through
 peopaqhako	short-faced bear
 peoq	chemical element
-peotoe	(agentive) stabs
+peotoe	agentive stabs
 peotoqhua	diaphragm
+peotıa	is through-behind
+peotıe	obstructs passageway
 peq	paper
 peqboe	sheet
 peqboe	sheet of paper
@@ -6363,6 +7159,7 @@ petero	true sparrow
 peteroteı	passerine
 peteı	relative
 peteı	louse
+peteıdıu	study of perspective
 petı	plague
 peı	tensor
 peıchua	monomial
@@ -6380,10 +7177,12 @@ poaq	break
 poaqchuq	chews
 poaqfuı	fragile
 poaqgıu	fissure
-poaqhea	chip(ping)
+poaqhea	chipping
 poaqkuaı	brittle
+poaqkuqtoaı	fragmental sentence
 poaqmarıkı	popcorn
 poaqnoa	resilient
+poaqnua	breaks a piece off
 poaqreı	crushes
 poaqse	shard
 poaqshua	collapses
@@ -6402,7 +7201,7 @@ poaıpuo	pollen
 poaırıaq	ovary
 poaıshuo	testicle
 poaısıaıcıu	menstruates
-poaıtoaı	ovum (egg cell
+poaıtoaı	ovum egg cell
 pocıa	lacks
 podı	fern
 poe	apart
@@ -6439,17 +7238,22 @@ popı	poppy
 poq	person
 poqbo	master
 poqchua	given name
+poqduotua	moves game piece
 poqfuaq	portrait
 poqgaq	fellow person
+poqgo	member of genus Pongo
+poqgı	socially talented
 poqhegı	eudaimonia
 poqhoıtoa	personal pronoun
 poqhuımoı	social anxiety
+poqjeo	has personality trait
 poqjoe	socially apt
 poqjuao	societal law
 poqkata	personal ID card
 poqkea	robot
 poqkoja	abducts
 poqme	group.of.people
+poqmea	is social in group
 poqmecuetaq	democracy
 poqnıeq	socially awkward
 poqpegı	popular
@@ -6459,7 +7263,10 @@ poqrıoq	personality type
 poqse	identity
 poqshea	desert
 poqshıreq	singlet
+poqsoqmea	majority of people
+poqsuao	is high-status among
 posa	is associated
+potaq	is related to its
 potashıum	potassium
 potato	potato
 potoateı	genitive case
@@ -6478,6 +7285,7 @@ pua	enjoy
 puadao	pleasure
 puagoaı	strokes
 puagı	fun
+puagıqruaq	expresses complaint
 puakoı	strolls
 puao	cloud
 puao'aı	fluffy
@@ -6493,18 +7301,25 @@ puaonıu	dandelion clock
 puaopıe	smokes
 puaorua	dandelion
 puaq	somatic
+puaqbo	has the texture of
 puaqcıa	numb
+puaqdaogaı	has tactile sensation
 puaqgaı	touch.feel
 puaqgı	feel.good
 puaqgıgoaıca	massages
 puaqhua	tactile organ
+puaqjua	has a weird texture
 puaqkıaq	whisker
 puaqkıky	yucky
+puaqnhou	affectionately touches
 puaqnoaq	reads Braille
 puaqsı	touch.feel
+puaqsıu	is textually similar
 puaı	wild
 puaıbebue	orphanage
+puaıbeo	changes unpredictably
 puaıbeodıu	chaos theory
+puaıjıaq	nature, the wild world
 puaıloe	wild fire
 puaıluko	wolf
 puaıluko	wolf
@@ -6535,6 +7350,7 @@ pueguy	sock
 puehıeqte	podcast
 puejıaıchuo	foothold trap
 puekıoq	soccer
+puenıoka	hind paw of a mammal
 pueq	tread
 pueqbuaq	trips
 pueqmy	staircase
@@ -6544,24 +7360,28 @@ puerıaı	foot stool
 puese	footprint
 pueshıaqgao	tights
 pueshıo	hip
-puetuq	sole (of a) foot
+puetuq	sole of a foot
 puetıe	sock
 puga	leather
 pugıaqdıu	history of music
 pujoa	last week
 pujue	last month
+pujuıchaq	happened the other day
 pujıa	was
 pukao	record
 puku	brittle
 pukuaı	nostalgic
+pulıe	experiences flashback
 puma	puma
 pumeche	historian
 pumoe	feels nostalgia
 pumoq	lung
 pumoqdıqnhuo	bellows
+pumoqnoso	suffers from pneumonia
 punuaq	last night
 punıaq	last year
 puo	powder
+puo'aı	fine grained material
 puochıq	dust mite
 puokaqbıa	has visual snow
 puole	friable
@@ -6574,9 +7394,15 @@ puosho	crumbles apart
 puoshuao	phoenix
 puotoaı	particle
 puotua	pulverizes
+pupuchaq	day before yesterday
 puq	multiple
+puqbeodaıbeotoaıdıu	multivariable calculus
+puqchıo	occurs repeatedly
+puqchıo	occurs repeatedly
 puqcoe	forks
 puqgaıno	multimodal
+puqja	predicate of arity ≥1
+puqko	is non-first among
 puqmaı	polyamorous
 puqmeame	multiset
 puqmuı	polysemous
@@ -6585,7 +7411,7 @@ puqsuq	y'all
 puqtoeq	and
 puqtıq	polyomino
 purımy	Purim
-pusho	(time) passes
+pusho	time passes
 putaokuq	meant to say
 putuqhua	Putunhua
 putuqzu	Mandarin Chinese
@@ -6593,14 +7419,17 @@ putıq	poutine
 puı	many
 puıchao	bus
 puıdaome	database
+puıduı	too many in number
 puıgıqcuesıo	Oligarchy
 puıhıaq	scarce
 puıjeq	same.number
 puıjeqda	polygender
 puım	ink
+puımoe	has mixed feelings
 puımıa	abundant
 puımıeq	is counting
 puımıeqche	teller
+puınecuaq	numerical predicate
 puıpoqchao	bus
 puıruaıjoaq	emperor
 puıseu	large number
@@ -6621,13 +7450,14 @@ pıafu	neice
 pıanete	planet
 pıano	piano
 pıao	complicated
-pıaosaısaı	(a) plastic
+pıaosaısaı	a plastic
 pıaozıu	complex number
 pıaq	feels surprised
 pıaqsuaı	occurs suddenly
 pıca	pizza
 pıcaloqhıao	pizza-burns
 pıcıu	urinate
+pıdufodao	data in PDF format
 pıdufodaozu	PDF file format
 pıdufokao	PDF file
 pıe	drink
@@ -6637,6 +7467,7 @@ pıedoa	adds to beverage
 pıehaq	beverage
 pıejaq	gulps down
 pıekuaı	thirsty
+pıemuaq	dead from dehydration
 pıenao	potable water
 pıerogı	pierogi
 pıerogı	pierogi
@@ -6649,6 +7480,7 @@ pıjama	pyjama
 pıka	instantaneous
 pıkafa	teleports
 pıkafachuo	teleporter
+pıkajuoı	gives a lightning talk
 pıkea	spruce tree
 pıkou	pickle
 pıkoutoese	pickle slice
@@ -6686,11 +7518,15 @@ pıqceo	pixel
 pıqda	peanut
 pıqdadashı	peanut butter
 pıqhıo	pings
+pırı	annoyed, irritated
+pırıca	annoys, irritates
 pırıfuı	irritable
 pırıkuq	says complaint
 pırıle	irritable
+pırıruaq	expresses complaint
 pısaı	urea
 pıso	pear
+pısı	personal computer
 pıu	skin
 pıuchıq	louse
 pıucıu	sweats
@@ -6699,14 +7535,17 @@ pıunua	peels
 pıunuamy	peeler
 pıushoaı	colugo
 pıydıe	shills
+pıygaq	bothersome presence
 pızı	annoyed
 ra'ehaq	roe deer
 ra(sıu)choatoaı	rhotic sound
 radıo	radio
+radıodıeqkea	radio transmitter
 radıojuqkea	radio receiver
 radıosuy	radio wave
 radıum	radium
 raga	feels energetic
+raga'aobı	of the action genre
 ragacıa	tired
 ragoq	strawberry plant
 ragoq	argon
@@ -6714,6 +7553,7 @@ ragoqzeo	strawberry fruit
 raku	Toaq-syllable
 rakygıaq	rock music
 ram	RAM
+rama	shows state of affairs
 ramadaq	Ramadan
 ramanabamı	Rama Navami
 ramchıu	pointer
@@ -6722,6 +7562,7 @@ rameq	ramen
 rameq	ramen
 rao	when
 raogı	timely
+raojao	temporally far away
 raojeq	is concurrent
 raojoaı	attempts to date
 raojuı	temporally close
@@ -6730,20 +7571,27 @@ raoleo	intends to do
 raomıeq	dates
 raq	about
 raqbo	pertains
+raqbucua	deflects argument
 raqbuı	off-topic
 raqchıe	learns subject
 raqcua	responds to
 raqcuachue	forum thread
+raqdao	is information about
 raqdeoq	talks with
 raqdua	is familiar
 raqdıo	wren
 raqfeao	worries about
+raqhalı	has insight relating
+raqheo	about something else
 raqjuoı	describes
+raqkoy	communicates with
 raqkueme	bibliography
 raqkuq	comments on
 raqkuqsue	asks
 raqme	semantic frame
 raqmoı	think.about
+raqmıu	has opinions about
+raqnıetao	segues into topic
 raqpoe	unrelated
 raqraq	tangentially
 raqse	topic
@@ -6752,8 +7600,10 @@ raqsıaruaq	renounces
 raqtaq	meta
 raqtoa	thematic
 raqzaruse	content warning
+rara	true, or something
 rarasaı	unobtainium
 rasu	skin rash
+rata	some fucking thing
 ratajata	Ratha Yatra
 rato	rat
 raı	something
@@ -6764,6 +7614,7 @@ raıjeq	same
 raıke	thingy
 raılaqteı	falling tone
 raıluo	set
+raıraı	any thing imaginable
 raıtoa	noun
 raıtoame	noun phrase
 raıtoateı	noun case
@@ -6773,6 +7624,7 @@ reahuashoaı	colugo
 reahueq	entire surface
 reame	surface
 reamuı	straight
+reapaq	section of the border
 reaq	lie
 reaq	lies
 reaqruoq	horizontal
@@ -6789,6 +7641,7 @@ rem	surface
 remtı	at
 reo	coloured
 reo	colored
+reobebere	Owston's palm civet
 reobo	coloured
 reochuo	paintbrush
 reocuaq	colour
@@ -6796,6 +7649,7 @@ reoge	color
 reohua	iris
 reokaı	writes
 reomıa	many-coloured
+reomıamusela	African striped weasel
 reoq	late
 reoqchuq	eats dinner
 reoqfeo	west
@@ -6814,16 +7668,19 @@ reqkea	android
 reqkıbucıabıso	HIV
 reqmy	humanoid doll
 reqpapybeqsebıso	HPV
+reqpoq	is the human soul
 reqpoqgaq	headmate
 reqse	artificial
 reqsesaı	plastic
 rere	lily
+rerı	at an altered state
 rerısaı	hallucinogenic
 reu	=
 reu	product
 reume	product of all
 reupaq	divisor
 reı	around
+reıcoe	is wrapped around
 reıduy	orbits
 reıdıam	radium
 reıdıaq	radian
@@ -6833,6 +7690,7 @@ reıjıoqchuo	abacus
 reıkueq	gather around
 reımuoı	revolves
 reımy	ring
+reına	until we meet again
 reınuao	arches over
 reıshaha	game Go
 reısho	dissolves in
@@ -6847,6 +7705,7 @@ roachıaı	just not right
 roacoaq	domesticated
 roacuao	supernatural
 roadeaq	ground
+roadoe	performs its usual
 roadue	simply right
 roagıq	artificial
 roajıaq	nature
@@ -6858,14 +7717,18 @@ roaqfu	half-sibling
 roaqgulaq	gonad
 roaqpıa	aunt
 roaqpıafu	cousin
+roaqroaq	parent of the parent
+roaqroaq	biological grandparent
 roaqseo	step-parent
 roaqseofu	step-sibling
 roaruodıu	ethology
 roarıaq	natural habitat
 roateu	= exp
+roatı	is naturally found at
 roazu	natural language
 roazıu	natural number
 roaı	eight
+roaıfeode(poq)	八方美人 [hap·pō·bi·jin]
 roaıjue	August
 roaıkata	eight
 roaıko	eighth
@@ -6874,8 +7737,13 @@ roaıpeoq	oxygen
 roaıpue	octopus
 rochoa	raven
 roe	healthy
+roeduo	does physical exercise
 roeduo'akaı	workout soreness
+roeduy	does physical exercise
+roegı	good for one's health
 roehaq	nutritious
+roehuı	bad for one's health
+roemoı	exercises their mind
 roesho	recover
 roesho	recover
 roetue	health
@@ -6898,6 +7766,7 @@ ruabo	has flowers
 ruaboe	petal
 ruadueq	flower field
 ruajua	trippy
+ruajualıao	psilocybin mushroom
 ruajualıe	trips
 ruajuasaı	psychedelic
 rualaı	fleuron
@@ -6907,20 +7776,27 @@ ruanhuo	bouquet
 ruanıaı	anthozoan
 ruao	forgive
 ruaomıa	forgiving
+ruaosue	asks for forgiveness
 ruaq	assert
 ruaq	assert
 ruaqcheu	tells lie
+ruaqchıaı	is wrong in stating
+ruaqdıu	field of Pragmatics
 ruaqgı	sincere
+ruaqhuı	is lying by asserting
+ruaqkoy	asserts to addressee
 ruaqmea	presupposed
 ruaqruaq	reports
 ruaqse	assertion
 ruaqshao	meant to declare
 ruaqshua	fall
+ruaqteoq	rhetorical question
 ruashuaq	blooms
 ruaı	royal
 ruaıbue	palace
 ruaıcha	done in a noble
 ruaıchea	crown
+ruaıfu	prince or princess
 ruaıfua	throne
 ruaıgua	kingdom
 ruaıguame	empire
@@ -6935,18 +7811,22 @@ rubı	ruby
 ruchıa	Confucian
 ruco	asserts
 rudo	bramble
+rudo	member of genus Rubus
 rue	weak
 ruechoakuq	whispers
 ruedea	taps
 rueduagı	clue
 ruekoı	walks timidly
 ruelaq	sonorant
+ruemoaq	faintly remembers
 ruenuo	dozes
 ruenuoı	nibbles at
 rueq	tight
+rueqca	exerts pressure upon
 rueqduoı	becomes pent up
 rueqduy	twitches
 rueqmoe	stressed out
+rueqreı	tightly surrounds
 ruereo	dull in color
 rueı	miserable
 rugo	and
@@ -6958,12 +7838,15 @@ rukatuımy	saddle
 rulaı	ampersand
 rumu	is, with
 ruo	behave
+ruoboqtaq	abstains from doing
 ruochua	name
+ruodaonoa	acts unpredictably
 ruodoa	entrusts
 ruodoetua	manipulates
+ruodıu	behavioral science
 ruogı	kind
 ruogınıaı	saola
-ruohuı	(agent) is rude
+ruohuı	agent is rude
 ruohuı	untactful
 ruojeq	redundant
 ruojuao	policy
@@ -6971,6 +7854,8 @@ ruojuq	assumes role
 ruolua	theatrical play
 ruoluaq	pretends to be
 ruome	ecosystem
+ruomu	property is a role
+ruomıaı	gets along well with
 ruonua	replaces
 ruoq	straight
 ruoqgaoduochao	helicopter
@@ -6991,6 +7876,7 @@ ruqnuam	rainbow
 ruqnuao	rainbow
 ruqnuaoreo	rainbow-colored
 ruqpıo	meteor
+ruqroq	cries their eyes out
 ruqshua	for it to rain
 ruqshua	rain
 ruqshıq	petrichor
@@ -6999,10 +7885,12 @@ rurı	stands in
 rurıgı	occurs on behalf
 rurılaı	is a tag
 ruı	gray
+ruıdaı	arguably the case
 ruıdepı	Risso's dolphin
 ruıfubuche	common duiker
 ruıhupı	gray fox
 ruıkaı	pencil
+ruıkaıkea	mechanical pencil
 ruıketo	gray whale
 ruımusela	grison
 ruıpoke	gray seal
@@ -7031,17 +7919,19 @@ rıaımypuefuq	platform boots
 rıaıpıo	bedrock
 rıaırıochao	hovercraft
 rıaısaı	protein
+rıba	member of genus Ribes
 rıe	between
 rıe	between
 rıegoa	is the space
 rıejeqda	intergender
 rıekoaı	Internet
 rıeq	avoid
-rıeqcıoq	Esc (Escape) key
+rıeqcıoq	Esc Escape key
+rıeqgaofa	goes over obstacle
 rıeqgıq	embraces
 rıeqjara	flees
 rıeqjara	flees
-rıeqkueq	pile(s) up
+rıeqkueq	piles up
 rıeqsoa	saves
 rıhı	rice
 rıjuru	marmot
@@ -7054,6 +7944,8 @@ rıochao	aircraft
 rıocholıchao	hovercraft
 rıocholımeaq	hovercraft
 rıocıu	belches
+rıocıuhepete	bushy-tailed mongoose
+rıoduy	flies through the air
 rıofa	fly
 rıoguı	popcorn
 rıohua	lung
@@ -7062,6 +7954,7 @@ rıokıoq	balloon
 rıokıoqcıe	pufferfish
 rıolıaı	flies
 rıolıaı	flies
+rıomuaq	dead from suffocation
 rıomıq	athmosphere
 rıomıq	atmosphere
 rıonao	dew
@@ -7071,6 +7964,7 @@ rıoq	type
 rıoqbaq	default
 rıoqbo	has subtype
 rıoqdıu	typology
+rıoqge	is sensorily striking
 rıoqjeqchuq	cannibal
 rıoqjuoı	narrows down
 rıoqmea	belongs to type
@@ -7092,9 +7986,11 @@ rıqnaokusu	honeydew melon
 rıqpıo	emerald
 rıqzao	greens
 rıu	return
+rıu'ıqdo	give.back.property
 rıubeaq	boomerang
 rıudo	give.back
 rıufa	return
+rıukuaı	feels nostalgic for
 rıukuq	replies
 rıusoı	revenges on
 rıusıaıbıu	vein
@@ -7108,7 +8004,10 @@ sabaq	soap
 sabeka	elder
 sabıety	soviet
 sabıtoa	is a determiner
+sacuaq	concept of something
 safıra	sapphire
+sagao	sloped, not level
+sagaq	accompanies something
 saharagazala	Saharan gazelle
 sahu	false
 sahu	is.false
@@ -7122,19 +8021,25 @@ sakurazeo	cherry
 sakyso	saxophone
 sala	expands
 salata	pirate
+salaı	Deranı glyph for S
 salıcy	willow
 samara	samara
 samuraı	samurai
+samıa	moth of genus Samia
+sanhe	true to *some* extent
 sao	big
 sao'alaı	seaweed
+sao'eloatoejı	giant golden mole
 saobeaq	staff
 saochao	truck
 saochıe	university
 saochıeche	university
+saodaokoaı	wide area network
 saodoaq	city
 saoduo	long.while
 saofa	travels
 saohuohuanuı	Steller sea lion
+saoja	member of genus Cavia
 saojaq	huge
 saojaq	huge
 saojeaq	grow
@@ -7184,14 +8089,20 @@ saqpeoq	lithium
 saqsheaq	testicle
 saqsheaqcea	scrotum
 saqsu	whispers
+saqsuluaq	plural play telephone
 saqsıoq	tricycle
 saqtıq	triomino
+saralıahuohuanuı	Australian sea lion
 saraq	is associated
 saraımıu	quantifier
 saro	skirt
 sasa	moth
 satoa	determiner
+satoame	determiner phrase
+say	is state of matter
 saı	matter
+saı'eqhuıchuaq	cult of Scientology
+saıbo	is made of material
 saıbıao	intoxicated
 saıcha	physical
 saıchuq	ingests
@@ -7202,6 +8113,7 @@ saıku	Discord server
 saıme	is a mix
 saımoaq	stain
 saımoaqmefıtı	spotted skunk
+saıne	amount of substance
 saıpo	soap
 saırea	surface
 saıroq	iron
@@ -7234,11 +8146,14 @@ seaqjaı	sexually aroused
 seaqkea	sex toy
 seaqkıoq	testicle
 seaqkıq	porn
+seaqluaq	engage in foreplay
 seaqmy	jizz
 seaqmıa	promiscuous
 seaqnuo	has a wet dream
+seaqpaı	friend with benefits
 seaqpeobıa	has an STD
 seaqrıeq	celibate
+seaqseje	manifests sexuality
 seaqtaq	masturbates
 seaqtuaı	sex doll
 seaı	wine
@@ -7248,15 +8163,21 @@ seaırıaq	bar
 seaıshea	sober
 seaısho	ferments
 sebo	carries result
+sebo	happens with result
+secaqtao	takes responsibility
 seceıla	off the ball
+secua	takes responsibility
 sedu	hiccups
 seguaı	does commission
 sekuq	second
+sekuqdıaq	happens every second
 sekuqdıaqne	hertz
 sekı	seki
 selaq	shark
 selenıum	selenium
+seme	collection of results
 semıo	means
+senhe	happens impactfully
 seo	spouse
 seo(sho)sue	asks to marry
 seofeu	divorce
@@ -7271,8 +8192,10 @@ seoqcuao	outer space
 seoqcuaodıu	astronomy
 seoqcuaomıe	extraterrestrial
 seoqdıu	astronomy
+seoqdıune	astronomical.unit
 seoqhıu	Milky Way
 seoqjeoq	Heaven
+seoqjıo	tower or skyscraper
 seoqkası	walnut tree
 seoqlaq	thunder
 seoqlaqbeaq	gun
@@ -7283,6 +8206,7 @@ seoqmıo	sky-blue
 seoqmıorua	azure bluet
 seoqpıo	asteroid
 seoqpıo	meteorite
+seoqpıoruqshua	meteors showering down
 seoqraq	celestial
 seoqrea	horizon
 seoqreo	sky blue
@@ -7309,6 +8233,7 @@ seumhaq	dinner
 sey	number
 sha	arrive
 shabu'oty	Shavuot
+shabuo	welcomes the advent
 shachoa	hisses
 shadı	welcome
 shagıq	leaves
@@ -7327,16 +8252,20 @@ shamaq	shaman
 shamu	apple
 shana	menstruates
 shanajue	menstrual cycle
+shananoı	feels menstrual pain
 shanapıu	endometrium
+shanashaı	undergoes menopause
 shao	want
 shao'achoqte	is burnt out on
 shaoboq	demotivates
 shaobuaq	wanted to do
 shaobutao	does
 shaoca	motivates
+shaodeq	has the motivation
 shaoge	motivation
 shaogı	good
 shaogı	virtuous
+shaoha	as one would want it
 shaohuı	bad
 shaohuı	sinister
 shaohıaq	lazy
@@ -7346,6 +8275,7 @@ shaoluıtıao	satisfactory
 shaomoe	is willing to do
 shaomuı	intended meaning
 shaomıa	eager
+shaoshe	case if you want to
 shaq	in.front
 shaqbara	rusa deer
 shaqbeq	cheek
@@ -7358,6 +8288,7 @@ shaqpaq	front
 shaqsheaq	prostate
 shaqsoq	primate
 shaqtoa	preposition
+shaqtoame	prepositional phrase
 shaqtıa	inside-out
 shaqtıe	face mask
 shaqzıu	positive number
@@ -7391,7 +8322,11 @@ sheaq	stand
 sheaq	stands on
 sheaq	stands
 sheaqcıoq	pressure plate
+sheaqfeo	vertical direction
 sheaqfua	step-stool
+sheaqjıo	tower or skyscraper
+sheaqkaı	writes vertically
+sheaqkoꝡam	grandfather clock
 sheaqmı	rook
 sheaqnuoq	upside-down
 sheaqnuı	short
@@ -7401,13 +8336,18 @@ sheaqshua	collapses
 sheaqtuıfua	stool
 sheasaı	ether
 sheba	please.move
+shebaqsı'eku	Przewalski's horse
+shebaqsı'eku	Przewalski's horse
+shebaqsıheku	Przewalski's horse
 shechıaq	intuits
 shedoa	offers that he
 shedoa	offers
 shejuoı	defends
+shele	is likely to happen if
 shemoı	intuits
 shenue	promises to do
 sheo	regret
+sheojuq	receives an apology
 sheokuq	apologizes
 sheokuq	apologize
 sheomıa	apologetic
@@ -7426,6 +8366,7 @@ sheıgadıu	Life & Death
 sheıgıqpoq	prisoner
 sheımoı	freethinks
 sheımoıhe	freethinker
+sheıshuaqshuao	American bald eagle
 sheıtua	liberates
 sho	become
 shoa	deep
@@ -7440,15 +8381,19 @@ shoaıcıarıochao	boat
 shoaıheku	winged horse
 shoe	allow
 shoehuao	lean
+shoelaı	word of permission
 shoesue	asks
 shoju	soy sauce
 shojufaseo	soy beans
 shojunao	soy sauce
 shom	face
+shosıadoı	abases themselves
+shoulaı	word of permission
 shoı	scream
 shoıgıaq	screamo
 shoıkune	coyote
 shoılaq	scream
+shoılaı	exclamation point
 shoıse	cry
 shu'u	birdie
 shua	fall
@@ -7458,6 +8403,7 @@ shuao	bird
 shuaobue	bird nest
 shuaokıaq	feather
 shuaq	produce
+shuaqcıu	secretes substance
 shuaqfaqme	process
 shuaqhua	gland
 shuaqjıo	factory
@@ -7465,6 +8411,8 @@ shuaqse	product
 shuashoe	lets
 shuaı	simple
 shuaıbıo	glass
+shuaıcha	case in a simple way
+shuaıhaq	basic food ingredient
 shuaıjuao	rule of thumb
 shuaımıu	thinks earnestly
 shuaınu	merely
@@ -7484,6 +8432,7 @@ shunha	number zero
 shuo	reserve
 shuofua	closet
 shuokaı	notes
+shuokue	reference document
 shuomıa	supermarket
 shuonıu	succulent
 shuosıa	void
@@ -7519,6 +8468,7 @@ shıao	disappears
 shıapoaqse	glass.shard
 shıaq	leg
 shıaqbea	knee
+shıaqbeasheaq	are on their knees on
 shıaqbıu	pantyhose
 shıaqfuq	pants
 shıaqgao	leggings
@@ -7529,6 +8479,8 @@ shıaqtıe	legging
 shıbu	not the case
 shıcaqche	dictator
 shıcaqchuaq	dictatorship
+shıchacuoı	satisfies with each
+shıchaq	first day of the month
 shıchaqshoaı	mayfly
 shıchuaobo	monotreme
 shıchuetıeq	monorail
@@ -7546,6 +8498,7 @@ shıesho	wakes up
 shıesho	wake.up
 shıeshua	passes out
 shıgeo	primordial
+shıgeoshoı	expresses the Urschrei
 shıhea	connected
 shıho	him
 shıja	is the property
@@ -7558,13 +8511,16 @@ shıko	is first among
 shıkoe	has only got
 shıkogıq	is last among
 shıkotao	done firstly
+shıkuq	delivers monologue
 shıkuqse	monologue
 shılaqteı	first tone
 shımy	x₁
 shımıedaosaı	RNA
 shına	gas
 shınapıanete	gas giant
+shıneq	has beginner’s luck in
 shıo	ball.joint
+shıotıa	one’s back [body part]
 shıpaq	whole
 shıq	smell
 shıqbo	emits
@@ -7583,6 +8539,7 @@ shıqgı	smells good
 shıqhua	nose
 shıqhuagoaıfuq	handkerchief
 shıqhuaguy	handkerchief
+shıqhuahepete	long-nosed mongoose
 shıqhuahuaı	picks their nose
 shıqhuahuaı	picks their nose
 shıqhualapısıu	rhinoceros
@@ -7595,10 +8552,13 @@ shıqnuasaı	deodorant
 shıqsaı	fragrance
 shıqsıu	smells like
 shıqto	Shinto
+shıraku	single-**raku** word
 shıraq	specific
 shıraı	individual
 shıreı	cryptid
+shısaonelaı	unicameral letter
 shısha	shisha
+shısheaq	stands on one leg
 shıshecheo	distributive
 shısuao	unique
 shıtuaq	unicorn
@@ -7607,16 +8567,19 @@ shıubuaq	attempts to do
 shıucoetoa	prefix
 shıucuo	presupposes
 shıufa	goes
+shıuhuıtoı	discriminates against
 shıujaı	look.forward
 shıujuı	shortly before
 shıukune	raccoon
 shıukune	raccoon
 shıukıe	thanks
+shıuleaq	comes right before
 shıuleo	tries to do
 shıuleo	intends to do
 shıume	past
 shıumejıo	museum
 shıunao	pre-ejaculate
+shıune	is the time distance
 shıutao	does
 shıutaı	does
 shıutoı	treats
@@ -7631,6 +8594,7 @@ soafuaı	charity
 soagıq	unhelps
 soahıao	hurts
 soakaıse	guide
+soakuaı	shows hospitality
 soakune	service dog
 soaq	garden
 soaqche	gardener
@@ -7638,6 +8602,7 @@ soaqkıaıche	gardener
 soaqpao	gardens
 soaqpaoche	gardener
 soasue	asks
+soasıateqkea	self-checkout machine
 soatoa	particle
 soatoarıoq	particle
 soaı	beam
@@ -7654,14 +8619,18 @@ soezeoze	lemonade
 sofa	sofa
 soke	citric
 soke'acı	citric acid
+someone	is one who should do
 sona	circle
+sono	happens a little bit
 sono'acı	weak acid
 soq	most
 soqbo	sows
 soqcho	likes
 soqja	sponge
+soqjalaq	sound a sponge makes
 soqjapıo	tuff
 soqjuı	is extremely
+soqkoese	is the popular choice
 soqkuoı	satisfies with
 soqmea	majority
 soqmoa	climax
@@ -7669,8 +8638,10 @@ soqnedaq	limited in time
 soqrıaq	utopia
 soqsıq	hygienic
 soqtoı	does
+sore	red-toothed shrew
 soresıu	shrew
 sorı	sews
+sorıtuaq	steenbok or grysbok
 sorızo	sewing.needle
 sosuogoıche	EMT
 souleı	ex forma
@@ -7678,12 +8649,15 @@ soy	vegan
 soy	circle
 soypaq	semicircle
 soı	fight
+soı	struggles against
+soı'aı	anything is aggressive
 soıbuaq	loses to
 soıbuaq	loses to
 soıche	soldier
 soıcheme	army
 soıchu	is at odds with
 soıcıa	is at peace with
+soıdeoq	coll. discuss matter
 soıdueq	battlefield
 soıfuaı	military
 soıgoeq	battlement
@@ -7692,10 +8666,12 @@ soıhuaq	wins
 soıluaq	compete against
 soıme	army
 soımuo	wars with
+soımuoıshuoıchao	combat helicopter
 soıpaı	rival
 soıruo	act of violence
 soıtaı	defeat
 soıtue	battle
+su	previous.predicate
 sua	necessary
 suacıa	pointless
 suahuaq	superfluous
@@ -7714,6 +8690,8 @@ suaotuaomıu	despises
 suaq	sing
 suaq	sings
 suaqgıaq	song
+suaqgıaq	music-accompanied song
+suaqkuqse	are the lyrics to song
 suaqse	song
 suaqsue	prays
 suaqsuese	prayer
@@ -7726,12 +8704,16 @@ suaıfafa	pursues
 suaıfurı	shakes
 suaıhaq	fast food
 suaıhaqche	fast food worker
+suaıhaqguaı	does fast-food work
+suaıhaqrıaq	fast-food restaurant
+suaıjoe	is skilful skillful
 suaıkaı	shorthand
 suaıkoıluaq	play tag
 suaıkuaı	in.a.hurry
 suaıluaq	speedruns
 suaımı	queen
 suaıpeq	reference sheet
+suaıruo	a disease is acute
 suaısıumoı	intuits
 suaıtao	hurries
 suaıtao	hurries up
@@ -7745,6 +8727,7 @@ suedo	sweat
 suedocıu	sweats
 suefa	goes on a quest
 suejaq	exhorts
+suejeo	satisfies property
 sueq	wave
 suetao	does what
 suhobo	your
@@ -7759,6 +8742,7 @@ suhunueq	pork
 suhunuı	pygmy hog
 suhusıu	pig
 suku	different
+sukıfımeaq	skiff type of a boat
 sumake	sumac
 sumo	sumo wrestling
 sunabo	your
@@ -7767,15 +8751,21 @@ suo	you
 suoqsuoq	grandchild
 suoı	is great
 suoı	great
-suoıhıaotue	(great) disaster
+suoıhıaotue	great disaster
 suoıjaq	extremely
 suoıpulua	legend
 suoısao	gigantic
 supaq	spam
 supaqkaı(doa)	spams message
 suqbo	your
+suqcho	something you like
+suqchosoq	is your favorite among
 suqdaq	your now
 suqde	you, cutie
+suqhao	you and the others
+suqjıhao	you, I and the others
+suqjıho	you, I and the others
+suqke	you, the god-damn
 suqnaı	your now
 suqneoq	you
 suqpa	satisfied by you
@@ -7807,11 +8797,14 @@ sı	attentive
 sıa'anouhe	aromantic
 sıachoa	say.nothing
 sıachuaq	nihilism
+sıahuaqjeq	non-negative number
 sıahıao	benefits while
 sıaja	proposition
+sıaja	is the proposition
 sıalaı	digit zero
 sıame	empty aggregate
 sıao	beginning
+sıaocıa	happens out of nowhere
 sıaosuao	is a basis
 sıaotoa	incipit
 sıaotu	original
@@ -7824,18 +8817,23 @@ sıaqmuqpoq	right-handed
 sıaqpaq	right
 sıaqpaq	right part
 sıaseu	number zero
+sıasoa	is unaffected while
 sıatuaq	royal antelope
 sıazıu	number zero
 sıaı	blood
 sıaıbıu	blood vessel
+sıaıbıume	circulatory system
 sıaıcıu	bleeds
 sıaıhua	heart
 sıaıjaq	gory
 sıaıkoaı	vascular system
+sıaıkuaı	experiences bloodlust
 sıaıkıa	blood-red
 sıaıloaısıu	hemorrhoids
 sıaıloha	iron
 sıaılue	blood plasma
+sıaımueq	has their blood tested
+sıaımıa	aflush with blood
 sıaımıeq	tests blood
 sıaıpıe	vampire
 sıaızıe	hormone
@@ -7849,6 +8847,7 @@ sıchuq	distracts
 sıdıheqmy	CD rack
 sıe	follow
 sıebaq	list
+sıeceo	resumes taking place
 sıedao	sequence
 sıefa	follow
 sıeho	is
@@ -7857,7 +8856,7 @@ sıehoı	is
 sıejara	chases after
 sıekao	will
 sıekaıse	afterword
-sıekıq	sequel (movie
+sıekıq	sequel movie
 sıelu	following
 sıemaq	is
 sıeme	sequence
@@ -7873,6 +8872,8 @@ sıeqgı	great
 sıeqsuoı	miraculous
 sıeqtue	miracle
 sıetao	takes next step
+sıetu	is last in sequence
+sıfıusu	Cuvier's beaked whale
 sıfıususıu	beaked whale
 sıga	cigarette
 sıgı	interesting
@@ -7888,6 +8889,7 @@ sıkuaı	is curious about
 sıkı	ski
 sıla	thread
 sılıkoq	silicon
+sılıkoqzu	assembly language
 sım	few
 sımeqse	siemens
 sımo	simian
@@ -7898,19 +8900,24 @@ sına	away.from
 sıne	sine
 sınu	= sin
 sıo	thought
+sıodoa	gives inspiration
+sıofıeq	devises, comes up with
 sıoge	evokes
 sıogı	conceptually
 sıojuq	gets idea
 sıoq	wheel
+sıoqbıru	of genus Rotavirus
 sıoqchao	wheeled vehicle
 sıoqduo	runs
 sıoqpuao	cyclone
 sıoqteı	circle
+sıotuoı	is a complication
 sıpua	amused
 sıpuache	entertainer
 sıpuatua	entertains
 sıpuatuache	entertainer
 sıq	clean
+sıqchuaq	personal hygiene
 sıqgoaı	wipes
 sıqguy	wash cloth
 sıqhua	kidney
@@ -7919,6 +8926,7 @@ sıqkea	washing.machine
 sıqmuo	spotless
 sıqmıq	clean
 sıqpeq	toilet paper
+sıqruo	acts hygienically
 sıqsaı	detergent
 sıqse	shower.thought
 sıqtua	cleans
@@ -7928,13 +8936,16 @@ sırılaı	Cyrillic letter
 sısa	conscious
 sıshaı	leaves
 sısue	calls
+sısue	requests attention
 sısıa	unconscious
 sıtako	parrot
+sıtao	concentrates on doing
 sıtua	notifies
 sıu	similar
 sıu	similar
 sıugıq	dissimilar
 sıukaronuı	pygmy antelope
+sıumuo	indistinguishable
 sıuruo	mimics
 sıyky	treads
 ta'ı	taxi
@@ -7955,7 +8966,7 @@ tanukı	raccoon dog
 tanı	stem
 tanıtıe	bark
 tao	do
-taoca	(0) motivates
+taoca	0 motivates
 taocaı	strong-willed
 taocho	likes
 taochı	plans
@@ -7968,6 +8979,7 @@ taodıeq	sends
 taodıetaı	convinces
 taofa	goes to do
 taogaq	partner
+taogaq	plural perform ritual
 taogaq	and
 taogaqme	team
 taoguo	activity
@@ -7975,6 +8987,7 @@ taogıq	accidentally
 taogıqloaıshua	spills
 taohıao	attacks
 taojao	is off
+taojaı	is glad that they did
 taojuoqtao	does their dues
 taokakoe	decides to do
 taoko	planner
@@ -7982,6 +8995,7 @@ taokoe	choose.to
 taokoe	chooses
 taokokaı	schedules
 taomana	energy
+taomana	is "energy" for doing
 taomoaq	remembers to do
 taomoı	consider.doing
 taomudaı	property
@@ -7992,13 +9006,18 @@ taomıy	team
 taonhuo	is a schedule
 taonue	promises to do
 taopa	accepts
+taopaq	is part of achieving
 taopaqme	project
+taoroakoı	wanders aimlessly
 taorue	timid
+taorıu	returns from doing
 taosapa	accepts
 taose	something done
 taoshao	intend
 taoshaokao	planner
+taoshıy	goes elsewhere to do
 taosıo	plan
+taotoaı	is a step in doing
 taotua	fools
 taotıao	is in
 tapy	taps
@@ -8009,9 +9028,11 @@ taq	self
 taqbu	taboo
 taqchao	car
 taqchıaq	self-aware
+taqdıe	volunteers for doing
 taqfoto	selfie
 taqfuaq	selfie
 taqgaı	senses
+taqjeq	satisfies property
 taqko	account
 taqkıbutoaı	autoantibody
 taqmudaı	relation
@@ -8033,7 +9054,9 @@ taıcaq	happens thanks
 taıcha	successful
 taıjıq	prospers
 taıtenıam	titanium
+taıtue	is a goal of actor
 tea	scared
+tea'aobı	of the horror genre
 teabıa	has a phobia
 teaca	scary
 teacaı	brave
@@ -8064,14 +9087,18 @@ tefa	tangled
 tefacha	an
 tefacoe	intertwined with
 tefamy	knot
+temoaq	passively recalls
 tenısı	tennis
 teolaı	close-quote
 teoq	question
+teoq'aobı	of the mystery genre
 teoqcua	answers question
 teoqdue	is an
 teoqkudote	interviews
 teoqkuq	ask
+teoqmoı	considers question
 teoqnuateoqdoa	interviews
+teoqtoa	interrogative word
 teoqtıao	is a valid
 teq	pay
 teq	pays
@@ -8109,8 +9136,10 @@ teu	=
 teı	form
 teıbaq	idealized shape
 teıbo	has shape
+teıcha	happens or is done in
 teıchuo	pattern
 teıcıa	amorphous
+teıde	has a beautiful shape
 teıdoafuı	malleable
 teıdıu	geometry
 teıfuaq	design
@@ -8118,9 +9147,11 @@ teıfuı	soft
 teıfıeq	designs
 teıgaı	perceives shape
 teıgıaıchuo	chisel
+teıgıu	is a side of polygon
 teıjeq	is shaped like
 teıkuaq	assumes pose
 teınoa	hard
+teıpaq	structural subsection
 teırea	surface
 teırıuhe	elastic
 teısıoq	circle
@@ -8131,6 +9162,7 @@ teıtue	state
 teızıu	complex number
 toa	word
 toabeoq	word root
+toabuaq	at loss for words
 toabuı	not **toanıe**
 toachıeq	crossword puzzle
 toadoq	brief
@@ -8146,6 +9178,7 @@ toalaqteı	word-level tone
 toalaı	letter
 toalea	rhetoric
 toalea	poem
+toaluaq	makes a play on words
 toaluaqse	pun
 toame	phrase
 toamelaqteı	phrasal
@@ -8160,10 +9193,13 @@ toapuı	verbose
 toapuıtuao	laconic
 toaq	Toaq language
 toaqbeo	translates
-toaqcha	Toaq (Dzu) Way
+toaqcha	Toaq Dzu Way
 toaqchaq	Toaq Day
+toaqchoa	utters Toaq words
 toaqdıu	Toaqology
+toaqheomuıjeq	means the same as
 toaqhıuguaome	Toaq delta
+toaqjoe	fluent Toaq speaker
 toaqkudote	chat
 toaqkuq	says
 toaqkı	Toaq Anki Deck
@@ -8175,10 +9211,14 @@ toaqreo	Toaq-colored
 toaqrıoqmu	dialect
 toaqse	Toaq creation
 toaqseı	Toaq text
+toaqsıedue	syntactically correct
 toaqtoa	Toaq word
 toaqtıaojıoq	translates
 toaqzuno	in Toaq
+toaraqluaq	plays word association
+toashuaq	coins lexical item
 toatuq	is the lexicon
+toatuqjeq	is a relex of language
 toaı	quantum
 toaı'acı	amino-acid
 toaıceo	resumes activity
@@ -8195,9 +9235,12 @@ toebeaq	sword
 toechuekea	chainsaw
 toechuo	axe
 toecırıkea	chainsaw
-toedea	(agentive) stabs
+toedea	agentive stabs
 toedea	chops
+toegoı	performs surgery on
 toegoıche	surgeon
+toejı	mole of genus Talpa
+toekato	South Asian small cat
 toekaı	carves
 toemy	knife
 toenua	cuts
@@ -8215,6 +9258,7 @@ toetoq	cutting board
 toetuao	notches
 tofu	tofu
 tofu	tofu
+tolı	truth-value relation
 tomaty	tomato
 tonameqtue	tournament
 tone	ton
@@ -8237,11 +9281,14 @@ toqsa	being patient
 toqsı	genderqueer
 toraq	chest
 toraqchuo	stethoscope
+toraqlıaı	swims breaststroke
 torodo	ostrich
 toroso	thrush
 toubuchuq	omnivore
+toucuoı	satisfies with just
 tounueqchuq	carnivore
 tounıuchuq	herbivore
+toyjeı	distributive identity
 toı	act.towards
 toıchıaı	unethical
 toıchıaı	morally
@@ -8264,11 +9311,14 @@ toıtoa	transitive verb
 tua	make.happen
 tuabaı	builds on
 tuadue	corrects
+tuagı	something worth doing
 tuagıq	undoes
 tuahao	sets
 tuahuıjıe	blames
+tuahuıruaq	blames [verbally]
 tuaja	being courageous
 tuaja	courageous
+tuakoe	chooses proposition
 tuakoe	chooses
 tuamebo	shares
 tuanoba	influences
@@ -8287,20 +9337,27 @@ tuaqboluko	serval
 tuaqbosa	European hornet
 tuaqbosıu	deer
 tuaqketo	narwhal
+tuaqketosıu	narwhal or beluga
 tuasıa	deletes file
 tuaı	body
 tuaıbeo	shape-shifts
 tuaıbo	physical
-tuaıcaq	fronting (plural
+tuaıbıa	is physically sick
+tuaıcaq	fronting plural
+tuaıcaı	physically strong
 tuaıdıu	anatomy
 tuaıfuq	cloak
 tuaıfuq	shirt
 tuaıgaq	and
+tuaıgaqme	are the personalities
+tuaıguaı	does physical work
+tuaıhıeq	throws themselves
 tuaıjoq	torso
 tuaıjoq	torso
 tuaıjoqfuq	shawl
 tuaınhou	cuddles
 tuaıpaı	headmate
+tuaıroe	physically healthy
 tuaırue	physically weak
 tuaıshaq	abdomen
 tuaısheı	able-bodied
@@ -8308,16 +9365,20 @@ tuaısuaq	dances
 tuaısıa	immaterial
 tuaıtoaq	body language
 tubuo	already
+tucaı	physically strong
 tuchao	bus
 tuchaoce	bus.stop
 tue	state
 tuerıoq	one mode
 tuku	shows
+tukuaq	for each object among
 tukue	encyclopedia
 tumaı	panromantic
 tume	tumor
+tumy	happens with AGENT
 tune	total amount
 tunu	tuna fish
+tunıa	level, not sloped
 tuo	swallow
 tuoq	heavy
 tuoqdekı	scale
@@ -8334,6 +9395,7 @@ tuoıfıeq	finds fault in
 tuoıluoqtao	does
 tuoıruaq	points out flaw
 tuoısı	critical
+tuoıtao	makes flawed decision
 tupa	pot
 tuq'aı	complete
 tuq'ıq	is
@@ -8350,6 +9412,7 @@ tuqjıaqdıu	cosmology
 tuqko	is last among
 tuqloı	abominable
 tuqmaı	pansexual
+tuqmudoa	uniquely identifies
 tuqpaq	comprise
 tuqreı	surroundings
 tuqsuao	unique
@@ -8365,6 +9428,7 @@ turyqko	torso, a trunk
 tusa	and
 tusashı	and
 tuseaq	pansexual
+tusıokaq	bottlenose dolphin
 tutı	omnipresent
 tuze	soup
 tuzy	soup
@@ -8385,19 +9449,25 @@ tútu	every
 tı	at
 tıa	behind
 tıafeo	south direction
+tıakoı	ambulates backwards
 tıao	match
 tıaobeo	adjusts to match
+tıaocha	happens adequately
+tıaocho	consciously prefers
 tıaodaq	appropriate time
 tıaodoa	assigns
 tıaodoajeq	assigns
 tıaofoa	satisfied
 tıaogı	suitable
 tıaojeo	true
+tıaojıe	is satisfied with
 tıaokuqse	mot juste
 tıaomoe	satisfied
 tıaomu	accepts
 tıaonuaı	currency
 tıaonıe	is snug
+tıaosoq	is optimal in property
+tıaotao	makes themself suited
 tıaotoaı	is a notch
 tıaotoı	treats
 tıaotua	adjusts
@@ -8405,12 +9475,15 @@ tıapaq	back
 tıaq	brown
 tıaqboqcıra	brown vonstira
 tıaqge	street market
+tıaqhepete	Meller's mongoose
 tıaqmuqshoaısıu	sac-winged bat
+tıaqrıhı	brown unprocessed rice
 tıaqsuhulıq	brown hyena
 tıazıu	negative number
 tıaı	box
 tıaıbıo	jar
 tıaıchao	cart
+tıaıfuatıaı	individual cubbyhole
 tıbumeo	misses
 tıbumeo	miss
 tıbıa	tibia
@@ -8418,11 +9491,18 @@ tıbıao	loses
 tıbıkıqme	television show
 tıcaı	stout
 tıchu	goes via
+tıchıaq	aware of the presence
 tıchıaqsho	notices
+tıchıu	Cartesian coordinates
 tıcuao	across
 tıcuao	across
+tıdao	spatial coordinates
 tıdaofuı	regularly placed
+tıdaonoa	irregularly placed
+tıduafuı	plural are ordered
+tıduanoa	plural are chaotic
 tıduasho	find
+tıduaı	is forced to be at
 tıdıbu	banned
 tıdıbu	is banned
 tıe	cover
@@ -8455,12 +9535,14 @@ tıfaı	widespread
 tıgaq	stays with
 tıgaı	finds
 tıjao	far
+tıjeaq	spreads throughout
 tıjoaı	tries to locate
 tıjuı	near
 tılaı	at sign
 tıluoq	is aligned with
 tıluoqcheo	co-aligned
 tılıa	linden
+tılıa	member of genus Tilia
 tıme	crowd
 tımoq	thyme
 tımoy	lost
@@ -8477,8 +9559,10 @@ tıoqchue	chain
 tıoqchuetoaı	link in a chain
 tıoqheq	is a vault
 tıoqpoa	locked
+tıpoe	spatially separate
 tıq	tile
 tıqbo	Squamata
+tıqjıoq	cellular automaton
 tıqloha	tin
 tıqnhuo	grid, table
 tıqra	tiger
@@ -8487,6 +9571,7 @@ tıqsa	scaly
 tıqsaoro	scaled reptile
 tıqshoaı	butterfly
 tıqtı	stings
+tırıge	owl of the Strix genus
 tırıgeteı	owl
 tırıu	return
 tıse	location
@@ -8527,6 +9612,7 @@ ubula	uvula
 ubulalaq	uvular consonant
 ubulatı	uvular
 uchı	sex phenotype
+uchıheopıa	opposite-sex sibling
 uchıjeqpıa	same-sex sibling
 ufu	phew
 ugı	fair
@@ -8544,6 +9630,8 @@ ume	mmm
 umobo	our
 umıbo	ours
 umıfuaq	group selfie
+unou	feels negative emotion
+unu	feels negative emotion
 upa	oops
 uq	mhm
 uqsaqbuce	USB port
@@ -8554,8 +9642,11 @@ utube	YouTube
 utubeche	youtuber
 uy'u	uwus
 uıbo	slug
+ychoa	utters an ‘uh’ sound
 yqgy	swallows
 zabadı	Malagasy civet
+zabıe	happens immediately
+zabıeguınhoq	instant noodle soup
 zabıekafe	instant coffee
 zabıekoycheo	chat
 zafeao	nervous
@@ -8577,6 +9668,7 @@ zaqlınhaq	Tibetan antelope
 zaqneq	tough luck
 zaqrıu	reappears
 zaqshıy	elusive
+zaqsı	appears and looks at
 zaqtua	conjures
 zaratushytyrachı	Zoroastrian
 zaru	warns
@@ -8600,6 +9692,7 @@ zeomuaome	orchard
 zeonam	fruit bread
 zeonao	fruit juice
 zeonao	fruit juice
+zeonaosaı	is jam made from fruit
 zeorıaq	orchard
 zeosaı	fruit
 zeoseaı	cider
@@ -8609,6 +9702,7 @@ zeqbudachuaq	Zen Buddhism
 zero	number 0
 zo	needle
 zoaı	doubt
+zoaıcuaq	philosophical razor
 zoaıcıa	certain
 zoaıge	suspicious
 zoaıpulua	legend
@@ -8622,6 +9716,7 @@ zu	language
 zuaq	is the property
 zuche	linguist
 zuche	linguist
+zuchoadıu	the study of phonology
 zuchoq	uses language
 zuchıe	learns language
 zudeq	knows language
@@ -8629,6 +9724,7 @@ zudıu	linguistics
 zudıuche	linguist
 zue	temporarily
 zuedoa	lends property
+zuegıq	permanently satisfies
 zuejuao	arrangement
 zuenua	borrows property
 zueq	broken
@@ -8643,7 +9739,10 @@ zuetue	emergency
 zugoeq	language barrier
 zuhenofıeq	translates
 zuhey	is
+zujuao	a rule of grammar
+zujuaodue	grammatically correct
 zujuaokao	grammar
+zukuq	talks in language
 zukını	zucchini
 zulaqdıu	phonetics
 zulaqteı	linguistic tone
@@ -8654,6 +9753,7 @@ zumuıbo	has meaning
 zuno	is in language
 zunıeq	is unskilled
 zuo	have.purpose
+zuocha	happens along path
 zuoty	some złoty
 zupoq	language person
 zuru	electricity
@@ -8678,6 +9778,7 @@ zıazıa	sparkles
 zıchoa	grunts no
 zıekuq	mentiones
 zıetao	points at
+zıhuoge	emits a buzzing sound
 zıkaıkuq	messages
 zıkuq	messages
 zıq	electronic
@@ -8689,8 +9790,10 @@ zıqkı	hacky
 zıqkı	zinc
 zıqmy	byte
 zıqnhuo	array
+zıqnuaı	electronic currency
 zıqpeq	web page
 zıqrıaq	online venue
+zıqsha	joins online community
 zıqtoa	computer word
 zıqtoaı	bit
 zıqtızua	kicks
@@ -8699,12 +9802,14 @@ zırykoq	zircon
 zıu	number
 zıu	number
 zıubuzıu	NaN
+zıudueq	mathematical field
 zıuhuaqjeq	≥
 zıulaıtoaı	digit
 zıushuı	encrypted
 zıushuıcıa	unencrypted
 áhoq	you
 ùı	not exactly
+ı	pertains to cyberspace
 ıdafıty	Eid al-Fitr
 ıdeı	panics
 ıdojeq	hydrogen
@@ -8712,6 +9817,7 @@ zıushuıcıa	unencrypted
 ıgoluaq	play Go together
 ıgotoq	Go board
 ıjo	shows
+ıjı	feels positive emotion
 ıloqmys	idiot.
 ıma	feels present
 ımebo	ours
@@ -8727,6 +9833,7 @@ zıushuıcıa	unencrypted
 ıoqhashoa	Yom HaShoah
 ıorozu	myriad
 ıota	yotta
+ıq	satisfies property
 ıq	satisfy.property
 ıq'ıqku	letter Iq
 ıqcy	scalar quantity
@@ -8738,14 +9845,17 @@ zıushuıcıa	unencrypted
 ıqjea	buy.property
 ıqjuı	almost
 ıqku	anvil
+ıqlaqsaosa	Worcestershire sauce
 ıqlu	igloo
 ıqlı	English
+ıqlıgua	Anglophone country
 ıqlızu	English language
 ıqlızu'aı	Englishism
 ıqnua	takes away
 ıqnua	take.property
 ıqse	jade
 ıqserıq	jade-colored
+ıqtoa	intransitive verb
 ırabadıdepı	snubfin dolphin
 ırue	wind
 ırueboe	sail
@@ -8753,15 +9863,19 @@ zıushuıcıa	unencrypted
 ıruekea	fan
 ıruemeaq	sailboat
 ıruesıoq	wind turbine
+ırıja	kind-level predicate
 ısheı	ıs a descender
 ıshy	keymashes
 ısylamychuaq	Islam
 ısıkuı	Ithkuil.
+ıte	has an inflammation
+ıukıgoa	has Euclidean geometry
 ıulua	true story
 ıum	chemical element
 ıꝡe	high-pitched
 ꝡa	that
 ꝡalaqteı	glottal.tone
+ꝡalaı	subordination.mark
 ꝡampırı	vampire
 ꝡase	proposition
 ꝡaılı	joyous
