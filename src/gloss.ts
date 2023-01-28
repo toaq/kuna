@@ -5,7 +5,7 @@ import * as fs from 'fs';
 
 let toaduaGlosses = new Map();
 for (const line of fs
-	.readFileSync('data/toadua-glosses.txt')
+	.readFileSync('data/toadua-glosses.tsv')
 	.toString()
 	.split('\n')) {
 	const fields = line.split('\t');
