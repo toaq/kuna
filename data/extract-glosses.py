@@ -6,6 +6,10 @@ import re
 import sys
 
 
+def extract_gloss(text):
+    return text.split("/")[0].strip().replace("(", "").replace(")", "").replace('"', "")
+
+
 def gloss(body, head):
     m = re.search("['‘’\"“”]([a-z .]+)['‘’\"“”];", body)
     if m:
@@ -19,10 +23,10 @@ def gloss(body, head):
     body = re.sub(r" (of|for|to|by|from)? ▯$", "", body)
     m = re.search(r"^▯ (?:is|are) (?:(?:a|an|the) )?([^▯]+)$", body)
     if m:
-        return m.group(1).split("/")[0].strip().replace("(","").replace(")","")
+        return extract_gloss(m.group(1))
     m = re.search(r"^▯ ([^▯]+)( ▯)?$", body)
     if m:
-        return m.group(1).split("/")[0].strip().replace("(","").replace(")","")
+        return extract_gloss(m.group(1))
     return None
 
 
