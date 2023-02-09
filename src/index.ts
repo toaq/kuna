@@ -1,4 +1,4 @@
-import { expectEOF, expectSingleResult } from 'typescript-parsec';
+import { expectEOF, expectSingleResult, TokenError } from 'typescript-parsec';
 import { toDocument } from './latex';
 import { SAP } from './parse';
 import { lexer, preprocess } from './tokenize';
@@ -53,9 +53,17 @@ yargs
 			});
 		},
 		function (argv: any) {
-			const tree = expectSingleResult(
-				expectEOF(SAP.parse(preprocess(lexer.parse(argv.sentence)!))),
+			const output = expectEOF(
+				SAP.parse(preprocess(lexer.parse(argv.sentence)!)),
 			);
+			if (!output.successful) {
+				throw new TokenError(output.error.pos, output.error.message);
+			}
+			if (output.candidates.length === 0) {
+				throw new TokenError(undefined, 'No result is returned.');
+			}
+
+			const tree = output.candidates[0].result;
 			fs.writeFileSync(argv.output, toDocument(tree));
 		},
 	)

@@ -16,6 +16,18 @@ export function bare(word: string): string {
 		.replace(/vy?|wy?|y/gu, 'ꝡ');
 }
 
+export function diacriticForTone(tone: Tone): string {
+	return ['', '\u0301', '\u0308', '\u0302'][tone];
+}
+
+export function inTone(word: string, tone: Tone): string {
+	return word
+		.normalize('NFKD')
+		.replace(/\p{Diacritic}/gu, '')
+		.replace(/[aeiıou]/gu, m => m + diacriticForTone(tone))
+		.normalize();
+}
+
 export function tone(word: string): Tone {
 	const norm = word.normalize('NFKD').match(/[\u0301\u0308\u0302]/);
 	if (!norm) {

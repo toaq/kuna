@@ -1,5 +1,5 @@
 import { Token, TokenPosition, rule } from 'typescript-parsec';
-import { alt, apply, opt, rep_sc, seq, tok } from 'typescript-parsec';
+import { alt, apply, opt, rep, seq, tok } from 'typescript-parsec';
 import { dictionary, Entry, WordType } from './dictionary';
 import { bare, tone } from './tokenize';
 import { Tone } from './types';
@@ -14,19 +14,50 @@ interface Word {
 	entry: Entry | undefined;
 }
 
+type Label =
+	| '*Serial'
+	| '*𝑣P'
+	| '&'
+	| "&'"
+	| '&P'
+	| 'Adjunct'
+	| 'AdjunctP'
+	| 'Asp'
+	| 'AspP'
+	| 'C'
+	| 'CP'
+	| 'CPrel'
+	| 'D'
+	| 'DP'
+	| 'n'
+	| 'nP'
+	| 'SA'
+	| 'SAP'
+	| 'T'
+	| 'TP'
+	| 'Topic'
+	| "Topic'"
+	| 'TopicP'
+	| '𝑣'
+	| 'V'
+	| '𝑣P'
+	| 'VP'
+	| 'Σ'
+	| 'ΣP';
+
 interface Leaf {
-	label: string;
+	label: Label;
 	word: Word | 'covert' | 'functional';
 }
 
 interface Branch {
-	label: string;
+	label: Label;
 	left: Tree;
 	right: Tree;
 }
 
 interface Rose {
-	label: string;
+	label: Label;
 	children: Tree[];
 }
 
@@ -54,32 +85,32 @@ function makeWord(token: Token<POS>): Word {
 	};
 }
 
-const makeLeaf = (label: string) => (token: Token<POS>) => ({
+const makeLeaf = (label: Label) => (token: Token<POS>) => ({
 	label,
 	word: makeWord(token),
 });
 
 const makeBranch =
-	(label: string) =>
+	(label: Label) =>
 	([left, right]: [Tree, Tree]) => ({
 		label,
 		left,
 		right,
 	});
 
-const makeRose = (label: string) => (children: Tree[]) => ({
+const makeRose = (label: Label) => (children: Tree[]) => ({
 	label,
 	children,
 });
 
 const makeRose2 =
-	(label: string) =>
+	(label: Label) =>
 	([left, rights]: [Tree, Tree[]]) => ({
 		label,
 		children: [left, ...rights],
 	});
 
-const makeOptLeaf = (label: string) => (leaf: Leaf | undefined) =>
+const makeOptLeaf = (label: Label) => (leaf: Leaf | undefined) =>
 	leaf ?? { label, word: 'covert' };
 
 const D = rule<POS, Leaf>();
@@ -91,15 +122,30 @@ const Aspopt = rule<POS, Leaf>();
 const Σ = rule<POS, Leaf>();
 const C = rule<POS, Leaf>();
 const Copt = rule<POS, Leaf>();
+const Csub = rule<POS, Leaf>();
+const Cinc = rule<POS, Leaf>();
+const Crel = rule<POS, Leaf>();
+const Crelopt = rule<POS, Leaf>();
 const SA = rule<POS, Leaf>();
 const SAopt = rule<POS, Leaf>();
-const PRONOUN = rule<POS, Leaf>();
+export const SAP = rule<POS, Tree>();
+const DPpronoun = rule<POS, Leaf>();
 const DP = rule<POS, Tree>();
 const CP = rule<POS, Tree>();
+const CPsub = rule<POS, Tree>();
+const CPinc = rule<POS, Tree>();
+const CPdet = rule<POS, Tree>();
+const CPrel = rule<POS, Tree>();
 const Serial = rule<POS, Tree>();
+const VP = rule<POS, Tree>();
 const vP = rule<POS, Tree>();
 const AspP = rule<POS, Tree>();
 const TP = rule<POS, Tree>();
+const Adjunct = rule<POS, Tree>();
+const AdjunctP = rule<POS, Tree>();
+const Conjunction = rule<POS, Tree>();
+const ConjunctionT1 = rule<POS, Tree>();
+const ConjunctionT4 = rule<POS, Tree>();
 
 D.setPattern(apply(tok('determiner'), makeLeaf('D')));
 
@@ -116,16 +162,25 @@ Aspopt.setPattern(apply(opt(Asp), makeOptLeaf('Asp')));
 C.setPattern(apply(tok('complementizer'), makeLeaf('C')));
 Copt.setPattern(apply(opt(C), makeOptLeaf('C')));
 
-SA.setPattern(apply(tok('illocution'), makeLeaf('SA')));
+Csub.setPattern(apply(tok('subordinating complementizer'), makeLeaf('C')));
+Cinc.setPattern(apply(tok('incorporated complementizer'), makeLeaf('C')));
+Crel.setPattern(apply(tok('relative clause complementizer'), makeLeaf('C')));
+Crelopt.setPattern(apply(opt(Crel), makeOptLeaf('C')));
 
+Adjunct.setPattern(apply(tok('preposition'), makeLeaf('Adjunct')));
+Conjunction.setPattern(apply(tok('conjunction'), makeLeaf('&')));
+ConjunctionT1.setPattern(apply(tok('conjunction in t1'), makeLeaf('&')));
+ConjunctionT4.setPattern(apply(tok('conjunction in t4'), makeLeaf('&')));
+
+SA.setPattern(apply(tok('illocution'), makeLeaf('SA')));
 SAopt.setPattern(apply(opt(SA), makeOptLeaf('SA')));
 
-PRONOUN.setPattern(apply(tok('pronoun'), makeLeaf('DP')));
+DPpronoun.setPattern(apply(tok('pronoun'), makeLeaf('DP')));
 
 DP.setPattern(
 	alt(
-		PRONOUN,
-		apply(seq(D, CP), ([d, cp]) => ({
+		DPpronoun,
+		apply(seq(D, CPdet), ([d, cp]) => ({
 			label: 'DP',
 			left: d,
 			right: {
@@ -137,12 +192,35 @@ DP.setPattern(
 	),
 );
 
-Serial.setPattern(apply(rep_sc(V), makeRose('Serial*')));
+Serial.setPattern(apply(rep(V), makeRose('*Serial')));
 
-vP.setPattern(apply(seq(Serial, rep_sc(DP)), makeRose2('𝑣P*')));
-AspP.setPattern(apply(seq(Aspopt, vP), makeBranch('AspP')));
-TP.setPattern(apply(seq(Topt, AspP), makeBranch('TP')));
+/// TODO transitive/intransitive
+VP.setPattern(apply(seq(V, alt(DP, CPsub)), makeBranch('VP')));
+AdjunctP.setPattern(apply(seq(Adjunct, VP), makeBranch('AdjunctP')));
+
+vP.setPattern(
+	alt(
+		apply(seq(Σ, vP), makeBranch('ΣP')),
+		apply(seq(Serial, rep(alt(DP, CPsub))), makeRose2('*𝑣P')),
+	),
+);
+AspP.setPattern(
+	alt(
+		apply(seq(Σ, AspP), makeBranch('ΣP')),
+		apply(seq(Aspopt, vP), makeBranch('AspP')),
+	),
+);
+TP.setPattern(
+	alt(
+		apply(seq(Σ, TP), makeBranch('ΣP')),
+		apply(seq(Topt, AspP), makeBranch('TP')),
+	),
+);
+
 CP.setPattern(apply(seq(Copt, TP), makeBranch('CP')));
+CPsub.setPattern(apply(seq(Csub, TP), makeBranch('CP')));
+CPinc.setPattern(apply(seq(Cinc, TP), makeBranch('CP')));
+CPrel.setPattern(apply(seq(Crel, TP), makeBranch('CPrel')));
+CPdet.setPattern(apply(seq(Crelopt, TP), makeBranch('CPrel')));
 
-export const SAP = rule<POS, Tree>();
 SAP.setPattern(apply(seq(CP, SAopt), makeBranch('SAP')));

@@ -1,4 +1,6 @@
 import * as fs from 'fs';
+import { inTone } from './tokenize';
+import { Tone } from './types';
 
 export type VerbType =
 	| 'name quote'
@@ -13,22 +15,29 @@ export type NonVerbType =
 	| 'cleft verb'
 	| 'complementizer'
 	| 'conjunction'
+	| 'conjunction in t1'
+	| 'conjunction in t4'
 	| 'determiner'
 	| 'end parenthetical'
 	| 'end quote'
 	| 'event accessor'
 	| 'focus particle'
 	| 'illocution'
+	| 'incorporated complementizer'
 	| 'interjection'
 	| 'modality'
+	| 'modality with complement'
+	| 'object incorporating determiner'
 	| 'plural coordinator'
 	| 'polarity'
 	| 'prefix'
 	| 'preposition'
 	| 'pronoun'
 	| 'retroactive cleft'
+	| 'relative clause complementizer'
 	| 'sentence connector'
 	| 'start parenthetical'
+	| 'subordinating complementizer'
 	| 'tense'
 	| 'topic marker'
 	| 'vocative';
@@ -70,7 +79,57 @@ const entries: Entry[] = JSON.parse(
 
 export const dictionary = new Map<string, Entry>();
 for (const e of entries) {
+	if (e.type === 'complementizer') {
+		if (e.english.includes('relative')) {
+			e.type = 'relative clause complementizer';
+		} else if (/subordinate|property/.test(e.english)) {
+			e.type = 'subordinating complementizer';
+			const ic = inTone(e.toaq, Tone.T4);
+			dictionary.set(ic, {
+				toaq: ic,
+				english: e.english,
+				gloss: 'of.' + e.gloss,
+				type: 'incorporated complementizer',
+			});
+		}
+	}
 	dictionary.set(e.toaq, e);
+	if (e.type === 'determiner') {
+		const oid = inTone(e.toaq, Tone.T4);
+		dictionary.set(oid, {
+			toaq: oid,
+			english: e.english,
+			gloss: 'of.' + e.gloss,
+			type: 'object incorporating determiner',
+		});
+	}
+
+	if (e.type === 'conjunction') {
+		const t1 = inTone(e.toaq, Tone.T1);
+		dictionary.set(t1, {
+			toaq: t1,
+			english: e.english,
+			gloss: e.gloss,
+			type: 'conjunction in t1',
+		});
+		const t4 = inTone(e.toaq, Tone.T4);
+		dictionary.set(t4, {
+			toaq: t4,
+			english: e.english,
+			gloss: e.gloss,
+			type: 'conjunction in t4',
+		});
+	}
+
+	if (e.type === 'modality') {
+		const t4 = inTone(e.toaq, Tone.T4);
+		dictionary.set(t4, {
+			toaq: t4,
+			english: e.english,
+			gloss: e.gloss,
+			type: 'modality with complement',
+		});
+	}
 }
 
 dictionary.set('◌́', {
@@ -86,3 +145,5 @@ dictionary.set('◌̂', {
 	gloss: 'with',
 	type: 'preposition',
 });
+
+dictionary.delete('ló');
