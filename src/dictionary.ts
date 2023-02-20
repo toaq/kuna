@@ -2,45 +2,54 @@ import * as fs from 'fs';
 import { inTone } from './tokenize';
 import { Tone } from './types';
 
-export type VerbType =
-	| 'name quote'
-	| 'name verb'
-	| 'object incorporating verb'
-	| 'predicate'
-	| 'text quote'
-	| 'word quote';
+export const verbTypes = [
+	'name quote',
+	'name verb',
+	'object incorporating verb',
+	'predicate',
+	'text quote',
+	'word quote',
+] as const;
 
-export type NonVerbType =
-	| 'aspect'
-	| 'cleft verb'
-	| 'complementizer'
-	| 'conjunction'
-	| 'conjunction in t1'
-	| 'conjunction in t4'
-	| 'determiner'
-	| 'end parenthetical'
-	| 'end quote'
-	| 'event accessor'
-	| 'focus particle'
-	| 'illocution'
-	| 'incorporated complementizer'
-	| 'interjection'
-	| 'modality'
-	| 'modality with complement'
-	| 'object incorporating determiner'
-	| 'plural coordinator'
-	| 'polarity'
-	| 'prefix'
-	| 'preposition'
-	| 'pronoun'
-	| 'retroactive cleft'
-	| 'relative clause complementizer'
-	| 'sentence connector'
-	| 'start parenthetical'
-	| 'subordinating complementizer'
-	| 'tense'
-	| 'topic marker'
-	| 'vocative';
+export type VerbType = typeof verbTypes[number];
+
+export const nonVerbTypes = [
+	'aspect',
+	'cleft verb',
+	'complementizer',
+	'conjunction',
+	'conjunction in t1',
+	'conjunction in t4',
+	'determiner',
+	'end parenthetical',
+	'end quote',
+	'event accessor',
+	'focus particle',
+	'illocution',
+	'incorporated complementizer',
+	'interjection',
+	'modality',
+	'modality with complement',
+	'object incorporating determiner',
+	'plural coordinator',
+	'polarity',
+	'prefix',
+	'preposition',
+	'pronoun',
+	'retroactive cleft',
+	'relative clause complementizer',
+	'sentence connector',
+	'start parenthetical',
+	'subordinating complementizer',
+	'tense',
+	'topic marker',
+	'vocative',
+] as const;
+
+export const wordTypes = [...verbTypes, ...nonVerbTypes];
+export const underscoredWordTypes = wordTypes.map(s => s.replace(/ /g, '_'));
+
+export type NonVerbType = typeof nonVerbTypes[number];
 
 export type WordType = VerbType | NonVerbType;
 
@@ -79,6 +88,9 @@ const entries: Entry[] = JSON.parse(
 
 export const dictionary = new Map<string, Entry>();
 for (const e of entries) {
+	delete (e as any).examples;
+	delete (e as any).keywords;
+	delete (e as any).notes;
 	if (e.type === 'complementizer') {
 		if (e.english.includes('relative')) {
 			e.type = 'relative clause complementizer';

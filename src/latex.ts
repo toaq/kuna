@@ -1,4 +1,4 @@
-import { Tree } from './parse';
+import { Tree } from './tree';
 
 export function latexEscape(text: string): string {
 	return '{' + text.replace(/Σ/g, '$\\Sigma$') + '}';
@@ -36,8 +36,7 @@ ${latex}
 \\end{forest}`;
 }
 
-export function toDocument(tree: Tree): string {
-	const latex = toLatex(tree);
+export function toDocument(trees: Tree[]): string {
 	const lightMode = false;
 	return `\\documentclass[preview,border=30pt]{standalone}
 \\usepackage{amssymb}
@@ -70,6 +69,6 @@ export function toDocument(tree: Tree): string {
 \\pagecolor{bg}
 \\color{fg}
 
-${toEnvironment(tree)}
+${trees.map(toEnvironment).join('\n')}
 \\end{document}`;
 }

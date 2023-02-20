@@ -24,10 +24,11 @@
 	},
 	"homepage": "https://github.com/toaq/kuna#readme",
 	"dependencies": {
+		"@types/nearley": "^2.11.2",
 		"@types/yargs": "^17.0.20",
 		"canvas": "^2.11.0",
 		"discord.js": "^14.7.1",
-		"typescript-parsec": "^0.3.2",
+		"nearley": "^2.20.1",
 		"yargs": "^17.6.2"
 	},
 	"jest": {

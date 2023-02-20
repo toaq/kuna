@@ -1,11 +1,12 @@
-import { expectEOF, expectSingleResult, TokenError } from 'typescript-parsec';
 import { toDocument } from './latex';
-import { SAP } from './parse';
-import { lexer, preprocess } from './tokenize';
 import * as fs from 'fs';
 import { alignGlossSentence, glossSentence } from './gloss';
 import yargs from 'yargs';
 import { pngGlossSentence } from './png-gloss';
+import nearley from 'nearley';
+import grammar from './grammar';
+import { Tree } from './tree';
+import { fix } from './fix';
 
 yargs
 	.scriptName('kuna')
@@ -53,18 +54,23 @@ yargs
 			});
 		},
 		function (argv: any) {
-			const output = expectEOF(
-				SAP.parse(preprocess(lexer.parse(argv.sentence)!)),
-			);
-			if (!output.successful) {
-				throw new TokenError(output.error.pos, output.error.message);
-			}
-			if (output.candidates.length === 0) {
-				throw new TokenError(undefined, 'No result is returned.');
-			}
+			const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
+			parser.feed(argv.sentence);
+			const trees = (parser.results as Tree[]).map(fix);
+			// console.dir(trees, { depth: null });
 
-			const tree = output.candidates[0].result;
-			fs.writeFileSync(argv.output, toDocument(tree));
+			// const output = expectEOF(
+			// 	SAP.parse(preprocess(lexer.parse(argv.sentence)!)),
+			// );
+			// if (!output.successful) {
+			// 	throw new TokenError(output.error.pos, output.error.message);
+			// }
+			// if (output.candidates.length === 0) {
+			// 	throw new TokenError(undefined, 'No result is returned.');
+			// }
+
+			console.log(trees.length + ' parses');
+			fs.writeFileSync(argv.output, toDocument(trees));
 		},
 	)
 	.strict()

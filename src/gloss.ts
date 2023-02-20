@@ -1,5 +1,5 @@
 import { dictionary } from './dictionary';
-import { bare, tone } from './tokenize';
+import { bare, clean, tone } from './tokenize';
 import { Tone } from './types';
 import * as fs from 'fs';
 
@@ -91,11 +91,7 @@ function glossRoot(root: string): string {
 }
 
 function glossWord(word: string): string {
-	word = word
-		.replace(/[\p{Pe}\p{Pf}\p{Pi}\p{Po}\p{Ps}]/gu, '')
-		.toLowerCase()
-		.replace(/i/gu, 'ı')
-		.replace(/vy?|wy?|y/gu, 'ꝡ');
+	word = clean(word.replace(/[\p{Pe}\p{Pf}\p{Pi}\p{Po}\p{Ps}]/gu, ''));
 
 	const { prefixes, root } = splitPrefixes(word);
 	return prefixes.map(glossPrefix).join('') + glossRoot(root);
