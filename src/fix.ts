@@ -21,7 +21,7 @@ export function fix(tree: Tree): Tree {
 			if (frame.length === 1) {
 				return {
 					label: '𝑣P',
-					left: { label: '𝑣', word: 'functional' },
+					left: { label: '𝑣0', word: 'functional' },
 					right: { label: 'VP', left: verb, right: tree.children[1] },
 				};
 			} else if (frame.length === 2) {

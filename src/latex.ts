@@ -1,11 +1,15 @@
+import { DTree, showFormula } from './denote';
 import { Tree } from './tree';
 
 export function latexEscape(text: string): string {
 	return '{' + text.replace(/Σ/g, '$\\Sigma$') + '}';
 }
 
-export function toLatex(tree: Tree): string {
-	const label = latexEscape(tree.label);
+export function toLatex(tree: Tree | DTree): string {
+	let label = latexEscape(tree.label);
+	if ('denotation' in tree) {
+		label = '{' + label + '\\\\ \\color{den}$' + showFormula(tree.denotation) + '$}';
+	}
 	if ('left' in tree) {
 		const left = toLatex(tree.left);
 		const right = toLatex(tree.right);
@@ -29,14 +33,14 @@ export function toLatex(tree: Tree): string {
 	}
 }
 
-export function toEnvironment(tree: Tree): string {
+export function toEnvironment(tree: Tree | DTree): string {
 	const latex = toLatex(tree);
 	return `\\begin{forest}
 ${latex}
 \\end{forest}`;
 }
 
-export function toDocument(trees: Tree[]): string {
+export function toDocument(trees: (Tree | DTree)[]): string {
 	const lightMode = false;
 	return `\\documentclass[preview,border=30pt]{standalone}
 \\usepackage{amssymb}
@@ -59,12 +63,14 @@ export function toDocument(trees: Tree[]): string {
 \\definecolor{verb}{HTML}{000000}
 \\definecolor{particle}{HTML}{000000}
 \\definecolor{other}{HTML}{000000}
+\\definecolor{den}{HTML}{000000}
 \\else
 \\definecolor{bg}{HTML}{36393E}
 \\definecolor{fg}{HTML}{DCDDDE}
 \\definecolor{verb}{HTML}{99EEFF}
 \\definecolor{particle}{HTML}{FFCC88}
 \\definecolor{other}{HTML}{DD99FF}
+\\definecolor{den}{HTML}{FF4466}
 \\fi
 \\pagecolor{bg}
 \\color{fg}

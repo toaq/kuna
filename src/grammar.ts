@@ -63,7 +63,7 @@ const grammar: Grammar = {
     {"name": "DP", "symbols": ["D", "CPdet"], "postprocess": makeBranch('DP')},
     {"name": "TP", "symbols": ["Topt", "AspP"], "postprocess": makeBranch('TP')},
     {"name": "TP", "symbols": ["Sigma", "T", "AspP"], "postprocess": make3L('ΣP', 'TP')},
-    {"name": "AspP", "symbols": ["Aspopt", "vP"], "postprocess": makeBranch('TP')},
+    {"name": "AspP", "symbols": ["Aspopt", "vP"], "postprocess": makeBranch('AspP')},
     {"name": "AspP", "symbols": ["Sigma", "Asp", "vP"], "postprocess": make3L('ΣP', 'AspP')},
     {"name": "vP$ebnf$1", "symbols": []},
     {"name": "vP$ebnf$1", "symbols": ["vP$ebnf$1", "term"], "postprocess": (d) => d[0].concat([d[1]])},

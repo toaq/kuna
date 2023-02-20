@@ -35,6 +35,7 @@ export type Label =
 	| "Topic'"
 	| 'TopicP'
 	| '𝑣'
+	| '𝑣0'
 	| "𝑣'"
 	| 'V'
     | "V'"

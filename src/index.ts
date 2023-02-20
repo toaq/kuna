@@ -7,6 +7,7 @@ import nearley from 'nearley';
 import grammar from './grammar';
 import { Tree } from './tree';
 import { fix } from './fix';
+import { denote } from './denote';
 
 yargs
 	.scriptName('kuna')
@@ -56,7 +57,7 @@ yargs
 		function (argv: any) {
 			const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
 			parser.feed(argv.sentence);
-			const trees = (parser.results as Tree[]).map(fix);
+			const trees = (parser.results as Tree[]).map(fix).map(denote);
 			// console.dir(trees, { depth: null });
 
 			// const output = expectEOF(

@@ -21,7 +21,7 @@ DP -> %pronoun {% makeLeaf('DP') %}
 DP -> D CPdet {% makeBranch('DP') %}
 TP -> Topt AspP {% makeBranch('TP') %}
 TP -> Sigma T AspP {% make3L('ΣP', 'TP') %}
-AspP -> Aspopt vP {% makeBranch('TP') %}
+AspP -> Aspopt vP {% makeBranch('AspP') %}
 AspP -> Sigma Asp vP {% make3L('ΣP', 'AspP') %}
 vP -> Serial term:* {% makeRose2('*𝑣P') %}
 
