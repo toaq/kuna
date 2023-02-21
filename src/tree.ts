@@ -122,7 +122,6 @@ export function makeRose(label: Label) {
 
 export function makeRose2(label: Label) {
 	return ([left, rights]: [Tree, Tree[]]) => {
-		console.log(left, rights);
 		return {
 			label,
 			children: [left, ...rights],
