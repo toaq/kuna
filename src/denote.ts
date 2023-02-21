@@ -70,14 +70,14 @@ export function apply(left: Formula, right: Formula): Formula {
 	return substitute(left.v, right, left.body);
 }
 
-export function showFormula(formula: Formula): string {
+export function formulaToLatex(formula: Formula): string {
 	switch (formula.type) {
 		case 'lambda': {
-			return '\\lambda ' + formula.v + '.' + showFormula(formula.body);
+			return '\\lambda ' + formula.v + '.' + formulaToLatex(formula.body);
 		}
 		case 'q': {
 			return (
-				'\\' + formula.q + ' ' + formula.v + '.' + showFormula(formula.body)
+				'\\' + formula.q + ' ' + formula.v + '.' + formulaToLatex(formula.body)
 			);
 		}
 		case 'variable': {
@@ -85,9 +85,9 @@ export function showFormula(formula: Formula): string {
 		}
 		case 'apply': {
 			return (
-				showFormula(formula.func) +
+				formulaToLatex(formula.func) +
 				'(' +
-				formula.args.map(showFormula).join(',') +
+				formula.args.map(formulaToLatex).join(',') +
 				')'
 			);
 		}
@@ -100,9 +100,9 @@ export function showFormula(formula: Formula): string {
 		case 'and': {
 			return (
 				'(' +
-				showFormula(formula.left) +
+				formulaToLatex(formula.left) +
 				' \\wedge ' +
-				showFormula(formula.right) +
+				formulaToLatex(formula.right) +
 				')'
 			);
 		}
@@ -111,10 +111,45 @@ export function showFormula(formula: Formula): string {
 				'\\textsc{' +
 				formula.role +
 				'}(' +
-				showFormula(formula.event) +
+				formulaToLatex(formula.event) +
 				')=' +
-				showFormula(formula.actor)
+				formulaToLatex(formula.actor)
 			);
+		}
+	}
+}
+
+export function formulaToText(formula: Formula): string {
+	switch (formula.type) {
+		case 'lambda': {
+			return 'λ' + formula.v + '. ' + formulaToText(formula.body);
+		}
+		case 'q': {
+			const q = formula.q === 'forall' ? '∀' : '∃';
+			return q + formula.v + ': ' + formulaToText(formula.body);
+		}
+		case 'variable': {
+			return formula.name;
+		}
+		case 'apply': {
+			const f = formulaToText(formula.func);
+			const xs = formula.args.map(formulaToText).join(',');
+			return `${f}(${xs})`;
+		}
+		case 'verb':
+		case 'constant': {
+			return formula.name;
+		}
+		case 'and': {
+			const l = formulaToText(formula.left);
+			const r = formulaToText(formula.right);
+			return `(${l} ∧ ${r})`;
+		}
+		case 'role': {
+			const r = formula.role;
+			const e = formulaToText(formula.event);
+			const a = formulaToText(formula.actor);
+			return `${r}(${e}) = ${a}`;
 		}
 	}
 }
@@ -148,14 +183,8 @@ export function denote(tree: Tree): DTree {
 				...tree,
 				denotation:
 					arity === 3
-						? λ(
-								'y_d',
-								λ(
-									'x_d',
-									λ('e_d', app(app(verb, v('x_d'), v('y_d')), v('e_d'))),
-								),
-						  )
-						: λ('x_t', λ('e_t', app(app(verb, v('x_t')), v('e_t')))),
+						? λ('y', λ('x', λ('e', app(app(verb, v('x'), v('y')), v('e')))))
+						: λ('x', λ('e', app(app(verb, v('x')), v('e')))),
 				presuppositions: [],
 			};
 		} else if (tree.label === 'DP') {
@@ -173,12 +202,12 @@ export function denote(tree: Tree): DTree {
 			return {
 				...tree,
 				denotation: λ(
-					'x_v',
-					λ('e_v', {
+					'x',
+					λ('e', {
 						type: 'role',
 						role: 'agent',
-						event: v('e_v'),
-						actor: v('x_v'),
+						event: v('e'),
+						actor: v('x'),
 					}),
 				),
 				presuppositions: [],
@@ -187,18 +216,18 @@ export function denote(tree: Tree): DTree {
 			return {
 				...tree,
 				denotation: λ(
-					'P_A',
-					λ('t_A', {
+					'P',
+					λ('t', {
 						type: 'q',
 						q: 'exists',
-						v: 'e_A',
-						body: app(v('P_A'), v('e_A')),
+						v: 'e',
+						body: app(v('P'), v('e')),
 					}),
 				),
 				presuppositions: [],
 			};
 		} else if (tree.label === 'T') {
-			return { ...tree, denotation: v('t_T'), presuppositions: [] };
+			return { ...tree, denotation: v('t'), presuppositions: [] };
 		} else {
 			return { ...tree, denotation: v('?'), presuppositions: [] };
 		}
@@ -219,11 +248,11 @@ export function denote(tree: Tree): DTree {
 		} else if (tree.label === "𝑣'") {
 			// Event Identification
 			denotation = λ(
-				'x_i',
-				λ('e_i', {
+				'x',
+				λ('e', {
 					type: 'and',
-					left: apply(apply(left.denotation, v('x_i')), v('e_i')),
-					right: apply(right.denotation, v('e_i')),
+					left: apply(apply(left.denotation, v('x')), v('e')),
+					right: apply(right.denotation, v('e')),
 				}),
 			);
 		} else {

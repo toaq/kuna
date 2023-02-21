@@ -8,6 +8,7 @@ import grammar from './grammar';
 import { Tree } from './tree';
 import { fix } from './fix';
 import { denote } from './denote';
+import { pngDrawTree } from './draw-tree';
 
 yargs
 	.scriptName('kuna')
@@ -40,7 +41,27 @@ yargs
 
 		function (argv) {
 			const imgBuffer = pngGlossSentence(argv.sentence!);
-			fs.writeFileSync('output.png', imgBuffer);
+			fs.writeFileSync(argv.output as string, imgBuffer);
+		},
+	)
+	.command(
+		'tree-png',
+		'Tree to PNG format',
+		yargs => {
+			yargs.demandOption('sentence');
+			yargs.option('output', {
+				type: 'string',
+				describe: 'Path for PNG output',
+				default: 'output.png',
+			});
+		},
+
+		function (argv) {
+			const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
+			parser.feed(argv.sentence!);
+			const trees = (parser.results as Tree[]).map(fix).map(denote);
+			const imgBuffer = pngDrawTree(trees[0]);
+			fs.writeFileSync(argv.output as string, imgBuffer);
 		},
 	)
 	.command(
@@ -54,24 +75,13 @@ yargs
 				default: 'output.tex',
 			});
 		},
-		function (argv: any) {
+		function (argv) {
 			const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
-			parser.feed(argv.sentence);
+			parser.feed(argv.sentence!);
 			const trees = (parser.results as Tree[]).map(fix).map(denote);
-			// console.dir(trees, { depth: null });
-
-			// const output = expectEOF(
-			// 	SAP.parse(preprocess(lexer.parse(argv.sentence)!)),
-			// );
-			// if (!output.successful) {
-			// 	throw new TokenError(output.error.pos, output.error.message);
-			// }
-			// if (output.candidates.length === 0) {
-			// 	throw new TokenError(undefined, 'No result is returned.');
-			// }
 
 			console.log(trees.length + ' parses');
-			fs.writeFileSync(argv.output, toDocument(trees));
+			fs.writeFileSync(argv.output as string, toDocument(trees));
 		},
 	)
 	.strict()
