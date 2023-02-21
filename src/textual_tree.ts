@@ -10,13 +10,16 @@ function ttree_converted(data: any): {label: string, branches: any} {
         b = "🅵";
         break;
       default:
-        b = data.word.bare + data.word.tone.toString();
+        var t = ["", "\u0301", "\u0308", "\u0302"][data.word.tone - 1];
+        b = data.word.bare.replace(/[aeıiou]/iu, (v: string) => 
+          (v.replace('ı', 'i') + t).normalize("NFD").replace('i', 'ı'));
     }
     return {"label": data.label, "branches": [b]};
   } else {
     return {
       "label": data.label,
-      "branches": [ttree_converted(data.left), ttree_converted(data.right)]
+      "branches":
+        [ttree_converted(data.left), ttree_converted(data.right)]
     };
   }
 }
@@ -25,7 +28,10 @@ function is_string(v: any) {
   return Object.prototype.toString.call(v) === '[object String]';
 }
 
-function textual_tree_of(data: {label: string, branches: any}, pad = "") {
+function textual_tree_of(
+  data: {label: string, branches: any},
+  pad = ""
+) {
   var r = "";
   var nl_pad: string;
   var l = data.branches.length;
