@@ -9,6 +9,7 @@ import { Tree } from './tree';
 import { fix } from './fix';
 import { denote } from './denote';
 import { pngDrawTree } from './draw-tree';
+import { textual_tree_from_json } from './textual_tree';
 
 yargs
 	.scriptName('kuna')
@@ -76,6 +77,22 @@ yargs
 			parser.feed(argv.sentence!);
 			const trees = (parser.results as Tree[]).map(fix);
 			console.log(JSON.stringify(trees));
+		},
+	)
+  .command(
+		'ttree',
+		'List of parse trees in plain text format',
+		yargs => {
+			yargs.demandOption('sentence');
+		},
+
+		function (argv) {
+			const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
+			parser.feed(argv.sentence!);
+			const trees = (parser.results as Tree[]).map(fix);
+			trees.forEach((v: any) => {
+        console.log(textual_tree_from_json(v));
+      });
 		},
 	)
 	.command(

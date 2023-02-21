@@ -29,6 +29,7 @@
 		"canvas": "^2.11.0",
 		"discord.js": "^14.7.1",
 		"nearley": "^2.20.1",
+		"package.json": "^2.0.1",
 		"yargs": "^17.6.2"
 	},
 	"jest": {
