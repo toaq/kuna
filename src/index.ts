@@ -65,8 +65,22 @@ yargs
 		},
 	)
 	.command(
+		'tree-json',
+		'List of parse trees in JSON format',
+		yargs => {
+			yargs.demandOption('sentence');
+		},
+
+		function (argv) {
+			const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
+			parser.feed(argv.sentence!);
+			const trees = (parser.results as Tree[]).map(fix);
+			console.log(JSON.stringify(trees));
+		},
+	)
+	.command(
 		'stree',
-		'Save surface-level grammar tree to LaTeX',
+		'Tree to LaTeX',
 		yargs => {
 			yargs.demandOption('sentence');
 			yargs.option('output', {
