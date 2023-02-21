@@ -9,7 +9,7 @@ import { Tree } from './tree';
 import { fix } from './fix';
 import { denote } from './denote';
 import { pngDrawTree } from './draw-tree';
-import { textual_tree_from_json } from './textual_tree';
+import { textual_tree_from_json } from './textual-tree';
 
 yargs
 	.scriptName('kuna')
