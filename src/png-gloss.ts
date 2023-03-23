@@ -44,7 +44,7 @@ export function pngGlossSentence(sentence: string): Buffer {
 		}
 	}
 
-	let temp = ctx.getImageData(0, 0, width, height);
+	const temp = ctx.getImageData(0, 0, width, height);
 	canvas.width = clipWidth;
 	canvas.height = y + 80 + yMargin;
 	ctx.putImageData(temp, 0, 0);

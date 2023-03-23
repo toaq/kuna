@@ -9,6 +9,10 @@ import { Tree } from './tree';
 import { fix } from './fix';
 import { denote } from './denote';
 import { pngDrawTree } from './draw-tree';
+import { parse } from './parse';
+import { initializeDictionary } from './dictionary';
+
+initializeDictionary();
 import { textual_tree_from_json } from './textual-tree';
 
 yargs
@@ -58,11 +62,10 @@ yargs
 		},
 
 		function (argv) {
-			const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
-			parser.feed(argv.sentence!);
-			const trees = (parser.results as Tree[]).map(fix).map(denote);
-			const imgBuffer = pngDrawTree(trees[0]);
-			fs.writeFileSync(argv.output as string, imgBuffer);
+			const trees = parse(argv.sentence!);
+			fs.writeFileSync('a.png', pngDrawTree(trees[0]));
+			fs.writeFileSync('b.png', pngDrawTree(fix(trees[0])));
+			fs.writeFileSync('c.png', pngDrawTree(denote(fix(trees[0]))));
 		},
 	)
 	.command(
@@ -73,13 +76,11 @@ yargs
 		},
 
 		function (argv) {
-			const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
-			parser.feed(argv.sentence!);
-			const trees = (parser.results as Tree[]).map(fix);
+			const trees = parse(argv.sentence!).map(fix);
 			console.log(JSON.stringify(trees));
 		},
 	)
-  .command(
+	.command(
 		'ttree',
 		'List of parse trees in plain text format',
 		yargs => {
@@ -91,12 +92,12 @@ yargs
 			parser.feed(argv.sentence!);
 			const trees = (parser.results as Tree[]).map(fix);
 			trees.forEach((v: any) => {
-        console.log(textual_tree_from_json(v));
-      });
+				console.log(textual_tree_from_json(v));
+			});
 		},
 	)
 	.command(
-		'stree',
+		'tree-latex',
 		'Tree to LaTeX',
 		yargs => {
 			yargs.demandOption('sentence');
@@ -107,9 +108,7 @@ yargs
 			});
 		},
 		function (argv) {
-			const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
-			parser.feed(argv.sentence!);
-			const trees = (parser.results as Tree[]).map(fix).map(denote);
+			const trees = parse(argv.sentence!).map(fix).map(denote);
 
 			console.log(trees.length + ' parses');
 			fs.writeFileSync(argv.output as string, toDocument(trees));

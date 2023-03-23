@@ -133,33 +133,52 @@ function drawTree(
 	x: number,
 	y: number,
 	tree: PlacedTree,
+	extent: { minX: number; maxX: number; minY: number; maxY: number },
 ): void {
+	function text(t: string, x: number, y: number): void {
+		ctx.fillText(t, x, y);
+		const m = ctx.measureText(t);
+		const minX = x - m.width / 2 - 10;
+		if (minX < extent.minX) extent.minX = minX;
+		const maxX = x + m.width / 2 + 10;
+		if (maxX > extent.maxX) extent.maxX = maxX;
+		const minY = y - 10;
+		if (minY < extent.minY) extent.minY = minY;
+		const maxY = y + 40;
+		if (maxY > extent.maxY) extent.maxY = maxY;
+	}
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'top';
 	if ('word' in tree) {
 		ctx.fillStyle = '#DCDDDE';
-		ctx.fillText(tree.label, x, y);
+		text(tree.label, x, y);
 		ctx.fillStyle = '#FF4466';
-		ctx.fillText(tree.denotation ?? '', x, y + 30);
+		const denotation = tree.denotation ?? '';
+		text(denotation, x, y + 30);
+		ctx.strokeStyle = '#DCDDDE';
+		ctx.lineWidth = 1;
 		ctx.beginPath();
-		ctx.moveTo(x, y + 75);
+		ctx.moveTo(x, y + (denotation ? 75 : 45));
 		ctx.lineTo(x, y + 95);
 		ctx.stroke();
 		ctx.fillStyle = '#99EEFF';
-		ctx.fillText(tree.word, x, y + 100);
+		text(tree.word, x, y + 100);
 		ctx.fillStyle = '#DCDDDE';
-		ctx.fillText(tree.gloss ?? '', x, y + 130);
+		text(tree.gloss ?? '', x, y + 130);
 	} else {
 		ctx.fillStyle = '#DCDDDE';
-		ctx.strokeStyle = '#DCDDDE';
-		ctx.lineWidth = 1;
-		ctx.fillText(tree.label, x, y);
+		text(tree.label, x, y);
+		const denotation = tree.denotation ?? '';
+		ctx.fillStyle = '#FF4466';
+		text(denotation, x, y + 30);
 		const n = tree.children.length;
 		for (let i = 0; i < n; i++) {
 			const dx = (i - (n - 1) / 2) * tree.distanceBetweenChildren;
-			drawTree(ctx, x + dx, y + 100, tree.children[i]);
+			drawTree(ctx, x + dx, y + 100, tree.children[i], extent);
+			ctx.strokeStyle = '#DCDDDE';
+			ctx.lineWidth = 1;
 			ctx.beginPath();
-			ctx.moveTo(x, y + 45);
+			ctx.moveTo(x, y + (denotation ? 75 : 45));
 			ctx.lineTo(x + dx, y + 95);
 			ctx.stroke();
 		}
@@ -176,7 +195,17 @@ export function pngDrawTree(tree: Tree | DTree): Buffer {
 	ctx.font = '20pt Segoe UI';
 
 	const placed = placeTree(ctx, tree);
-	drawTree(ctx, 1200, 20, placed);
+	const x = 1200;
+	const y = 20;
+	let extent = { minX: x, maxX: x, minY: y, maxY: y };
+	drawTree(ctx, 1200, 20, placed, extent);
+
+	const w = extent.maxX - extent.minX;
+	const h = extent.maxY - extent.minY;
+	const temp = ctx.getImageData(extent.minX, extent.minY, w, h);
+	canvas.width = w;
+	canvas.height = h;
+	ctx.putImageData(temp, 0, 0);
 
 	const imgBuffer = canvas.toBuffer('image/png');
 	return imgBuffer;

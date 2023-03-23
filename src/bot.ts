@@ -1,6 +1,9 @@
 import { REST, Routes } from 'discord.js';
 import { AttachmentBuilder } from 'discord.js';
 import { Client, GatewayIntentBits } from 'discord.js';
+import { initializeDictionary } from './dictionary';
+import { pngDrawTree } from './draw-tree';
+import { parse } from './parse';
 import { pngGlossSentence } from './png-gloss';
 
 const stringType = 3;
@@ -13,6 +16,18 @@ const commands = [
 			{
 				name: 'text',
 				description: 'Toaq text to gloss',
+				type: stringType,
+				required: true,
+			},
+		],
+	},
+	{
+		name: 'stree',
+		description: 'Surface Toaq tree',
+		options: [
+			{
+				name: 'text',
+				description: 'Toaq text to convert',
 				type: stringType,
 				required: true,
 			},
@@ -53,7 +68,24 @@ client.on('interactionCreate', async interaction => {
 		await interaction.reply({
 			files: [new AttachmentBuilder(png, { name: 'gloss.png' })],
 		});
+	} else if (interaction.commandName === 'stree') {
+		const text = interaction.options.getString('text', true);
+		try {
+			const trees = parse(text);
+
+			await interaction.reply({
+				content: `Found ${trees.length} parses.`,
+				files: trees.map(
+					(tree, i) =>
+						new AttachmentBuilder(pngDrawTree(tree), { name: `tree${i}.png` }),
+				),
+			});
+		} catch (e) {
+			await interaction.reply('Error: \n```\n' + e + '\n```');
+			return;
+		}
 	}
 });
 
+initializeDictionary();
 client.login(TOKEN);

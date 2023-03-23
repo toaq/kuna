@@ -87,75 +87,78 @@ const entries: Entry[] = JSON.parse(
 );
 
 export const dictionary = new Map<string, Entry>();
-for (const e of entries) {
-	delete (e as any).examples;
-	delete (e as any).keywords;
-	delete (e as any).notes;
-	if (e.type === 'complementizer') {
-		if (e.english.includes('relative')) {
-			e.type = 'relative clause complementizer';
-		} else if (/subordinate|property/.test(e.english)) {
-			e.type = 'subordinating complementizer';
-			const ic = inTone(e.toaq, Tone.T4);
-			dictionary.set(ic, {
-				toaq: ic,
+
+export function initializeDictionary(): void {
+	for (const e of entries) {
+		delete (e as any).examples;
+		delete (e as any).keywords;
+		delete (e as any).notes;
+		if (e.type === 'complementizer') {
+			if (e.english.includes('relative')) {
+				e.type = 'relative clause complementizer';
+			} else if (/subordinate|property/.test(e.english)) {
+				e.type = 'subordinating complementizer';
+				const ic = inTone(e.toaq, Tone.T4);
+				dictionary.set(ic, {
+					toaq: ic,
+					english: e.english,
+					gloss: 'of.' + e.gloss,
+					type: 'incorporated complementizer',
+				});
+			}
+		}
+		dictionary.set(e.toaq, e);
+		if (e.type === 'determiner') {
+			const oid = inTone(e.toaq, Tone.T4);
+			dictionary.set(oid, {
+				toaq: oid,
 				english: e.english,
 				gloss: 'of.' + e.gloss,
-				type: 'incorporated complementizer',
+				type: 'object incorporating determiner',
+			});
+		}
+
+		if (e.type === 'conjunction') {
+			const t1 = inTone(e.toaq, Tone.T1);
+			dictionary.set(t1, {
+				toaq: t1,
+				english: e.english,
+				gloss: e.gloss,
+				type: 'conjunction in t1',
+			});
+			const t4 = inTone(e.toaq, Tone.T4);
+			dictionary.set(t4, {
+				toaq: t4,
+				english: e.english,
+				gloss: e.gloss,
+				type: 'conjunction in t4',
+			});
+		}
+
+		if (e.type === 'modality') {
+			const t4 = inTone(e.toaq, Tone.T4);
+			dictionary.set(t4, {
+				toaq: t4,
+				english: e.english,
+				gloss: e.gloss,
+				type: 'modality with complement',
 			});
 		}
 	}
-	dictionary.set(e.toaq, e);
-	if (e.type === 'determiner') {
-		const oid = inTone(e.toaq, Tone.T4);
-		dictionary.set(oid, {
-			toaq: oid,
-			english: e.english,
-			gloss: 'of.' + e.gloss,
-			type: 'object incorporating determiner',
-		});
-	}
 
-	if (e.type === 'conjunction') {
-		const t1 = inTone(e.toaq, Tone.T1);
-		dictionary.set(t1, {
-			toaq: t1,
-			english: e.english,
-			gloss: e.gloss,
-			type: 'conjunction in t1',
-		});
-		const t4 = inTone(e.toaq, Tone.T4);
-		dictionary.set(t4, {
-			toaq: t4,
-			english: e.english,
-			gloss: e.gloss,
-			type: 'conjunction in t4',
-		});
-	}
+	dictionary.set('◌́', {
+		toaq: '◌́',
+		english: 'the',
+		gloss: 'the',
+		type: 'determiner',
+	});
 
-	if (e.type === 'modality') {
-		const t4 = inTone(e.toaq, Tone.T4);
-		dictionary.set(t4, {
-			toaq: t4,
-			english: e.english,
-			gloss: e.gloss,
-			type: 'modality with complement',
-		});
-	}
+	dictionary.set('◌̂', {
+		toaq: '◌̂',
+		english: 'with',
+		gloss: 'with',
+		type: 'preposition',
+	});
+
+	dictionary.delete('ló');
 }
-
-dictionary.set('◌́', {
-	toaq: '◌́',
-	english: 'the',
-	gloss: 'the',
-	type: 'determiner',
-});
-
-dictionary.set('◌̂', {
-	toaq: '◌̂',
-	english: 'with',
-	gloss: 'with',
-	type: 'preposition',
-});
-
-dictionary.delete('ló');
