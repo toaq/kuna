@@ -76,7 +76,7 @@ export class ToaqTokenizer {
 				});
 				this.tokens.push({
 					type: bareEntry.type.replace(/ /g, '_'),
-					value: tokenText,
+					value: bare(tokenText),
 					index: m.index,
 				});
 				continue;

@@ -38,7 +38,7 @@ export type Label =
 	| '𝑣0'
 	| "𝑣'"
 	| 'V'
-    | "V'"
+	| "V'"
 	| '𝑣P'
 	| 'VP'
 	| 'Σ'
@@ -91,11 +91,38 @@ export function makeLeaf(label: Label) {
 	});
 }
 
+export function makeCovertLeaf(label: Label) {
+	return () => ({
+		label,
+		word: 'covert',
+	});
+}
+
 export function makeBranch(label: Label) {
 	return ([left, right]: [Tree, Tree]) => {
 		return {
 			label,
 			left,
+			right,
+		};
+	};
+}
+
+export function makeBranchFunctionalLeft(label: Label, functionalLabel: Label) {
+	return ([right]: [Tree, Tree]) => {
+		return {
+			label,
+			left: { label: functionalLabel, word: 'functional' },
+			right,
+		};
+	};
+}
+
+export function makeBranchCovertLeft(label: Label, covertLabel: Label) {
+	return ([right]: [Tree, Tree]) => {
+		return {
+			label,
+			left: { label: covertLabel, word: 'covert' },
 			right,
 		};
 	};
@@ -125,6 +152,15 @@ export function makeRose2(label: Label) {
 		return {
 			label,
 			children: [left, ...rights],
+		};
+	};
+}
+
+export function makeSingleChild(label: Label) {
+	return ([left]: [Tree]) => {
+		return {
+			label,
+			children: [left],
 		};
 	};
 }

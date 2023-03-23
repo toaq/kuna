@@ -20,8 +20,19 @@ declare var tense: any;
 declare var predicate: any;
 
 import { ToaqTokenizer } from "./tokenize";
-const { makeWord, makeLeaf, makeOptLeaf, makeBranch, makeRose, makeRose2, make3L } = require("./tree");
-const lexer = new ToaqTokenizer();
+const {
+	make3L,
+	makeBranch,
+	makeBranchCovertLeft,
+	makeBranchFunctionalLeft,
+    makeCovertLeaf,
+	makeLeaf,
+	makeOptLeaf,
+	makeRose,
+	makeRose2,
+    makeSingleChild,
+	makeWord,
+} = require('./tree');const lexer = new ToaqTokenizer();
 
 interface NearleyToken {
   value: any;
@@ -58,19 +69,28 @@ const grammar: Grammar = {
     {"name": "CPsub", "symbols": ["Csub", "TP"], "postprocess": makeBranch('CP')},
     {"name": "CPinc", "symbols": ["Cinc", "TP"], "postprocess": makeBranch('CP')},
     {"name": "CPrel", "symbols": ["Crel", "TP"], "postprocess": makeBranch('CPrel')},
-    {"name": "CPdet", "symbols": ["Crelopt", "TP"], "postprocess": makeBranch('CPrel')},
+    {"name": "CPdet", "symbols": ["TPdet"], "postprocess": makeBranchCovertLeft('CPrel', 'C')},
     {"name": "DP", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun)], "postprocess": makeLeaf('DP')},
-    {"name": "DP", "symbols": ["D", "CPdet"], "postprocess": makeBranch('DP')},
+    {"name": "DP", "symbols": ["D", "nP"], "postprocess": makeBranch('DP')},
+    {"name": "nP", "symbols": ["nP", "CPrel"], "postprocess": makeBranch('nP')},
+    {"name": "nP", "symbols": ["CPdet"], "postprocess": makeBranchFunctionalLeft('nP', 'n')},
     {"name": "TP", "symbols": ["Topt", "AspP"], "postprocess": makeBranch('TP')},
     {"name": "TP", "symbols": ["Sigma", "T", "AspP"], "postprocess": make3L('ΣP', 'TP')},
+    {"name": "TPdet", "symbols": ["Topt", "AspPdet"], "postprocess": makeBranch('TP')},
+    {"name": "TPdet", "symbols": ["Sigma", "T", "AspPdet"], "postprocess": make3L('ΣP', 'TP')},
     {"name": "AspP", "symbols": ["Aspopt", "vP"], "postprocess": makeBranch('AspP')},
     {"name": "AspP", "symbols": ["Sigma", "Asp", "vP"], "postprocess": make3L('ΣP', 'AspP')},
+    {"name": "AspPdet", "symbols": ["Aspopt", "vPdet"], "postprocess": makeBranch('AspP')},
+    {"name": "AspPdet", "symbols": ["Sigma", "Asp", "vPdet"], "postprocess": make3L('ΣP', 'AspP')},
     {"name": "vP$ebnf$1", "symbols": []},
     {"name": "vP$ebnf$1", "symbols": ["vP$ebnf$1", "term"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "vP", "symbols": ["Serial", "vP$ebnf$1"], "postprocess": makeRose2('*𝑣P')},
+    {"name": "vPdet", "symbols": ["Serialdet"], "postprocess": makeSingleChild('*𝑣P')},
     {"name": "Serial$ebnf$1", "symbols": ["V"]},
     {"name": "Serial$ebnf$1", "symbols": ["Serial$ebnf$1", "V"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "Serial", "symbols": ["Serial$ebnf$1"], "postprocess": makeRose('*Serial')},
+    {"name": "Serialdet", "symbols": ["Serial"], "postprocess": id},
+    {"name": "Serialdet", "symbols": [], "postprocess": makeCovertLeaf('V')},
     {"name": "term", "symbols": ["DP"], "postprocess": id},
     {"name": "term", "symbols": ["CPsub"], "postprocess": id},
     {"name": "Adjunct", "symbols": [(lexer.has("preposition") ? {type: "preposition"} : preposition)], "postprocess": makeLeaf('Adjunct')},

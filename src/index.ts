@@ -11,9 +11,23 @@ import { denote } from './denote';
 import { pngDrawTree } from './draw-tree';
 import { parse } from './parse';
 import { initializeDictionary } from './dictionary';
+import { textual_tree_from_json } from './textual-tree';
 
 initializeDictionary();
-import { textual_tree_from_json } from './textual-tree';
+
+function getTrees(argv: {
+	sentence: string | undefined;
+	dStructure: boolean | undefined;
+	semantics: boolean | undefined;
+}): Tree[] {
+	let trees = parse(argv.sentence!);
+	if (argv.semantics) {
+		trees = trees.map(fix).map(denote);
+	} else if (argv.dStructure) {
+		trees = trees.map(fix);
+	}
+	return trees;
+}
 
 yargs
 	.scriptName('kuna')
@@ -21,6 +35,17 @@ yargs
 	.option('sentence', {
 		type: 'string',
 		describe: 'The Toaq sentence to parse',
+	})
+	.option('d-structure', {
+		type: 'boolean',
+		describe: 'Transform parse tree to D-structure',
+		default: false,
+	})
+	.option('semantics', {
+		type: 'boolean',
+		alias: 'denote',
+		describe: 'Annotate parse tree with semantics (implies --d-structure)',
+		default: false,
 	})
 	.command(
 		'gloss-ascii',
@@ -62,7 +87,7 @@ yargs
 		},
 
 		function (argv) {
-			const trees = parse(argv.sentence!);
+			const trees = getTrees(argv);
 			fs.writeFileSync('a.png', pngDrawTree(trees[0]));
 			fs.writeFileSync('b.png', pngDrawTree(fix(trees[0])));
 			fs.writeFileSync('c.png', pngDrawTree(denote(fix(trees[0]))));
@@ -76,24 +101,22 @@ yargs
 		},
 
 		function (argv) {
-			const trees = parse(argv.sentence!).map(fix);
+			const trees = getTrees(argv);
 			console.log(JSON.stringify(trees));
 		},
 	)
 	.command(
-		'ttree',
+		'tree-text',
 		'List of parse trees in plain text format',
 		yargs => {
 			yargs.demandOption('sentence');
 		},
 
 		function (argv) {
-			const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
-			parser.feed(argv.sentence!);
-			const trees = (parser.results as Tree[]).map(fix);
-			trees.forEach((v: any) => {
+			const trees = getTrees(argv);
+			for (const v of trees) {
 				console.log(textual_tree_from_json(v));
-			});
+			}
 		},
 	)
 	.command(
@@ -108,8 +131,7 @@ yargs
 			});
 		},
 		function (argv) {
-			const trees = parse(argv.sentence!).map(fix).map(denote);
-
+			const trees = getTrees(argv);
 			console.log(trees.length + ' parses');
 			fs.writeFileSync(argv.output as string, toDocument(trees));
 		},
