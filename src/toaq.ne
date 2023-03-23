@@ -12,9 +12,12 @@ const {
 	makeOptLeaf,
 	makeRose,
 	makeRose2,
+	makeSerial,
     makeSingleChild,
 	makeWord,
-} = require('./tree');const lexer = new ToaqTokenizer();
+	makevP,
+} = require('./tree');
+const lexer = new ToaqTokenizer();
 %}
 
 # Pass your lexer object using the @lexer option:
@@ -43,10 +46,10 @@ AspP -> Sigma Asp vP {% make3L('ΣP', 'AspP') %}
 AspPdet -> Aspopt vPdet {% makeBranch('AspP') %}
 AspPdet -> Sigma Asp vPdet {% make3L('ΣP', 'AspP') %}
 
-vP -> Serial term:* {% makeRose2('*𝑣P') %}
+vP -> Serial term:* {% makevP %}
 vPdet -> Serialdet {% makeSingleChild('*𝑣P') %}
 
-Serial -> V:+ {% makeRose('*Serial') %}
+Serial -> V:+ {% makeSerial %}
 Serialdet -> Serial {% id %}
 Serialdet -> null {% makeCovertLeaf('V') %}
 

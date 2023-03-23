@@ -1,4 +1,4 @@
-import { dictionary, Entry } from './dictionary';
+import { dictionary, Entry, VerbEntry } from './dictionary';
 import { bare, ToaqToken, tone } from './tokenize';
 import { Tone } from './types';
 
@@ -168,5 +168,46 @@ export function makeSingleChild(label: Label) {
 export function makeOptLeaf(label: Label) {
 	return ([leaf]: [Leaf | undefined]) => {
 		return leaf ?? { label, word: 'covert' };
+	};
+}
+
+export function makeSerial(
+	[children]: [Tree[]],
+	location: number,
+	reject: Object,
+) {
+	const verbs = children.map(
+		x => ((x as Leaf).word as Word).entry as VerbEntry,
+	);
+	const frames = verbs.map(x => x.frame);
+	let arity = frames[frames.length - 1].split(' ').length;
+	for (let i = frames.length - 2; i >= 0; i--) {
+		const frame = frames[i].split(' ');
+		const last = frame.at(-1)![0];
+		if (last === 'c') {
+			// So everything to the right is an adjective?
+			arity = frame.length;
+		} else {
+			arity += frame.length - 1 - Number(last);
+		}
+	}
+	return {
+		label: 'Serial*',
+		arity,
+		children,
+	};
+}
+
+export function makevP(
+	[serial, args]: [Tree, Tree[]],
+	location: number,
+	reject: Object,
+) {
+	if (args.length > (serial as any).arity) {
+		return reject;
+	}
+	return {
+		label: '*𝑣P',
+		children: [serial, ...args],
 	};
 }

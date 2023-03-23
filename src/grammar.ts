@@ -30,9 +30,12 @@ const {
 	makeOptLeaf,
 	makeRose,
 	makeRose2,
+	makeSerial,
     makeSingleChild,
 	makeWord,
-} = require('./tree');const lexer = new ToaqTokenizer();
+	makevP,
+} = require('./tree');
+const lexer = new ToaqTokenizer();
 
 interface NearleyToken {
   value: any;
@@ -84,11 +87,11 @@ const grammar: Grammar = {
     {"name": "AspPdet", "symbols": ["Sigma", "Asp", "vPdet"], "postprocess": make3L('ΣP', 'AspP')},
     {"name": "vP$ebnf$1", "symbols": []},
     {"name": "vP$ebnf$1", "symbols": ["vP$ebnf$1", "term"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "vP", "symbols": ["Serial", "vP$ebnf$1"], "postprocess": makeRose2('*𝑣P')},
+    {"name": "vP", "symbols": ["Serial", "vP$ebnf$1"], "postprocess": makevP},
     {"name": "vPdet", "symbols": ["Serialdet"], "postprocess": makeSingleChild('*𝑣P')},
     {"name": "Serial$ebnf$1", "symbols": ["V"]},
     {"name": "Serial$ebnf$1", "symbols": ["Serial$ebnf$1", "V"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "Serial", "symbols": ["Serial$ebnf$1"], "postprocess": makeRose('*Serial')},
+    {"name": "Serial", "symbols": ["Serial$ebnf$1"], "postprocess": makeSerial},
     {"name": "Serialdet", "symbols": ["Serial"], "postprocess": id},
     {"name": "Serialdet", "symbols": [], "postprocess": makeCovertLeaf('V')},
     {"name": "term", "symbols": ["DP"], "postprocess": id},
