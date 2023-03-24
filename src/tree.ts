@@ -13,6 +13,7 @@ export interface Word {
 export type Label =
 	| '*Serial'
 	| '*𝑣P'
+	| '*𝑣Pdet'
 	| '&'
 	| "&'"
 	| '&P'
@@ -218,7 +219,7 @@ export function makeSerial(
 		}
 	}
 	return {
-		label: 'Serial*',
+		label: '*Serial',
 		arity,
 		children,
 	};
@@ -239,6 +240,17 @@ export function makevP(
 	return {
 		label: '*𝑣P',
 		children: [serial, ...adjpsL, ...args, ...adjpsR],
+	};
+}
+
+export function makevPdet([serial]: [Tree], location: number, reject: Object) {
+	const arity = (serial as any).arity;
+	if (arity === 0) {
+		return reject;
+	}
+	return {
+		label: '*𝑣P',
+		children: [serial, { label: 'DP', word: 'covert' }],
 	};
 }
 

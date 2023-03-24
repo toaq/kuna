@@ -88,6 +88,12 @@ const entries: Entry[] = JSON.parse(
 
 export const dictionary = new Map<string, Entry>();
 
+export function entryArity(entry: VerbEntry): number {
+	return entry.frame
+		? entry.frame.split(' ').length
+		: (entry.english.split(';')[0].match(/▯/g) || []).length;
+}
+
 export function initializeDictionary(): void {
 	for (const e of entries) {
 		delete (e as any).examples;

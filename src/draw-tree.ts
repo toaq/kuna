@@ -138,13 +138,14 @@ function drawTree(
 	function text(t: string, x: number, y: number): void {
 		ctx.fillText(t, x, y);
 		const m = ctx.measureText(t);
-		const minX = x - m.width / 2 - 10;
+		const margin = 40;
+		const minX = x - m.width / 2 - margin;
 		if (minX < extent.minX) extent.minX = minX;
-		const maxX = x + m.width / 2 + 10;
+		const maxX = x + m.width / 2 + margin;
 		if (maxX > extent.maxX) extent.maxX = maxX;
-		const minY = y - 10;
+		const minY = y - margin;
 		if (minY < extent.minY) extent.minY = minY;
-		const maxY = y + 40;
+		const maxY = y + 30 + margin;
 		if (maxY > extent.maxY) extent.maxY = maxY;
 	}
 	ctx.textAlign = 'center';
@@ -186,8 +187,8 @@ function drawTree(
 }
 
 export function pngDrawTree(tree: Tree | DTree): Buffer {
-	const width = 2400;
-	const height = 2400;
+	const width = 8400;
+	const height = 4400;
 	const canvas = createCanvas(width, height);
 	const ctx = canvas.getContext('2d');
 	ctx.fillStyle = '#36393E';
@@ -195,10 +196,10 @@ export function pngDrawTree(tree: Tree | DTree): Buffer {
 	ctx.font = '20pt Segoe UI';
 
 	const placed = placeTree(ctx, tree);
-	const x = 1200;
-	const y = 20;
+	const x = width / 2;
+	const y = 50;
 	let extent = { minX: x, maxX: x, minY: y, maxY: y };
-	drawTree(ctx, 1200, 20, placed, extent);
+	drawTree(ctx, x, y, placed, extent);
 
 	const w = extent.maxX - extent.minX;
 	const h = extent.maxY - extent.minY;

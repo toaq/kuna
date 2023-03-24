@@ -1,3 +1,4 @@
+import { entryArity } from './dictionary';
 import { Tree } from './tree';
 
 export function fix(tree: Tree): Tree {
@@ -17,34 +18,35 @@ export function fix(tree: Tree): Tree {
 			const entry = word.entry;
 			if (!entry) throw new Error('unrecognized V');
 			if (entry.type !== 'predicate') throw new Error('nonpred V');
-			const frame = entry.frame.split(' ');
-			if (frame.length === 1) {
+			const arity = entryArity(entry);
+			console.log(arity, tree.children.length);
+			if (arity === 1) {
 				return {
 					label: '𝑣P',
 					left: { label: '𝑣0', word: 'functional' },
-					right: { label: 'VP', left: verb, right: tree.children[1] },
+					right: { label: 'VP', left: verb, right: fix(tree.children[1]) },
 				};
-			} else if (frame.length === 2) {
+			} else if (arity === 2) {
 				return {
 					label: '𝑣P',
-					left: tree.children[1],
+					left: fix(tree.children[1]),
 					right: {
 						label: "𝑣'",
 						left: { label: '𝑣', word: 'functional' },
-						right: { label: 'VP', left: verb, right: tree.children[2] },
+						right: { label: 'VP', left: verb, right: fix(tree.children[2]) },
 					},
 				};
-			} else if (frame.length === 3) {
+			} else if (arity === 3) {
 				return {
 					label: '𝑣P',
-					left: tree.children[1],
+					left: fix(tree.children[1]),
 					right: {
 						label: "𝑣'",
 						left: { label: '𝑣', word: 'functional' },
 						right: {
 							label: 'VP',
-							left: tree.children[2],
-							right: { label: "V'", left: verb, right: tree.children[3] },
+							left: fix(tree.children[2]),
+							right: { label: "V'", left: verb, right: fix(tree.children[3]) },
 						},
 					},
 				};

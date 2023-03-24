@@ -37,6 +37,7 @@ const {
     makeSingleChild,
 	makeWord,
 	makevP,
+	makevPdet,
 } = require('./tree');
 const lexer = new ToaqTokenizer();
 
@@ -105,7 +106,7 @@ const grammar: Grammar = {
     {"name": "vP$ebnf$2", "symbols": ["vP$ebnf$2$subexpression$1"], "postprocess": id},
     {"name": "vP$ebnf$2", "symbols": [], "postprocess": () => null},
     {"name": "vP", "symbols": ["Serial", "vP$ebnf$1", "vP$ebnf$2"], "postprocess": makevP},
-    {"name": "vPdet", "symbols": ["Serialdet"], "postprocess": makeSingleChild('*𝑣P')},
+    {"name": "vPdet", "symbols": ["Serialdet"], "postprocess": makevPdet},
     {"name": "AdjunctP", "symbols": ["Adjunct", "Serial", "DP1"], "postprocess": makeAdjunctPT},
     {"name": "AdjunctP", "symbols": ["Adjunct", "Serial"], "postprocess": makeAdjunctPI},
     {"name": "Serial$ebnf$1", "symbols": ["V1"]},

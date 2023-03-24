@@ -19,6 +19,7 @@ const {
     makeSingleChild,
 	makeWord,
 	makevP,
+	makevPdet,
 } = require('./tree');
 const lexer = new ToaqTokenizer();
 %}
@@ -55,7 +56,7 @@ AspPdet -> Asp1 vPdet {% makeBranch('AspP') %}
 AspPdet -> Sigma Asp1 vPdet {% make3L('ΣP', 'AspP') %}
 
 vP -> Serial AdjunctP1:* (term:+ AdjunctP1:*):? {% makevP %}
-vPdet -> Serialdet {% makeSingleChild('*𝑣P') %}
+vPdet -> Serialdet {% makevPdet %}
 
 AdjunctP -> Adjunct Serial DP1 {% makeAdjunctPT %}
 AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
