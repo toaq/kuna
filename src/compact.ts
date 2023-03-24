@@ -1,5 +1,9 @@
 import { Branch, Leaf, Tree, nodeType } from './tree';
 
+function isCovert(tree: Tree): boolean {
+	return 'word' in tree && typeof tree.word === 'string';
+}
+
 export function compact(tree: Tree): Tree {
 	if ('word' in tree) {
 		return tree;
@@ -7,31 +11,15 @@ export function compact(tree: Tree): Tree {
 		return { label: tree.label, children: tree.children.map(compact) };
 	}
 
-	const recurse = (tree: Branch): Branch => ({
-		label: tree.label,
-		left: compact(tree.left),
-		right: compact(tree.right),
-	});
-
-	if (nodeType(tree.label) !== 'phrase') return recurse(tree);
-
-	let restOfTree: Tree | undefined;
-	for (const direction of ['left', 'right'] as const) {
-		const child = tree[direction];
-		switch (nodeType(child.label)) {
-			case 'phrase':
-				restOfTree = child;
-				break;
-			case 'bar':
-				return recurse(tree);
-			case 'head':
-				if (typeof (child as Leaf).word === 'object') {
-					return recurse(tree);
-				}
-		}
+	if (isCovert(tree.left)) {
+		return compact(tree.right);
+	} else if (isCovert(tree.right)) {
+		return compact(tree.left);
+	} else {
+		return {
+			label: tree.label,
+			left: compact(tree.left),
+			right: compact(tree.right),
+		};
 	}
-
-	if (!restOfTree) return recurse(tree);
-
-	return compact(restOfTree);
 }
