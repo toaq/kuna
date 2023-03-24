@@ -4,6 +4,8 @@
 import { ToaqTokenizer } from "./tokenize";
 const {
 	make3L,
+	makeAdjunctPI,
+	makeAdjunctPT,
 	makeBranch,
 	makeBranchCovertLeft,
 	makeBranchFunctionalLeft,
@@ -24,7 +26,7 @@ const lexer = new ToaqTokenizer();
 # Pass your lexer object using the @lexer option:
 @lexer lexer
 
-Fragment -> SAP {% id %} | DP {% id %}
+Fragment -> SAP {% id %} | DP {% id %} | AdjunctP {% id %}
 SAP -> CP SAopt {% makeBranch('SAP') %}
 
 CP -> Copt TP {% makeBranch('CP') %}
@@ -52,8 +54,11 @@ AspPdet -> vPdet {% makeBranchCovertLeft('AspP', 'Asp') %}
 AspPdet -> Asp1 vPdet {% makeBranch('AspP') %}
 AspPdet -> Sigma Asp1 vPdet {% make3L('ΣP', 'AspP') %}
 
-vP -> Serial term:* {% makevP %}
+vP -> Serial AdjunctP1:* (term:+ AdjunctP1:*):? {% makevP %}
 vPdet -> Serialdet {% makeSingleChild('*𝑣P') %}
+
+AdjunctP -> Adjunct Serial DP1 {% makeAdjunctPT %}
+AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
 
 Serial -> V1:+ {% makeSerial %}
 Serialdet -> Serial {% id %}
@@ -67,6 +72,8 @@ T1 -> T {% id %}
 T1 -> T Conjunction T1 {% makeConn %}
 Asp1 -> Asp {% id %}
 Asp1 -> Asp Conjunction Asp1 {% makeConn %}
+AdjunctP1 -> AdjunctP {% id %}
+AdjunctP1 -> AdjunctP Conjunction AdjunctP1 {% makeConn %}
 V1 -> V {% id %}
 V1 -> V ConjunctionT1 V1 {% makeConn %}
 

@@ -12,7 +12,9 @@ export function clean(word: string): string {
 export function bare(word: string): string {
 	return clean(word)
 		.normalize('NFKD')
-		.replace(/\p{Diacritic}/gu, '');
+		.replace(/\p{Diacritic}/gu, '')
+		.normalize()
+		.replace(/i/gu, 'ı');
 }
 
 export function diacriticForTone(tone: Tone): string {
@@ -88,7 +90,6 @@ export class ToaqTokenizer {
 				index: m.index,
 			});
 		}
-		this.tokens;
 	}
 	next(): ToaqToken | undefined {
 		return this.tokens[this.pos++];

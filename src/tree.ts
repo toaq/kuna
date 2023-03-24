@@ -78,7 +78,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 				gloss_abbreviation: lemmaForm,
 				pronominal_class: 'ta',
 				distribution: 'd',
-				frame: 'c',
+				frame: '',
 				english: '',
 			},
 	};
@@ -193,15 +193,18 @@ export function makeSerial(
 	reject: Object,
 ) {
 	const frames = children.map(getFrame);
-	let arity = frames[frames.length - 1].split(' ').length;
-	for (let i = frames.length - 2; i >= 0; i--) {
-		const frame = frames[i].split(' ');
-		const last = frame.at(-1)![0];
-		if (last === 'c') {
-			// So everything to the right is an adjective?
-			arity = frame.length;
-		} else {
-			arity += frame.length - 1 - Number(last);
+	let arity: number | undefined = undefined;
+	if (!frames.includes('')) {
+		arity = frames[frames.length - 1].split(' ').length;
+		for (let i = frames.length - 2; i >= 0; i--) {
+			const frame = frames[i].split(' ');
+			const last = frame.at(-1)![0];
+			if (last === 'c') {
+				// So everything to the right is an adjective?
+				arity = frame.length;
+			} else {
+				arity += frame.length - 1 - Number(last);
+			}
 		}
 	}
 	return {
@@ -212,16 +215,20 @@ export function makeSerial(
 }
 
 export function makevP(
-	[serial, args]: [Tree, Tree[]],
+	[serial, adjpsL, rest]: [Tree, Tree[], [Tree[], Tree[]] | null],
 	location: number,
 	reject: Object,
 ) {
-	if (args.length > (serial as any).arity) {
+	rest ??= [[], []];
+	const [args, adjpsR] = rest;
+
+	const arity = (serial as any).arity;
+	if (arity !== undefined && args.length > arity) {
 		return reject;
 	}
 	return {
 		label: '*𝑣P',
-		children: [serial, ...args],
+		children: [serial, ...adjpsL, ...args, ...adjpsR],
 	};
 }
 
@@ -230,5 +237,39 @@ export function makeConn([left, c, right]: [Tree, Tree, Tree]) {
 		label: '&P',
 		left,
 		right: { label: "&'", left: c, right },
+	};
+}
+
+export function makeAdjunctPI(
+	[adjunct, serial]: [Tree, Tree],
+	location: number,
+	reject: Object,
+) {
+	const arity = (serial as any).arity;
+	if (arity !== undefined && arity !== 1) {
+		return reject;
+	}
+
+	return {
+		label: 'AdjunctP',
+		left: adjunct,
+		right: serial,
+	};
+}
+
+export function makeAdjunctPT(
+	[adjunct, serial, obj]: [Tree, Tree, Tree],
+	location: number,
+	reject: Object,
+) {
+	const arity = (serial as any).arity;
+	if (arity !== undefined && arity !== 2) {
+		return reject;
+	}
+
+	return {
+		label: 'AdjunctP',
+		left: adjunct,
+		right: { label: 'VP', left: serial, right: obj },
 	};
 }
