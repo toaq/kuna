@@ -12,7 +12,7 @@ import { pngDrawTree } from './draw-tree';
 import { parse } from './parse';
 import { initializeDictionary } from './dictionary';
 import { textual_tree_from_json } from './textual-tree';
-import { testRefgram } from './test-refgram';
+import { testSentences } from './test-sentences';
 
 initializeDictionary();
 
@@ -138,11 +138,11 @@ yargs
 		},
 	)
 	.command(
-		'test-refgram',
-		'Test parsing refgram sentences',
+		'test-sentences',
+		'Test parsing many sentences',
 		yargs => {},
 		function (argv) {
-			testRefgram();
+			testSentences();
 		},
 	)
 	.strict()

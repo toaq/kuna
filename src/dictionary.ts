@@ -107,7 +107,7 @@ export function initializeDictionary(): void {
 				});
 			}
 		}
-		dictionary.set(e.toaq, e);
+		dictionary.set(e.toaq.toLowerCase(), e);
 		if (e.type === 'determiner') {
 			const oid = inTone(e.toaq, Tone.T4);
 			dictionary.set(oid, {

@@ -1,12 +1,11 @@
 import * as fs from 'fs';
 import { parse } from './parse';
 
-export function testRefgram() {
-	const sentences = fs
-		.readFileSync('data/refgram-sentences.txt')
-		.toString('utf-8')
-		.trim()
-		.split('\n');
+export function testSentences() {
+	const files = ['data/refgram-sentences.txt', 'data/a-sentences.txt'];
+	const sentences = files.flatMap(x =>
+		fs.readFileSync(x).toString('utf-8').trim().split('\n'),
+	);
 	let ok = 0;
 	let total = 0;
 	for (const s of sentences) {
