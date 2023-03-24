@@ -24,6 +24,7 @@ const lexer = new ToaqTokenizer();
 # Pass your lexer object using the @lexer option:
 @lexer lexer
 
+Fragment -> SAP {% id %} | DP {% id %}
 SAP -> CP SAopt {% makeBranch('SAP') %}
 
 CP -> Copt TP {% makeBranch('CP') %}

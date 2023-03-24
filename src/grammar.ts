@@ -68,6 +68,8 @@ interface Grammar {
 const grammar: Grammar = {
   Lexer: lexer,
   ParserRules: [
+    {"name": "Fragment", "symbols": ["SAP"], "postprocess": id},
+    {"name": "Fragment", "symbols": ["DP"], "postprocess": id},
     {"name": "SAP", "symbols": ["CP", "SAopt"], "postprocess": makeBranch('SAP')},
     {"name": "CP", "symbols": ["Copt", "TP"], "postprocess": makeBranch('CP')},
     {"name": "CPsub", "symbols": ["Csub", "TP"], "postprocess": makeBranch('CP')},
@@ -133,7 +135,7 @@ const grammar: Grammar = {
     {"name": "T", "symbols": [(lexer.has("tense") ? {type: "tense"} : tense)], "postprocess": makeLeaf('T')},
     {"name": "V", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('V')}
   ],
-  ParserStart: "SAP",
+  ParserStart: "Fragment",
 };
 
 export default grammar;
