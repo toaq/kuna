@@ -171,15 +171,28 @@ export function makeOptLeaf(label: Label) {
 	};
 }
 
+function getFrame(verb: Tree): string {
+	if ('word' in verb) {
+		if (verb.word === 'covert') throw new Error('covert verb?');
+		if (verb.word === 'functional') throw new Error('functional verb?');
+		if (verb.word.entry?.type === 'predicate') {
+			return verb.word.entry.frame;
+		} else {
+			throw new Error('weird verb');
+		}
+	} else if (verb.label === '&P' && 'left' in verb) {
+		return getFrame(verb.left);
+	} else {
+		throw new Error('weird nonverb');
+	}
+}
+
 export function makeSerial(
 	[children]: [Tree[]],
 	location: number,
 	reject: Object,
 ) {
-	const verbs = children.map(
-		x => ((x as Leaf).word as Word).entry as VerbEntry,
-	);
-	const frames = verbs.map(x => x.frame);
+	const frames = children.map(getFrame);
 	let arity = frames[frames.length - 1].split(' ').length;
 	for (let i = frames.length - 2; i >= 0; i--) {
 		const frame = frames[i].split(' ');
@@ -209,5 +222,13 @@ export function makevP(
 	return {
 		label: '*𝑣P',
 		children: [serial, ...args],
+	};
+}
+
+export function makeConn([left, c, right]: [Tree, Tree, Tree]) {
+	return {
+		label: '&P',
+		left,
+		right: { label: "&'", left: c, right },
 	};
 }

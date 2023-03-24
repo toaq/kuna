@@ -7,6 +7,7 @@ const {
 	makeBranch,
 	makeBranchCovertLeft,
 	makeBranchFunctionalLeft,
+	makeConn,
     makeCovertLeaf,
 	makeLeaf,
 	makeOptLeaf,
@@ -36,31 +37,43 @@ DP -> D nP {% makeBranch('DP') %}
 nP -> nP CPrel {% makeBranch('nP') %}
 nP -> CPdet {% makeBranchFunctionalLeft('nP', 'n') %}
 
-TP -> Topt AspP {% makeBranch('TP') %}
-TP -> Sigma T AspP {% make3L('ΣP', 'TP') %}
-TPdet -> Topt AspPdet {% makeBranch('TP') %}
-TPdet -> Sigma T AspPdet {% make3L('ΣP', 'TP') %}
+TP -> AspP {% makeBranchCovertLeft('TP', 'T') %}
+TP -> T1 AspP {% makeBranch('TP') %}
+TP -> Sigma T1 AspP {% make3L('ΣP', 'TP') %}
+TPdet -> AspPdet {% makeBranchCovertLeft('TP', 'T') %}
+TPdet -> T1 AspPdet {% makeBranch('TP') %}
+TPdet -> Sigma T1 AspPdet {% make3L('ΣP', 'TP') %}
 
-AspP -> Aspopt vP {% makeBranch('AspP') %}
-AspP -> Sigma Asp vP {% make3L('ΣP', 'AspP') %}
-AspPdet -> Aspopt vPdet {% makeBranch('AspP') %}
-AspPdet -> Sigma Asp vPdet {% make3L('ΣP', 'AspP') %}
+AspP -> vP {% makeBranchCovertLeft('AspP', 'Asp') %}
+AspP -> Asp1 vP {% makeBranch('AspP') %}
+AspP -> Sigma Asp1 vP {% make3L('ΣP', 'AspP') %}
+AspPdet -> vPdet {% makeBranchCovertLeft('AspP', 'Asp') %}
+AspPdet -> Asp1 vPdet {% makeBranch('AspP') %}
+AspPdet -> Sigma Asp1 vPdet {% make3L('ΣP', 'AspP') %}
 
 vP -> Serial term:* {% makevP %}
 vPdet -> Serialdet {% makeSingleChild('*𝑣P') %}
 
-Serial -> V:+ {% makeSerial %}
+Serial -> V1:+ {% makeSerial %}
 Serialdet -> Serial {% id %}
 Serialdet -> null {% makeCovertLeaf('V') %}
 
-term -> DP {% id %} | CPsub {% id %}
+term -> DP1 {% id %} | CPsub {% id %}
+
+DP1 -> DP {% id %}
+DP1 -> DP Conjunction DP1 {% makeConn %}
+T1 -> T {% id %}
+T1 -> T Conjunction T1 {% makeConn %}
+Asp1 -> Asp {% id %}
+Asp1 -> Asp Conjunction Asp1 {% makeConn %}
+V1 -> V {% id %}
+V1 -> V ConjunctionT1 V1 {% makeConn %}
 
 Adjunct -> %preposition {% makeLeaf('Adjunct') %}
 Conjunction -> %conjunction {% makeLeaf('&') %}
 ConjunctionT1 -> %conjunction_in_t1 {% makeLeaf('&') %}
 ConjunctionT4 -> %conjunction_in_t4 {% makeLeaf('&') %}
 Asp -> %aspect {% makeLeaf('Asp') %}
-Aspopt -> Asp:? {% makeOptLeaf('Asp') %}
 C -> %complementizer {% makeLeaf('C') %}
 Copt -> C:? {% makeOptLeaf('C') %}
 Csub -> %subordinating_complementizer {% makeLeaf('C') %}
@@ -72,5 +85,4 @@ SA -> %illocution {% makeLeaf('SA') %}
 SAopt -> SA:? {% makeOptLeaf('SA') %}
 Sigma -> %polarity {% makeLeaf('Σ') %}
 T -> %tense {% makeLeaf('T') %}
-Topt -> T:? {% makeOptLeaf('T') %}
 V -> %predicate {% makeLeaf('V') %}

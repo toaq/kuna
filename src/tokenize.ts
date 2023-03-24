@@ -16,7 +16,7 @@ export function bare(word: string): string {
 }
 
 export function diacriticForTone(tone: Tone): string {
-	return ['', '\u0301', '\u0308', '\u0302'][tone];
+	return ['', '', '\u0301', '\u0308', '\u0302'][tone];
 }
 
 export function inTone(word: string, tone: Tone): string {
@@ -24,7 +24,8 @@ export function inTone(word: string, tone: Tone): string {
 		.normalize('NFKD')
 		.replace(/\p{Diacritic}/gu, '')
 		.replace(/[aeiıou]/gu, m => m + diacriticForTone(tone))
-		.normalize();
+		.normalize()
+		.replace(/i/gu, 'ı');
 }
 
 export function tone(word: string): Tone {
