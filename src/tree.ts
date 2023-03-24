@@ -44,6 +44,16 @@ export type Label =
 	| 'Σ'
 	| 'ΣP';
 
+export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
+	if (label.endsWith('P') || label === 'CPrel') {
+		return 'phrase';
+	} else if (label.endsWith("'")) {
+		return 'bar';
+	} else {
+		return 'head';
+	}
+}
+
 export interface Leaf {
 	label: Label;
 	word: Word | 'covert' | 'functional';

@@ -8,6 +8,7 @@ import grammar from './grammar';
 import { Tree } from './tree';
 import { fix } from './fix';
 import { denote } from './denote';
+import { compact } from './compact';
 import { pngDrawTree } from './draw-tree';
 import { parse } from './parse';
 import { initializeDictionary } from './dictionary';
@@ -20,12 +21,16 @@ function getTrees(argv: {
 	sentence: string | undefined;
 	dStructure: boolean | undefined;
 	semantics: boolean | undefined;
+	compact: boolean | undefined;
 }): Tree[] {
 	let trees = parse(argv.sentence!);
 	if (argv.semantics) {
 		trees = trees.map(fix).map(denote);
 	} else if (argv.dStructure) {
 		trees = trees.map(fix);
+	}
+	if (argv.compact) {
+		trees = trees.map(compact);
 	}
 	return trees;
 }
@@ -46,6 +51,11 @@ yargs
 		type: 'boolean',
 		alias: 'denote',
 		describe: 'Annotate parse tree with semantics (implies --d-structure)',
+		default: false,
+	})
+	.option('compact', {
+		type: 'boolean',
+		describe: 'Remove empty phrases with null heads',
 		default: false,
 	})
 	.command(
