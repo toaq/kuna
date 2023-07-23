@@ -73,6 +73,14 @@ export interface Rose {
 
 export type Tree = Leaf | Branch | Rose;
 
+export interface StrictBranch {
+	label: Label;
+	left: StrictTree;
+	right: StrictTree;
+}
+
+export type StrictTree = Leaf | StrictBranch;
+
 export function makeWord([token]: [ToaqToken]): Word {
 	const lemmaForm = token.value.toLowerCase().normalize();
 	const bareWord = bare(token.value);

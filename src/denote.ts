@@ -1,4 +1,4 @@
-import { Leaf, Branch, Tree, Label } from './tree';
+import { Leaf, Branch, Tree, Label, StrictTree } from './tree';
 
 export type Quantifier = 'exists' | 'forall';
 
@@ -169,8 +169,7 @@ export interface DBranch {
 
 export type DTree = DLeaf | DBranch;
 
-export function denote(tree: Tree): DTree {
-	if ('children' in tree) throw new Error('denoting unfixed tree?');
+export function denote(tree: StrictTree): DTree {
 	if ('word' in tree) {
 		if (tree.label === 'V') {
 			if (typeof tree.word === 'string') throw new Error();

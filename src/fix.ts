@@ -1,7 +1,7 @@
 import { entryArity } from './dictionary';
-import { Tree } from './tree';
+import { StrictTree, Tree } from './tree';
 
-export function fix(tree: Tree): Tree {
+export function fix(tree: Tree): StrictTree {
 	if ('children' in tree) {
 		if (tree.label === '*𝑣P') {
 			const serial = tree.children[0];
