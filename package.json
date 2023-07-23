@@ -17,7 +17,9 @@
 		"prettier:format": "npx -p prettier prettier -w .",
 		"cli": "npx ts-node src/index.ts",
 		"bot": "npx ts-node src/bot.ts",
-		"codegen": "npx nearleyc src/toaq.ne -o src/grammar.ts"
+		"codegen": "npx nearleyc src/toaq.ne -o src/grammar.ts",
+		"ts:build": "npx tsc",
+		"ts:check": "npx tsc --noEmit"
 	},
 	"repository": {
 		"type": "git",
