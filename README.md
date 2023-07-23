@@ -8,9 +8,9 @@ To run as a CLI app:
 
 ```sh
 npm install
-npx ts-node src/index.ts
+npm run cli
 # e.g.
-npx ts-node src/index.ts stree --sentence "Jai jí"
+npm run cli tree-text --sentence "Jaı jí"
 ```
 
 To run as a Discord bot:
@@ -18,12 +18,12 @@ To run as a Discord bot:
 ```sh
 export KUNA_TOKEN=your.discord.bot.token
 npm install
-npx ts-node src/bot.ts
+npm run bot
 ```
 
 To regenerate the grammar:
 
 ```sh
 npm install
-npx nearleyc src/toaq.ne -o src/grammar.ts
+npm run codegen
 ```

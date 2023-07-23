@@ -14,7 +14,10 @@
 	"scripts": {
 		"test": "echo \"Error: no tests configured\" && exit 1",
 		"prettier:check": "npx -p prettier prettier -c .",
-		"prettier:format": "npx -p prettier prettier -w ."
+		"prettier:format": "npx -p prettier prettier -w .",
+		"cli": "npx ts-node src/index.ts",
+		"bot": "npx ts-node src/bot.ts",
+		"codegen": "npx nearleyc src/toaq.ne -o src/grammar.ts"
 	},
 	"repository": {
 		"type": "git",
