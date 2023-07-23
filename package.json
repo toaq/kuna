@@ -1,10 +1,10 @@
 {
 	"devDependencies": {
 		"@types/jest": "^29.2.5",
+		"esbuild-runner": "^2.2.2",
 		"jest": "^29.3.1",
 		"prettier": "^3.0.0",
 		"ts-jest": "^29.0.3",
-		"ts-node": "^10.9.1",
 		"typescript": "^4.9.4"
 	},
 	"name": "kuna",
@@ -15,8 +15,8 @@
 		"test": "echo \"Error: no tests configured\" && exit 1",
 		"prettier:check": "npx -p prettier prettier -c .",
 		"prettier:format": "npx -p prettier prettier -w .",
-		"cli": "npx ts-node src/index.ts",
-		"bot": "npx ts-node src/bot.ts",
+		"cli": "npx esr src/index.ts",
+		"bot": "npx esr src/bot.ts",
 		"codegen": "npx nearleyc src/toaq.ne -o src/grammar.ts",
 		"ts:build": "npx tsc",
 		"ts:check": "npx tsc --noEmit"
