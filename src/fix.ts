@@ -19,7 +19,6 @@ export function fix(tree: Tree): StrictTree {
 			if (!entry) throw new Error('unrecognized V');
 			if (entry.type !== 'predicate') throw new Error('nonpred V');
 			const arity = entryArity(entry);
-			console.log(arity, tree.children.length);
 			if (arity === 1) {
 				return {
 					label: '𝑣P',
