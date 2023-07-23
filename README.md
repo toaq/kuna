@@ -10,7 +10,7 @@ To run as a CLI app:
 npm install
 npm run cli
 # e.g.
-npm run cli tree-text --sentence "Jaı jí"
+npm run cli -- tree-text --sentence "Jaı jí"
 ```
 
 To run as a Discord bot:
