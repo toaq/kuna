@@ -11,7 +11,7 @@ export const verbTypes = [
 	'word quote',
 ] as const;
 
-export type VerbType = typeof verbTypes[number];
+export type VerbType = (typeof verbTypes)[number];
 
 export const nonVerbTypes = [
 	'aspect',
@@ -49,7 +49,7 @@ export const nonVerbTypes = [
 export const wordTypes = [...verbTypes, ...nonVerbTypes];
 export const underscoredWordTypes = wordTypes.map(s => s.replace(/ /g, '_'));
 
-export type NonVerbType = typeof nonVerbTypes[number];
+export type NonVerbType = (typeof nonVerbTypes)[number];
 
 export type WordType = VerbType | NonVerbType;
 
