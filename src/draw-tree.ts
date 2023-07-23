@@ -2,14 +2,23 @@ import { createCanvas, CanvasRenderingContext2D } from 'canvas';
 import { DBranch, DLeaf, DTree, formulaToText } from './denote';
 import { Branch, Leaf, Rose, Tree } from './tree';
 
-interface PlacedLeaf {
+interface PlacedLeafBase {
 	depth: 0;
 	width: number;
 	label: string;
-	word: string;
-	gloss?: string;
 	denotation?: string;
 }
+
+interface HasWord {
+	word: string;
+	gloss: string | undefined;
+}
+
+interface NoWord {
+	word: undefined;
+}
+
+type PlacedLeaf = PlacedLeafBase & (HasWord | NoWord);
 
 interface PlacedBranch {
 	depth: number;
@@ -31,7 +40,7 @@ export function placeLeaf(
 	const label = leaf.label;
 	const word =
 		leaf.word === 'functional'
-			? ''
+			? undefined
 			: leaf.word === 'covert'
 			? 'Ø'
 			: leaf.word.text;
@@ -39,7 +48,7 @@ export function placeLeaf(
 		'denotation' in leaf ? formulaToText(leaf.denotation) : undefined;
 	const width = Math.max(
 		ctx.measureText(label).width,
-		ctx.measureText(word).width,
+		ctx.measureText(word ?? '').width,
 		ctx.measureText(gloss ?? '').width,
 		ctx.measureText(denotation ?? '').width,
 	);
@@ -158,14 +167,16 @@ function drawTree(
 		text(denotation, x, y + 30);
 		ctx.strokeStyle = '#DCDDDE';
 		ctx.lineWidth = 1;
-		ctx.beginPath();
-		ctx.moveTo(x, y + (denotation ? 75 : 45));
-		ctx.lineTo(x, y + 95);
-		ctx.stroke();
-		ctx.fillStyle = '#99EEFF';
-		text(tree.word, x, y + 100);
-		ctx.fillStyle = '#DCDDDE';
-		text(tree.gloss ?? '', x, y + 130);
+		if (tree.word !== undefined) {
+			ctx.beginPath();
+			ctx.moveTo(x, y + (denotation ? 75 : 45));
+			ctx.lineTo(x, y + 95);
+			ctx.stroke();
+			ctx.fillStyle = '#99EEFF';
+			text(tree.word, x, y + 100);
+			ctx.fillStyle = '#DCDDDE';
+			text(tree.gloss ?? '', x, y + 130);
+		}
 	} else {
 		ctx.fillStyle = '#DCDDDE';
 		text(tree.label, x, y);
