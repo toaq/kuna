@@ -10,6 +10,13 @@
               nodejs_latest
               nodePackages_latest.typescript-language-server
               nodePackages_latest.vscode-json-languageserver
+
+              # Dependencies for building canvas
+              python3
+              pkg-config
+              pixman
+              cairo
+              pango
             ];
           };
       });
