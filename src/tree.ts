@@ -60,26 +60,20 @@ export interface Leaf {
 	word: Word | 'covert' | 'functional';
 }
 
-export interface Branch {
+export interface Branch<T> {
 	label: Label;
-	left: Tree;
-	right: Tree;
+	left: T;
+	right: T;
 }
 
-export interface Rose {
+export interface Rose<T> {
 	label: Label;
-	children: Tree[];
+	children: T[];
 }
 
-export type Tree = Leaf | Branch | Rose;
+export type Tree = Leaf | Branch<Tree> | Rose<Tree>;
 
-export interface StrictBranch {
-	label: Label;
-	left: StrictTree;
-	right: StrictTree;
-}
-
-export type StrictTree = Leaf | StrictBranch;
+export type StrictTree = Leaf | Branch<StrictTree>;
 
 export function makeWord([token]: [ToaqToken]): Word {
 	const lemmaForm = token.value.toLowerCase().normalize();

@@ -110,7 +110,7 @@ export function makePlacedBranch(
 
 export function placeBranch(
 	ctx: CanvasRenderingContext2D,
-	branch: Branch | DBranch,
+	branch: Branch<Tree> | DBranch,
 ): PlacedBranch {
 	const denotation =
 		'denotation' in branch ? formulaToText(branch.denotation) : undefined;
@@ -120,7 +120,7 @@ export function placeBranch(
 
 export function placeRose(
 	ctx: CanvasRenderingContext2D,
-	rose: Rose,
+	rose: Rose<Tree>,
 ): PlacedBranch {
 	const children = rose.children.map(c => placeTree(ctx, c));
 	return makePlacedBranch(ctx, rose.label, '', children);
