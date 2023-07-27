@@ -1,4 +1,4 @@
-import { AnyExpr, ExprType } from './model';
+import { Expr, ExprType } from './model';
 
 type NameType = 'e' | 'v' | 'i' | 's' | 'fn';
 
@@ -171,7 +171,7 @@ interface Format {
 	name: (name: Name) => string;
 	verb: (name: string, args: string[], event: string, world: string) => string;
 	quantifierSymbols: Record<
-		(AnyExpr & { head: 'quantifier' })['name'] | 'lambda',
+		(Expr & { head: 'quantifier' })['name'] | 'lambda',
 		string
 	>;
 	quantifier: (symbol: string, name: string, body: string) => string;
@@ -183,11 +183,11 @@ interface Format {
 	) => string;
 	apply: (fn: string, argument: string) => string;
 	presuppose: (body: string, presupposition: string) => string;
-	infixSymbols: Record<(AnyExpr & { head: 'infix' })['name'], string>;
+	infixSymbols: Record<(Expr & { head: 'infix' })['name'], string>;
 	infix: (symbol: string, left: string, right: string) => string;
-	polarizerSymbols: Record<(AnyExpr & { head: 'polarizer' })['name'], string>;
+	polarizerSymbols: Record<(Expr & { head: 'polarizer' })['name'], string>;
 	polarizer: (symbol: string, body: string) => string;
-	constantSymbols: Record<(AnyExpr & { head: 'constant' })['name'], string>;
+	constantSymbols: Record<(Expr & { head: 'constant' })['name'], string>;
 }
 
 const formatName = (
@@ -345,12 +345,7 @@ function getName(index: number, names: Names, fmt: Format): string {
 	return fmt.name(names.context[index]);
 }
 
-function render(
-	e: AnyExpr,
-	names: Names,
-	fmt: Format,
-	bracket = false,
-): string {
+function render(e: Expr, names: Names, fmt: Format, bracket = false): string {
 	switch (e.head) {
 		case 'variable': {
 			return getName(e.index, names, fmt);
@@ -365,20 +360,20 @@ function render(
 			const symbol = fmt.quantifierSymbols.lambda;
 			const innerNames = addName(e.type[0], names);
 			const name = getName(0, innerNames, fmt);
-			const body = render(e.body as AnyExpr, innerNames, fmt);
+			const body = render(e.body as Expr, innerNames, fmt);
 
 			let content: string;
 			if (e.restriction === undefined) {
 				content = fmt.quantifier(symbol, name, body);
 			} else {
-				const restriction = render(e.restriction as AnyExpr, innerNames, fmt);
+				const restriction = render(e.restriction as Expr, innerNames, fmt);
 				content = fmt.restrictedQuantifier(symbol, name, restriction, body);
 			}
 
 			return bracket ? fmt.bracket(content) : content;
 		}
 		case 'apply': {
-			const fn = render(e.function, names, fmt, true);
+			const fn = render(e.fn, names, fmt, true);
 			const argument = render(e.argument, names, fmt);
 			return fmt.apply(fn, argument);
 		}
@@ -404,13 +399,13 @@ function render(
 			const symbol = fmt.quantifierSymbols[e.name];
 			const innerNames = addName(e.body.context[0], names);
 			const name = getName(0, innerNames, fmt);
-			const body = render(e.body as AnyExpr, innerNames, fmt);
+			const body = render(e.body as Expr, innerNames, fmt);
 
 			let content: string;
 			if (e.restriction === undefined) {
 				content = fmt.quantifier(symbol, name, body);
 			} else {
-				const restriction = render(e.restriction as AnyExpr, innerNames, fmt);
+				const restriction = render(e.restriction as Expr, innerNames, fmt);
 				content = fmt.restrictedQuantifier(symbol, name, restriction, body);
 			}
 
@@ -422,7 +417,7 @@ function render(
 	}
 }
 
-function renderFull(e: AnyExpr, fmt: Format): string {
+function renderFull(e: Expr, fmt: Format): string {
 	let names = noNames;
 	// Create ad hoc constants for all free variables
 	for (let i = e.context.length - 1; i >= 0; i--) {
@@ -435,10 +430,10 @@ function renderFull(e: AnyExpr, fmt: Format): string {
 	return render(e, names, fmt);
 }
 
-export function toPlainText(e: AnyExpr): string {
+export function toPlainText(e: Expr): string {
 	return renderFull(e, plainText);
 }
 
-export function toLatex(e: AnyExpr): string {
+export function toLatex(e: Expr): string {
 	return renderFull(e, latex);
 }
