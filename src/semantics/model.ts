@@ -302,23 +302,31 @@ export function indeed(body: Expr): Expr {
 function quantifier(
 	name: (Expr & { head: 'quantifier' })['name'],
 	domain: 'e' | 'v' | 's',
-	body: Expr,
+	context: ExprType[],
+	body: (context: ExprType[]) => Expr,
 ): Expr {
-	assertTypesEqual(body.type, 't');
-	if (body.context.length === 0)
-		throw new Error(`Quantifier body has an empty context`);
-	const [domainInContext, ...outerContext] = body.context;
-	assertTypesEqual(domainInContext, domain);
+	const innerContext = [domain, ...context];
+	const bodyResult = body(innerContext);
+	assertTypesEqual(bodyResult.type, 't');
+	assertContextsEqual(bodyResult.context, innerContext);
 
-	return { head: 'quantifier', type: 't', context: outerContext, name, body };
+	return { head: 'quantifier', type: 't', context, name, body: bodyResult };
 }
 
-export function some(domain: 'e' | 'v' | 's', body: Expr): Expr {
-	return quantifier('some', domain, body);
+export function some(
+	domain: 'e' | 'v' | 's',
+	context: ExprType[],
+	body: (context: ExprType[]) => Expr,
+): Expr {
+	return quantifier('some', domain, context, body);
 }
 
-export function every(domain: 'e' | 'v' | 's', body: Expr): Expr {
-	return quantifier('every', domain, body);
+export function every(
+	domain: 'e' | 'v' | 's',
+	context: ExprType[],
+	body: (context: ExprType[]) => Expr,
+): Expr {
+	return quantifier('every', domain, context, body);
 }
 
 export function equals(left: Expr, right: Expr): Expr {
