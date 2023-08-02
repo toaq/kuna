@@ -24,7 +24,6 @@ import {
 	λ,
 } from './model';
 import { reduce, unifyContexts } from './operations';
-import { toPlainText } from './render';
 
 function denoteConstant(name: string): (context: ExprType[]) => Expr {
 	switch (name) {
