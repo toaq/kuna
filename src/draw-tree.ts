@@ -1,6 +1,6 @@
 import { createCanvas, CanvasRenderingContext2D } from 'canvas';
 import { DTree, Expr } from './semantics/model';
-import { toPlainText } from './semantics/render';
+import { toPlainText, typeToPlainText } from './semantics/render';
 import { Branch, Leaf, Rose, Tree } from './tree';
 
 interface PlacedLeafBase {
@@ -32,13 +32,19 @@ interface PlacedBranch {
 
 type PlacedTree = PlacedLeaf | PlacedBranch;
 
+function getLabel(tree: Tree | DTree): string {
+	return 'denotation' in tree && tree.denotation !== null
+		? `${tree.label} : ${typeToPlainText(tree.denotation.type)}`
+		: tree.label;
+}
+
 export function placeLeaf(
 	ctx: CanvasRenderingContext2D,
 	leaf: Leaf | (Leaf & { denotation: Expr | null }),
 ): PlacedLeaf {
 	const gloss =
 		typeof leaf.word === 'string' ? undefined : leaf.word.entry?.gloss;
-	const label = leaf.label;
+	const label = getLabel(leaf);
 	const word =
 		leaf.word === 'functional'
 			? undefined
@@ -120,7 +126,7 @@ export function placeBranch(
 			? toPlainText(branch.denotation)
 			: undefined;
 	const children = [placeTree(ctx, branch.left), placeTree(ctx, branch.right)];
-	return makePlacedBranch(ctx, branch.label, denotation, children);
+	return makePlacedBranch(ctx, getLabel(branch), denotation, children);
 }
 
 export function placeRose(

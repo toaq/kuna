@@ -437,3 +437,15 @@ export function toPlainText(e: Expr): string {
 export function toLatex(e: Expr): string {
 	return renderFull(e, latex);
 }
+
+export function typeToPlainText(t: ExprType): string {
+	return typeof t === 'string'
+		? t
+		: `⟨${typeToPlainText(t[0])},${typeToPlainText(t[1])}⟩`;
+}
+
+export function typeToLatex(t: ExprType): string {
+	return typeof t === 'string'
+		? `\\text{${t}}`
+		: `\langle ${typeToLatex(t[0])}, ${typeToLatex(t[1])} \rangle`;
+}
