@@ -1,19 +1,17 @@
 import { toDocument } from './latex';
 import * as fs from 'fs';
-import { alignGlossSentence, glossSentence } from './gloss';
+import { alignGlossSentence } from './gloss';
 import yargs from 'yargs';
 import { pngGlossSentence } from './png-gloss';
-import nearley from 'nearley';
-import grammar from './grammar';
 import { Tree } from './tree';
 import { fix } from './fix';
-import { denote } from './denote';
 import { compact } from './compact';
 import { pngDrawTree } from './draw-tree';
 import { parse } from './parse';
 import { initializeDictionary } from './dictionary';
 import { textual_tree_from_json } from './textual-tree';
 import { testSentences } from './test-sentences';
+import { denote } from './semantics/denote';
 
 initializeDictionary();
 
@@ -150,8 +148,8 @@ yargs
 	.command(
 		'test-sentences',
 		'Test parsing many sentences',
-		yargs => {},
-		function (argv) {
+		() => {},
+		function () {
 			testSentences();
 		},
 	)

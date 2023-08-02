@@ -1,5 +1,6 @@
 import { createCanvas, CanvasRenderingContext2D } from 'canvas';
-import { DBranch, DLeaf, DTree, formulaToText } from './denote';
+import { DTree, Expr } from './semantics/model';
+import { toPlainText } from './semantics/render';
 import { Branch, Leaf, Rose, Tree } from './tree';
 
 interface PlacedLeafBase {
@@ -33,7 +34,7 @@ type PlacedTree = PlacedLeaf | PlacedBranch;
 
 export function placeLeaf(
 	ctx: CanvasRenderingContext2D,
-	leaf: Leaf | DLeaf,
+	leaf: Leaf | (Leaf & { denotation: Expr | null }),
 ): PlacedLeaf {
 	const gloss =
 		typeof leaf.word === 'string' ? undefined : leaf.word.entry?.gloss;
@@ -45,7 +46,9 @@ export function placeLeaf(
 			? 'Ø'
 			: leaf.word.text;
 	const denotation =
-		'denotation' in leaf ? formulaToText(leaf.denotation) : undefined;
+		'denotation' in leaf && leaf.denotation !== null
+			? toPlainText(leaf.denotation)
+			: undefined;
 	const width = Math.max(
 		ctx.measureText(label).width,
 		ctx.measureText(word ?? '').width,
@@ -110,10 +113,12 @@ export function makePlacedBranch(
 
 export function placeBranch(
 	ctx: CanvasRenderingContext2D,
-	branch: Branch<Tree> | DBranch,
+	branch: Branch<Tree> | (Branch<DTree> & { denotation: Expr | null }),
 ): PlacedBranch {
 	const denotation =
-		'denotation' in branch ? formulaToText(branch.denotation) : undefined;
+		'denotation' in branch && branch.denotation !== null
+			? toPlainText(branch.denotation)
+			: undefined;
 	const children = [placeTree(ctx, branch.left), placeTree(ctx, branch.right)];
 	return makePlacedBranch(ctx, branch.label, denotation, children);
 }
@@ -204,7 +209,7 @@ export function pngDrawTree(tree: Tree | DTree): Buffer {
 	const ctx = canvas.getContext('2d');
 	ctx.fillStyle = '#36393E';
 	ctx.fillRect(0, 0, width, height);
-	ctx.font = '20pt Segoe UI';
+	ctx.font = '20pt Noto Sans Math';
 
 	const placed = placeTree(ctx, tree);
 	const x = width / 2;

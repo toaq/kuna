@@ -92,7 +92,7 @@ interface Constant<Name extends string, T extends ExprType> {
 	name: Name;
 }
 
-type Role<Name extends string> = Constant<Name, ['v', 'e']>;
+type Role<Name extends string> = Constant<Name, ['v', ['s', 'e']]>;
 
 // A modal accessibility relation
 type Accessibility<Name extends string> = Constant<Name, ['s', ['s', 't']]>;
@@ -145,7 +145,7 @@ export type Expr =
 /**
  * A tree with denotations.
  */
-export type DTree = { denotation: Expr } & (Leaf | Branch<DTree>);
+export type DTree = { denotation: Expr | null } & (Leaf | Branch<DTree>);
 
 export function typesEqual(t1: ExprType, t2: ExprType): boolean {
 	if (typeof t1 === 'string' || typeof t2 === 'string') {
@@ -189,16 +189,25 @@ export function λ(
 	inputType: ExprType,
 	context: ExprType[],
 	body: (context: ExprType[]) => Expr,
+	restriction?: (context: ExprType[]) => Expr,
 ): Expr {
 	const innerContext = [inputType, ...context];
 	const bodyResult = body(innerContext);
 	assertContextsEqual(bodyResult.context, innerContext);
+
+	let restrictionResult = undefined;
+	if (restriction !== undefined) {
+		restrictionResult = restriction(innerContext);
+		assertTypesEqual(restrictionResult.type, 't');
+		assertContextsEqual(restrictionResult.context, innerContext);
+	}
 
 	return {
 		head: 'lambda',
 		type: [inputType, bodyResult.type],
 		context,
 		body: bodyResult,
+		restriction: restrictionResult,
 	};
 }
 
@@ -249,7 +258,7 @@ export function presuppose(body: Expr, presupposition: Expr): Expr {
 	};
 }
 
-function infix(
+export function infix(
 	name: (Expr & { head: 'infix' })['name'],
 	inputType: ExprType,
 	outputType: (Expr & { head: 'infix' })['type'],
@@ -282,7 +291,7 @@ export function or(left: Expr, right: Expr): Expr {
 	return conjunction('and', left, right);
 }
 
-function polarizer(
+export function polarizer(
 	name: (Expr & { head: 'polarizer' })['name'],
 	body: Expr,
 ): Expr {
@@ -299,34 +308,51 @@ export function indeed(body: Expr): Expr {
 	return polarizer('indeed', body);
 }
 
-function quantifier(
+export function quantifier(
 	name: (Expr & { head: 'quantifier' })['name'],
 	domain: 'e' | 'v' | 's',
 	context: ExprType[],
 	body: (context: ExprType[]) => Expr,
+	restriction?: (context: ExprType[]) => Expr,
 ): Expr {
 	const innerContext = [domain, ...context];
 	const bodyResult = body(innerContext);
 	assertTypesEqual(bodyResult.type, 't');
 	assertContextsEqual(bodyResult.context, innerContext);
 
-	return { head: 'quantifier', type: 't', context, name, body: bodyResult };
+	let restrictionResult = undefined;
+	if (restriction !== undefined) {
+		restrictionResult = restriction(innerContext);
+		assertTypesEqual(restrictionResult.type, 't');
+		assertContextsEqual(restrictionResult.context, innerContext);
+	}
+
+	return {
+		head: 'quantifier',
+		type: 't',
+		context,
+		name,
+		body: bodyResult,
+		restriction: restrictionResult,
+	};
 }
 
 export function some(
 	domain: 'e' | 'v' | 's',
 	context: ExprType[],
 	body: (context: ExprType[]) => Expr,
+	restriction?: (context: ExprType[]) => Expr,
 ): Expr {
-	return quantifier('some', domain, context, body);
+	return quantifier('some', domain, context, body, restriction);
 }
 
 export function every(
 	domain: 'e' | 'v' | 's',
 	context: ExprType[],
 	body: (context: ExprType[]) => Expr,
+	restriction?: (context: ExprType[]) => Expr,
 ): Expr {
-	return quantifier('every', domain, context, body);
+	return quantifier('every', domain, context, body, restriction);
 }
 
 export function equals(left: Expr, right: Expr): Expr {
@@ -375,7 +401,7 @@ export function roi(left: Expr, right: Expr): Expr {
 	return infix('roi', 'e', 'e', left, right);
 }
 
-function constant(
+export function constant(
 	name: (Expr & { head: 'constant' })['name'],
 	type: (Expr & { head: 'constant' })['type'],
 	context: ExprType[],
@@ -427,10 +453,10 @@ export function ama(context: ExprType[]): Expr {
 }
 
 function role(
-	name: (Expr & { head: 'constant'; type: ['v', 'e'] })['name'],
+	name: (Expr & { head: 'constant'; type: ['v', ['s', 'e']] })['name'],
 	context: ExprType[],
 ): Expr {
-	return constant(name, ['v', 'e'], context);
+	return constant(name, ['v', ['s', 'e']], context);
 }
 
 export function agent(context: ExprType[]): Expr {

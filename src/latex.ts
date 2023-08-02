@@ -1,4 +1,5 @@
-import { DTree, formulaToLatex } from './denote';
+import { DTree } from './semantics/model';
+import { toLatex as exprToLatex } from './semantics/render';
 import { Tree } from './tree';
 
 export function latexEscape(text: string): string {
@@ -7,13 +8,9 @@ export function latexEscape(text: string): string {
 
 export function toLatex(tree: Tree | DTree): string {
 	let label = latexEscape(tree.label);
-	if ('denotation' in tree) {
+	if ('denotation' in tree && tree.denotation !== null) {
 		label =
-			'{' +
-			label +
-			'\\\\ \\color{den}$' +
-			formulaToLatex(tree.denotation) +
-			'$}';
+			'{' + label + '\\\\ \\color{den}$' + exprToLatex(tree.denotation) + '$}';
 	}
 	if ('left' in tree) {
 		const left = toLatex(tree.left);
