@@ -329,7 +329,11 @@ function addName(type: ExprType, names: Names, constant = false): Names {
 
 	let id = ids[nameType];
 	// If this name is already taken, try the same name one alphabetSize later
-	while (names.context.some(n => n.type === type && n.id === id))
+	while (
+		names.context.some(
+			n => n.constant === constant && n.type === type && n.id === id,
+		)
+	)
 		id += alphabetSize;
 
 	const name = { id, type: nameType, constant };
