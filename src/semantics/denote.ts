@@ -1,14 +1,22 @@
-import { Branch, Leaf, StrictTree } from '../tree';
+import { Leaf, StrictTree } from '../tree';
 import {
+	after,
+	afterNear,
 	agent,
 	ama,
 	and,
 	app,
+	before,
+	beforeNear,
 	DTree,
 	equals,
+	every,
+	expectedEnd,
+	expectedStart,
 	Expr,
 	ExprType,
 	ime,
+	inertiaWorlds,
 	ji,
 	nhana,
 	nhao,
@@ -52,7 +60,154 @@ function denoteConstant(toaq: string): (context: ExprType[]) => Expr {
 	}
 }
 
-function speechActToVerb(toaq: string): string {
+// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) ⊆ 𝘵) ∧ 𝘗(𝘦)(𝘸)
+const tam = λ(['v', ['s', 't']], [], c =>
+	λ('i', c, c =>
+		λ('s', c, c =>
+			some('v', c, c =>
+				and(
+					subinterval(app(temporalTrace(c), v(0, c)), v(2, c)),
+					app(app(v(3, c), v(0, c)), v(1, c)),
+				),
+			),
+		),
+	),
+);
+
+// λ𝘗. λ𝘵. λ𝘸. ∀𝘸' : ɪᴡ(𝘸')(𝘸)(𝘵). ∃𝘦. (𝘵 ⊆ τ(𝘦)) ∧ 𝘗(𝘦)(𝘸')
+const chum = λ(['v', ['s', 't']], [], c =>
+	λ('i', c, c =>
+		λ('s', c, c =>
+			every(
+				's',
+				c,
+				c =>
+					some('v', c, c =>
+						and(
+							subinterval(v(3, c), app(temporalTrace(c), v(0, c))),
+							app(app(v(4, c), v(0, c)), v(1, c)),
+						),
+					),
+				c => app(app(app(inertiaWorlds(c), v(0, c)), v(1, c)), v(2, c)),
+			),
+		),
+	),
+);
+
+// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) < 𝘵) ∧ 𝘗(𝘦)(𝘸)
+const lui = λ(['v', ['s', 't']], [], c =>
+	λ('i', c, c =>
+		λ('s', c, c =>
+			some('v', c, c =>
+				and(
+					before(app(temporalTrace(c), v(0, c)), v(2, c)),
+					app(app(v(3, c), v(0, c)), v(1, c)),
+				),
+			),
+		),
+	),
+);
+
+// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) > 𝘵) ∧ 𝘗(𝘦)(𝘸)
+const za = λ(['v', ['s', 't']], [], c =>
+	λ('i', c, c =>
+		λ('s', c, c =>
+			some('v', c, c =>
+				and(
+					after(app(temporalTrace(c), v(0, c)), v(2, c)),
+					app(app(v(3, c), v(0, c)), v(1, c)),
+				),
+			),
+		),
+	),
+);
+
+// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (𝘵 ⊆ τ(𝘦)) ∧ ((𝘵 > ExpEnd(𝘦)) ∧ 𝘗(𝘦)(𝘸))
+const hoai = λ(['v', ['s', 't']], [], c =>
+	λ('i', c, c =>
+		λ('s', c, c =>
+			some('v', c, c =>
+				and(
+					subinterval(v(2, c), app(temporalTrace(c), v(0, c))),
+					and(
+						after(v(2, c), app(expectedEnd(c), v(0, c))),
+						app(app(v(3, c), v(0, c)), v(1, c)),
+					),
+				),
+			),
+		),
+	),
+);
+
+// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (𝘵 ⊆ τ(𝘦)) ∧ ((𝘵 < ExpStart(𝘦)) ∧ 𝘗(𝘦)(𝘸))
+const hai = λ(['v', ['s', 't']], [], c =>
+	λ('i', c, c =>
+		λ('s', c, c =>
+			some('v', c, c =>
+				and(
+					subinterval(v(2, c), app(temporalTrace(c), v(0, c))),
+					and(
+						before(v(2, c), app(expectedStart(c), v(0, c))),
+						app(app(v(3, c), v(0, c)), v(1, c)),
+					),
+				),
+			),
+		),
+	),
+);
+
+// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) <.near 𝘵) ∧ 𝘗(𝘦)(𝘸)
+const hiq = λ(['v', ['s', 't']], [], c =>
+	λ('i', c, c =>
+		λ('s', c, c =>
+			some('v', c, c =>
+				and(
+					beforeNear(app(temporalTrace(c), v(0, c)), v(2, c)),
+					app(app(v(3, c), v(0, c)), v(1, c)),
+				),
+			),
+		),
+	),
+);
+
+// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) >.near 𝘵) ∧ 𝘗(𝘦)(𝘸)
+const fi = λ(['v', ['s', 't']], [], c =>
+	λ('i', c, c =>
+		λ('s', c, c =>
+			some('v', c, c =>
+				and(
+					afterNear(app(temporalTrace(c), v(0, c)), v(2, c)),
+					app(app(v(3, c), v(0, c)), v(1, c)),
+				),
+			),
+		),
+	),
+);
+
+function denoteAspect(toaq: string): Expr {
+	switch (toaq) {
+		case 'tam':
+			return tam;
+		case 'chum':
+			return chum;
+		case 'luı':
+			return lui;
+		case 'za':
+			return za;
+		case 'hoaı':
+			return hoai;
+		case 'haı':
+			return hai;
+		case 'hıq':
+			return hiq;
+		case 'fı':
+			return fi;
+		default:
+			throw new Error(`Unrecognized aspect: ${toaq}`);
+	}
+}
+
+function denoteSpeechAct(toaq: string): string {
 	switch (toaq) {
 		case 'da':
 			return 'ruaq';
@@ -108,28 +263,30 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 			),
 		);
 	} else if (leaf.label === 'Asp') {
-		if (leaf.word !== 'covert') throw new Error('TODO: non-covert Asp');
-		return λ(['v', ['s', 't']], [], c =>
-			λ('i', c, c =>
-				λ('s', c, c =>
-					some('v', c, c =>
-						and(
-							subinterval(app(temporalTrace(c), v(0, c)), v(2, c)),
-							app(app(v(3, c), v(0, c)), v(1, c)),
-						),
-					),
-				),
-			),
-		);
+		let toaq: string;
+		if (leaf.word === 'functional') {
+			throw new Error('Functional Asp');
+		} else if (leaf.word === 'covert') {
+			toaq = 'tam';
+		} else if (leaf.word.entry === undefined) {
+			throw new Error(`Unrecognized Asp: ${leaf.word.text}`);
+		} else {
+			toaq = leaf.word.entry.toaq;
+		}
+
+		return denoteAspect(toaq);
 	} else if (leaf.label === 'T') {
 		if (leaf.word !== 'covert') throw new Error('TODO: non-covert T');
 		return v(0, ['i']);
 	} else if (leaf.label === 'SA') {
 		let toaq: string;
-		if (typeof leaf.word === 'string') {
+		if (leaf.word === 'functional') {
+			throw new Error('Functional SA');
+		} else if (leaf.word === 'covert') {
 			toaq = 'da'; // TODO: covert móq
+		} else if (leaf.word.entry === undefined) {
+			throw new Error(`Unrecognized SA: ${leaf.word.text}`);
 		} else {
-			if (leaf.word.entry === undefined) throw new Error();
 			toaq = leaf.word.entry.toaq;
 		}
 
@@ -139,7 +296,7 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 					subinterval(app(temporalTrace(c), v(0, c)), speechTime(c)),
 					and(
 						equals(app(app(agent(c), v(0, c)), realWorld(c)), ji(c)),
-						verb(speechActToVerb(toaq), [v(1, c)], v(0, c), realWorld(c)),
+						verb(denoteSpeechAct(toaq), [v(1, c)], v(0, c), realWorld(c)),
 					),
 				),
 			),
@@ -215,11 +372,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	return unknownComposition;
 }
 
-function denoteBranch(
-	branch: Branch<StrictTree>,
-	left: DTree,
-	right: DTree,
-): Expr | null {
+function denoteBranch(left: DTree, right: DTree): Expr | null {
 	return getCompositionRule(left, right)(left, right);
 }
 
@@ -236,7 +389,7 @@ export function denote(tree: StrictTree): DTree {
 			...tree,
 			left,
 			right,
-			denotation: denoteBranch(tree, left, right),
+			denotation: denoteBranch(left, right),
 		};
 	}
 }
