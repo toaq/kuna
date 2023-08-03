@@ -328,6 +328,8 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 				λ('s', c, c => equals(app(app(agent(c), v(1, c)), v(0, c)), v(2, c))),
 			),
 		);
+	} else if (leaf.label === '𝘷0') {
+		return null;
 	} else if (leaf.label === 'Asp') {
 		let toaq: string;
 		if (leaf.word === 'functional') {
@@ -351,6 +353,8 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 		} else {
 			return denoteTense(leaf.word.entry.toaq);
 		}
+	} else if (leaf.label === 'C') {
+		return null;
 	} else if (leaf.label === 'SA') {
 		let toaq: string;
 		if (leaf.word === 'functional') {
@@ -375,7 +379,7 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 			),
 		);
 	} else {
-		return null;
+		throw new Error(`TODO: ${leaf.label}`);
 	}
 }
 
@@ -442,6 +446,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 				? functionalApplication
 				: reverseFunctionalApplication;
 		case '𝘷':
+		case '𝘷0':
 			return eventIdentification;
 	}
 
