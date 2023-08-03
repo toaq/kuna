@@ -101,7 +101,7 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 		const entry = leaf.word.entry;
 		if (!entry) throw new Error();
 		return denoteConstant(entry.toaq)([]);
-	} else if (leaf.label === '𝑣') {
+	} else if (leaf.label === '𝘷') {
 		return λ('e', [], c =>
 			λ('v', c, c =>
 				λ('s', c, c => equals(app(app(agent(c), v(1, c)), v(0, c)), v(2, c))),
@@ -202,12 +202,12 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 			return functionalApplication;
 		case 'T':
 			return reverseFunctionalApplication;
-		case '𝑣':
+		case '𝘷':
 			return eventIdentification;
 	}
 
 	switch (right.label) {
-		case "𝑣'":
+		case "𝘷'":
 		case 'SA':
 			return reverseFunctionalApplication;
 	}

@@ -12,8 +12,8 @@ export interface Word {
 
 export type Label =
 	| '*Serial'
-	| '*𝑣P'
-	| '*𝑣Pdet'
+	| '*𝘷P'
+	| '*𝘷Pdet'
 	| '&'
 	| "&'"
 	| '&P'
@@ -35,12 +35,12 @@ export type Label =
 	| 'Topic'
 	| "Topic'"
 	| 'TopicP'
-	| '𝑣'
-	| '𝑣0'
-	| "𝑣'"
+	| '𝘷'
+	| '𝘷0'
+	| "𝘷'"
 	| 'V'
 	| "V'"
-	| '𝑣P'
+	| '𝘷P'
 	| 'VP'
 	| 'Σ'
 	| 'ΣP';
@@ -240,7 +240,7 @@ export function makevP(
 		return reject;
 	}
 	return {
-		label: '*𝑣P',
+		label: '*𝘷P',
 		children: [serial, ...adjpsL, ...args, ...adjpsR],
 	};
 }
@@ -251,7 +251,7 @@ export function makevPdet([serial]: [Tree], location: number, reject: Object) {
 		return reject;
 	}
 	return {
-		label: '*𝑣P',
+		label: '*𝘷P',
 		children: [serial, { label: 'DP', word: 'covert' }],
 	};
 }
