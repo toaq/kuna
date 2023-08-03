@@ -408,12 +408,18 @@ const eventIdentificationTemplate = λ(['e', ['v', ['s', 't']]], [], c =>
 
 const eventIdentification: CompositionRule = (left, right) => {
 	if (left.denotation === null) {
-		return right.denotation;
+		return right.denotation === null
+			? null
+			: λ('e', right.denotation.context.slice(1), () => right.denotation!);
 	} else if (right.denotation === null) {
 		return left.denotation;
 	} else {
-		const [l, r] = unifyContexts(left.denotation, right.denotation);
-		return reduce(app(app(eventIdentificationTemplate, l), r));
+		const [t, l, r] = unifyContexts(
+			eventIdentificationTemplate,
+			left.denotation,
+			right.denotation,
+		);
+		return reduce(app(app(t, l), r));
 	}
 };
 
