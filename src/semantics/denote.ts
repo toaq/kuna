@@ -432,8 +432,6 @@ const eventIdentification: CompositionRule = (left, right) => {
 	}
 };
 
-const unknownComposition: CompositionRule = () => null;
-
 function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (left.label) {
 		case 'V':
@@ -456,7 +454,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 			return reverseFunctionalApplication;
 	}
 
-	return unknownComposition;
+	throw new Error(`TODO: composition of ${left.label} and ${right.label}`);
 }
 
 function denoteBranch(left: DTree, right: DTree): Expr | null {
