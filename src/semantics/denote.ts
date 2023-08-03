@@ -20,6 +20,7 @@ import {
 	ji,
 	nhana,
 	nhao,
+	presuppose,
 	realWorld,
 	some,
 	speechTime,
@@ -207,6 +208,66 @@ function denoteAspect(toaq: string): Expr {
 	}
 }
 
+// t | (t ⊆ t0)
+const nai = presuppose(
+	v(0, ['i']),
+	subinterval(v(0, ['i']), speechTime(['i'])),
+);
+
+// t | (t < t0)
+const pu = presuppose(v(0, ['i']), before(v(0, ['i']), speechTime(['i'])));
+
+// t | (t > t0)
+const jia = presuppose(v(0, ['i']), after(v(0, ['i']), speechTime(['i'])));
+
+// λ𝘗. λ𝘸. ∃𝘵. 𝘗(𝘵)(𝘸)
+const sula = λ(['i', ['s', 't']], [], c =>
+	λ('s', c, c => some('i', c, c => app(app(v(2, c), v(0, c)), v(1, c)))),
+);
+
+// λ𝘗. λ𝘸. ∃𝘵 : 𝘵 < t0. 𝘗(𝘵)(𝘸)
+const mala = λ(['i', ['s', 't']], [], c =>
+	λ('s', c, c =>
+		some(
+			'i',
+			c,
+			c => app(app(v(2, c), v(0, c)), v(1, c)),
+			c => before(v(0, c), speechTime(c)),
+		),
+	),
+);
+
+// λ𝘗. λ𝘸. ∃𝘵 : 𝘵 > t0. 𝘗(𝘵)(𝘸)
+const jela = λ(['i', ['s', 't']], [], c =>
+	λ('s', c, c =>
+		some(
+			'i',
+			c,
+			c => app(app(v(2, c), v(0, c)), v(1, c)),
+			c => after(v(0, c), speechTime(c)),
+		),
+	),
+);
+
+function denoteTense(toaq: string): Expr {
+	switch (toaq) {
+		case 'naı':
+			return nai;
+		case 'pu':
+			return pu;
+		case 'jıa':
+			return jia;
+		case 'sula':
+			return sula;
+		case 'mala':
+			return mala;
+		case 'jela':
+			return jela;
+		default:
+			throw new Error(`Unrecognized tense: ${toaq}`);
+	}
+}
+
 function denoteSpeechAct(toaq: string): string {
 	switch (toaq) {
 		case 'da':
@@ -276,8 +337,15 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 
 		return denoteAspect(toaq);
 	} else if (leaf.label === 'T') {
-		if (leaf.word !== 'covert') throw new Error('TODO: non-covert T');
-		return v(0, ['i']);
+		if (leaf.word === 'functional') {
+			throw new Error('Functional T');
+		} else if (leaf.word === 'covert') {
+			return v(0, ['i']);
+		} else if (leaf.word.entry === undefined) {
+			throw new Error(`Unrecognized T: ${leaf.word.text}`);
+		} else {
+			return denoteTense(leaf.word.entry.toaq);
+		}
 	} else if (leaf.label === 'SA') {
 		let toaq: string;
 		if (leaf.word === 'functional') {
@@ -358,7 +426,10 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'C':
 			return functionalApplication;
 		case 'T':
-			return reverseFunctionalApplication;
+			// Existential tenses use FA, while pronomial tenses use reverse FA
+			return Array.isArray(left.denotation?.type)
+				? functionalApplication
+				: reverseFunctionalApplication;
 		case '𝘷':
 			return eventIdentification;
 	}

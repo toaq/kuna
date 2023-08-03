@@ -310,7 +310,7 @@ export function indeed(body: Expr): Expr {
 
 export function quantifier(
 	name: (Expr & { head: 'quantifier' })['name'],
-	domain: 'e' | 'v' | 's',
+	domain: ExprType,
 	context: ExprType[],
 	body: (context: ExprType[]) => Expr,
 	restriction?: (context: ExprType[]) => Expr,
@@ -338,7 +338,7 @@ export function quantifier(
 }
 
 export function some(
-	domain: 'e' | 'v' | 's',
+	domain: ExprType,
 	context: ExprType[],
 	body: (context: ExprType[]) => Expr,
 	restriction?: (context: ExprType[]) => Expr,
@@ -347,7 +347,7 @@ export function some(
 }
 
 export function every(
-	domain: 'e' | 'v' | 's',
+	domain: ExprType,
 	context: ExprType[],
 	body: (context: ExprType[]) => Expr,
 	restriction?: (context: ExprType[]) => Expr,
