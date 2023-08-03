@@ -22,6 +22,7 @@ export type Label =
 	| 'Asp'
 	| 'AspP'
 	| 'C'
+	| 'Crel'
 	| 'CP'
 	| 'CPrel'
 	| 'D'

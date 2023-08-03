@@ -313,15 +313,18 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 			);
 		}
 	} else if (leaf.label === 'DP') {
+		let toaq: string;
 		if (leaf.word === 'functional') {
 			throw new Error('Functional DP');
 		} else if (leaf.word === 'covert') {
-			return v(0, ['e']); // Covert hóa
+			toaq = 'hóa';
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized DP: ${leaf.word.text}`);
 		} else {
-			return denoteConstant(leaf.word.entry.toaq)([]);
+			toaq = leaf.word.entry.toaq;
 		}
+
+		return toaq === 'hóa' ? v(0, ['e']) : denoteConstant(toaq)([]);
 	} else if (leaf.label === '𝘷') {
 		return λ('e', [], c =>
 			λ('v', c, c =>
@@ -353,7 +356,7 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 		} else {
 			return denoteTense(leaf.word.entry.toaq);
 		}
-	} else if (leaf.label === 'C') {
+	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
 		return null;
 	} else if (leaf.label === 'SA') {
 		let toaq: string;
@@ -432,12 +435,21 @@ const eventIdentification: CompositionRule = (left, right) => {
 	}
 };
 
+const cRelComposition: CompositionRule = (_left, right) => {
+	if (right.denotation === null) {
+		throw new Error(`Crel composition on a null ${right.label}`);
+	} else {
+		console.log(right);
+		return λ('e', right.denotation.context.slice(1), () => right.denotation!);
+	}
+};
+
 function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (left.label) {
 		case 'V':
 		case 'Asp':
-		case 'C':
 		case '𝘷0':
+		case 'C':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -446,6 +458,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 				: reverseFunctionalApplication;
 		case '𝘷':
 			return eventIdentification;
+		case 'Crel':
+			return cRelComposition;
 	}
 
 	switch (right.label) {

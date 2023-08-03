@@ -34,7 +34,7 @@ CP -> Copt TP {% makeBranch('CP') %}
 CPsub -> Csub TP {% makeBranch('CP') %}
 CPinc -> Cinc TP {% makeBranch('CP') %}
 CPrel -> Crel TP {% makeBranch('CPrel') %}
-CPdet -> TPdet {% makeBranchCovertLeft('CPrel', 'C') %}
+CPdet -> TPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 
 DP -> %pronoun {% makeLeaf('DP') %}
 DP -> D nP {% makeBranch('DP') %}
@@ -87,7 +87,7 @@ C -> %complementizer {% makeLeaf('C') %}
 Copt -> C:? {% makeOptLeaf('C') %}
 Csub -> %subordinating_complementizer {% makeLeaf('C') %}
 Cinc -> %incorporated_complementizer {% makeLeaf('C') %}
-Crel -> %relative_clause_complementizer {% makeLeaf('C') %}
+Crel -> %relative_clause_complementizer {% makeLeaf('Crel') %}
 Crelopt -> Crel:? {% makeOptLeaf('C') %}
 D -> %determiner {% makeLeaf('D') %}
 SA -> %illocution {% makeLeaf('SA') %}
