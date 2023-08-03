@@ -313,10 +313,15 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 			);
 		}
 	} else if (leaf.label === 'DP') {
-		if (typeof leaf.word === 'string') throw new Error();
-		const entry = leaf.word.entry;
-		if (!entry) throw new Error();
-		return denoteConstant(entry.toaq)([]);
+		if (leaf.word === 'functional') {
+			throw new Error('Functional DP');
+		} else if (leaf.word === 'covert') {
+			return v(0, ['e']); // Covert hóa
+		} else if (leaf.word.entry === undefined) {
+			throw new Error(`Unrecognized DP: ${leaf.word.text}`);
+		} else {
+			return denoteConstant(leaf.word.entry.toaq)([]);
+		}
 	} else if (leaf.label === '𝘷') {
 		return λ('e', [], c =>
 			λ('v', c, c =>
