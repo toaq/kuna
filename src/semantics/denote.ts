@@ -439,6 +439,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'V':
 		case 'Asp':
 		case 'C':
+		case '𝘷0':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -446,7 +447,6 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 				? functionalApplication
 				: reverseFunctionalApplication;
 		case '𝘷':
-		case '𝘷0':
 			return eventIdentification;
 	}
 
