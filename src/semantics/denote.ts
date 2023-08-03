@@ -439,7 +439,6 @@ const cRelComposition: CompositionRule = (_left, right) => {
 	if (right.denotation === null) {
 		throw new Error(`Crel composition on a null ${right.label}`);
 	} else {
-		console.log(right);
 		return λ('e', right.denotation.context.slice(1), () => right.denotation!);
 	}
 };
