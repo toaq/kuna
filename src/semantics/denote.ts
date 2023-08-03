@@ -12,7 +12,9 @@ import {
 	ji,
 	nhana,
 	nhao,
+	realWorld,
 	some,
+	speechTime,
 	subinterval,
 	suna,
 	suo,
@@ -25,8 +27,8 @@ import {
 } from './model';
 import { reduce, unifyContexts } from './operations';
 
-function denoteConstant(name: string): (context: ExprType[]) => Expr {
-	switch (name) {
+function denoteConstant(toaq: string): (context: ExprType[]) => Expr {
+	switch (toaq) {
 		case 'jí':
 			return ji;
 		case 'súq':
@@ -46,7 +48,26 @@ function denoteConstant(name: string): (context: ExprType[]) => Expr {
 		case 'áma':
 			return ama;
 		default:
-			throw new Error(`Unrecognized constant: ${name}`);
+			throw new Error(`Unrecognized constant: ${toaq}`);
+	}
+}
+
+function speechActToVerb(toaq: string): string {
+	switch (toaq) {
+		case 'da':
+			return 'ruaq';
+		case 'ka':
+			return 'karuaq';
+		case 'ba':
+			return 'baruaq';
+		case 'ꝡo':
+			return 'zaru';
+		case 'nha':
+			return 'nue';
+		case 'móq':
+			return 'teqga';
+		default:
+			throw new Error(`Unrecognized speech act: ${toaq}`);
 	}
 }
 
@@ -103,6 +124,26 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 	} else if (leaf.label === 'T') {
 		if (leaf.word !== 'covert') throw new Error('TODO: non-covert T');
 		return v(0, ['i']);
+	} else if (leaf.label === 'SA') {
+		let toaq: string;
+		if (typeof leaf.word === 'string') {
+			toaq = 'da'; // TODO: covert móq
+		} else {
+			if (leaf.word.entry === undefined) throw new Error();
+			toaq = leaf.word.entry.toaq;
+		}
+
+		return λ(['s', 't'], [], c =>
+			some('v', c, c =>
+				and(
+					subinterval(app(temporalTrace(c), v(0, c)), speechTime(c)),
+					and(
+						equals(app(app(agent(c), v(0, c)), realWorld(c)), ji(c)),
+						verb(speechActToVerb(toaq), [v(1, c)], v(0, c), realWorld(c)),
+					),
+				),
+			),
+		);
 	} else {
 		return null;
 	}
@@ -153,10 +194,7 @@ const eventIdentification: CompositionRule = (left, right) => {
 
 const unknownComposition: CompositionRule = () => null;
 
-function getCompositionRule(
-	branch: Branch<StrictTree>,
-	left: DTree,
-): CompositionRule {
+function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (left.label) {
 		case 'V':
 		case 'Asp':
@@ -168,7 +206,11 @@ function getCompositionRule(
 			return eventIdentification;
 	}
 
-	if (branch.label === '𝑣P') return reverseFunctionalApplication;
+	switch (right.label) {
+		case "𝑣'":
+		case 'SA':
+			return reverseFunctionalApplication;
+	}
 
 	return unknownComposition;
 }
@@ -178,7 +220,7 @@ function denoteBranch(
 	left: DTree,
 	right: DTree,
 ): Expr | null {
-	return getCompositionRule(branch, left)(left, right);
+	return getCompositionRule(left, right)(left, right);
 }
 
 /**
