@@ -37,11 +37,26 @@ import {
 	λ,
 	cloneBindings,
 	Binding,
+	animate,
+	inanimate,
+	abstract,
 } from './model';
 import { mapBindings, reduce, rewriteContext } from './operations';
 
 // 𝘢
-const individual = v(0, ['e']);
+const hoa = v(0, ['e']);
+
+// 𝘢 | animate(𝘢)
+const ho = presuppose(v(0, ['e']), app(animate(['e']), v(0, ['e'])));
+
+// 𝘢 | inanimate(𝘢)
+const maq = presuppose(v(0, ['e']), app(inanimate(['e']), v(0, ['e'])));
+
+// 𝘢 | abstract(𝘢)
+const hoq = presuppose(v(0, ['e']), app(abstract(['e']), v(0, ['e'])));
+
+// 𝘢
+const ta = hoa;
 
 // λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) ⊆ 𝘵) ∧ 𝘗(𝘦)(𝘸)
 const tam = λ(['v', ['s', 't']], [], c =>
@@ -350,10 +365,10 @@ function denoteLeaf(leaf: Leaf): DTree {
 				denotation = ama([]);
 				break;
 			case 'hóa':
-				denotation = individual;
+				denotation = hoa;
 				break;
 			case 'hó':
-				denotation = individual;
+				denotation = ho;
 				bindings = {
 					variable: {},
 					animacy: { animate: { index: 0, subordinate: false } },
@@ -361,7 +376,7 @@ function denoteLeaf(leaf: Leaf): DTree {
 				};
 				break;
 			case 'máq':
-				denotation = individual;
+				denotation = maq;
 				bindings = {
 					variable: {},
 					animacy: { inanimate: { index: 0, subordinate: false } },
@@ -369,7 +384,7 @@ function denoteLeaf(leaf: Leaf): DTree {
 				};
 				break;
 			case 'hóq':
-				denotation = individual;
+				denotation = hoq;
 				bindings = {
 					variable: {},
 					animacy: { abstract: { index: 0, subordinate: false } },
@@ -377,7 +392,7 @@ function denoteLeaf(leaf: Leaf): DTree {
 				};
 				break;
 			case 'tá':
-				denotation = individual;
+				denotation = ta;
 				bindings = {
 					variable: {},
 					animacy: { descriptive: { index: 0, subordinate: false } },

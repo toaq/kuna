@@ -521,6 +521,25 @@ export function ao(context: ExprType[]): Expr {
 	return accessibility('ao', context);
 }
 
+function animacy(
+	name: (Expr & { head: 'constant'; type: ['e', 't'] })['name'],
+	context: ExprType[],
+): Expr {
+	return constant(name, ['e', 't'], context);
+}
+
+export function animate(context: ExprType[]): Expr {
+	return animacy('animate', context);
+}
+
+export function inanimate(context: ExprType[]): Expr {
+	return animacy('inanimate', context);
+}
+
+export function abstract(context: ExprType[]): Expr {
+	return animacy('abstract', context);
+}
+
 export function realWorld(context: ExprType[]): Expr {
 	return constant('real_world', 's', context);
 }
