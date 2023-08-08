@@ -36,36 +36,12 @@ import {
 	verb,
 	λ,
 	cloneBindings,
+	Binding,
 } from './model';
 import { mapBindings, reduce, rewriteContext } from './operations';
 
 // 𝘢
-const hoa = v(0, ['e']);
-
-function denoteConstant(toaq: string): (context: ExprType[]) => Expr {
-	switch (toaq) {
-		case 'jí':
-			return ji;
-		case 'súq':
-			return suq;
-		case 'nháo':
-			return nhao;
-		case 'súna':
-			return suna;
-		case 'nhána':
-			return nhana;
-		case 'úmo':
-			return umo;
-		case 'íme':
-			return ime;
-		case 'súo':
-			return suo;
-		case 'áma':
-			return ama;
-		default:
-			throw new Error(`Unrecognized constant: ${toaq}`);
-	}
-}
+const individual = v(0, ['e']);
 
 // λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) ⊆ 𝘵) ∧ 𝘗(𝘦)(𝘸)
 const tam = λ(['v', ['s', 't']], [], c =>
@@ -324,7 +300,7 @@ const littleV = λ('e', [], c =>
 
 function denoteLeaf(leaf: Leaf): DTree {
 	let denotation: Expr | null;
-	let references = noBindings;
+	let bindings = noBindings;
 
 	if (leaf.label === 'V') {
 		if (typeof leaf.word === 'string') throw new Error();
@@ -345,7 +321,72 @@ function denoteLeaf(leaf: Leaf): DTree {
 			toaq = leaf.word.entry.toaq;
 		}
 
-		denotation = toaq === 'hóa' ? hoa : denoteConstant(toaq)([]);
+		switch (toaq) {
+			case 'jí':
+				denotation = ji([]);
+				break;
+			case 'súq':
+				denotation = suq([]);
+				break;
+			case 'nháo':
+				denotation = nhao([]);
+				break;
+			case 'súna':
+				denotation = suna([]);
+				break;
+			case 'nhána':
+				denotation = nhana([]);
+				break;
+			case 'úmo':
+				denotation = umo([]);
+				break;
+			case 'íme':
+				denotation = ime([]);
+				break;
+			case 'súo':
+				denotation = suo([]);
+				break;
+			case 'áma':
+				denotation = ama([]);
+				break;
+			case 'hóa':
+				denotation = individual;
+				break;
+			case 'hó':
+				denotation = individual;
+				bindings = {
+					variable: {},
+					animacy: { animate: { index: 0, subordinate: false } },
+					head: {},
+				};
+				break;
+			case 'máq':
+				denotation = individual;
+				bindings = {
+					variable: {},
+					animacy: { inanimate: { index: 0, subordinate: false } },
+					head: {},
+				};
+				break;
+			case 'hóq':
+				denotation = individual;
+				bindings = {
+					variable: {},
+					animacy: { abstract: { index: 0, subordinate: false } },
+					head: {},
+				};
+				break;
+			case 'tá':
+				denotation = individual;
+				bindings = {
+					variable: {},
+					animacy: { descriptive: { index: 0, subordinate: false } },
+					head: {},
+				};
+				break;
+			default:
+				throw new Error(`Unrecognized DP: ${toaq}`);
+		}
 	} else if (leaf.label === '𝘷') {
 		denotation = littleV;
 	} else if (leaf.label === '𝘷0') {
@@ -402,7 +443,7 @@ function denoteLeaf(leaf: Leaf): DTree {
 		throw new Error(`TODO: ${leaf.label}`);
 	}
 
-	return { ...leaf, denotation, bindings: references };
+	return { ...leaf, denotation, bindings };
 }
 
 export function unifyDenotations(
@@ -424,22 +465,28 @@ export function unifyDenotations(
 	const rightSubordinate = right.label === 'CP' || right.label === 'CPrel';
 	const rightMapping = new Array<number>(right.denotation.context.length);
 
-	for (const [variable, rb] of Object.entries(right.bindings.variable)) {
-		if (rb !== undefined) {
-			const lb = left.bindings.variable[variable];
-			if (lb === undefined) {
-				bindings.variable[variable] = {
-					index: context.length,
-					subordinate: rightSubordinate,
-				};
-				rightMapping[rb.index] = context.length;
-				context.push(right.denotation.context[rb.index]);
-			} else {
-				bindings.variable[variable] = {
-					index: lb.index,
-					subordinate: lb.subordinate && rb.subordinate,
-				};
-				rightMapping[rb.index] = lb.index;
+	// TODO: clean up these types
+	// also implement the 'Cho máma hó/áq' using the subordinate field
+	for (const [kind_, map] of Object.entries(right.bindings)) {
+		const kind = kind_ as keyof Bindings;
+		for (const [slot, rb_] of Object.entries(map)) {
+			const rb = rb_ as Binding;
+			if (rb !== undefined) {
+				const lb = (left.bindings[kind] as any)[slot] as Binding;
+				if (lb === undefined) {
+					(bindings[kind] as any)[slot] = {
+						index: context.length,
+						subordinate: rightSubordinate,
+					};
+					rightMapping[rb.index] = context.length;
+					context.push(right.denotation.context[rb.index]);
+				} else {
+					(bindings[kind] as any)[slot] = {
+						index: lb.index,
+						subordinate: lb.subordinate && rb.subordinate,
+					};
+					rightMapping[rb.index] = lb.index;
+				}
 			}
 		}
 	}
