@@ -39,6 +39,7 @@ import {
 } from './model';
 import { mapBindings, reduce, rewriteContext } from './operations';
 
+// 𝘢
 const hoa = v(0, ['e']);
 
 function denoteConstant(toaq: string): (context: ExprType[]) => Expr {
@@ -314,6 +315,7 @@ function denoteVerb(toaq: string, arity: number): Expr {
 	}
 }
 
+// λ𝘢. λ𝘦. λ𝘸. ᴀɢᴇɴᴛ(𝘦)(𝘸) = 𝘢
 const littleV = λ('e', [], c =>
 	λ('v', c, c =>
 		λ('s', c, c => equals(app(app(agent(c), v(1, c)), v(0, c)), v(2, c))),
