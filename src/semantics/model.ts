@@ -1,3 +1,4 @@
+import { NonVerbEntry, VerbEntry } from '../dictionary';
 import { Branch, Leaf } from '../tree';
 
 /**
@@ -99,6 +100,8 @@ type Accessibility<Name extends string> = Constant<Name, ['s', ['s', 't']]>;
 
 type Pronoun<Name extends string> = Constant<Name, 'e'>;
 
+type Animacy<Name extends string> = Constant<Name, ['e', 't']>;
+
 /**
  * A semantic expression. The field 'type' represents the expression's type,
  * while the field 'context' represents the types of variables in scope, ordered
@@ -135,17 +138,57 @@ export type Expr =
 	| Role<'agent'>
 	| Accessibility<'she'>
 	| Accessibility<'ao'>
+	| Animacy<'animate'>
+	| Animacy<'inanimate'>
+	| Animacy<'abstract'>
 	| Constant<'real_world', 's'>
 	| Constant<'inertia_worlds', ['s', ['s', ['i', 't']]]>
+	// TODO: all temporal features of events should have world parameters
 	| Constant<'temporal_trace', ['v', 'i']>
 	| Constant<'expected_start', ['v', 'i']>
 	| Constant<'expected_end', ['v', 'i']>
 	| Constant<'speech_time', 'i'>;
 
+export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
+
+export interface Binding {
+	/**
+	 * The De Bruijn index of the free variable in the relevant expression
+	 * corresponding to this binding.
+	 */
+	index: number;
+	/**
+	 * Whether this binding originates from a subordinate clause.
+	 */
+	subordinate: boolean;
+}
+
+export interface Bindings {
+	variable: { [V in string]?: Binding };
+	animacy: { [A in AnimacyClass]?: Binding };
+	head: { [H in string]?: Binding };
+}
+
+export const noBindings: Bindings = { variable: {}, animacy: {}, head: {} };
+
+export function cloneBindings(b: Bindings): Bindings {
+	return {
+		variable: { ...b.variable },
+		animacy: { ...b.animacy },
+		head: { ...b.head },
+	};
+}
+
 /**
  * A tree with denotations.
  */
-export type DTree = { denotation: Expr | null } & (Leaf | Branch<DTree>);
+export type DTree = (Leaf | Branch<DTree>) & {
+	denotation: Expr | null;
+	/**
+	 * References to bindings originating from this subtree.
+	 */
+	bindings: Bindings;
+};
 
 export function typesEqual(t1: ExprType, t2: ExprType): boolean {
 	if (typeof t1 === 'string' || typeof t2 === 'string') {

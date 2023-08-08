@@ -1,4 +1,4 @@
-import { Leaf, StrictTree } from '../tree';
+import { Branch, Leaf, StrictTree } from '../tree';
 import {
 	after,
 	afterNear,
@@ -20,8 +20,10 @@ import {
 	ji,
 	nhana,
 	nhao,
+	noBindings,
 	presuppose,
 	realWorld,
+	Bindings,
 	some,
 	speechTime,
 	subinterval,
@@ -33,8 +35,11 @@ import {
 	v,
 	verb,
 	λ,
+	cloneBindings,
 } from './model';
-import { reduce, unifyContexts } from './operations';
+import { mapBindings, reduce, rewriteContext } from './operations';
+
+const hoa = v(0, ['e']);
 
 function denoteConstant(toaq: string): (context: ExprType[]) => Expr {
 	switch (toaq) {
@@ -208,6 +213,9 @@ function denoteAspect(toaq: string): Expr {
 	}
 }
 
+// t
+const defaultTense = v(0, ['i']);
+
 // t | (t ⊆ t0)
 const nai = presuppose(
 	v(0, ['i']),
@@ -287,31 +295,42 @@ function denoteSpeechAct(toaq: string): string {
 	}
 }
 
-function denoteLeaf(leaf: Leaf): Expr | null {
+function denoteVerb(toaq: string, arity: number): Expr {
+	switch (arity) {
+		case 2:
+			return λ('e', [], c =>
+				λ('v', c, c => λ('s', c, c => verb(toaq, [v(2, c)], v(1, c), v(0, c)))),
+			);
+		case 3:
+			return λ('e', [], c =>
+				λ('e', c, c =>
+					λ('v', c, c =>
+						λ('s', c, c => verb(toaq, [v(3, c), v(2, c)], v(1, c), v(0, c))),
+					),
+				),
+			);
+		default:
+			throw new Error(`Unhandled verb arity: ${toaq} (${arity})`);
+	}
+}
+
+const littleV = λ('e', [], c =>
+	λ('v', c, c =>
+		λ('s', c, c => equals(app(app(agent(c), v(1, c)), v(0, c)), v(2, c))),
+	),
+);
+
+function denoteLeaf(leaf: Leaf): DTree {
+	let denotation: Expr | null;
+	let references = noBindings;
+
 	if (leaf.label === 'V') {
 		if (typeof leaf.word === 'string') throw new Error();
 		const entry = leaf.word.entry;
 		if (!entry) throw new Error();
 		if (entry.type !== 'predicate') throw new Error();
 
-		const arity = entry.frame.split(' ').length;
-		if (arity === 3) {
-			return λ('e', [], c =>
-				λ('e', c, c =>
-					λ('v', c, c =>
-						λ('s', c, c =>
-							verb(entry.toaq, [v(3, c), v(2, c)], v(1, c), v(0, c)),
-						),
-					),
-				),
-			);
-		} else {
-			return λ('e', [], c =>
-				λ('v', c, c =>
-					λ('s', c, c => verb(entry.toaq, [v(2, c)], v(1, c), v(0, c))),
-				),
-			);
-		}
+		denotation = denoteVerb(entry.toaq, entry.frame.split(' ').length);
 	} else if (leaf.label === 'DP') {
 		let toaq: string;
 		if (leaf.word === 'functional') {
@@ -324,15 +343,11 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 			toaq = leaf.word.entry.toaq;
 		}
 
-		return toaq === 'hóa' ? v(0, ['e']) : denoteConstant(toaq)([]);
+		denotation = toaq === 'hóa' ? hoa : denoteConstant(toaq)([]);
 	} else if (leaf.label === '𝘷') {
-		return λ('e', [], c =>
-			λ('v', c, c =>
-				λ('s', c, c => equals(app(app(agent(c), v(1, c)), v(0, c)), v(2, c))),
-			),
-		);
+		denotation = littleV;
 	} else if (leaf.label === '𝘷0') {
-		return null;
+		denotation = null;
 	} else if (leaf.label === 'Asp') {
 		let toaq: string;
 		if (leaf.word === 'functional') {
@@ -345,19 +360,19 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 			toaq = leaf.word.entry.toaq;
 		}
 
-		return denoteAspect(toaq);
+		denotation = denoteAspect(toaq);
 	} else if (leaf.label === 'T') {
 		if (leaf.word === 'functional') {
 			throw new Error('Functional T');
 		} else if (leaf.word === 'covert') {
-			return v(0, ['i']);
+			denotation = defaultTense;
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized T: ${leaf.word.text}`);
 		} else {
-			return denoteTense(leaf.word.entry.toaq);
+			denotation = denoteTense(leaf.word.entry.toaq);
 		}
 	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
-		return null;
+		denotation = null;
 	} else if (leaf.label === 'SA') {
 		let toaq: string;
 		if (leaf.word === 'functional') {
@@ -370,7 +385,7 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 			toaq = leaf.word.entry.toaq;
 		}
 
-		return λ(['s', 't'], [], c =>
+		denotation = λ(['s', 't'], [], c =>
 			some('v', c, c =>
 				and(
 					subinterval(app(temporalTrace(c), v(0, c)), speechTime(c)),
@@ -384,62 +399,168 @@ function denoteLeaf(leaf: Leaf): Expr | null {
 	} else {
 		throw new Error(`TODO: ${leaf.label}`);
 	}
+
+	return { ...leaf, denotation, bindings: references };
 }
 
-type CompositionRule = (left: DTree, right: DTree) => Expr | null;
+export function unifyDenotations(
+	left: DTree,
+	right: DTree,
+): [Expr, Expr, Bindings] {
+	if (left.denotation === null)
+		throw new Error(
+			`Can't unify a semantically empty ${left.label} with a ${right.label}`,
+		);
+	if (right.denotation === null)
+		throw new Error(
+			`Can't unify a ${left.label} with a semantically empty ${right.label}`,
+		);
 
-const functionalApplication: CompositionRule = (left, right) => {
-	if (left.denotation === null) {
-		return right.denotation;
-	} else if (right.denotation === null) {
-		return left.denotation;
-	} else {
-		const [fn, argument] = unifyContexts(left.denotation, right.denotation);
-		return reduce(app(fn, argument));
+	const bindings = cloneBindings(left.bindings);
+	const context = [...left.denotation.context];
+
+	const rightSubordinate = right.label === 'CP' || right.label === 'CPrel';
+	const rightMapping = new Array<number>(right.denotation.context.length);
+
+	for (const [variable, rb] of Object.entries(right.bindings.variable)) {
+		if (rb !== undefined) {
+			const lb = left.bindings.variable[variable];
+			if (lb === undefined) {
+				bindings.variable[variable] = {
+					index: context.length,
+					subordinate: rightSubordinate,
+				};
+				rightMapping[rb.index] = context.length;
+				context.push(right.denotation.context[rb.index]);
+			} else {
+				bindings.variable[variable] = {
+					index: lb.index,
+					subordinate: lb.subordinate && rb.subordinate,
+				};
+				rightMapping[rb.index] = lb.index;
+			}
+		}
 	}
-};
 
-const reverseFunctionalApplication: CompositionRule = (left, right) =>
-	functionalApplication(right, left);
+	for (let i = 0; i < rightMapping.length; i++) {
+		if (rightMapping[i] === undefined) {
+			rightMapping[i] = context.length;
+			context.push(right.denotation.context[i]);
+		}
+	}
+
+	return [
+		rewriteContext(left.denotation, context, i => i),
+		rewriteContext(right.denotation, context, i => rightMapping[i]),
+		bindings,
+	];
+}
+
+type CompositionRule = (
+	branch: Branch<StrictTree>,
+	left: DTree,
+	right: DTree,
+) => DTree;
+
+function functionalApplicationInner(
+	branch: Branch<StrictTree>,
+	left: DTree,
+	right: DTree,
+	fn: DTree,
+	argument: DTree,
+): DTree {
+	let denotation: Expr | null;
+	let bindings: Bindings;
+
+	if (fn.denotation === null) {
+		({ denotation, bindings } = argument);
+	} else if (argument.denotation === null) {
+		({ denotation, bindings } = fn);
+	} else {
+		const [f, a, b] = unifyDenotations(fn, argument);
+		denotation = reduce(app(f, a));
+		bindings = b;
+	}
+
+	return { ...branch, left, right, denotation, bindings };
+}
+
+const functionalApplication: CompositionRule = (branch, left, right) =>
+	functionalApplicationInner(branch, left, right, left, right);
+
+const reverseFunctionalApplication: CompositionRule = (branch, left, right) =>
+	functionalApplicationInner(branch, left, right, right, left);
 
 // λ𝘗. λ𝘘. λ𝘢. λ𝘦. λ𝘸. 𝘗(𝘢)(𝘦)(𝘸) ∧ 𝘘(𝘦)(𝘸)
-const eventIdentificationTemplate = λ(['e', ['v', ['s', 't']]], [], c =>
-	λ(['v', ['s', 't']], c, c =>
-		λ('e', c, c =>
-			λ('v', c, c =>
-				λ('s', c, c =>
-					and(
-						app(app(app(v(4, c), v(2, c)), v(1, c)), v(0, c)),
-						app(app(v(3, c), v(1, c)), v(0, c)),
+const eventIdentificationTemplate = (context: ExprType[]) =>
+	λ(['e', ['v', ['s', 't']]], context, c =>
+		λ(['v', ['s', 't']], c, c =>
+			λ('e', c, c =>
+				λ('v', c, c =>
+					λ('s', c, c =>
+						and(
+							app(app(app(v(4, c), v(2, c)), v(1, c)), v(0, c)),
+							app(app(v(3, c), v(1, c)), v(0, c)),
+						),
 					),
 				),
 			),
 		),
-	),
-);
+	);
 
-const eventIdentification: CompositionRule = (left, right) => {
+// λ𝘗. λ𝘢. λ𝘦. λ𝘸. 𝘗(𝘦)(𝘸)
+const eventIdentificationRightOnlyTemplate = (context: ExprType[]) =>
+	λ(['v', ['s', 't']], context, c =>
+		λ('e', c, c =>
+			λ('v', c, c => λ('s', c, c => app(app(v(3, c), v(1, c)), v(0, c)))),
+		),
+	);
+
+const eventIdentification: CompositionRule = (branch, left, right) => {
+	let denotation: Expr | null;
+	let bindings: Bindings;
+
 	if (left.denotation === null) {
-		return right.denotation === null
-			? null
-			: λ('e', right.denotation.context.slice(1), () => right.denotation!);
+		denotation =
+			right.denotation === null
+				? null
+				: reduce(
+						app(
+							eventIdentificationRightOnlyTemplate(right.denotation.context),
+							right.denotation,
+						),
+				  );
+		bindings = right.bindings;
 	} else if (right.denotation === null) {
-		return left.denotation;
+		({ denotation, bindings } = left);
 	} else {
-		const [t, l, r] = unifyContexts(
-			eventIdentificationTemplate,
-			left.denotation,
-			right.denotation,
-		);
-		return reduce(app(app(t, l), r));
+		const [l, r, b] = unifyDenotations(left, right);
+		denotation = reduce(app(app(eventIdentificationTemplate(l.context), l), r));
+		bindings = b;
 	}
+
+	return { ...branch, left, right, denotation, bindings };
 };
 
-const cRelComposition: CompositionRule = (_left, right) => {
+const cRelComposition: CompositionRule = (branch, left, right) => {
 	if (right.denotation === null) {
 		throw new Error(`Crel composition on a null ${right.label}`);
 	} else {
-		return λ('e', right.denotation.context.slice(1), () => right.denotation!);
+		return {
+			...branch,
+			left,
+			right,
+			denotation: λ(
+				'e',
+				right.denotation.context.slice(1),
+				() => right.denotation!,
+			),
+			bindings: mapBindings(right.bindings, b => {
+				if (b.index === 0)
+					throw new Error("TODO: Relative clauses that don't use hóa");
+				return { index: b.index - 1, subordinate: true };
+			}),
+		};
 	}
 };
 
@@ -470,8 +591,12 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	throw new Error(`TODO: composition of ${left.label} and ${right.label}`);
 }
 
-function denoteBranch(left: DTree, right: DTree): Expr | null {
-	return getCompositionRule(left, right)(left, right);
+function denoteBranch(
+	branch: Branch<StrictTree>,
+	left: DTree,
+	right: DTree,
+): DTree {
+	return getCompositionRule(left, right)(branch, left, right);
 }
 
 /**
@@ -479,15 +604,11 @@ function denoteBranch(left: DTree, right: DTree): Expr | null {
  */
 export function denote(tree: StrictTree): DTree {
 	if ('word' in tree) {
-		return { ...tree, denotation: denoteLeaf(tree) };
+		// TODO: n and SA leaves require information about their sibling
+		return denoteLeaf(tree);
 	} else {
 		const left = denote(tree.left);
 		const right = denote(tree.right);
-		return {
-			...tree,
-			left,
-			right,
-			denotation: denoteBranch(left, right),
-		};
+		return denoteBranch(tree, left, right);
 	}
 }

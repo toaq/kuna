@@ -1,5 +1,8 @@
 import {
 	app,
+	Binding,
+	Bindings,
+	cloneBindings,
 	constant,
 	Expr,
 	ExprType,
@@ -76,7 +79,7 @@ function mapVariables(
  * Rewrites an expression to use a different context, given a function mapping
  * indices in the original context to indices in the new context.
  */
-function rewriteContext(
+export function rewriteContext(
 	e: Expr,
 	newContext: ExprType[],
 	mapping: (index: number) => number,
@@ -116,6 +119,7 @@ function substitute(index: number, target: Expr, e: Expr): Expr {
  */
 function reduceOnce(e: Expr): Expr {
 	if (e.head === 'apply' && e.fn.head === 'lambda') {
+		// TODO: lift presuppositions
 		const body = substitute(0, e.argument, e.fn.body);
 		return e.fn.restriction === undefined
 			? body
@@ -189,15 +193,15 @@ export function reduce(e: Expr): Expr {
 	}
 }
 
-/**
- * Rewrites the given expressions so that they all share the same context.
- */
-export function unifyContexts(...es: Expr[]): Expr[] {
-	const newContext = es.flatMap(e => e.context);
-	let offset = 0;
-	return es.map(e => {
-		const newExpr = rewriteContext(e, newContext, i => i + offset);
-		offset += e.context.length;
-		return newExpr;
-	});
+export function mapBindings(
+	bs: Bindings,
+	mapping: (b: Binding) => Binding,
+): Bindings {
+	const newBindings = cloneBindings(bs);
+	for (const map of Object.values(newBindings)) {
+		for (const [slot, b] of Object.entries(map)) {
+			map[slot] = mapping(b as Binding);
+		}
+	}
+	return newBindings;
 }
