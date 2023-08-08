@@ -634,6 +634,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (right.label) {
 		case "𝘷'":
 		case 'SA':
+		case "V'":
 			return reverseFunctionalApplication;
 	}
 
