@@ -27,10 +27,14 @@ export type Label =
 	| 'CPrel'
 	| 'D'
 	| 'DP'
+	| 'mı'
+	| 'mıP'
 	| 'n'
 	| 'nP'
 	| 'SA'
 	| 'SAP'
+	| 'shu'
+	| 'shuP'
 	| 'T'
 	| 'TP'
 	| 'Topic'
@@ -196,8 +200,10 @@ function getFrame(verb: Tree): string {
 		}
 	} else if (verb.label === '&P' && 'left' in verb) {
 		return getFrame(verb.left);
+	} else if (verb.label === 'shuP' || verb.label === 'mıP') {
+		return 'c';
 	} else {
-		throw new Error('weird nonverb');
+		throw new Error('weird nonverb: ' + verb.label);
 	}
 }
 

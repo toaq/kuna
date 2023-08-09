@@ -58,7 +58,7 @@ AspPdet -> Sigma Asp1 vPdet {% make3L('ΣP', 'AspP') %}
 vP -> Serial AdjunctP1:* (term:+ AdjunctP1:*):? {% makevP %}
 vPdet -> Serialdet {% makevPdet %}
 
-AdjunctP -> Adjunct Serial DP1 {% makeAdjunctPT %}
+AdjunctP -> Adjunct Serial term {% makeAdjunctPT %}
 AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
 
 Serial -> V1:+ {% makeSerial %}
@@ -75,8 +75,13 @@ Asp1 -> Asp {% id %}
 Asp1 -> Asp Conjunction Asp1 {% makeConn %}
 AdjunctP1 -> AdjunctP {% id %}
 AdjunctP1 -> AdjunctP Conjunction AdjunctP1 {% makeConn %}
-V1 -> V {% id %}
-V1 -> V ConjunctionT1 V1 {% makeConn %}
+V1 -> Verblike {% id %}
+V1 -> Verblike ConjunctionT1 V1 {% makeConn %}
+Verblike -> V {% id %}
+Verblike -> ShuP {% id %}
+ShuP -> Shu Word {% makeBranch('shuP') %}
+Verblike -> MiP {% id %}
+MiP -> Mi Word {% makeBranch('mıP') %}
 
 Adjunct -> %preposition {% makeLeaf('Adjunct') %}
 Conjunction -> %conjunction {% makeLeaf('&') %}
@@ -90,8 +95,12 @@ Cinc -> %incorporated_complementizer {% makeLeaf('C') %}
 Crel -> %relative_clause_complementizer {% makeLeaf('Crel') %}
 Crelopt -> Crel:? {% makeOptLeaf('C') %}
 D -> %determiner {% makeLeaf('D') %}
+Mi -> %name_verb {% makeLeaf('mı') %}
 SA -> %illocution {% makeLeaf('SA') %}
 SAopt -> SA:? {% makeOptLeaf('SA') %}
 Sigma -> %polarity {% makeLeaf('Σ') %}
+Shu -> %word_quote {% makeLeaf('shu') %}
 T -> %tense {% makeLeaf('T') %}
 V -> %predicate {% makeLeaf('V') %}
+# TODO: match all word types, not just predicate
+Word -> %predicate {% makeLeaf('word') %}

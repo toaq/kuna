@@ -14,8 +14,10 @@ declare var subordinating_complementizer: any;
 declare var incorporated_complementizer: any;
 declare var relative_clause_complementizer: any;
 declare var determiner: any;
+declare var name_verb: any;
 declare var illocution: any;
 declare var polarity: any;
+declare var word_quote: any;
 declare var tense: any;
 declare var predicate: any;
 
@@ -107,7 +109,7 @@ const grammar: Grammar = {
     {"name": "vP$ebnf$2", "symbols": [], "postprocess": () => null},
     {"name": "vP", "symbols": ["Serial", "vP$ebnf$1", "vP$ebnf$2"], "postprocess": makevP},
     {"name": "vPdet", "symbols": ["Serialdet"], "postprocess": makevPdet},
-    {"name": "AdjunctP", "symbols": ["Adjunct", "Serial", "DP1"], "postprocess": makeAdjunctPT},
+    {"name": "AdjunctP", "symbols": ["Adjunct", "Serial", "term"], "postprocess": makeAdjunctPT},
     {"name": "AdjunctP", "symbols": ["Adjunct", "Serial"], "postprocess": makeAdjunctPI},
     {"name": "Serial$ebnf$1", "symbols": ["V1"]},
     {"name": "Serial$ebnf$1", "symbols": ["Serial$ebnf$1", "V1"], "postprocess": (d) => d[0].concat([d[1]])},
@@ -124,8 +126,13 @@ const grammar: Grammar = {
     {"name": "Asp1", "symbols": ["Asp", "Conjunction", "Asp1"], "postprocess": makeConn},
     {"name": "AdjunctP1", "symbols": ["AdjunctP"], "postprocess": id},
     {"name": "AdjunctP1", "symbols": ["AdjunctP", "Conjunction", "AdjunctP1"], "postprocess": makeConn},
-    {"name": "V1", "symbols": ["V"], "postprocess": id},
-    {"name": "V1", "symbols": ["V", "ConjunctionT1", "V1"], "postprocess": makeConn},
+    {"name": "V1", "symbols": ["Verblike"], "postprocess": id},
+    {"name": "V1", "symbols": ["Verblike", "ConjunctionT1", "V1"], "postprocess": makeConn},
+    {"name": "Verblike", "symbols": ["V"], "postprocess": id},
+    {"name": "Verblike", "symbols": ["ShuP"], "postprocess": id},
+    {"name": "ShuP", "symbols": ["Shu", "Word"], "postprocess": makeBranch('shuP')},
+    {"name": "Verblike", "symbols": ["MiP"], "postprocess": id},
+    {"name": "MiP", "symbols": ["Mi", "Word"], "postprocess": makeBranch('mıP')},
     {"name": "Adjunct", "symbols": [(lexer.has("preposition") ? {type: "preposition"} : preposition)], "postprocess": makeLeaf('Adjunct')},
     {"name": "Conjunction", "symbols": [(lexer.has("conjunction") ? {type: "conjunction"} : conjunction)], "postprocess": makeLeaf('&')},
     {"name": "ConjunctionT1", "symbols": [(lexer.has("conjunction_in_t1") ? {type: "conjunction_in_t1"} : conjunction_in_t1)], "postprocess": makeLeaf('&')},
@@ -142,13 +149,16 @@ const grammar: Grammar = {
     {"name": "Crelopt$ebnf$1", "symbols": [], "postprocess": () => null},
     {"name": "Crelopt", "symbols": ["Crelopt$ebnf$1"], "postprocess": makeOptLeaf('C')},
     {"name": "D", "symbols": [(lexer.has("determiner") ? {type: "determiner"} : determiner)], "postprocess": makeLeaf('D')},
+    {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('mı')},
     {"name": "SA", "symbols": [(lexer.has("illocution") ? {type: "illocution"} : illocution)], "postprocess": makeLeaf('SA')},
     {"name": "SAopt$ebnf$1", "symbols": ["SA"], "postprocess": id},
     {"name": "SAopt$ebnf$1", "symbols": [], "postprocess": () => null},
     {"name": "SAopt", "symbols": ["SAopt$ebnf$1"], "postprocess": makeOptLeaf('SA')},
     {"name": "Sigma", "symbols": [(lexer.has("polarity") ? {type: "polarity"} : polarity)], "postprocess": makeLeaf('Σ')},
+    {"name": "Shu", "symbols": [(lexer.has("word_quote") ? {type: "word_quote"} : word_quote)], "postprocess": makeLeaf('shu')},
     {"name": "T", "symbols": [(lexer.has("tense") ? {type: "tense"} : tense)], "postprocess": makeLeaf('T')},
-    {"name": "V", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('V')}
+    {"name": "V", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('V')},
+    {"name": "Word", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('word')}
   ],
   ParserStart: "Fragment",
 };
