@@ -28,41 +28,65 @@ const lexer = new ToaqTokenizer();
 @lexer lexer
 
 Fragment -> SAP {% id %} | DP {% id %} | AdjunctP {% id %}
+
+# ꝡa hao da
 SAP -> CP SAopt {% makeBranch('SAP') %}
 
+# ꝡa hao
 CP -> Copt TP {% makeBranch('CP') %}
+# ꝡä hao
 CPsub -> Csub TP {% makeBranch('CP') %}
+# ꝡâ hao
 CPinc -> Cinc TP {% makeBranch('CP') %}
+# ꝡë hao
 CPrel -> Crel TP {% makeBranch('CPrel') %}
+# (sá) ∅ hao
 CPdet -> TPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 
+# jí
 DP -> %pronoun {% makeLeaf('DP') %}
+# sá ...
 DP -> D nP {% makeBranch('DP') %}
+# (sá) ꝡë hao
 nP -> nP CPrel {% makeBranch('nP') %}
+# (sá) ∅ hao
 nP -> CPdet {% makeBranchFunctionalLeft('nP', 'n') %}
 
+# pu chum hao jí
 TP -> AspP {% makeBranchCovertLeft('TP', 'T') %}
 TP -> T1 AspP {% makeBranch('TP') %}
 TP -> Sigma T1 AspP {% make3L('ΣP', 'TP') %}
+
+# (sá) pu chum hao
 TPdet -> AspPdet {% makeBranchCovertLeft('TP', 'T') %}
 TPdet -> T1 AspPdet {% makeBranch('TP') %}
 TPdet -> Sigma T1 AspPdet {% make3L('ΣP', 'TP') %}
 
+# chum hao jí
 AspP -> vP {% makeBranchCovertLeft('AspP', 'Asp') %}
 AspP -> Asp1 vP {% makeBranch('AspP') %}
 AspP -> Sigma Asp1 vP {% make3L('ΣP', 'AspP') %}
+
+# (sá) chum hao
 AspPdet -> vPdet {% makeBranchCovertLeft('AspP', 'Asp') %}
 AspPdet -> Asp1 vPdet {% makeBranch('AspP') %}
 AspPdet -> Sigma Asp1 vPdet {% make3L('ΣP', 'AspP') %}
 
+# tua hao tî kúe jí súq râo níchaq
 vP -> Serial AdjunctP1:* (term:+ AdjunctP1:*):? {% makevP %}
+# (sá) tua hao
 vPdet -> Serialdet {% makevPdet %}
 
+# ^ tı kúe
 AdjunctP -> Adjunct Serial term {% makeAdjunctPT %}
+# ^ jaq suaı
 AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
 
+# tua hao
 Serial -> V1:+ {% makeSerial %}
+# (sá) tua hao
 Serialdet -> Serial {% id %}
+# (sá) ∅
 Serialdet -> null {% makeCovertLeaf('V') %}
 
 term -> DP1 {% id %} | CPsub {% id %}
