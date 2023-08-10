@@ -37,7 +37,7 @@ CP -> Copt TP {% makeBranch('CP') %}
 # ꝡä hao
 CPsub -> Csub TP {% makeBranch('CP') %}
 # ꝡâ hao
-CPinc -> Cinc TP {% makeBranch('CP') %}
+CPincorp -> Cincorp TP {% makeBranch('CP') %}
 # ꝡë hao
 CPrel -> Crel TP {% makeBranch('CPrel') %}
 # (sá) ∅ hao
@@ -83,11 +83,22 @@ AdjunctP -> Adjunct Serial term {% makeAdjunctPT %}
 AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
 
 # tua hao
-Serial -> V1:+ {% makeSerial %}
+Serial -> V1:* Vlast {% makeSerial %}
 # (sá) tua hao
 Serialdet -> Serial {% id %}
 # (sá) ∅
 Serialdet -> null {% makeCovertLeaf('V') %}
+
+# hao sâ ...
+VPincorp -> V DPincorp {% makeBranch('VP') %}
+# hao ꝡâ ...
+VPincorp -> V CPincorp {% makeBranch('VP') %}
+# jî
+DPincorp -> %incorporated_pronoun {% makeLeaf('DP') %}
+# sâ ...
+DPincorp -> Dincorp nP {% makeBranch('DP') %}
+# po sá ...
+VPoiv -> Voiv DP {% makeBranch('VP') %}
 
 term -> DP1 {% id %} | CPsub {% id %}
 
@@ -99,6 +110,10 @@ Asp1 -> Asp {% id %}
 Asp1 -> Asp Conjunction Asp1 {% makeConn %}
 AdjunctP1 -> AdjunctP {% id %}
 AdjunctP1 -> AdjunctP Conjunction AdjunctP1 {% makeConn %}
+Vlast -> Verblike {% id %}
+Vlast -> VPincorp {% id %}
+Vlast -> VPoiv {% id %}
+Vlast -> Verblike ConjunctionT1 Vlast {% makeConn %}
 V1 -> Verblike {% id %}
 V1 -> Verblike ConjunctionT1 V1 {% makeConn %}
 Verblike -> V {% id %}
@@ -115,10 +130,11 @@ Asp -> %aspect {% makeLeaf('Asp') %}
 C -> %complementizer {% makeLeaf('C') %}
 Copt -> C:? {% makeOptLeaf('C') %}
 Csub -> %subordinating_complementizer {% makeLeaf('C') %}
-Cinc -> %incorporated_complementizer {% makeLeaf('C') %}
+Cincorp -> %incorporated_complementizer {% makeLeaf('C') %}
 Crel -> %relative_clause_complementizer {% makeLeaf('Crel') %}
 Crelopt -> Crel:? {% makeOptLeaf('C') %}
 D -> %determiner {% makeLeaf('D') %}
+Dincorp -> %incorporated_determiner {% makeLeaf('D') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
 SA -> %illocution {% makeLeaf('SA') %}
 SAopt -> SA:? {% makeOptLeaf('SA') %}
@@ -126,5 +142,6 @@ Sigma -> %polarity {% makeLeaf('Σ') %}
 Shu -> %word_quote {% makeLeaf('shu') %}
 T -> %tense {% makeLeaf('T') %}
 V -> %predicate {% makeLeaf('V') %}
+Voiv -> %object_incorporating_verb {% makeLeaf('V') %}
 # TODO: match all word types, not just predicate
 Word -> %predicate {% makeLeaf('word') %}

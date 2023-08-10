@@ -202,16 +202,20 @@ function getFrame(verb: Tree): string {
 		return getFrame(verb.left);
 	} else if (verb.label === 'shuP' || verb.label === 'mıP') {
 		return 'c';
+	} else if (verb.label === 'VP') {
+		// object incorporation... check that the verb is transitive?
+		return 'c';
 	} else {
 		throw new Error('weird nonverb: ' + verb.label);
 	}
 }
 
 export function makeSerial(
-	[children]: [Tree[]],
+	[verbs, vlast]: [Tree[], Tree],
 	location: number,
 	reject: Object,
 ) {
+	const children = verbs.concat([vlast]);
 	const frames = children.map(getFrame);
 	let arity: number | undefined = undefined;
 	if (!frames.includes('')) {
