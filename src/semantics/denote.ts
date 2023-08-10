@@ -461,6 +461,12 @@ function denoteLeaf(leaf: Leaf): DTree {
 	return { ...leaf, denotation, bindings };
 }
 
+/**
+ * Unifies the denotations of two subtrees so that they share a common context,
+ * and can be composed together.
+ * @returns The rewritten denotation of the left subtree, followed by the
+ * 	rewritten denotation of the right subtree, followed by the unified bindings.
+ */
 export function unifyDenotations(
 	left: DTree,
 	right: DTree,
@@ -474,38 +480,48 @@ export function unifyDenotations(
 			`Can't unify a ${left.label} with a semantically empty ${right.label}`,
 		);
 
+	// To proceed, we start with the bindings of the left subtree, and iteratively
+	// incorporate each binding present in the right subtree
 	const bindings = cloneBindings(left.bindings);
 	const context = [...left.denotation.context];
 
 	const rightSubordinate = right.label === 'CP' || right.label === 'CPrel';
+	// This is the mapping from variable indices in the right context, to variable
+	// indices in the unified context - we'll fill it in as we go
 	const rightMapping = new Array<number>(right.denotation.context.length);
 
-	// TODO: clean up these types
-	// also implement the 'Cho máma hó/áq' using the subordinate field
+	// TODO: implement the 'Cho máma hó/áq' rule using the subordinate field
+
+	// For each binding referenced in the right subtree
 	for (const [kind_, map] of Object.entries(right.bindings)) {
 		const kind = kind_ as keyof Bindings;
 		for (const [slot, rb_] of Object.entries(map)) {
 			const rb = rb_ as Binding;
 			if (rb !== undefined) {
-				const lb = (left.bindings[kind] as any)[slot] as Binding;
-				if (lb === undefined) {
-					(bindings[kind] as any)[slot] = {
-						index: context.length,
-						subordinate: rightSubordinate,
-					};
-					rightMapping[rb.index] = context.length;
-					context.push(right.denotation.context[rb.index]);
-				} else {
-					(bindings[kind] as any)[slot] = {
+				// If there is a matching binding in the left subtree
+				const lb = (left.bindings[kind] as { [K in string]?: Binding })[slot];
+				if (lb !== undefined) {
+					// Then unify the variables
+					(bindings[kind] as { [K in string]?: Binding })[slot] = {
 						index: lb.index,
 						subordinate: lb.subordinate && rb.subordinate,
 					};
 					rightMapping[rb.index] = lb.index;
+				} else {
+					// Otherwise, create a new variable
+					(bindings[kind] as { [K in string]?: Binding })[slot] = {
+						index: context.length,
+						subordinate: rightSubordinate || rb.subordinate,
+					};
+					rightMapping[rb.index] = context.length;
+					context.push(right.denotation.context[rb.index]);
 				}
 			}
 		}
 	}
 
+	// Finally, account for free variables not associated with any bindings, to
+	// fill in the rest of rightMapping
 	for (let i = 0; i < rightMapping.length; i++) {
 		if (rightMapping[i] === undefined) {
 			rightMapping[i] = context.length;
