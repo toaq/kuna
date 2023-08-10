@@ -524,8 +524,24 @@ export function unifyDenotations(
 	// fill in the rest of rightMapping
 	for (let i = 0; i < rightMapping.length; i++) {
 		if (rightMapping[i] === undefined) {
-			rightMapping[i] = context.length;
-			context.push(right.denotation.context[i]);
+			const type = right.denotation.context[i];
+			if (type === 's') {
+				// Special case for the world variable: unify it with the left's world
+				// variable (of which there should be at most one)
+				const worldIndex = left.denotation.context.findIndex(t => t === 's');
+				if (worldIndex === -1) {
+					// Left has no world variable; create a new one
+					rightMapping[i] = context.length;
+					context.push('s');
+				} else {
+					// Unify them!
+					rightMapping[i] = worldIndex;
+				}
+			} else {
+				// Default to not unifying things
+				rightMapping[i] = context.length;
+				context.push(type);
+			}
 		}
 	}
 
