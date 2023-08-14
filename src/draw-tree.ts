@@ -165,12 +165,23 @@ export function placeTree(
 		: placeBranch(ctx, tree);
 }
 
-const backgroundColor = '#36393E';
-const textColor = '#DCDDDE';
-const denotationColor = '#FF4466';
-const wordColor = '#99EEFF';
+const themes = {
+	dark: {
+		backgroundColor: '#36393E',
+		textColor: '#DCDDDE',
+		denotationColor: '#FF4466',
+		wordColor: '#99EEFF',
+	},
+	light: {
+		backgroundColor: '#FFFFFF',
+		textColor: '#000000',
+		denotationColor: '#FF4466',
+		wordColor: '#3399FF',
+	},
+};
 
 interface DrawState {
+	theme: 'dark' | 'light';
 	extent: { minX: number; maxX: number; minY: number; maxY: number };
 	locations: Map<string, Location>;
 	arrows: Array<[string, string]>;
@@ -198,6 +209,7 @@ function drawTree(
 	}
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'top';
+	const { textColor, denotationColor, wordColor } = themes[state.theme];
 	if ('word' in tree) {
 		ctx.fillStyle = textColor;
 		text(tree.label, x, y);
@@ -245,7 +257,7 @@ function drawTree(
 }
 
 function drawArrows(ctx: CanvasRenderingContext2D, state: DrawState) {
-	ctx.strokeStyle = textColor;
+	ctx.strokeStyle = themes[state.theme].textColor;
 	ctx.lineWidth = 1;
 	for (const [i, j] of state.arrows) {
 		ctx.beginPath();
@@ -267,12 +279,15 @@ function drawArrows(ctx: CanvasRenderingContext2D, state: DrawState) {
 	}
 }
 
-export function pngDrawTree(tree: Tree | DTree): Buffer {
+export function pngDrawTree(
+	tree: Tree | DTree,
+	theme: 'light' | 'dark',
+): Buffer {
 	const width = 8400;
 	const height = 4400;
 	const canvas = createCanvas(width, height);
 	const ctx = canvas.getContext('2d');
-	ctx.fillStyle = backgroundColor;
+	ctx.fillStyle = themes[theme].backgroundColor;
 	ctx.fillRect(0, 0, width, height);
 	ctx.font = '20pt Noto Sans Math, Noto Sans';
 
@@ -280,6 +295,7 @@ export function pngDrawTree(tree: Tree | DTree): Buffer {
 	const x = width / 2;
 	const y = 50;
 	const state: DrawState = {
+		theme,
 		extent: { minX: x, maxX: x, minY: y, maxY: y },
 		locations: new Map(),
 		arrows: [],

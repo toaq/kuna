@@ -92,6 +92,10 @@ yargs
 				describe: 'Path for PNG output',
 				default: 'output.png',
 			});
+			yargs.option('light', {
+				type: 'boolean',
+				describe: 'Light theme',
+			});
 		},
 
 		function (argv) {
@@ -105,7 +109,8 @@ yargs
 					`Ambiguous parse; showing first of ${trees.length} parses.`,
 				);
 			}
-			fs.writeFileSync(argv.output as string, pngDrawTree(trees[0]));
+			const theme = argv.light ? 'light' : 'dark';
+			fs.writeFileSync(argv.output as string, pngDrawTree(trees[0], theme));
 		},
 	)
 	.command(
