@@ -17,14 +17,14 @@ initializeDictionary();
 
 function getTrees(argv: {
 	sentence: string | undefined;
-	dStructure: boolean | undefined;
+	surface: boolean | undefined;
 	semantics: boolean | undefined;
 	compact: boolean | undefined;
 }): Tree[] {
 	let trees = parse(argv.sentence!);
 	if (argv.semantics) {
 		trees = trees.map(fix).map(denote);
-	} else if (argv.dStructure) {
+	} else if (!argv.surface) {
 		trees = trees.map(fix);
 	}
 	if (argv.compact) {
@@ -40,15 +40,14 @@ yargs
 		type: 'string',
 		describe: 'The Toaq sentence to parse',
 	})
-	.option('d-structure', {
+	.option('surface', {
 		type: 'boolean',
-		describe: 'Transform parse tree to D-structure',
+		describe: "View surface-level parse",
 		default: false,
 	})
 	.option('semantics', {
 		type: 'boolean',
-		alias: 'denote',
-		describe: 'Annotate parse tree with semantics (implies --d-structure)',
+		describe: 'Annotate parse tree with semantics',
 		default: false,
 	})
 	.option('compact', {
