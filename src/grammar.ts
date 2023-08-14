@@ -18,6 +18,7 @@ declare var relative_clause_complementizer: any;
 declare var determiner: any;
 declare var incorporated_determiner: any;
 declare var event_accessor: any;
+declare var focus_particle: any;
 declare var interjection: any;
 declare var name_verb: any;
 declare var cleft_verb: any;
@@ -94,6 +95,7 @@ const grammar: Grammar = {
     {"name": "CPdet", "symbols": ["TPdet"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
     {"name": "DP", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun)], "postprocess": makeLeaf('DP')},
     {"name": "DP", "symbols": ["D", "nP"], "postprocess": makeBranch('DP')},
+    {"name": "DP", "symbols": ["Focus", "DP"], "postprocess": makeBranch('FocusP')},
     {"name": "nP", "symbols": ["nP", "CPrel"], "postprocess": makeBranch('nP')},
     {"name": "nP", "symbols": ["CPdet"], "postprocess": makeBranchFunctionalLeft('nP', 'n')},
     {"name": "Clause", "symbols": ["TP"], "postprocess": id},
@@ -178,6 +180,7 @@ const grammar: Grammar = {
     {"name": "D", "symbols": [(lexer.has("determiner") ? {type: "determiner"} : determiner)], "postprocess": makeLeaf('D')},
     {"name": "Dincorp", "symbols": [(lexer.has("incorporated_determiner") ? {type: "incorporated_determiner"} : incorporated_determiner)], "postprocess": makeLeaf('D')},
     {"name": "EvA", "symbols": [(lexer.has("event_accessor") ? {type: "event_accessor"} : event_accessor)], "postprocess": makeLeaf('EvA')},
+    {"name": "Focus", "symbols": [(lexer.has("focus_particle") ? {type: "focus_particle"} : focus_particle)], "postprocess": makeLeaf('Focus')},
     {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('mı')},
     {"name": "Na", "symbols": [(lexer.has("cleft_verb") ? {type: "cleft_verb"} : cleft_verb)], "postprocess": makeLeaf('𝘷')},

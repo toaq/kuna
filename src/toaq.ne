@@ -51,6 +51,8 @@ CPdet -> TPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 DP -> %pronoun {% makeLeaf('DP') %}
 # sá ...
 DP -> D nP {% makeBranch('DP') %}
+# kú jí
+DP -> Focus DP {% makeBranch('FocusP') %}
 # (sá) ꝡë hao
 nP -> nP CPrel {% makeBranch('nP') %}
 # (sá) ∅ hao
@@ -155,6 +157,7 @@ Crelopt -> Crel:? {% makeOptLeaf('C') %}
 D -> %determiner {% makeLeaf('D') %}
 Dincorp -> %incorporated_determiner {% makeLeaf('D') %}
 EvA -> %event_accessor {% makeLeaf('EvA') %}
+Focus -> %focus_particle {% makeLeaf('Focus') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
 Na -> %cleft_verb {% makeLeaf('𝘷') %}
