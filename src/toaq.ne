@@ -33,13 +33,15 @@ Fragment -> SAP {% id %} | DP {% id %} | AdjunctP {% id %}
 SAP -> CP SAopt {% makeBranch('SAP') %}
 
 # ꝡa hao
-CP -> Copt TP {% makeBranch('CP') %}
+CP -> Copt Clause {% makeBranch('CP') %}
 # ꝡä hao
-CPsub -> Csub TP {% makeBranch('CP') %}
+CPsub -> Csub Clause {% makeBranch('CP') %}
 # ꝡâ hao
-CPincorp -> Cincorp TP {% makeBranch('CP') %}
+CPincorp -> Cincorp Clause {% makeBranch('CP') %}
 # ꝡë hao
-CPrel -> Crel TP {% makeBranch('CPrel') %}
+CPrel -> Crel Clause {% makeBranch('CPrel') %}
+# (nä) hao
+CPrelna -> Clause {% makeBranchCovertLeft('CPrel', 'Crel') %}
 # (sá) ∅ hao
 CPdet -> TPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 
@@ -51,6 +53,13 @@ DP -> D nP {% makeBranch('DP') %}
 nP -> nP CPrel {% makeBranch('nP') %}
 # (sá) ∅ hao
 nP -> CPdet {% makeBranchFunctionalLeft('nP', 'n') %}
+
+# pu hao
+Clause -> TP {% id %}
+# ní bï pu hao
+Clause -> DP Bi Clause {% make3L('TopicP', "Topic'") %}
+# jí nä pu hao hóa
+Clause -> DP Na CPrelna {% make3L('𝘷P', "𝘷'") %}
 
 # pu chum hao jí
 TP -> AspP {% makeBranchCovertLeft('TP', 'T') %}
@@ -127,6 +136,7 @@ Conjunction -> %conjunction {% makeLeaf('&') %}
 ConjunctionT1 -> %conjunction_in_t1 {% makeLeaf('&') %}
 ConjunctionT4 -> %conjunction_in_t4 {% makeLeaf('&') %}
 Asp -> %aspect {% makeLeaf('Asp') %}
+Bi -> %topic_marker {% makeLeaf('Topic') %}
 C -> %complementizer {% makeLeaf('C') %}
 Copt -> C:? {% makeOptLeaf('C') %}
 Csub -> %subordinating_complementizer {% makeLeaf('C') %}
@@ -136,6 +146,7 @@ Crelopt -> Crel:? {% makeOptLeaf('C') %}
 D -> %determiner {% makeLeaf('D') %}
 Dincorp -> %incorporated_determiner {% makeLeaf('D') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
+Na -> %cleft_verb {% makeLeaf('𝘷') %}
 SA -> %illocution {% makeLeaf('SA') %}
 SAopt -> SA:? {% makeOptLeaf('SA') %}
 Sigma -> %polarity {% makeLeaf('Σ') %}
