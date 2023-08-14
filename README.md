@@ -2,7 +2,8 @@
 
 Tools for parsing Toaq Delta. Very unfinished.
 
-For proper PNG rendering, install [Noto Math Sans](https://fonts.google.com/noto/specimen/Noto+Sans+Math).
+For proper PNG rendering, install
+[Noto Math Sans](https://fonts.google.com/noto/specimen/Noto+Sans+Math).
 
 ## Usage
 
