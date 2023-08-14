@@ -81,8 +81,8 @@ export class ToaqTokenizer {
 				continue;
 			}
 			const bareEntry = dictionary.get(bareWord);
+			const wordTone = tone(tokenText);
 			if (bareEntry) {
-				const wordTone = tone(tokenText);
 				this.tokens.push({
 					type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
 					value: wordTone === Tone.T2 ? '◌́' : '◌̂',
@@ -95,11 +95,24 @@ export class ToaqTokenizer {
 				});
 				continue;
 			}
-			this.tokens.push({
-				type: 'predicate',
-				value: tokenText,
-				index: m.index,
-			});
+			if (wordTone === Tone.T1) {
+				this.tokens.push({
+					type: 'predicate',
+					value: tokenText,
+					index: m.index,
+				});
+			} else {
+				this.tokens.push({
+					type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
+					value: wordTone === Tone.T2 ? '◌́' : '◌̂',
+					index: m.index,
+				});
+				this.tokens.push({
+					type: 'predicate',
+					value: bareWord,
+					index: m.index,
+				});
+			}
 		}
 	}
 	next(): ToaqToken | undefined {
