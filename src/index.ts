@@ -97,9 +97,16 @@ yargs
 
 		function (argv) {
 			const trees = getTrees(argv);
-			fs.writeFileSync('a.png', pngDrawTree(trees[0]));
-			fs.writeFileSync('b.png', pngDrawTree(fix(trees[0])));
-			fs.writeFileSync('c.png', pngDrawTree(denote(fix(trees[0]))));
+			if (trees.length === 0) {
+				console.error('No parse.');
+				return;
+			}
+			if (trees.length > 1) {
+				console.warn(
+					`Ambiguous parse; showing first of ${trees.length} parses.`,
+				);
+			}
+			fs.writeFileSync(argv.output as string, pngDrawTree(trees[0]));
 		},
 	)
 	.command(
