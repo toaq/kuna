@@ -49,7 +49,7 @@ export function placeLeaf(
 		leaf.word === 'functional'
 			? undefined
 			: leaf.word === 'covert'
-			? 'Ø'
+			? '∅'
 			: leaf.word.text;
 	const denotation =
 		'denotation' in leaf && leaf.denotation !== null
@@ -148,6 +148,11 @@ export function placeTree(
 		: placeBranch(ctx, tree);
 }
 
+const backgroundColor = '#36393E';
+const textColor = '#DCDDDE';
+const denotationColor = '#FF4466';
+const wordColor = '#99EEFF';
+
 function drawTree(
 	ctx: CanvasRenderingContext2D,
 	x: number,
@@ -171,34 +176,34 @@ function drawTree(
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'top';
 	if ('word' in tree) {
-		ctx.fillStyle = '#DCDDDE';
+		ctx.fillStyle = textColor;
 		text(tree.label, x, y);
-		ctx.fillStyle = '#FF4466';
+		ctx.fillStyle = denotationColor;
 		const denotation = tree.denotation ?? '';
 		text(denotation, x, y + 30);
-		ctx.strokeStyle = '#DCDDDE';
+		ctx.strokeStyle = textColor;
 		ctx.lineWidth = 1;
 		if (tree.word !== undefined) {
 			ctx.beginPath();
 			ctx.moveTo(x, y + (denotation ? 75 : 45));
 			ctx.lineTo(x, y + 95);
 			ctx.stroke();
-			ctx.fillStyle = '#99EEFF';
+			ctx.fillStyle = wordColor;
 			text(tree.word, x, y + 100);
-			ctx.fillStyle = '#DCDDDE';
+			ctx.fillStyle = textColor;
 			text(tree.gloss ?? '', x, y + 130);
 		}
 	} else {
-		ctx.fillStyle = '#DCDDDE';
+		ctx.fillStyle = textColor;
 		text(tree.label, x, y);
 		const denotation = tree.denotation ?? '';
-		ctx.fillStyle = '#FF4466';
+		ctx.fillStyle = denotationColor;
 		text(denotation, x, y + 30);
 		const n = tree.children.length;
 		for (let i = 0; i < n; i++) {
 			const dx = (i - (n - 1) / 2) * tree.distanceBetweenChildren;
 			drawTree(ctx, x + dx, y + 100, tree.children[i], extent);
-			ctx.strokeStyle = '#DCDDDE';
+			ctx.strokeStyle = textColor;
 			ctx.lineWidth = 1;
 			ctx.beginPath();
 			ctx.moveTo(x, y + (denotation ? 75 : 45));
@@ -213,7 +218,7 @@ export function pngDrawTree(tree: Tree | DTree): Buffer {
 	const height = 4400;
 	const canvas = createCanvas(width, height);
 	const ctx = canvas.getContext('2d');
-	ctx.fillStyle = '#36393E';
+	ctx.fillStyle = backgroundColor;
 	ctx.fillRect(0, 0, width, height);
 	ctx.font = '20pt Noto Sans Math, Noto Sans';
 
@@ -223,11 +228,16 @@ export function pngDrawTree(tree: Tree | DTree): Buffer {
 	let extent = { minX: x, maxX: x, minY: y, maxY: y };
 	drawTree(ctx, x, y, placed, extent);
 
-	const w = extent.maxX - extent.minX;
-	const h = extent.maxY - extent.minY;
-	const temp = ctx.getImageData(extent.minX, extent.minY, w, h);
-	canvas.width = w;
-	canvas.height = h;
+	const cropWidth = extent.maxX - extent.minX;
+	const cropHeight = extent.maxY - extent.minY;
+	const temp = ctx.getImageData(
+		extent.minX,
+		extent.minY,
+		cropWidth,
+		cropHeight,
+	);
+	canvas.width = cropWidth;
+	canvas.height = cropHeight;
 	ctx.putImageData(temp, 0, 0);
 
 	const imgBuffer = canvas.toBuffer('image/png');
