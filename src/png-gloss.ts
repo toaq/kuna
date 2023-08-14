@@ -15,8 +15,8 @@ export function pngGlossSentence(sentence: string): Buffer {
 	const yMargin = 20;
 	let x = xMargin;
 	let y = yMargin;
-	const toaqFont = 'bold 20pt Segoe UI';
-	const englishFont = 'italic 18pt Segoe UI';
+	const toaqFont = 'bold 20pt Noto Sans';
+	const englishFont = 'italic 18pt Noto Sans';
 	let clipWidth = 0;
 
 	for (const { toaq, english } of glossSentence(sentence.slice(0, 1000))) {

@@ -52,7 +52,7 @@ function glossPrefix(prefix: string): string {
 		return (entry.gloss_abbreviation || entry.gloss) + '-';
 	}
 
-	// hack
+	// hacky fallback for unknown prefixes: gloss them as if they were words
 	const rootEntry = dictionary.get(prefix);
 	if (rootEntry) {
 		return (rootEntry.gloss_abbreviation || rootEntry.gloss) + '-';
@@ -65,6 +65,9 @@ function glossRoot(root: string): string {
 	const entry = dictionary.get(root);
 	if (entry) {
 		return entry.gloss_abbreviation || entry.gloss;
+	}
+	if (clean(root) === 'é') {
+		return 'the\\EVA';
 	}
 	const bareRoot = bare(root);
 	const bareEntry = dictionary.get(bareRoot);
