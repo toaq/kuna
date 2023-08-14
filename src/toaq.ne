@@ -64,6 +64,9 @@ Clause -> TP {% id %}
 Clause -> DP Bi Clause {% make3L('TopicP', "Topic'") %}
 # jí nä pu hao hóa
 Clause -> DP Na CPrelna {% make3L('𝘷P', "𝘷'") %}
+# shê ꝡä hao nä jıa hao
+Clause -> ModalP Na TP {% make3L('𝘷P', "𝘷'") %}
+ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
 
 # pu chum hao jí
 TP -> AspP {% makeBranchCovertLeft('TP', 'T') %}
@@ -160,6 +163,7 @@ EvA -> %event_accessor {% makeLeaf('EvA') %}
 Focus -> %focus_particle {% makeLeaf('Focus') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
+ModalT4 -> %modality_with_complement {% makeLeaf('Modal') %}
 Na -> %cleft_verb {% makeLeaf('𝘷') %}
 Roi -> %plural_coordinator {% makeLeaf('&') %}
 SA -> %illocution {% makeLeaf('SA') %}

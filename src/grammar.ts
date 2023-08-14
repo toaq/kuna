@@ -21,6 +21,7 @@ declare var event_accessor: any;
 declare var focus_particle: any;
 declare var interjection: any;
 declare var name_verb: any;
+declare var modality_with_complement: any;
 declare var cleft_verb: any;
 declare var plural_coordinator: any;
 declare var illocution: any;
@@ -101,6 +102,8 @@ const grammar: Grammar = {
     {"name": "Clause", "symbols": ["TP"], "postprocess": id},
     {"name": "Clause", "symbols": ["DP", "Bi", "Clause"], "postprocess": make3L('TopicP', "Topic'")},
     {"name": "Clause", "symbols": ["DP", "Na", "CPrelna"], "postprocess": make3L('𝘷P', "𝘷'")},
+    {"name": "Clause", "symbols": ["ModalP", "Na", "TP"], "postprocess": make3L('𝘷P', "𝘷'")},
+    {"name": "ModalP", "symbols": ["ModalT4", "CPsub"], "postprocess": makeBranch('ModalP')},
     {"name": "TP", "symbols": ["AspP"], "postprocess": makeBranchCovertLeft('TP', 'T')},
     {"name": "TP", "symbols": ["T1", "AspP"], "postprocess": makeBranch('TP')},
     {"name": "TP", "symbols": ["Sigma", "T1", "AspP"], "postprocess": make3L('ΣP', 'TP')},
@@ -183,6 +186,7 @@ const grammar: Grammar = {
     {"name": "Focus", "symbols": [(lexer.has("focus_particle") ? {type: "focus_particle"} : focus_particle)], "postprocess": makeLeaf('Focus')},
     {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('mı')},
+    {"name": "ModalT4", "symbols": [(lexer.has("modality_with_complement") ? {type: "modality_with_complement"} : modality_with_complement)], "postprocess": makeLeaf('Modal')},
     {"name": "Na", "symbols": [(lexer.has("cleft_verb") ? {type: "cleft_verb"} : cleft_verb)], "postprocess": makeLeaf('𝘷')},
     {"name": "Roi", "symbols": [(lexer.has("plural_coordinator") ? {type: "plural_coordinator"} : plural_coordinator)], "postprocess": makeLeaf('&')},
     {"name": "SA", "symbols": [(lexer.has("illocution") ? {type: "illocution"} : illocution)], "postprocess": makeLeaf('SA')},
