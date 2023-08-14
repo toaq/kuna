@@ -58,6 +58,17 @@ export class ToaqTokenizer {
 		for (const m of [...text.matchAll(/[\p{L}\p{N}\p{Diacritic}]+-?/gu)]) {
 			const tokenText = m[0];
 			const lemmaForm = clean(tokenText);
+
+			if (lemmaForm === 'é') {
+				this.tokens.push({ type: 'determiner', value: '◌́', index: m.index });
+				this.tokens.push({
+					type: 'event accessor',
+					value: 'ë',
+					index: m.index,
+				});
+				continue;
+			}
+
 			const bareWord = bare(tokenText);
 			const exactEntry = dictionary.get(lemmaForm);
 
@@ -79,7 +90,7 @@ export class ToaqTokenizer {
 				});
 				this.tokens.push({
 					type: bareEntry.type.replace(/ /g, '_'),
-					value: bare(tokenText),
+					value: bareWord,
 					index: m.index,
 				});
 				continue;
