@@ -83,8 +83,13 @@ AspPdet -> vPdet {% makeBranchCovertLeft('AspP', 'Asp') %}
 AspPdet -> Asp1 vPdet {% makeBranch('AspP') %}
 AspPdet -> Sigma Asp1 vPdet {% make3L('ΣP', 'AspP') %}
 
+# bu hao jí
+vP -> Sigma vPinner {% makeBranch('ΣP') %}
+# hao jí
+vP -> vPinner {% id %}
+
 # tua hao tî kúe jí súq râo níchaq
-vP -> Serial AdjunctP1:* (term:+ AdjunctP1:*):? {% makevP %}
+vPinner -> Serial AdjunctP1:* (term:+ AdjunctP1:*):? {% makevP %}
 # (sá) tua hao
 vPdet -> Serialdet {% makevPdet %}
 

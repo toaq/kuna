@@ -10,13 +10,16 @@ declare var conjunction: any;
 declare var conjunction_in_t1: any;
 declare var conjunction_in_t4: any;
 declare var aspect: any;
+declare var topic_marker: any;
 declare var complementizer: any;
 declare var subordinating_complementizer: any;
 declare var incorporated_complementizer: any;
 declare var relative_clause_complementizer: any;
 declare var determiner: any;
 declare var incorporated_determiner: any;
+declare var interjection: any;
 declare var name_verb: any;
+declare var cleft_verb: any;
 declare var illocution: any;
 declare var polarity: any;
 declare var word_quote: any;
@@ -79,16 +82,21 @@ const grammar: Grammar = {
     {"name": "Fragment", "symbols": ["SAP"], "postprocess": id},
     {"name": "Fragment", "symbols": ["DP"], "postprocess": id},
     {"name": "Fragment", "symbols": ["AdjunctP"], "postprocess": id},
+    {"name": "SAP", "symbols": ["Interjection", "SAP"], "postprocess": makeBranch('InterjectionP')},
     {"name": "SAP", "symbols": ["CP", "SAopt"], "postprocess": makeBranch('SAP')},
-    {"name": "CP", "symbols": ["Copt", "TP"], "postprocess": makeBranch('CP')},
-    {"name": "CPsub", "symbols": ["Csub", "TP"], "postprocess": makeBranch('CP')},
-    {"name": "CPincorp", "symbols": ["Cincorp", "TP"], "postprocess": makeBranch('CP')},
-    {"name": "CPrel", "symbols": ["Crel", "TP"], "postprocess": makeBranch('CPrel')},
+    {"name": "CP", "symbols": ["Copt", "Clause"], "postprocess": makeBranch('CP')},
+    {"name": "CPsub", "symbols": ["Csub", "Clause"], "postprocess": makeBranch('CP')},
+    {"name": "CPincorp", "symbols": ["Cincorp", "Clause"], "postprocess": makeBranch('CP')},
+    {"name": "CPrel", "symbols": ["Crel", "Clause"], "postprocess": makeBranch('CPrel')},
+    {"name": "CPrelna", "symbols": ["Clause"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
     {"name": "CPdet", "symbols": ["TPdet"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
     {"name": "DP", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun)], "postprocess": makeLeaf('DP')},
     {"name": "DP", "symbols": ["D", "nP"], "postprocess": makeBranch('DP')},
     {"name": "nP", "symbols": ["nP", "CPrel"], "postprocess": makeBranch('nP')},
     {"name": "nP", "symbols": ["CPdet"], "postprocess": makeBranchFunctionalLeft('nP', 'n')},
+    {"name": "Clause", "symbols": ["TP"], "postprocess": id},
+    {"name": "Clause", "symbols": ["DP", "Bi", "Clause"], "postprocess": make3L('TopicP', "Topic'")},
+    {"name": "Clause", "symbols": ["DP", "Na", "CPrelna"], "postprocess": make3L('𝘷P', "𝘷'")},
     {"name": "TP", "symbols": ["AspP"], "postprocess": makeBranchCovertLeft('TP', 'T')},
     {"name": "TP", "symbols": ["T1", "AspP"], "postprocess": makeBranch('TP')},
     {"name": "TP", "symbols": ["Sigma", "T1", "AspP"], "postprocess": make3L('ΣP', 'TP')},
@@ -101,16 +109,18 @@ const grammar: Grammar = {
     {"name": "AspPdet", "symbols": ["vPdet"], "postprocess": makeBranchCovertLeft('AspP', 'Asp')},
     {"name": "AspPdet", "symbols": ["Asp1", "vPdet"], "postprocess": makeBranch('AspP')},
     {"name": "AspPdet", "symbols": ["Sigma", "Asp1", "vPdet"], "postprocess": make3L('ΣP', 'AspP')},
-    {"name": "vP$ebnf$1", "symbols": []},
-    {"name": "vP$ebnf$1", "symbols": ["vP$ebnf$1", "AdjunctP1"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "vP$ebnf$2$subexpression$1$ebnf$1", "symbols": ["term"]},
-    {"name": "vP$ebnf$2$subexpression$1$ebnf$1", "symbols": ["vP$ebnf$2$subexpression$1$ebnf$1", "term"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "vP$ebnf$2$subexpression$1$ebnf$2", "symbols": []},
-    {"name": "vP$ebnf$2$subexpression$1$ebnf$2", "symbols": ["vP$ebnf$2$subexpression$1$ebnf$2", "AdjunctP1"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "vP$ebnf$2$subexpression$1", "symbols": ["vP$ebnf$2$subexpression$1$ebnf$1", "vP$ebnf$2$subexpression$1$ebnf$2"]},
-    {"name": "vP$ebnf$2", "symbols": ["vP$ebnf$2$subexpression$1"], "postprocess": id},
-    {"name": "vP$ebnf$2", "symbols": [], "postprocess": () => null},
-    {"name": "vP", "symbols": ["Serial", "vP$ebnf$1", "vP$ebnf$2"], "postprocess": makevP},
+    {"name": "vP", "symbols": ["Sigma", "vPinner"], "postprocess": makeBranch('ΣP')},
+    {"name": "vP", "symbols": ["vPinner"], "postprocess": id},
+    {"name": "vPinner$ebnf$1", "symbols": []},
+    {"name": "vPinner$ebnf$1", "symbols": ["vPinner$ebnf$1", "AdjunctP1"], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "vPinner$ebnf$2$subexpression$1$ebnf$1", "symbols": ["term"]},
+    {"name": "vPinner$ebnf$2$subexpression$1$ebnf$1", "symbols": ["vPinner$ebnf$2$subexpression$1$ebnf$1", "term"], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "vPinner$ebnf$2$subexpression$1$ebnf$2", "symbols": []},
+    {"name": "vPinner$ebnf$2$subexpression$1$ebnf$2", "symbols": ["vPinner$ebnf$2$subexpression$1$ebnf$2", "AdjunctP1"], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "vPinner$ebnf$2$subexpression$1", "symbols": ["vPinner$ebnf$2$subexpression$1$ebnf$1", "vPinner$ebnf$2$subexpression$1$ebnf$2"]},
+    {"name": "vPinner$ebnf$2", "symbols": ["vPinner$ebnf$2$subexpression$1"], "postprocess": id},
+    {"name": "vPinner$ebnf$2", "symbols": [], "postprocess": () => null},
+    {"name": "vPinner", "symbols": ["Serial", "vPinner$ebnf$1", "vPinner$ebnf$2"], "postprocess": makevP},
     {"name": "vPdet", "symbols": ["Serialdet"], "postprocess": makevPdet},
     {"name": "AdjunctP", "symbols": ["Adjunct", "Serial", "term"], "postprocess": makeAdjunctPT},
     {"name": "AdjunctP", "symbols": ["Adjunct", "Serial"], "postprocess": makeAdjunctPI},
@@ -150,6 +160,7 @@ const grammar: Grammar = {
     {"name": "ConjunctionT1", "symbols": [(lexer.has("conjunction_in_t1") ? {type: "conjunction_in_t1"} : conjunction_in_t1)], "postprocess": makeLeaf('&')},
     {"name": "ConjunctionT4", "symbols": [(lexer.has("conjunction_in_t4") ? {type: "conjunction_in_t4"} : conjunction_in_t4)], "postprocess": makeLeaf('&')},
     {"name": "Asp", "symbols": [(lexer.has("aspect") ? {type: "aspect"} : aspect)], "postprocess": makeLeaf('Asp')},
+    {"name": "Bi", "symbols": [(lexer.has("topic_marker") ? {type: "topic_marker"} : topic_marker)], "postprocess": makeLeaf('Topic')},
     {"name": "C", "symbols": [(lexer.has("complementizer") ? {type: "complementizer"} : complementizer)], "postprocess": makeLeaf('C')},
     {"name": "Copt$ebnf$1", "symbols": ["C"], "postprocess": id},
     {"name": "Copt$ebnf$1", "symbols": [], "postprocess": () => null},
@@ -162,7 +173,9 @@ const grammar: Grammar = {
     {"name": "Crelopt", "symbols": ["Crelopt$ebnf$1"], "postprocess": makeOptLeaf('C')},
     {"name": "D", "symbols": [(lexer.has("determiner") ? {type: "determiner"} : determiner)], "postprocess": makeLeaf('D')},
     {"name": "Dincorp", "symbols": [(lexer.has("incorporated_determiner") ? {type: "incorporated_determiner"} : incorporated_determiner)], "postprocess": makeLeaf('D')},
+    {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('mı')},
+    {"name": "Na", "symbols": [(lexer.has("cleft_verb") ? {type: "cleft_verb"} : cleft_verb)], "postprocess": makeLeaf('𝘷')},
     {"name": "SA", "symbols": [(lexer.has("illocution") ? {type: "illocution"} : illocution)], "postprocess": makeLeaf('SA')},
     {"name": "SAopt$ebnf$1", "symbols": ["SA"], "postprocess": id},
     {"name": "SAopt$ebnf$1", "symbols": [], "postprocess": () => null},
