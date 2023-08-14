@@ -62,7 +62,7 @@ export class ToaqTokenizer {
 			if (lemmaForm === 'é') {
 				this.tokens.push({ type: 'determiner', value: '◌́', index: m.index });
 				this.tokens.push({
-					type: 'event accessor',
+					type: 'event_accessor',
 					value: 'ë',
 					index: m.index,
 				});

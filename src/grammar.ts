@@ -17,6 +17,7 @@ declare var incorporated_complementizer: any;
 declare var relative_clause_complementizer: any;
 declare var determiner: any;
 declare var incorporated_determiner: any;
+declare var event_accessor: any;
 declare var interjection: any;
 declare var name_verb: any;
 declare var cleft_verb: any;
@@ -144,10 +145,11 @@ const grammar: Grammar = {
     {"name": "Asp1", "symbols": ["Asp", "Conjunction", "Asp1"], "postprocess": makeConn},
     {"name": "AdjunctP1", "symbols": ["AdjunctP"], "postprocess": id},
     {"name": "AdjunctP1", "symbols": ["AdjunctP", "Conjunction", "AdjunctP1"], "postprocess": makeConn},
-    {"name": "Vlast", "symbols": ["Verblike"], "postprocess": id},
+    {"name": "Vlast", "symbols": ["EvA", "vP"], "postprocess": makeBranch ('EvAP')},
     {"name": "Vlast", "symbols": ["VPincorp"], "postprocess": id},
     {"name": "Vlast", "symbols": ["VPoiv"], "postprocess": id},
     {"name": "Vlast", "symbols": ["Verblike", "ConjunctionT1", "Vlast"], "postprocess": makeConn},
+    {"name": "Vlast", "symbols": ["Verblike"], "postprocess": id},
     {"name": "V1", "symbols": ["Verblike"], "postprocess": id},
     {"name": "V1", "symbols": ["Verblike", "ConjunctionT1", "V1"], "postprocess": makeConn},
     {"name": "Verblike", "symbols": ["V"], "postprocess": id},
@@ -173,6 +175,7 @@ const grammar: Grammar = {
     {"name": "Crelopt", "symbols": ["Crelopt$ebnf$1"], "postprocess": makeOptLeaf('C')},
     {"name": "D", "symbols": [(lexer.has("determiner") ? {type: "determiner"} : determiner)], "postprocess": makeLeaf('D')},
     {"name": "Dincorp", "symbols": [(lexer.has("incorporated_determiner") ? {type: "incorporated_determiner"} : incorporated_determiner)], "postprocess": makeLeaf('D')},
+    {"name": "EvA", "symbols": [(lexer.has("event_accessor") ? {type: "event_accessor"} : event_accessor)], "postprocess": makeLeaf('EvA')},
     {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('mı')},
     {"name": "Na", "symbols": [(lexer.has("cleft_verb") ? {type: "cleft_verb"} : cleft_verb)], "postprocess": makeLeaf('𝘷')},

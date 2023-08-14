@@ -27,6 +27,8 @@ export type Label =
 	| 'CPrel'
 	| 'D'
 	| 'DP'
+	| 'EvA'
+	| 'EvAP'
 	| 'mı'
 	| 'mıP'
 	| 'n'
@@ -206,6 +208,8 @@ function getFrame(verb: Tree): string {
 		return 'c';
 	} else if (verb.label === 'VP') {
 		// object incorporation... check that the verb is transitive?
+		return 'c';
+	} else if (verb.label === 'EvAP') {
 		return 'c';
 	} else {
 		throw new Error('weird nonverb: ' + verb.label);

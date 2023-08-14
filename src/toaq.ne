@@ -126,10 +126,11 @@ Asp1 -> Asp {% id %}
 Asp1 -> Asp Conjunction Asp1 {% makeConn %}
 AdjunctP1 -> AdjunctP {% id %}
 AdjunctP1 -> AdjunctP Conjunction AdjunctP1 {% makeConn %}
-Vlast -> Verblike {% id %}
+Vlast -> EvA vP {% makeBranch ('EvAP') %}
 Vlast -> VPincorp {% id %}
 Vlast -> VPoiv {% id %}
 Vlast -> Verblike ConjunctionT1 Vlast {% makeConn %}
+Vlast -> Verblike {% id %}
 V1 -> Verblike {% id %}
 V1 -> Verblike ConjunctionT1 V1 {% makeConn %}
 Verblike -> V {% id %}
@@ -152,6 +153,7 @@ Crel -> %relative_clause_complementizer {% makeLeaf('Crel') %}
 Crelopt -> Crel:? {% makeOptLeaf('C') %}
 D -> %determiner {% makeLeaf('D') %}
 Dincorp -> %incorporated_determiner {% makeLeaf('D') %}
+EvA -> %event_accessor {% makeLeaf('EvA') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
 Na -> %cleft_verb {% makeLeaf('𝘷') %}
