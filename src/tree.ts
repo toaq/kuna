@@ -62,6 +62,8 @@ export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
 
 export interface Leaf {
 	label: Label;
+	id?: string;
+	movedTo?: string;
 	word: Word | 'covert' | 'functional';
 }
 
