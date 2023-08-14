@@ -12,6 +12,7 @@ import { initializeDictionary } from './dictionary';
 import { textual_tree_from_json } from './textual-tree';
 import { testSentences } from './test-sentences';
 import { denote } from './semantics/denote';
+import { ToaqTokenizer } from './tokenize';
 
 initializeDictionary();
 
@@ -55,6 +56,19 @@ yargs
 		describe: 'Remove empty phrases with null heads',
 		default: false,
 	})
+	.command(
+		'tokens-json',
+		'List of tokens in JSON format',
+		yargs => {
+			yargs.demandOption('sentence');
+		},
+
+		function (argv) {
+			const tokenizer = new ToaqTokenizer();
+			tokenizer.reset(argv.sentence as string);
+			console.log(JSON.stringify(tokenizer.tokens));
+		},
+	)
 	.command(
 		'gloss-ascii',
 		'Gloss to aligned ASCII format',
