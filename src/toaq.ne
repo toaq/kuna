@@ -29,6 +29,8 @@ const lexer = new ToaqTokenizer();
 
 Fragment -> SAP {% id %} | DP {% id %} | AdjunctP {% id %}
 
+# ua, ꝡa hao da
+SAP -> Interjection SAP {% makeBranch('InterjectionP') %}
 # ꝡa hao da
 SAP -> CP SAopt {% makeBranch('SAP') %}
 
@@ -145,6 +147,7 @@ Crel -> %relative_clause_complementizer {% makeLeaf('Crel') %}
 Crelopt -> Crel:? {% makeOptLeaf('C') %}
 D -> %determiner {% makeLeaf('D') %}
 Dincorp -> %incorporated_determiner {% makeLeaf('D') %}
+Interjection -> %interjection {% makeLeaf('Interjection') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
 Na -> %cleft_verb {% makeLeaf('𝘷') %}
 SA -> %illocution {% makeLeaf('SA') %}
