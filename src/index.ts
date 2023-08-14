@@ -42,7 +42,7 @@ yargs
 	})
 	.option('surface', {
 		type: 'boolean',
-		describe: "View surface-level parse",
+		describe: 'View surface-level parse',
 		default: false,
 	})
 	.option('semantics', {
