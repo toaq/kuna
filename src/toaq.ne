@@ -17,6 +17,7 @@ const {
 	makeRose2,
 	makeSerial,
     makeSingleChild,
+	makeT1ModalvP,
 	makeWord,
 	makevP,
 	makevPdet,
@@ -45,7 +46,7 @@ CPrel -> Crel Clause {% makeBranch('CPrel') %}
 # (nä) hao
 CPrelna -> Clause {% makeBranchCovertLeft('CPrel', 'Crel') %}
 # (sá) ∅ hao
-CPdet -> TPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
+CPdet -> MTPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 
 # jí
 DP -> %pronoun {% makeLeaf('DP') %}
@@ -59,14 +60,24 @@ nP -> nP CPrel {% makeBranch('nP') %}
 nP -> CPdet {% makeBranchFunctionalLeft('nP', 'n') %}
 
 # pu hao
-Clause -> TP {% id %}
+Clause -> MTP {% id %}
 # ní bï pu hao
 Clause -> DP Bi Clause {% make3L('TopicP', "Topic'") %}
 # jí nä pu hao hóa
 Clause -> DP Na CPrelna {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
-Clause -> ModalP Na TP {% make3L('𝘷P', "𝘷'") %}
+Clause -> ModalP Na MTP {% make3L('𝘷P', "𝘷'") %}
 ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
+
+# "MTP" is a TP that can have a t1 modal in front.
+
+# ao pu chum hao jí
+MTP -> TP {% id %}
+MTP -> Modal TP {% makeT1ModalvP %}
+
+# (sá) ao hao
+MTPdet -> TPdet {% id %}
+MTPdet -> Modal TPdet {% makeT1ModalvP %}
 
 # pu chum hao jí
 TP -> AspP {% makeBranchCovertLeft('TP', 'T') %}
@@ -163,6 +174,7 @@ EvA -> %event_accessor {% makeLeaf('EvA') %}
 Focus -> %focus_particle {% makeLeaf('Focus') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
+Modal -> %modality {% makeLeaf('Modal') %}
 ModalT4 -> %modality_with_complement {% makeLeaf('Modal') %}
 Na -> %cleft_verb {% makeLeaf('𝘷') %}
 Roi -> %plural_coordinator {% makeLeaf('&') %}

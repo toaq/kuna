@@ -314,3 +314,29 @@ export function makeAdjunctPT(
 		right: { label: 'VP', left: serial, right: obj },
 	};
 }
+
+export function makeT1ModalvP(
+	[modal, tp]: [Tree, Tree],
+	location: number,
+	reject: Object,
+) {
+	return {
+		label: '𝘷P',
+		left: {
+			label: 'ModalP',
+			left: modal,
+			right: {
+				label: 'CP',
+				word: 'covert',
+			},
+		},
+		right: {
+			label: "𝘷'",
+			left: {
+				label: '𝘷',
+				word: 'functional',
+			},
+			right: tp,
+		},
+	};
+}

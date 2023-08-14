@@ -21,6 +21,7 @@ declare var event_accessor: any;
 declare var focus_particle: any;
 declare var interjection: any;
 declare var name_verb: any;
+declare var modality: any;
 declare var modality_with_complement: any;
 declare var cleft_verb: any;
 declare var plural_coordinator: any;
@@ -47,6 +48,7 @@ const {
 	makeRose2,
 	makeSerial,
     makeSingleChild,
+	makeT1ModalvP,
 	makeWord,
 	makevP,
 	makevPdet,
@@ -93,17 +95,21 @@ const grammar: Grammar = {
     {"name": "CPincorp", "symbols": ["Cincorp", "Clause"], "postprocess": makeBranch('CP')},
     {"name": "CPrel", "symbols": ["Crel", "Clause"], "postprocess": makeBranch('CPrel')},
     {"name": "CPrelna", "symbols": ["Clause"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
-    {"name": "CPdet", "symbols": ["TPdet"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
+    {"name": "CPdet", "symbols": ["MTPdet"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
     {"name": "DP", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun)], "postprocess": makeLeaf('DP')},
     {"name": "DP", "symbols": ["D", "nP"], "postprocess": makeBranch('DP')},
     {"name": "DP", "symbols": ["Focus", "DP"], "postprocess": makeBranch('FocusP')},
     {"name": "nP", "symbols": ["nP", "CPrel"], "postprocess": makeBranch('nP')},
     {"name": "nP", "symbols": ["CPdet"], "postprocess": makeBranchFunctionalLeft('nP', 'n')},
-    {"name": "Clause", "symbols": ["TP"], "postprocess": id},
+    {"name": "Clause", "symbols": ["MTP"], "postprocess": id},
     {"name": "Clause", "symbols": ["DP", "Bi", "Clause"], "postprocess": make3L('TopicP', "Topic'")},
     {"name": "Clause", "symbols": ["DP", "Na", "CPrelna"], "postprocess": make3L('𝘷P', "𝘷'")},
-    {"name": "Clause", "symbols": ["ModalP", "Na", "TP"], "postprocess": make3L('𝘷P', "𝘷'")},
+    {"name": "Clause", "symbols": ["ModalP", "Na", "MTP"], "postprocess": make3L('𝘷P', "𝘷'")},
     {"name": "ModalP", "symbols": ["ModalT4", "CPsub"], "postprocess": makeBranch('ModalP')},
+    {"name": "MTP", "symbols": ["TP"], "postprocess": id},
+    {"name": "MTP", "symbols": ["Modal", "TP"], "postprocess": makeT1ModalvP},
+    {"name": "MTPdet", "symbols": ["TPdet"], "postprocess": id},
+    {"name": "MTPdet", "symbols": ["Modal", "TPdet"], "postprocess": makeT1ModalvP},
     {"name": "TP", "symbols": ["AspP"], "postprocess": makeBranchCovertLeft('TP', 'T')},
     {"name": "TP", "symbols": ["T1", "AspP"], "postprocess": makeBranch('TP')},
     {"name": "TP", "symbols": ["Sigma", "T1", "AspP"], "postprocess": make3L('ΣP', 'TP')},
@@ -186,6 +192,7 @@ const grammar: Grammar = {
     {"name": "Focus", "symbols": [(lexer.has("focus_particle") ? {type: "focus_particle"} : focus_particle)], "postprocess": makeLeaf('Focus')},
     {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('mı')},
+    {"name": "Modal", "symbols": [(lexer.has("modality") ? {type: "modality"} : modality)], "postprocess": makeLeaf('Modal')},
     {"name": "ModalT4", "symbols": [(lexer.has("modality_with_complement") ? {type: "modality_with_complement"} : modality_with_complement)], "postprocess": makeLeaf('Modal')},
     {"name": "Na", "symbols": [(lexer.has("cleft_verb") ? {type: "cleft_verb"} : cleft_verb)], "postprocess": makeLeaf('𝘷')},
     {"name": "Roi", "symbols": [(lexer.has("plural_coordinator") ? {type: "plural_coordinator"} : plural_coordinator)], "postprocess": makeLeaf('&')},
