@@ -120,6 +120,7 @@ term -> DP1 {% id %} | CPsub {% id %}
 
 DP1 -> DP {% id %}
 DP1 -> DP Conjunction DP1 {% makeConn %}
+DP1 -> DP Roi DP1 {% makeConn %}
 T1 -> T {% id %}
 T1 -> T Conjunction T1 {% makeConn %}
 Asp1 -> Asp {% id %}
@@ -157,6 +158,7 @@ EvA -> %event_accessor {% makeLeaf('EvA') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
 Na -> %cleft_verb {% makeLeaf('𝘷') %}
+Roi -> %plural_coordinator {% makeLeaf('&') %}
 SA -> %illocution {% makeLeaf('SA') %}
 SAopt -> SA:? {% makeOptLeaf('SA') %}
 Sigma -> %polarity {% makeLeaf('Σ') %}

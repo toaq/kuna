@@ -21,6 +21,7 @@ declare var event_accessor: any;
 declare var interjection: any;
 declare var name_verb: any;
 declare var cleft_verb: any;
+declare var plural_coordinator: any;
 declare var illocution: any;
 declare var polarity: any;
 declare var word_quote: any;
@@ -139,6 +140,7 @@ const grammar: Grammar = {
     {"name": "term", "symbols": ["CPsub"], "postprocess": id},
     {"name": "DP1", "symbols": ["DP"], "postprocess": id},
     {"name": "DP1", "symbols": ["DP", "Conjunction", "DP1"], "postprocess": makeConn},
+    {"name": "DP1", "symbols": ["DP", "Roi", "DP1"], "postprocess": makeConn},
     {"name": "T1", "symbols": ["T"], "postprocess": id},
     {"name": "T1", "symbols": ["T", "Conjunction", "T1"], "postprocess": makeConn},
     {"name": "Asp1", "symbols": ["Asp"], "postprocess": id},
@@ -179,6 +181,7 @@ const grammar: Grammar = {
     {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('mı')},
     {"name": "Na", "symbols": [(lexer.has("cleft_verb") ? {type: "cleft_verb"} : cleft_verb)], "postprocess": makeLeaf('𝘷')},
+    {"name": "Roi", "symbols": [(lexer.has("plural_coordinator") ? {type: "plural_coordinator"} : plural_coordinator)], "postprocess": makeLeaf('&')},
     {"name": "SA", "symbols": [(lexer.has("illocution") ? {type: "illocution"} : illocution)], "postprocess": makeLeaf('SA')},
     {"name": "SAopt$ebnf$1", "symbols": ["SA"], "postprocess": id},
     {"name": "SAopt$ebnf$1", "symbols": [], "postprocess": () => null},
