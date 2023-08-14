@@ -215,7 +215,7 @@ export function pngDrawTree(tree: Tree | DTree): Buffer {
 	const ctx = canvas.getContext('2d');
 	ctx.fillStyle = '#36393E';
 	ctx.fillRect(0, 0, width, height);
-	ctx.font = '20pt Noto Sans Math';
+	ctx.font = '20pt Noto Sans Math, Noto Sans';
 
 	const placed = placeTree(ctx, tree);
 	const x = width / 2;
