@@ -1,6 +1,7 @@
 import { dictionary, underscoredWordTypes, WordType } from './dictionary';
 import { Tone } from './types';
 
+// Vyái → ꝡáı
 export function clean(word: string): string {
 	return word
 		.toLowerCase()
@@ -9,12 +10,25 @@ export function clean(word: string): string {
 		.normalize();
 }
 
+// Vyái → ꝡaı
 export function bare(word: string): string {
 	return clean(word)
 		.normalize('NFKD')
 		.replace(/\p{Diacritic}/gu, '')
 		.normalize()
 		.replace(/i/gu, 'ı');
+}
+
+// hâo → hao
+// dâ → dâ
+// vyé → ꝡë
+export function baseForm(word: string): string {
+	const cleanForm = clean(word);
+	if (dictionary.has(cleanForm)) return cleanForm;
+	const bareForm = bare(word);
+	if (bareForm === 'e') return 'ë';
+	if (bareForm === 'ꝡe') return 'ꝡë';
+	return bareForm;
 }
 
 export function diacriticForTone(tone: Tone): string {
@@ -58,18 +72,6 @@ export class ToaqTokenizer {
 		for (const m of [...text.matchAll(/[\p{L}\p{N}\p{Diacritic}]+-?/gu)]) {
 			const tokenText = m[0];
 			const lemmaForm = clean(tokenText);
-
-			if (lemmaForm === 'é') {
-				this.tokens.push({ type: 'determiner', value: '◌́', index: m.index });
-				this.tokens.push({
-					type: 'event_accessor',
-					value: 'ë',
-					index: m.index,
-				});
-				continue;
-			}
-
-			const bareWord = bare(tokenText);
 			const exactEntry = dictionary.get(lemmaForm);
 
 			if (exactEntry) {
@@ -80,17 +82,19 @@ export class ToaqTokenizer {
 				});
 				continue;
 			}
-			const bareEntry = dictionary.get(bareWord);
+
+			const base = baseForm(tokenText);
+			const entry = dictionary.get(base);
 			const wordTone = tone(tokenText);
-			if (bareEntry) {
+			if (entry) {
 				this.tokens.push({
 					type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
 					value: wordTone === Tone.T2 ? '◌́' : '◌̂',
 					index: m.index,
 				});
 				this.tokens.push({
-					type: bareEntry.type.replace(/ /g, '_'),
-					value: bareWord,
+					type: entry.type.replace(/ /g, '_'),
+					value: base,
 					index: m.index,
 				});
 				continue;
@@ -109,7 +113,7 @@ export class ToaqTokenizer {
 				});
 				this.tokens.push({
 					type: 'predicate',
-					value: bareWord,
+					value: base,
 					index: m.index,
 				});
 			}
