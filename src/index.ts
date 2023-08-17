@@ -173,9 +173,14 @@ yargs
 	.command(
 		'test-sentences',
 		'Test parsing many sentences',
-		() => {},
-		function () {
-			testSentences();
+		yargs => {
+			yargs.option('failures', {
+				type: 'boolean',
+				describe: 'Only print failures',
+			});
+		},
+		function (argv) {
+			testSentences((argv as any).failures as boolean);
 		},
 	)
 	.strict()
