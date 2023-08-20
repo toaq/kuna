@@ -29,7 +29,7 @@ const lexer = new ToaqTokenizer();
 # Pass your lexer object using the @lexer option:
 @lexer lexer
 
-Fragment -> SAP {% id %} | DP {% id %} | AdjunctP {% id %}
+Fragment -> SAP {% id %} | term {% id %} | AdjunctP {% id %}
 
 # ua, ꝡa hao da
 SAP -> Interjection SAP {% makeBranch('InterjectionP') %}
@@ -63,7 +63,7 @@ nP -> CPdet {% makeBranchFunctionalLeft('nP', 'n') %}
 # pu hao
 Clause -> MTP {% id %}
 # ní bï pu hao
-Clause -> DP Bi Clause {% make3L('TopicP', "Topic'") %}
+Clause -> term Bi Clause {% make3L('TopicP', "Topic'") %}
 # jí nä pu hao hóa
 Clause -> DP Na CPrelna {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
@@ -135,11 +135,13 @@ DPincorp -> Dincorp nP {% makeBranch('DP') %}
 # po sá ...
 VPoiv -> Voiv DP {% makeBranch('VP') %}
 
-term -> DP1 {% id %} | CPsub {% id %}
+term -> DP1 {% id %} | CPsub1 {% id %}
 
 DP1 -> DP {% id %}
 DP1 -> DP Conjunction DP1 {% makeConn %}
 DP1 -> DP Roi DP1 {% makeConn %}
+CPsub1 -> CPsub {% id %}
+CPsub1 -> CPsub Conjunction CPsub1 {% makeConn %}
 T1 -> T {% id %}
 T1 -> T Conjunction T1 {% makeConn %}
 Asp1 -> Asp {% id %}
