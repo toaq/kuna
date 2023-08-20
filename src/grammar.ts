@@ -21,6 +21,7 @@ declare var event_accessor: any;
 declare var focus_particle: any;
 declare var interjection: any;
 declare var name_verb: any;
+declare var text_quote: any;
 declare var modality: any;
 declare var modality_with_complement: any;
 declare var cleft_verb: any;
@@ -29,6 +30,7 @@ declare var illocution: any;
 declare var polarity: any;
 declare var word_quote: any;
 declare var tense: any;
+declare var end_quote: any;
 declare var predicate: any;
 declare var object_incorporating_verb: any;
 
@@ -171,6 +173,9 @@ const grammar: Grammar = {
     {"name": "Verblike", "symbols": ["V"], "postprocess": id},
     {"name": "Verblike", "symbols": ["ShuP"], "postprocess": id},
     {"name": "ShuP", "symbols": ["Shu", "Word"], "postprocess": makeBranch('shuP')},
+    {"name": "Verblike", "symbols": ["TeoP"], "postprocess": id},
+    {"name": "TeoP", "symbols": ["MoP", "Teo"], "postprocess": makeBranch('teoP')},
+    {"name": "MoP", "symbols": ["Mo", "Text"], "postprocess": makeBranch('moP')},
     {"name": "Verblike", "symbols": ["MiP"], "postprocess": id},
     {"name": "MiP", "symbols": ["Mi", "Word"], "postprocess": makeBranch('mıP')},
     {"name": "Adjunct", "symbols": [(lexer.has("preposition") ? {type: "preposition"} : preposition)], "postprocess": makeLeaf('Adjunct')},
@@ -195,6 +200,7 @@ const grammar: Grammar = {
     {"name": "Focus", "symbols": [(lexer.has("focus_particle") ? {type: "focus_particle"} : focus_particle)], "postprocess": makeLeaf('Focus')},
     {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('mı')},
+    {"name": "Mo", "symbols": [(lexer.has("text_quote") ? {type: "text_quote"} : text_quote)], "postprocess": makeLeaf('mo')},
     {"name": "Modal", "symbols": [(lexer.has("modality") ? {type: "modality"} : modality)], "postprocess": makeLeaf('Modal')},
     {"name": "ModalT4", "symbols": [(lexer.has("modality_with_complement") ? {type: "modality_with_complement"} : modality_with_complement)], "postprocess": makeLeaf('Modal')},
     {"name": "Na", "symbols": [(lexer.has("cleft_verb") ? {type: "cleft_verb"} : cleft_verb)], "postprocess": makeLeaf('𝘷')},
@@ -206,6 +212,8 @@ const grammar: Grammar = {
     {"name": "Sigma", "symbols": [(lexer.has("polarity") ? {type: "polarity"} : polarity)], "postprocess": makeLeaf('Σ')},
     {"name": "Shu", "symbols": [(lexer.has("word_quote") ? {type: "word_quote"} : word_quote)], "postprocess": makeLeaf('shu')},
     {"name": "T", "symbols": [(lexer.has("tense") ? {type: "tense"} : tense)], "postprocess": makeLeaf('T')},
+    {"name": "Teo", "symbols": [(lexer.has("end_quote") ? {type: "end_quote"} : end_quote)], "postprocess": makeLeaf('teo')},
+    {"name": "Text", "symbols": ["Fragment"], "postprocess": id},
     {"name": "V", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('V')},
     {"name": "Voiv", "symbols": [(lexer.has("object_incorporating_verb") ? {type: "object_incorporating_verb"} : object_incorporating_verb)], "postprocess": makeLeaf('V')},
     {"name": "Word", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('word')}

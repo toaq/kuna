@@ -156,6 +156,9 @@ V1 -> Verblike ConjunctionT1 V1 {% makeConn %}
 Verblike -> V {% id %}
 Verblike -> ShuP {% id %}
 ShuP -> Shu Word {% makeBranch('shuP') %}
+Verblike -> TeoP {% id %}
+TeoP -> MoP Teo {% makeBranch('teoP') %}
+MoP -> Mo Text {% makeBranch('moP') %}
 Verblike -> MiP {% id %}
 MiP -> Mi Word {% makeBranch('mıP') %}
 
@@ -177,6 +180,7 @@ EvA -> %event_accessor {% makeLeaf('EvA') %}
 Focus -> %focus_particle {% makeLeaf('Focus') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
+Mo -> %text_quote {% makeLeaf('mo') %}
 Modal -> %modality {% makeLeaf('Modal') %}
 ModalT4 -> %modality_with_complement {% makeLeaf('Modal') %}
 Na -> %cleft_verb {% makeLeaf('𝘷') %}
@@ -186,6 +190,9 @@ SAopt -> SA:? {% makeOptLeaf('SA') %}
 Sigma -> %polarity {% makeLeaf('Σ') %}
 Shu -> %word_quote {% makeLeaf('shu') %}
 T -> %tense {% makeLeaf('T') %}
+Teo -> %end_quote {% makeLeaf('teo') %}
+# TODO: multiple-fragment quotes?
+Text -> Fragment {% id %}
 V -> %predicate {% makeLeaf('V') %}
 Voiv -> %object_incorporating_verb {% makeLeaf('V') %}
 # TODO: match all word types, not just predicate
