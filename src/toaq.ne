@@ -16,6 +16,7 @@ const {
 	makeRose,
 	makeRose2,
 	makeSerial,
+	makeSigmaT1ModalvP,
     makeSingleChild,
 	makeT1ModalvP,
 	makeWord,
@@ -74,10 +75,12 @@ ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
 # ao pu chum hao jí
 MTP -> TP {% id %}
 MTP -> Modal TP {% makeT1ModalvP %}
+MTP -> Sigma Modal TP {% makeSigmaT1ModalvP %}
 
 # (sá) ao hao
 MTPdet -> TPdet {% id %}
 MTPdet -> Modal TPdet {% makeT1ModalvP %}
+MTPdet -> Sigma Modal TPdet {% makeSigmaT1ModalvP %}
 
 # pu chum hao jí
 TP -> AspP {% makeBranchCovertLeft('TP', 'T') %}

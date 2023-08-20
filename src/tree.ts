@@ -315,11 +315,7 @@ export function makeAdjunctPT(
 	};
 }
 
-export function makeT1ModalvP(
-	[modal, tp]: [Tree, Tree],
-	location: number,
-	reject: Object,
-) {
+export function makeT1ModalvP([modal, tp]: [Tree, Tree]) {
 	return {
 		label: '𝘷P',
 		left: {
@@ -338,5 +334,13 @@ export function makeT1ModalvP(
 			},
 			right: tp,
 		},
+	};
+}
+
+export function makeSigmaT1ModalvP([sigma, modal, tp]: [Tree, Tree, Tree]) {
+	return {
+		label: 'ΣP',
+		left: sigma,
+		right: makeT1ModalvP([modal, tp]),
 	};
 }
