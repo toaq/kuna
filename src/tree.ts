@@ -224,7 +224,7 @@ export function makeSerial(
 	const children = verbs.concat([vlast]);
 	const frames = children.map(getFrame);
 	let arity: number | undefined = undefined;
-	if (!frames.includes('')) {
+	if (!(frames.includes('') || frames.includes('variable'))) {
 		arity = frames[frames.length - 1].split(' ').length;
 		for (let i = frames.length - 2; i >= 0; i--) {
 			const frame = frames[i].split(' ');
