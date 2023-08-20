@@ -1,4 +1,6 @@
+import { inTone } from './tokenize';
 import { Tree } from './tree';
+import { Tone } from './types';
 
 interface PostField {
 	earlyAdjuncts: string[];
@@ -20,6 +22,13 @@ interface Sentence {
 	speechAct: string;
 }
 
+function repairTones(text: string): string {
+	return text.replace(/◌(.) (\S+)/g, (m, diacritic, word) => {
+		const tone = diacritic.charCodeAt() === 0x301 ? Tone.T2 : Tone.T4;
+		return inTone(word, tone).normalize();
+	});
+}
+
 function skipFree(tree: Tree): Tree {
 	if (tree.label === 'InterjectionP' && 'left' in tree) {
 		return tree.left.label === 'Interjection' ? tree.right : tree.left;
@@ -35,9 +44,9 @@ function words(tree: Tree): string {
 			return tree.word.text;
 		}
 	} else if ('left' in tree) {
-		return (words(tree.left) + ' ' + words(tree.right)).trim();
+		return repairTones((words(tree.left) + ' ' + words(tree.right)).trim());
 	} else {
-		return tree.children.map(words).join(' ').trim();
+		return repairTones(tree.children.map(words).join(' ').trim());
 	}
 }
 
