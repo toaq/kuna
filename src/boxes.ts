@@ -1,3 +1,4 @@
+import { glossSentence } from './gloss';
 import { inTone } from './tokenize';
 import { Tree } from './tree';
 import { Tone } from './types';
@@ -8,16 +9,16 @@ interface PostField {
 	lateAdjuncts: string[];
 }
 
-interface Clause {
+interface BoxClause {
 	/// If empty, means covert "ꝡa"
 	complementizer: string;
 	topic?: string;
 	verbalComplex: string;
-	postField?: PostField;
+	postField: PostField;
 }
 
-interface Sentence {
-	clause: Clause;
+interface BoxSentence {
+	clause: BoxClause;
 	/// If empty, means covert "da"
 	speechAct: string;
 }
@@ -56,7 +57,7 @@ function boxifyPostField(trees: Tree[]): PostField {
 	let arguments_: string[] = [];
 	let lateAdjuncts: string[] = [];
 	for (const tree of trees) {
-		if (tree.label === 'DP') {
+		if (tree.label === 'DP' || tree.label === 'CP') {
 			arguments_.push(words(tree));
 			sawArgument = true;
 		} else if (sawArgument) {
@@ -73,7 +74,7 @@ function boxifyPostField(trees: Tree[]): PostField {
 	};
 }
 
-function boxifyClause(tree: Tree): Clause {
+function boxifyClause(tree: Tree): BoxClause {
 	let complementizer = '';
 	let topic: string | undefined = undefined;
 	let verbalComplexWords = [];
@@ -106,11 +107,14 @@ function boxifyClause(tree: Tree): Clause {
 				case 'ModalP':
 				case 'TP':
 				case 'AspP':
+				case '𝘷P':
+				case "𝘷'":
 					const w = words(node.left);
 					w && verbalComplexWords.push(w);
 					node = node.right;
 					break;
 				default:
+					console.log(node);
 					throw new Error('unimplemented: ' + node.label);
 			}
 		} else {
@@ -121,7 +125,7 @@ function boxifyClause(tree: Tree): Clause {
 	return { complementizer, topic, verbalComplex, postField };
 }
 
-export function boxify(tree: Tree): Sentence {
+export function boxify(tree: Tree): BoxSentence {
 	let speechAct: string = '';
 	tree = skipFree(tree);
 	if (tree.label !== 'SAP') throw new Error('Cannot boxify non-sentence');
@@ -135,4 +139,56 @@ export function boxify(tree: Tree): Sentence {
 	const cp = tree.left;
 	const clause = boxifyClause(cp);
 	return { clause, speechAct };
+}
+
+export function boxSentenceToMarkdown(
+	text: string,
+	boxSentence: BoxSentence,
+	options: {
+		gloss: boolean;
+		covert: boolean;
+	},
+): string {
+	let lines: { title?: string; toaq?: string; indent: number }[] = [];
+	const { clause, speechAct } = boxSentence;
+	const { complementizer, topic, verbalComplex, postField } = clause;
+	const { earlyAdjuncts, arguments: args, lateAdjuncts } = postField;
+
+	if (complementizer || options.covert) {
+		lines.push({ title: 'Complementizer', toaq: complementizer, indent: 0 });
+	}
+	topic && lines.push({ title: 'Topic', toaq: topic, indent: 0 });
+	lines.push({ title: 'Verbal complex', toaq: verbalComplex, indent: 0 });
+	[earlyAdjuncts, args, lateAdjuncts].forEach((a, i) => {
+		const title = ['Adjunct', 'Argument', 'Adjunct'][i];
+		if (a.length === 1) {
+			lines.push({ title, toaq: a[0], indent: 0 });
+		} else if (a.length > 1) {
+			lines.push({ title: title + 's', indent: 0 });
+			for (const toaq of a) {
+				lines.push({ toaq, indent: 2 });
+			}
+		}
+	});
+	if (speechAct || options.covert) {
+		lines.push({ title: 'Speech act', toaq: speechAct, indent: 0 });
+	}
+
+	const markdown = lines.map(x => {
+		let line = ' '.repeat(x.indent) + '* ';
+		if (x.title) line += `${x.title}: `;
+		if (x.toaq !== undefined) {
+			line += x.toaq ? `**${x.toaq}**` : '∅';
+			if (options.gloss) {
+				const underlying = x.toaq || (x.title === 'Speech act' ? 'da' : 'ꝡa');
+				const glossText = glossSentence(underlying)
+					.map(g => g.english.replace(/\\/g, '\\\\'))
+					.join(' ');
+				line += `  \` ${glossText} \``;
+			}
+		}
+		return line;
+	});
+
+	return '**' + text + '**\n' + markdown.join('\n');
 }

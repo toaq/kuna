@@ -13,7 +13,7 @@ import { textual_tree_from_json } from './textual-tree';
 import { testSentences } from './test-sentences';
 import { denote } from './semantics/denote';
 import { ToaqTokenizer } from './tokenize';
-import { boxify } from './boxes';
+import { boxSentenceToMarkdown, boxify } from './boxes';
 
 initializeDictionary();
 
@@ -185,7 +185,7 @@ yargs
 		},
 	)
 	.command(
-		'boxes-json',
+		'boxes-markdown',
 		'Simple sentence structure',
 		yargs => {
 			yargs.demandOption('sentence');
@@ -195,8 +195,14 @@ yargs
 			argv.semantics = false;
 			argv.compact = false;
 			const trees = getTrees(argv);
-			console.log(trees.length + ' parses');
-			console.dir(boxify(trees[0]), { depth: null });
+			// console.log(trees.length + ' parses');
+			const box = boxify(trees[0]);
+			console.log(
+				boxSentenceToMarkdown(argv.sentence!, box, {
+					gloss: true,
+					covert: false,
+				}),
+			);
 		},
 	)
 	.strict()
