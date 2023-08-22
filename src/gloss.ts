@@ -1,4 +1,4 @@
-import { dictionary } from './dictionary';
+import { Entry, dictionary } from './dictionary';
 import { bare, clean, tone } from './tokenize';
 import { Tone } from './types';
 import * as fs from 'fs';
@@ -14,6 +14,77 @@ for (const line of fs
 		toaduaGlosses.set(word, gloss.replace(/\s+/g, '.'));
 	}
 }
+
+let useEasyGlosses: boolean = false;
+
+const easyGloss: Record<string, string> = {
+	'1+2': 'we',
+	'1+2+3': 'we',
+	'1+3': 'we',
+	'1S': 'me',
+	'2+3': "y'all",
+	'2P': "y'all",
+	'2S': 'you',
+	'3P': 'they',
+	'3S': 'he',
+	'AFF.CONTR': 'is!',
+	'EXS.FUT': 'will.ever',
+	'EXS.PST': 'has.ever',
+	'FOC.CONTR': '!',
+	'NAME.QUOTE': 'named',
+	'NEAR.FUT': 'will.soon',
+	'NEAR.PST': 'did.just',
+	'NEC.IND': 'if',
+	'NEC.SUBJ': 'would',
+	'NEG.CONTR': 'not!',
+	'POSB.IND': 'can',
+	'POSB.SUBJ': 'could',
+	'REM.FUT': 'will.once',
+	'REM.PST': 'did.once',
+	'RHET.INT': 'or.what?',
+	ADJ: '',
+	ADM: 'watch.out!',
+	AFF: 'is',
+	ASRT: 'I.claim',
+	CLE: 'is',
+	CMPR: 'more',
+	COMP: 'that',
+	ENDO: 'that',
+	EVA: 'event.of',
+	EXO: 'the',
+	EXPL: "it's.that",
+	EXS: 'ever',
+	FOC: '!',
+	FUT: 'will',
+	GA: 'of',
+	GEN: '',
+	GNO: 'be',
+	IMPF: '-ing',
+	INT: 'I.ask?',
+	NAME: 'named',
+	NEG: 'not',
+	NRST: 'which',
+	OPP: 'anti',
+	OPT: 'please!',
+	PERF: 'do.fully',
+	PERM: 'you.may',
+	PPF: 'ed',
+	PREV: 'that',
+	PROM: 'I.promise',
+	PRS: 'now',
+	PRSP: 'is.yet.to',
+	PST: 'did',
+	QUOTE: 'quote',
+	RECP: 'each.other',
+	RETR: 'has',
+	RST: 'which',
+	SPRF: 'still',
+	SUBF: 'already',
+	SUP: 'most',
+	TOP: ':',
+	VOC: 'o',
+	WORD: 'the.word',
+};
 
 const words = [...toaduaGlosses.keys()].concat([...dictionary.keys()]);
 words.sort((a, b) => b.length - a.length);
@@ -36,6 +107,16 @@ function splitIntoRaku(word: string): string[] {
 	return [...word.matchAll(/'?[^aeiıou][aeiıou+][qm]?/gu)].map(m => m[0]);
 }
 
+function getGloss(entry: Entry): string {
+	const g = entry.gloss;
+	const ga = entry.gloss_abbreviation;
+	if (useEasyGlosses) {
+		return easyGloss[ga || g] ?? ga ?? g;
+	} else {
+		return ga ?? g;
+	}
+}
+
 function splitPrefixes(word: string): { prefixes: string[]; root: string } {
 	const parts = word
 		.normalize('NFKD')
@@ -49,13 +130,13 @@ function splitPrefixes(word: string): { prefixes: string[]; root: string } {
 function glossPrefix(prefix: string): string {
 	const entry = dictionary.get(prefix + '-');
 	if (entry) {
-		return (entry.gloss_abbreviation || entry.gloss) + '-';
+		return getGloss(entry) + '-';
 	}
 
 	// hacky fallback for unknown prefixes: gloss them as if they were words
 	const rootEntry = dictionary.get(prefix);
 	if (rootEntry) {
-		return (rootEntry.gloss_abbreviation || rootEntry.gloss) + '-';
+		return getGloss(rootEntry) + '-';
 	}
 
 	return '?-';
@@ -64,10 +145,10 @@ function glossPrefix(prefix: string): string {
 function glossRoot(root: string): string {
 	const entry = dictionary.get(root);
 	if (entry) {
-		return entry.gloss_abbreviation || entry.gloss;
+		return getGloss(entry);
 	}
 	if (clean(root) === 'é') {
-		return 'the\\EVA';
+		return 'the\\' + glossRoot('ë');
 	}
 	const bareRoot = bare(root);
 	const bareEntry = dictionary.get(bareRoot);
