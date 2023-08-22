@@ -63,7 +63,7 @@ client.on('interactionCreate', async interaction => {
 
 	if (interaction.commandName === 'gloss') {
 		const text = interaction.options.getString('text', true);
-		const png = pngGlossSentence(text);
+		const png = pngGlossSentence(text, { easy: false });
 
 		await interaction.reply({
 			files: [new AttachmentBuilder(png, { name: 'gloss.png' })],

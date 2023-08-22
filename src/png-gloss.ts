@@ -1,7 +1,10 @@
 import { loadImage, createCanvas, registerFont } from 'canvas';
-import { glossSentence } from './gloss';
+import { Glosser } from './gloss';
 
-export function pngGlossSentence(sentence: string): Buffer {
+export function pngGlossSentence(
+	sentence: string,
+	options: { easy: boolean },
+): Buffer {
 	const width = 1200;
 	const height = 2400;
 	const canvas = createCanvas(width, height);
@@ -19,7 +22,11 @@ export function pngGlossSentence(sentence: string): Buffer {
 	const englishFont = 'italic 18pt Noto Sans';
 	let clipWidth = 0;
 
-	for (const { toaq, english } of glossSentence(sentence.slice(0, 1000))) {
+	const trimmed = sentence.slice(0, 1000).trim();
+	const glosser = new Glosser(options.easy);
+	const gloss = glosser.glossSentence(trimmed);
+
+	for (const { toaq, english } of gloss) {
 		ctx.font = toaqFont;
 		const tw = ctx.measureText(toaq).width;
 		ctx.font = englishFont;

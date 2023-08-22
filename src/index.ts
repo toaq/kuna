@@ -1,6 +1,6 @@
 import { toDocument } from './latex';
 import * as fs from 'fs';
-import { alignGlossSentence } from './gloss';
+import { Glosser } from './gloss';
 import yargs from 'yargs';
 import { pngGlossSentence } from './png-gloss';
 import { Tree } from './tree';
@@ -57,6 +57,11 @@ yargs
 		describe: 'Remove empty phrases with null heads',
 		default: false,
 	})
+	.option('easy', {
+		type: 'boolean',
+		describe: 'Use "easy" glosses like "did" over "PST"',
+		default: false,
+	})
 	.command(
 		'tokens-json',
 		'List of tokens in JSON format',
@@ -77,7 +82,8 @@ yargs
 			yargs.demandOption('sentence');
 		},
 		function (argv) {
-			console.log(alignGlossSentence(argv.sentence!));
+			const glosser = new Glosser(argv.easy);
+			console.log(glosser.alignGlossSentence(argv.sentence!));
 		},
 	)
 	.command(
@@ -93,7 +99,7 @@ yargs
 		},
 
 		function (argv) {
-			const imgBuffer = pngGlossSentence(argv.sentence!);
+			const imgBuffer = pngGlossSentence(argv.sentence!, { easy: argv.easy });
 			fs.writeFileSync(argv.output as string, imgBuffer);
 		},
 	)
@@ -200,6 +206,7 @@ yargs
 			console.log(
 				boxSentenceToMarkdown(argv.sentence!, box, {
 					gloss: true,
+					easy: argv.easy,
 					covert: false,
 				}),
 			);

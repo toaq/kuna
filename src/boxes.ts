@@ -1,4 +1,4 @@
-import { glossSentence } from './gloss';
+import { Glosser } from './gloss';
 import { inTone } from './tokenize';
 import { Tree } from './tree';
 import { Tone } from './types';
@@ -146,6 +146,7 @@ export function boxSentenceToMarkdown(
 	boxSentence: BoxSentence,
 	options: {
 		gloss: boolean;
+		easy: boolean;
 		covert: boolean;
 	},
 ): string {
@@ -174,6 +175,8 @@ export function boxSentenceToMarkdown(
 		lines.push({ title: 'Speech act', toaq: speechAct, indent: 0 });
 	}
 
+	const glosser = new Glosser(options.easy);
+
 	const markdown = lines.map(x => {
 		let line = ' '.repeat(x.indent) + '* ';
 		if (x.title) line += `${x.title}: `;
@@ -181,7 +184,8 @@ export function boxSentenceToMarkdown(
 			line += x.toaq ? `**${x.toaq}**` : '∅';
 			if (options.gloss) {
 				const underlying = x.toaq || (x.title === 'Speech act' ? 'da' : 'ꝡa');
-				const glossText = glossSentence(underlying)
+				const glossText = glosser
+					.glossSentence(underlying)
 					.map(g => g.english.replace(/\\/g, '\\\\'))
 					.join(' ');
 				line += `  \` ${glossText} \``;
