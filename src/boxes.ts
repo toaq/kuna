@@ -155,7 +155,7 @@ export function boxSentenceToMarkdown(
 	if (trees.length > 1) return 'Ambiguous parse';
 	const tree = trees[0];
 	const boxSentence = boxify(tree);
-    const cp = (tree as Branch<Tree>).left!;
+	const cp = (tree as Branch<Tree>).left!;
 	let lines: { title?: string; toaq?: string; indent: number }[] = [];
 	const { clause, speechAct } = boxSentence;
 	const { complementizer, topic, verbalComplex, postField } = clause;
