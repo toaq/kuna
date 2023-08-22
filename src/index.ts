@@ -197,17 +197,11 @@ yargs
 			yargs.demandOption('sentence');
 		},
 		function (argv) {
-			argv.surface = true;
-			argv.semantics = false;
-			argv.compact = false;
-			const trees = getTrees(argv);
-			// console.log(trees.length + ' parses');
-			const box = boxify(trees[0]);
 			console.log(
-				boxSentenceToMarkdown(argv.sentence!, box, {
+				boxSentenceToMarkdown(argv.sentence!, {
 					gloss: true,
 					easy: argv.easy,
-					covert: false,
+					covert: true,
 				}),
 			);
 		},

@@ -1,6 +1,7 @@
+import { parse } from './parse';
 import { Glosser } from './gloss';
 import { inTone } from './tokenize';
-import { Tree } from './tree';
+import { Branch, Tree, isQuestion } from './tree';
 import { Tone } from './types';
 
 interface PostField {
@@ -143,13 +144,18 @@ export function boxify(tree: Tree): BoxSentence {
 
 export function boxSentenceToMarkdown(
 	text: string,
-	boxSentence: BoxSentence,
 	options: {
 		gloss: boolean;
 		easy: boolean;
 		covert: boolean;
 	},
 ): string {
+	const trees = parse(text);
+	if (trees.length === 0) return 'No parse';
+	if (trees.length > 1) return 'Ambiguous parse';
+	const tree = trees[0];
+	const boxSentence = boxify(tree);
+    const cp = (tree as Branch<Tree>).left!;
 	let lines: { title?: string; toaq?: string; indent: number }[] = [];
 	const { clause, speechAct } = boxSentence;
 	const { complementizer, topic, verbalComplex, postField } = clause;
@@ -183,7 +189,9 @@ export function boxSentenceToMarkdown(
 		if (x.toaq !== undefined) {
 			line += x.toaq ? `**${x.toaq}**` : '∅';
 			if (options.gloss) {
-				const underlying = x.toaq || (x.title === 'Speech act' ? 'da' : 'ꝡa');
+				const underlying =
+					x.toaq ||
+					(x.title === 'Speech act' ? (isQuestion(cp) ? 'móq' : 'da') : 'ꝡa');
 				const glossText = glosser
 					.glossSentence(underlying)
 					.map(g => g.english.replace(/\\/g, '\\\\'))

@@ -1,5 +1,5 @@
 import { dictionary, Entry, VerbEntry } from './dictionary';
-import { bare, ToaqToken, tone } from './tokenize';
+import { bare, clean, ToaqToken, tone } from './tokenize';
 import { Tone } from './types';
 
 export interface Word {
@@ -57,13 +57,44 @@ export type Label =
 	| 'ΣP';
 
 export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
-	if (label.endsWith('P') || label === 'CPrel') {
+	if (label.endsWith('P') || label === 'CPrel' || label === '*𝘷Pdet') {
 		return 'phrase';
 	} else if (label.endsWith("'")) {
 		return 'bar';
 	} else {
 		return 'head';
 	}
+}
+
+export function containsWords(
+	tree: Tree,
+	words: string[],
+	stopLabels: Label[],
+): boolean {
+	if ('word' in tree) {
+		return (
+			tree.word !== 'covert' &&
+			tree.word !== 'functional' &&
+			words.includes(clean(tree.word.text))
+		);
+	} else if ('left' in tree) {
+		return (
+			(!stopLabels.includes(tree.left.label) &&
+				containsWords(tree.left, words, stopLabels)) ||
+			(!stopLabels.includes(tree.right.label) &&
+				containsWords(tree.right, words, stopLabels))
+		);
+	} else {
+		return tree.children.some(
+			child =>
+				!stopLabels.includes(child.label) &&
+				containsWords(child, words, stopLabels),
+		);
+	}
+}
+
+export function isQuestion(tree: Tree): boolean {
+	return containsWords(tree, ['hí', 'rí', 'rı', 'rî', 'ma', 'tıo'], ['CP']);
 }
 
 export interface Leaf {
