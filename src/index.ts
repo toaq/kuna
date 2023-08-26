@@ -14,6 +14,7 @@ import { testSentences } from './test-sentences';
 import { denote } from './semantics/denote';
 import { ToaqTokenizer } from './tokenize';
 import { boxSentenceToMarkdown, boxify } from './boxes';
+import { toEnglish } from './english';
 
 initializeDictionary();
 
@@ -204,6 +205,16 @@ yargs
 					covert: true,
 				}),
 			);
+		},
+	)
+	.command(
+		'english',
+		'Machine-translate to English',
+		yargs => {
+			yargs.demandOption('sentence');
+		},
+		function (argv) {
+			console.log(toEnglish(argv.sentence!));
 		},
 	)
 	.strict()

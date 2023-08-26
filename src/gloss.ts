@@ -37,7 +37,7 @@ const easyGlossMap: Record<string, string> = {
 	'2P': "y'all",
 	'2S': 'you',
 	'3P': 'they',
-	'3S': 'he',
+	'3S': 'she',
 	'AFF.CONTR': 'is!',
 	'EXS.FUT': 'will.ever',
 	'EXS.PST': 'has.ever',
@@ -180,7 +180,7 @@ export class Glosser {
 		return bareRoot;
 	}
 
-	protected glossWord(word: string): string {
+	public glossWord(word: string): string {
 		word = clean(word.replace(/[\p{Pe}\p{Pf}\p{Pi}\p{Po}\p{Ps}]/gu, ''));
 
 		const { prefixes, root } = splitPrefixes(word);
