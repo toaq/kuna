@@ -1,5 +1,5 @@
 import { Entry, dictionary } from './dictionary';
-import { bare, clean, tone } from './tokenize';
+import { bare, clean, splitPrefixes, tone } from './tokenize';
 import { Tone } from './types';
 import * as fs from 'fs';
 
@@ -99,20 +99,6 @@ const easyGlossMap: Record<string, string> = {
 
 function displayLength(text: string): number {
 	return text.normalize('NFKD').replace(/\p{Diacritic}/gu, '').length;
-}
-
-function splitIntoRaku(word: string): string[] {
-	return [...word.matchAll(/'?[^aeiıou][aeiıou+][qm]?/gu)].map(m => m[0]);
-}
-
-function splitPrefixes(word: string): { prefixes: string[]; root: string } {
-	const parts = word
-		.normalize('NFKD')
-		.replace(/\u0323/gu, '-')
-		.normalize('NFC')
-		.split('-');
-	const root = parts.pop()!;
-	return { prefixes: parts.flatMap(splitIntoRaku), root };
 }
 
 export class Glosser {
