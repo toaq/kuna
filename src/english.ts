@@ -38,6 +38,7 @@ class ClauseTranslator {
 	negative: boolean = false;
 	subject?: string = undefined;
 	objects: string[] = [];
+	modals: string[] = [];
 	constructor(toaqSpeechAct?: string) {
 		this.toaqSpeechAct = toaqSpeechAct;
 	}
@@ -77,10 +78,6 @@ class ClauseTranslator {
 						}
 						node = node.right;
 						break;
-					case 'ModalP':
-						// ugh! todo
-						node = node.right;
-						break;
 					case 'TP':
 						this.toaqTense = clean(leafText(node.left));
 						node = node.right;
@@ -90,6 +87,11 @@ class ClauseTranslator {
 						node = node.right;
 						break;
 					case '𝘷P':
+						if (node.left.label === 'ModalP') {
+							this.modals.push(treeToEnglish(node.left));
+						}
+						node = node.right;
+						break;
 					case "𝘷'":
 						node = node.right;
 						break;
@@ -124,12 +126,43 @@ class ClauseTranslator {
 			case 'pu':
 				tense = 'did';
 				break;
+			case 'mala':
+				tense = 'has ever';
+				break;
+			case 'sula':
+				tense = 'ever';
+				break;
+			case 'jela':
+				tense = 'will ever';
+				break;
+			case 'jıa':
+				tense = 'will';
+				break;
 		}
 		let aspect: string = '';
 		switch (this.toaqAspect) {
 			case 'luı':
 				aspect = 'has';
 				this.verb += '-en';
+				break;
+			case 'chum':
+				aspect = 'is';
+				this.verb += '-ing';
+				break;
+			case 'za':
+				aspect = 'is yet to';
+				break;
+			case 'hoaı':
+				aspect = 'still';
+				break;
+			case 'haı':
+				aspect = 'already';
+				break;
+			case 'hıq':
+				aspect = 'just';
+				break;
+			case 'fı':
+				aspect = 'is about to';
 				break;
 		}
 
@@ -163,6 +196,7 @@ class ClauseTranslator {
 		}
 
 		order = [...this.topics.map(x => `as for ${x},`), ...order];
+		order = [...this.modals, ...order];
 
 		return order.join(' ').trim().replace(/\s+/g, ' ');
 	}
@@ -208,6 +242,22 @@ function branchToEnglish(tree: Branch<Tree>): string {
 		} else {
 			const serial = tree.right;
 			return serialToEnglish(serial) + 'ly';
+		}
+	}
+	if (tree.label === 'ModalP') {
+		const modal = tree.left;
+		const cp = tree.right as Branch<Tree>;
+		const c = cp.left as Leaf;
+		const translator = new ClauseTranslator();
+		translator.processCP(cp);
+		const eng =
+			{ she: 'necessarily', ao: 'would', daı: 'possibly', ea: 'could' }[
+				bare(leafText(modal))
+			] ?? '?';
+		if (c.word === 'covert' || c.word === 'functional') {
+			return eng;
+		} else {
+			return 'if ' + translator.emit().replace(/^that /, '') + ', then ' + eng;
 		}
 	}
 	throw new Error('unimplemented in branchToEnglish: ' + tree.label);
