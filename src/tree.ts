@@ -408,7 +408,6 @@ export function makePrefixLeaf([token]: [ToaqToken]) {
 }
 
 export function makePrefixP([prefix, verb]: [Tree, Tree]) {
-	console.log(prefix, verb);
 	return {
 		label: prefix.label + 'P',
 		left: prefix,
