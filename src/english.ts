@@ -22,6 +22,7 @@ function leafToEnglish(leaf: Tree): string {
 }
 
 function serialToEnglish(serial: Tree): string {
+	if ('word' in serial && serial.word === 'covert') return '';
 	if (serial.label !== '*Serial') throw new Error('non-*Serial serial');
 	if (!('children' in serial)) throw new Error('non-Rose serial');
 	return serial.children.map(x => leafToEnglish(x)).join('-');
@@ -48,8 +49,6 @@ class ClauseTranslator {
 		this.toaqComplementizer = c;
 		this.processClause(tree.right);
 	}
-
-	/// Process a CPrel from a DP.
 
 	public processClause(tree: Tree): void {
 		for (let node = tree; ; ) {
@@ -134,13 +133,19 @@ class ClauseTranslator {
 				break;
 		}
 
+		let auxiliary: string = '';
+		if (this.negative) {
+			auxiliary = "don't";
+		}
+
 		let order: string[];
 
 		if (this.toaqComplementizer === 'ma') {
+			auxiliary ||= 'do';
 			order = [
 				tense,
 				aspect,
-				'do',
+				auxiliary,
 				this.subject ?? '',
 				this.verb ?? '',
 				...this.objects,
@@ -151,10 +156,13 @@ class ClauseTranslator {
 				this.subject ?? '',
 				tense,
 				aspect,
+				auxiliary ?? '',
 				this.verb ?? '',
 				...this.objects,
 			];
 		}
+
+		order = [...this.topics.map(x => `as for ${x},`), ...order];
 
 		return order.join(' ').trim().replace(/\s+/g, ' ');
 	}
