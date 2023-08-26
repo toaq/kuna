@@ -145,8 +145,10 @@ DP1 -> DP Roi DP1 {% makeConn %}
 CPsub1 -> CPsub {% id %}
 CPsub1 -> CPsub Conjunction CPsub1 {% makeConn %}
 T1 -> T {% id %}
+T1 -> T_prefix {% id %}
 T1 -> T Conjunction T1 {% makeConn %}
 Asp1 -> Asp {% id %}
+Asp1 -> Asp_prefix {% id %}
 Asp1 -> Asp Conjunction Asp1 {% makeConn %}
 AdjunctP1 -> AdjunctP {% id %}
 AdjunctP1 -> AdjunctP Conjunction AdjunctP1 {% makeConn %}
@@ -172,6 +174,7 @@ Conjunction -> %conjunction {% makeLeaf('&') %}
 ConjunctionT1 -> %conjunction_in_t1 {% makeLeaf('&') %}
 ConjunctionT4 -> %conjunction_in_t4 {% makeLeaf('&') %}
 Asp -> %aspect {% makeLeaf('Asp') %}
+Asp_prefix -> %prefix_aspect {% makeLeaf('Asp') %}
 Bi -> %topic_marker {% makeLeaf('Topic') %}
 C -> %complementizer {% makeLeaf('C') %}
 Copt -> C:? {% makeOptLeaf('C') %}
@@ -196,6 +199,7 @@ SAopt -> SA:? {% makeOptLeaf('SA') %}
 Sigma -> %polarity {% makeLeaf('Σ') %}
 Shu -> %word_quote {% makeLeaf('shu') %}
 T -> %tense {% makeLeaf('T') %}
+T_prefix -> %prefix_tense {% makeLeaf('T') %}
 Teo -> %end_quote {% makeLeaf('teo') %}
 # TODO: multiple-fragment quotes?
 Text -> Fragment {% id %}
