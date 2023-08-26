@@ -25,6 +25,7 @@ declare var text_quote: any;
 declare var modality: any;
 declare var modality_with_complement: any;
 declare var cleft_verb: any;
+declare var prefix: any;
 declare var plural_coordinator: any;
 declare var illocution: any;
 declare var polarity: any;
@@ -46,6 +47,8 @@ const {
     makeCovertLeaf,
 	makeLeaf,
 	makeOptLeaf,
+	makePrefixLeaf,
+	makePrefixP,
 	makeRose,
 	makeRose2,
 	makeSerial,
@@ -172,6 +175,7 @@ const grammar: Grammar = {
     {"name": "Vlast", "symbols": ["Verblike"], "postprocess": id},
     {"name": "V1", "symbols": ["Verblike"], "postprocess": id},
     {"name": "V1", "symbols": ["Verblike", "ConjunctionT1", "V1"], "postprocess": makeConn},
+    {"name": "Verblike", "symbols": ["Prefix", "Verblike"], "postprocess": makePrefixP},
     {"name": "Verblike", "symbols": ["V"], "postprocess": id},
     {"name": "Verblike", "symbols": ["ShuP"], "postprocess": id},
     {"name": "ShuP", "symbols": ["Shu", "Word"], "postprocess": makeBranch('shuP')},
@@ -206,6 +210,7 @@ const grammar: Grammar = {
     {"name": "Modal", "symbols": [(lexer.has("modality") ? {type: "modality"} : modality)], "postprocess": makeLeaf('Modal')},
     {"name": "ModalT4", "symbols": [(lexer.has("modality_with_complement") ? {type: "modality_with_complement"} : modality_with_complement)], "postprocess": makeLeaf('Modal')},
     {"name": "Na", "symbols": [(lexer.has("cleft_verb") ? {type: "cleft_verb"} : cleft_verb)], "postprocess": makeLeaf('𝘷')},
+    {"name": "Prefix", "symbols": [(lexer.has("prefix") ? {type: "prefix"} : prefix)], "postprocess": makePrefixLeaf},
     {"name": "Roi", "symbols": [(lexer.has("plural_coordinator") ? {type: "plural_coordinator"} : plural_coordinator)], "postprocess": makeLeaf('&')},
     {"name": "SA", "symbols": [(lexer.has("illocution") ? {type: "illocution"} : illocution)], "postprocess": makeLeaf('SA')},
     {"name": "SAopt$ebnf$1", "symbols": ["SA"], "postprocess": id},

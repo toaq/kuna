@@ -34,7 +34,11 @@ export const nonVerbTypes = [
 	'modality with complement',
 	'plural coordinator',
 	'polarity',
-	'prefix',
+	'prefix', // verb-to-verb
+	'prefix aspect',
+	'prefix conjunctionizer', // na-
+	'prefix pronoun', // hu-
+	'prefix tense',
 	'preposition',
 	'pronoun',
 	'retroactive cleft',
@@ -114,7 +118,17 @@ export function initializeDictionary(): void {
 				});
 			}
 		}
+
+		// We'll assume "prefix" is a verb-to-verb prefix, and make some
+		// sub-types for special prefixes.
+		if (e.toaq == 'hu-') {
+			e.type = 'prefix pronoun';
+		}
+		if (e.toaq == 'na-') {
+			e.type = 'prefix conjunctionizer';
+		}
 		dictionary.set(e.toaq.toLowerCase(), e);
+
 		if (e.type === 'determiner') {
 			const oid = inTone(e.toaq, Tone.T4);
 			dictionary.set(oid, {
@@ -159,6 +173,26 @@ export function initializeDictionary(): void {
 				english: e.english,
 				gloss: e.gloss,
 				type: 'modality with complement',
+			});
+		}
+
+		if (e.type === 'aspect') {
+			const prefix = e.toaq + '-';
+			dictionary.set(prefix, {
+				toaq: prefix,
+				english: e.english,
+				gloss: e.gloss,
+				type: 'prefix aspect',
+			});
+		}
+
+		if (e.type === 'tense') {
+			const prefix = e.toaq + '-';
+			dictionary.set(prefix, {
+				toaq: prefix,
+				english: e.english,
+				gloss: e.gloss,
+				type: 'prefix tense',
 			});
 		}
 	}

@@ -13,6 +13,8 @@ const {
     makeCovertLeaf,
 	makeLeaf,
 	makeOptLeaf,
+	makePrefixLeaf,
+	makePrefixP,
 	makeRose,
 	makeRose2,
 	makeSerial,
@@ -155,6 +157,7 @@ Vlast -> Verblike ConjunctionT1 Vlast {% makeConn %}
 Vlast -> Verblike {% id %}
 V1 -> Verblike {% id %}
 V1 -> Verblike ConjunctionT1 V1 {% makeConn %}
+Verblike -> Prefix Verblike {% makePrefixP %}
 Verblike -> V {% id %}
 Verblike -> ShuP {% id %}
 ShuP -> Shu Word {% makeBranch('shuP') %}
@@ -186,6 +189,7 @@ Mo -> %text_quote {% makeLeaf('mo') %}
 Modal -> %modality {% makeLeaf('Modal') %}
 ModalT4 -> %modality_with_complement {% makeLeaf('Modal') %}
 Na -> %cleft_verb {% makeLeaf('𝘷') %}
+Prefix -> %prefix {% makePrefixLeaf %}
 Roi -> %plural_coordinator {% makeLeaf('&') %}
 SA -> %illocution {% makeLeaf('SA') %}
 SAopt -> SA:? {% makeOptLeaf('SA') %}

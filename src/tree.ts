@@ -21,6 +21,12 @@ export type Label =
 	| 'AdjunctP'
 	| 'Asp'
 	| 'AspP'
+	| 'be'
+	| 'beP'
+	| 'bu'
+	| 'buP'
+	| 'buq'
+	| 'buqP'
 	| 'C'
 	| 'Crel'
 	| 'CP'
@@ -29,12 +35,16 @@ export type Label =
 	| 'DP'
 	| 'EvA'
 	| 'EvAP'
+	| 'ge'
+	| 'geP'
 	| 'Interjection'
 	| 'InterjectionP'
 	| 'mı'
 	| 'mıP'
 	| 'Modal'
 	| 'ModalP'
+	| 'mu'
+	| 'muP'
 	| 'n'
 	| 'nP'
 	| 'SA'
@@ -94,7 +104,11 @@ export function containsWords(
 }
 
 export function isQuestion(tree: Tree): boolean {
-	return containsWords(tree, ['hí', 'rí', 'rı', 'rî', 'ma', 'tıo'], ['CP']);
+	return containsWords(
+		tree,
+		['hí', 'rí', 'rı', 'rî', 'ma', 'tıo', 'hıa'],
+		['CP'],
+	);
 }
 
 export interface Leaf {
@@ -228,6 +242,8 @@ export function makeOptLeaf(label: Label) {
 	};
 }
 
+const arityPreservingVerbPrefixes: Label[] = ['buP', 'muP', 'buqP', 'geP'];
+
 function getFrame(verb: Tree): string {
 	if ('word' in verb) {
 		if (verb.word === 'covert') throw new Error('covert verb?');
@@ -246,6 +262,10 @@ function getFrame(verb: Tree): string {
 		return 'c';
 	} else if (verb.label === 'EvAP') {
 		return 'c';
+	} else if (verb.label === 'beP') {
+		return 'c';
+	} else if (arityPreservingVerbPrefixes.includes(verb.label)) {
+		return getFrame((verb as Branch<Tree>).right);
 	} else {
 		throw new Error('weird nonverb: ' + verb.label);
 	}
@@ -377,5 +397,21 @@ export function makeSigmaT1ModalvP([sigma, modal, tp]: [Tree, Tree, Tree]) {
 		label: 'ΣP',
 		left: sigma,
 		right: makeT1ModalvP([modal, tp]),
+	};
+}
+
+export function makePrefixLeaf([token]: [ToaqToken]) {
+	return {
+		label: bare(token.value).replace(/-$/, ''),
+		word: makeWord([token]),
+	};
+}
+
+export function makePrefixP([prefix, verb]: [Tree, Tree]) {
+	console.log(prefix, verb);
+	return {
+		label: prefix.label + 'P',
+		left: prefix,
+		right: verb,
 	};
 }
