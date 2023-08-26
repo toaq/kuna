@@ -1,6 +1,6 @@
 import { toDocument } from './latex';
 import * as fs from 'fs';
-import { alignGlossSentence } from './gloss';
+import { Glosser } from './gloss';
 import yargs from 'yargs';
 import { pngGlossSentence } from './png-gloss';
 import { Tree } from './tree';
@@ -12,19 +12,22 @@ import { initializeDictionary } from './dictionary';
 import { textual_tree_from_json } from './textual-tree';
 import { testSentences } from './test-sentences';
 import { denote } from './semantics/denote';
+import { ToaqTokenizer } from './tokenize';
+import { boxSentenceToMarkdown, boxify } from './boxes';
+import { toEnglish } from './english';
 
 initializeDictionary();
 
 function getTrees(argv: {
 	sentence: string | undefined;
-	dStructure: boolean | undefined;
+	surface: boolean | undefined;
 	semantics: boolean | undefined;
 	compact: boolean | undefined;
 }): Tree[] {
 	let trees = parse(argv.sentence!);
 	if (argv.semantics) {
 		trees = trees.map(fix).map(denote);
-	} else if (argv.dStructure) {
+	} else if (!argv.surface) {
 		trees = trees.map(fix);
 	}
 	if (argv.compact) {
@@ -40,15 +43,14 @@ yargs
 		type: 'string',
 		describe: 'The Toaq sentence to parse',
 	})
-	.option('d-structure', {
+	.option('surface', {
 		type: 'boolean',
-		describe: 'Transform parse tree to D-structure',
+		describe: 'View surface-level parse',
 		default: false,
 	})
 	.option('semantics', {
 		type: 'boolean',
-		alias: 'denote',
-		describe: 'Annotate parse tree with semantics (implies --d-structure)',
+		describe: 'Annotate parse tree with semantics',
 		default: false,
 	})
 	.option('compact', {
@@ -56,6 +58,24 @@ yargs
 		describe: 'Remove empty phrases with null heads',
 		default: false,
 	})
+	.option('easy', {
+		type: 'boolean',
+		describe: 'Use "easy" glosses like "did" over "PST"',
+		default: false,
+	})
+	.command(
+		'tokens-json',
+		'List of tokens in JSON format',
+		yargs => {
+			yargs.demandOption('sentence');
+		},
+
+		function (argv) {
+			const tokenizer = new ToaqTokenizer();
+			tokenizer.reset(argv.sentence as string);
+			console.log(JSON.stringify(tokenizer.tokens));
+		},
+	)
 	.command(
 		'gloss-ascii',
 		'Gloss to aligned ASCII format',
@@ -63,7 +83,8 @@ yargs
 			yargs.demandOption('sentence');
 		},
 		function (argv) {
-			console.log(alignGlossSentence(argv.sentence!));
+			const glosser = new Glosser(argv.easy);
+			console.log(glosser.alignGlossSentence(argv.sentence!));
 		},
 	)
 	.command(
@@ -79,7 +100,7 @@ yargs
 		},
 
 		function (argv) {
-			const imgBuffer = pngGlossSentence(argv.sentence!);
+			const imgBuffer = pngGlossSentence(argv.sentence!, { easy: argv.easy });
 			fs.writeFileSync(argv.output as string, imgBuffer);
 		},
 	)
@@ -93,13 +114,25 @@ yargs
 				describe: 'Path for PNG output',
 				default: 'output.png',
 			});
+			yargs.option('light', {
+				type: 'boolean',
+				describe: 'Light theme',
+			});
 		},
 
 		function (argv) {
 			const trees = getTrees(argv);
-			fs.writeFileSync('a.png', pngDrawTree(trees[0]));
-			fs.writeFileSync('b.png', pngDrawTree(fix(trees[0])));
-			fs.writeFileSync('c.png', pngDrawTree(denote(fix(trees[0]))));
+			if (trees.length === 0) {
+				console.error('No parse.');
+				return;
+			}
+			if (trees.length > 1) {
+				console.warn(
+					`Ambiguous parse; showing first of ${trees.length} parses.`,
+				);
+			}
+			const theme = argv.light ? 'light' : 'dark';
+			fs.writeFileSync(argv.output as string, pngDrawTree(trees[0], theme));
 		},
 	)
 	.command(
@@ -148,9 +181,40 @@ yargs
 	.command(
 		'test-sentences',
 		'Test parsing many sentences',
-		() => {},
-		function () {
-			testSentences();
+		yargs => {
+			yargs.option('failures', {
+				type: 'boolean',
+				describe: 'Only print failures',
+			});
+		},
+		function (argv) {
+			testSentences((argv as any).failures as boolean);
+		},
+	)
+	.command(
+		'boxes-markdown',
+		'Simple sentence structure',
+		yargs => {
+			yargs.demandOption('sentence');
+		},
+		function (argv) {
+			console.log(
+				boxSentenceToMarkdown(argv.sentence!, {
+					gloss: true,
+					easy: argv.easy,
+					covert: true,
+				}),
+			);
+		},
+	)
+	.command(
+		'english',
+		'Machine-translate to English',
+		yargs => {
+			yargs.demandOption('sentence');
+		},
+		function (argv) {
+			console.log(toEnglish(argv.sentence!));
 		},
 	)
 	.strict()

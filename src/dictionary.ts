@@ -27,10 +27,11 @@ export const nonVerbTypes = [
 	'focus particle',
 	'illocution',
 	'incorporated complementizer',
+	'incorporated determiner',
+	'incorporated pronoun',
 	'interjection',
 	'modality',
 	'modality with complement',
-	'object incorporating determiner',
 	'plural coordinator',
 	'polarity',
 	'prefix',
@@ -120,7 +121,17 @@ export function initializeDictionary(): void {
 				toaq: oid,
 				english: e.english,
 				gloss: 'of.' + e.gloss,
-				type: 'object incorporating determiner',
+				type: 'incorporated determiner',
+			});
+		}
+
+		if (e.type === 'pronoun') {
+			const oip = inTone(e.toaq, Tone.T4);
+			dictionary.set(oip, {
+				toaq: oip,
+				english: e.english,
+				gloss: 'of.' + e.gloss,
+				type: 'incorporated pronoun',
 			});
 		}
 

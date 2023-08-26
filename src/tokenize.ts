@@ -1,6 +1,7 @@
 import { dictionary, underscoredWordTypes, WordType } from './dictionary';
 import { Tone } from './types';
 
+// Vyái → ꝡáı
 export function clean(word: string): string {
 	return word
 		.toLowerCase()
@@ -9,12 +10,25 @@ export function clean(word: string): string {
 		.normalize();
 }
 
+// Vyái → ꝡaı
 export function bare(word: string): string {
 	return clean(word)
 		.normalize('NFKD')
 		.replace(/\p{Diacritic}/gu, '')
 		.normalize()
 		.replace(/i/gu, 'ı');
+}
+
+// hâo → hao
+// dâ → dâ
+// vyé → ꝡë
+export function baseForm(word: string): string {
+	const cleanForm = clean(word);
+	if (dictionary.has(cleanForm)) return cleanForm;
+	const bareForm = bare(word);
+	if (bareForm === 'e') return 'ë';
+	if (bareForm === 'ꝡe') return 'ꝡë';
+	return bareForm;
 }
 
 export function diacriticForTone(tone: Tone): string {
@@ -25,7 +39,7 @@ export function inTone(word: string, tone: Tone): string {
 	return word
 		.normalize('NFKD')
 		.replace(/\p{Diacritic}/gu, '')
-		.replace(/[aeiıou]/gu, m => m + diacriticForTone(tone))
+		.replace(/[aeiıou]/u, m => m.replace('ı', 'i') + diacriticForTone(tone))
 		.normalize()
 		.replace(/i/gu, 'ı');
 }
@@ -42,6 +56,34 @@ export function tone(word: string): Tone {
 	}[norm[0]]!;
 }
 
+function splitIntoRaku(word: string): string[] {
+	return [
+		...word.matchAll(
+			/(b|c|ch|d|f|g|h|j|k|l|m|n|p|r|s|sh|t|vy?|wy?|ꝡ|y|z|')?[aeiıou]\p{Diacritic}?[aeiıou]*(q|m(?![aeiıou]))?-?/giu,
+		),
+	].map(m => {
+		return m[0];
+	});
+}
+
+export function splitPrefixes(word: string): {
+	prefixes: string[];
+	root: string;
+} {
+	const raku = splitIntoRaku(word.normalize('NFKD')).map(x =>
+		x.includes('\u0323') ? x.replace(/\u0323/gu, '') + '-' : x,
+	);
+	const prefixCount = raku.findIndex(p => p.endsWith('-')) + 1;
+	const prefixes = raku
+		.slice(0, prefixCount)
+		.map(x => x.normalize('NFC').replace(/-$/, ''));
+	const root = raku
+		.slice(prefixCount)
+		.map(x => x.normalize('NFC'))
+		.join('');
+	return { prefixes, root };
+}
+
 export interface ToaqToken {
 	type: string;
 	value: string;
@@ -56,39 +98,55 @@ export class ToaqTokenizer {
 		this.tokens = [];
 		this.pos = 0;
 		for (const m of [...text.matchAll(/[\p{L}\p{N}\p{Diacritic}]+-?/gu)]) {
-			const tokenText = m[0];
-			const lemmaForm = clean(tokenText);
-			const bareWord = bare(tokenText);
-			const exactEntry = dictionary.get(lemmaForm);
+			const { prefixes, root } = splitPrefixes(m[0]);
+			for (const tokenText of [...prefixes.map(p => p + '-'), root]) {
+				const lemmaForm = clean(tokenText);
+				const exactEntry = dictionary.get(lemmaForm);
 
-			if (exactEntry) {
-				this.tokens.push({
-					type: exactEntry.type.replace(/ /g, '_'),
-					value: tokenText,
-					index: m.index,
-				});
-				continue;
-			}
-			const bareEntry = dictionary.get(bareWord);
-			if (bareEntry) {
+				if (exactEntry) {
+					this.tokens.push({
+						type: exactEntry.type.replace(/ /g, '_'),
+						value: tokenText,
+						index: m.index,
+					});
+					continue;
+				}
+
+				const base = baseForm(tokenText);
+				const entry = dictionary.get(base);
 				const wordTone = tone(tokenText);
-				this.tokens.push({
-					type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
-					value: wordTone === Tone.T2 ? '◌́' : '◌̂',
-					index: m.index,
-				});
-				this.tokens.push({
-					type: bareEntry.type.replace(/ /g, '_'),
-					value: bare(tokenText),
-					index: m.index,
-				});
-				continue;
+				if (entry) {
+					this.tokens.push({
+						type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
+						value: wordTone === Tone.T2 ? '◌́' : '◌̂',
+						index: m.index,
+					});
+					this.tokens.push({
+						type: entry.type.replace(/ /g, '_'),
+						value: base,
+						index: m.index,
+					});
+					continue;
+				}
+				if (wordTone === Tone.T1) {
+					this.tokens.push({
+						type: 'predicate',
+						value: tokenText,
+						index: m.index,
+					});
+				} else {
+					this.tokens.push({
+						type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
+						value: wordTone === Tone.T2 ? '◌́' : '◌̂',
+						index: m.index,
+					});
+					this.tokens.push({
+						type: 'predicate',
+						value: base,
+						index: m.index,
+					});
+				}
 			}
-			this.tokens.push({
-				type: 'predicate',
-				value: tokenText,
-				index: m.index,
-			});
 		}
 	}
 	next(): ToaqToken | undefined {

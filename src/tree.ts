@@ -1,5 +1,5 @@
 import { dictionary, Entry, VerbEntry } from './dictionary';
-import { bare, ToaqToken, tone } from './tokenize';
+import { bare, clean, ToaqToken, tone } from './tokenize';
 import { Tone } from './types';
 
 export interface Word {
@@ -27,8 +27,14 @@ export type Label =
 	| 'CPrel'
 	| 'D'
 	| 'DP'
+	| 'EvA'
+	| 'EvAP'
+	| 'Interjection'
+	| 'InterjectionP'
 	| 'mı'
 	| 'mıP'
+	| 'Modal'
+	| 'ModalP'
 	| 'n'
 	| 'nP'
 	| 'SA'
@@ -51,7 +57,7 @@ export type Label =
 	| 'ΣP';
 
 export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
-	if (label.endsWith('P') || label === 'CPrel') {
+	if (label.endsWith('P') || label === 'CPrel' || label === '*𝘷Pdet') {
 		return 'phrase';
 	} else if (label.endsWith("'")) {
 		return 'bar';
@@ -60,8 +66,41 @@ export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
 	}
 }
 
+export function containsWords(
+	tree: Tree,
+	words: string[],
+	stopLabels: Label[],
+): boolean {
+	if ('word' in tree) {
+		return (
+			tree.word !== 'covert' &&
+			tree.word !== 'functional' &&
+			words.includes(clean(tree.word.text))
+		);
+	} else if ('left' in tree) {
+		return (
+			(!stopLabels.includes(tree.left.label) &&
+				containsWords(tree.left, words, stopLabels)) ||
+			(!stopLabels.includes(tree.right.label) &&
+				containsWords(tree.right, words, stopLabels))
+		);
+	} else {
+		return tree.children.some(
+			child =>
+				!stopLabels.includes(child.label) &&
+				containsWords(child, words, stopLabels),
+		);
+	}
+}
+
+export function isQuestion(tree: Tree): boolean {
+	return containsWords(tree, ['hí', 'rí', 'rı', 'rî', 'ma', 'tıo'], ['CP']);
+}
+
 export interface Leaf {
 	label: Label;
+	id?: string;
+	movedTo?: string;
 	word: Word | 'covert' | 'functional';
 }
 
@@ -202,19 +241,25 @@ function getFrame(verb: Tree): string {
 		return getFrame(verb.left);
 	} else if (verb.label === 'shuP' || verb.label === 'mıP') {
 		return 'c';
+	} else if (verb.label === 'VP') {
+		// object incorporation... check that the verb is transitive?
+		return 'c';
+	} else if (verb.label === 'EvAP') {
+		return 'c';
 	} else {
 		throw new Error('weird nonverb: ' + verb.label);
 	}
 }
 
 export function makeSerial(
-	[children]: [Tree[]],
+	[verbs, vlast]: [Tree[], Tree],
 	location: number,
 	reject: Object,
 ) {
+	const children = verbs.concat([vlast]);
 	const frames = children.map(getFrame);
 	let arity: number | undefined = undefined;
-	if (!frames.includes('')) {
+	if (!(frames.includes('') || frames.includes('variable'))) {
 		arity = frames[frames.length - 1].split(' ').length;
 		for (let i = frames.length - 2; i >= 0; i--) {
 			const frame = frames[i].split(' ');
@@ -302,5 +347,35 @@ export function makeAdjunctPT(
 		label: 'AdjunctP',
 		left: adjunct,
 		right: { label: 'VP', left: serial, right: obj },
+	};
+}
+
+export function makeT1ModalvP([modal, tp]: [Tree, Tree]) {
+	return {
+		label: '𝘷P',
+		left: {
+			label: 'ModalP',
+			left: modal,
+			right: {
+				label: 'CP',
+				word: 'covert',
+			},
+		},
+		right: {
+			label: "𝘷'",
+			left: {
+				label: '𝘷',
+				word: 'functional',
+			},
+			right: tp,
+		},
+	};
+}
+
+export function makeSigmaT1ModalvP([sigma, modal, tp]: [Tree, Tree, Tree]) {
+	return {
+		label: 'ΣP',
+		left: sigma,
+		right: makeT1ModalvP([modal, tp]),
 	};
 }

@@ -63,7 +63,7 @@ client.on('interactionCreate', async interaction => {
 
 	if (interaction.commandName === 'gloss') {
 		const text = interaction.options.getString('text', true);
-		const png = pngGlossSentence(text);
+		const png = pngGlossSentence(text, { easy: false });
 
 		await interaction.reply({
 			files: [new AttachmentBuilder(png, { name: 'gloss.png' })],
@@ -77,7 +77,9 @@ client.on('interactionCreate', async interaction => {
 				content: `Found ${trees.length} parses.`,
 				files: trees.map(
 					(tree, i) =>
-						new AttachmentBuilder(pngDrawTree(tree), { name: `tree${i}.png` }),
+						new AttachmentBuilder(pngDrawTree(tree, 'dark'), {
+							name: `tree${i}.png`,
+						}),
 				),
 			});
 		} catch (e) {
