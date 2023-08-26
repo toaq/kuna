@@ -260,6 +260,16 @@ function branchToEnglish(tree: Branch<Tree>): string {
 			return 'if ' + translator.emit().replace(/^that /, '') + ', then ' + eng;
 		}
 	}
+	if (tree.label === '&P') {
+		assertBranch(tree.right);
+		return (
+			treeToEnglish(tree.left) +
+			' ' +
+			leafToEnglish(tree.right.left) +
+			' ' +
+			treeToEnglish(tree.right.right)
+		);
+	}
 	throw new Error('unimplemented in branchToEnglish: ' + tree.label);
 }
 
