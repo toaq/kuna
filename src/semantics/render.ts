@@ -432,9 +432,9 @@ function renderFull(e: Expr, fmt: Format): string {
 	// Create ad hoc constants for all free variables
 	for (let i = e.context.length - 1; i >= 0; i--) {
 		const type = e.context[i];
-		if (type === 's')
-			throw new Error('There can be no ad hoc constants of type s');
-		names = addName(e.context[i], names, true);
+		// Free variables of type s should be rendered like variables rather than
+		// constants to avoid conflict with the 'real world' symbol
+		names = addName(e.context[i], names, type !== 's');
 	}
 
 	return render(e, names, fmt);

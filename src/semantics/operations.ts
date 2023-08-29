@@ -4,6 +4,7 @@ import {
 	Bindings,
 	cloneBindings,
 	constant,
+	DTree,
 	Expr,
 	ExprType,
 	infix,
@@ -204,4 +205,152 @@ export function mapBindings(
 		}
 	}
 	return newBindings;
+}
+
+/**
+ * Unifies the denotations of two subtrees so that they share a common context,
+ * and can be composed together.
+ * @returns The rewritten denotation of the left subtree, followed by the
+ * 	rewritten denotation of the right subtree, followed by the unified bindings.
+ */
+export function unifyDenotations(
+	left: DTree,
+	right: DTree,
+): [Expr, Expr, Bindings] {
+	if (left.denotation === null)
+		throw new Error(
+			`Can't unify a semantically empty ${left.label} with a ${right.label}`,
+		);
+	if (right.denotation === null)
+		throw new Error(
+			`Can't unify a ${left.label} with a semantically empty ${right.label}`,
+		);
+
+	// To proceed, we start with the bindings of the left subtree, and iteratively
+	// incorporate each binding present in the right subtree
+	const bindings = cloneBindings(left.bindings);
+	const context = [...left.denotation.context];
+
+	const rightSubordinate = right.label === 'CP' || right.label === 'CPrel';
+	// This is the mapping from variable indices in the right context, to variable
+	// indices in the unified context - we'll fill it in as we go
+	const rightMapping = new Array<number>(right.denotation.context.length);
+
+	// TODO: implement the 'Cho máma hó/áq' rule using the subordinate field
+
+	// For each binding referenced in the right subtree
+	for (const [kind_, map] of Object.entries(right.bindings)) {
+		const kind = kind_ as keyof Bindings;
+		for (const [slot, rb_] of Object.entries(map)) {
+			const rb = rb_ as Binding;
+			if (rb !== undefined) {
+				// If there is a matching binding in the left subtree
+				const lb = (left.bindings[kind] as { [K in string]?: Binding })[slot];
+				if (lb !== undefined) {
+					// Then unify the variables
+					(bindings[kind] as { [K in string]?: Binding })[slot] = {
+						index: lb.index,
+						subordinate: lb.subordinate && rb.subordinate,
+					};
+					rightMapping[rb.index] = lb.index;
+				} else {
+					// Otherwise, create a new variable
+					(bindings[kind] as { [K in string]?: Binding })[slot] = {
+						index: context.length,
+						subordinate: rightSubordinate || rb.subordinate,
+					};
+					rightMapping[rb.index] = context.length;
+					context.push(right.denotation.context[rb.index]);
+				}
+			}
+		}
+	}
+
+	// Finally, account for free variables not associated with any bindings, to
+	// fill in the rest of rightMapping
+	for (let i = 0; i < rightMapping.length; i++) {
+		if (rightMapping[i] === undefined) {
+			const type = right.denotation.context[i];
+			if (type === 's') {
+				// Special case for the world variable: unify it with the left's world
+				// variable (of which there should be at most one)
+				const worldIndex = left.denotation.context.findIndex(t => t === 's');
+				if (worldIndex === -1) {
+					// Left has no world variable; create a new one
+					rightMapping[i] = context.length;
+					context.push('s');
+				} else {
+					// Unify them!
+					rightMapping[i] = worldIndex;
+				}
+			} else {
+				// Default to not unifying things
+				rightMapping[i] = context.length;
+				context.push(type);
+			}
+		}
+	}
+
+	return [
+		rewriteContext(left.denotation, context, i => i),
+		rewriteContext(right.denotation, context, i => rightMapping[i]),
+		bindings,
+	];
+}
+
+/**
+ * Turns a denotation with an implicit world variable into a function taking a
+ * world as the final explicit argument.
+ */
+export function makeWorldExplicit(tree: DTree): DTree {
+	const e = tree.denotation;
+	if (e === null)
+		throw new Error("Can't make world explicit in a null denotation");
+
+	const worldIndex = e.context.findIndex(t => t === 's');
+	if (worldIndex === -1) throw new Error('No world variable to make explicit');
+
+	// Given an input expression 𝘗, build the expression
+	// λ𝘢. λ𝘣. … λ𝘸'. 𝘗[𝘸/𝘸'](𝘢)(𝘣)…
+
+	// First, calculate the context of that inner expression 𝘗[𝘸/𝘸']
+	const innerContext = [...e.context];
+	innerContext.splice(worldIndex, 1);
+	for (let type = e.type; Array.isArray(type); type = type[1])
+		innerContext.unshift(type[0]);
+	innerContext.unshift('s');
+
+	// The number of explicit arguments that 𝘗 takes
+	const explicitArguments = innerContext.length - e.context.length;
+	// Now we can build the expression 𝘗[𝘸/𝘸']
+	const innerFunction = rewriteContext(e, innerContext, i =>
+		i > worldIndex
+			? i + explicitArguments
+			: i === worldIndex
+			? 0
+			: i + 1 + explicitArguments,
+	);
+
+	// Add the function applications
+	let result = innerFunction;
+	for (let i = 0; i < explicitArguments; i++)
+		result = app(result, v(explicitArguments - i, innerContext));
+
+	// Add the lambdas
+	let outerContext = innerContext.slice(1);
+	result = λ('s', outerContext, () => result);
+	for (let i = 0; i < explicitArguments; i++) {
+		const [type] = outerContext;
+		outerContext = outerContext.slice(1);
+		result = λ(type, outerContext, () => result);
+	}
+
+	return {
+		...tree,
+		denotation: reduce(result),
+		bindings: mapBindings(tree.bindings, b => ({
+			...b,
+			index: b.index < worldIndex ? b.index + 1 : b.index,
+		})),
+	};
 }

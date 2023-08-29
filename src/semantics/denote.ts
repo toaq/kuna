@@ -35,13 +35,18 @@ import {
 	v,
 	verb,
 	λ,
-	cloneBindings,
-	Binding,
 	animate,
 	inanimate,
 	abstract,
+	typesEqual,
 } from './model';
-import { mapBindings, reduce, rewriteContext } from './operations';
+import {
+	makeWorldExplicit,
+	mapBindings,
+	reduce,
+	rewriteContext,
+	unifyDenotations,
+} from './operations';
 
 // 𝘢
 const hoa = v(0, ['e']);
@@ -58,125 +63,109 @@ const hoq = presuppose(v(0, ['e']), app(abstract(['e']), v(0, ['e'])));
 // 𝘢
 const ta = hoa;
 
-// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) ⊆ 𝘵) ∧ 𝘗(𝘦)(𝘸)
-const tam = λ(['v', ['s', 't']], [], c =>
+// λ𝘗. λ𝘵. ∃𝘦. (τ(𝘦) ⊆ 𝘵) ∧ 𝘗(𝘦)
+const tam = λ(['v', 't'], [], c =>
 	λ('i', c, c =>
-		λ('s', c, c =>
-			some('v', c, c =>
-				and(
-					subinterval(app(temporalTrace(c), v(0, c)), v(2, c)),
-					app(app(v(3, c), v(0, c)), v(1, c)),
-				),
+		some('v', c, c =>
+			and(
+				subinterval(app(temporalTrace(c), v(0, c)), v(1, c)),
+				app(v(2, c), v(0, c)),
 			),
 		),
 	),
 );
 
-// λ𝘗. λ𝘵. λ𝘸. ∀𝘸' : ɪᴡ(𝘸')(𝘸)(𝘵). ∃𝘦. (𝘵 ⊆ τ(𝘦)) ∧ 𝘗(𝘦)(𝘸')
-const chum = λ(['v', ['s', 't']], [], c =>
+// λ𝘗. λ𝘵. ∀𝘸' : ɪᴡ(𝘸')(𝘸)(𝘵). ∃𝘦. (𝘵 ⊆ τ(𝘦)) ∧ 𝘗(𝘦)(𝘸')
+const chum = λ(['v', ['s', 't']], ['s'], c =>
 	λ('i', c, c =>
-		λ('s', c, c =>
-			every(
-				's',
-				c,
-				c =>
-					some('v', c, c =>
-						and(
-							subinterval(v(3, c), app(temporalTrace(c), v(0, c))),
-							app(app(v(4, c), v(0, c)), v(1, c)),
-						),
-					),
-				c => app(app(app(inertiaWorlds(c), v(0, c)), v(1, c)), v(2, c)),
-			),
-		),
-	),
-);
-
-// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) < 𝘵) ∧ 𝘗(𝘦)(𝘸)
-const lui = λ(['v', ['s', 't']], [], c =>
-	λ('i', c, c =>
-		λ('s', c, c =>
-			some('v', c, c =>
-				and(
-					before(app(temporalTrace(c), v(0, c)), v(2, c)),
-					app(app(v(3, c), v(0, c)), v(1, c)),
-				),
-			),
-		),
-	),
-);
-
-// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) > 𝘵) ∧ 𝘗(𝘦)(𝘸)
-const za = λ(['v', ['s', 't']], [], c =>
-	λ('i', c, c =>
-		λ('s', c, c =>
-			some('v', c, c =>
-				and(
-					after(app(temporalTrace(c), v(0, c)), v(2, c)),
-					app(app(v(3, c), v(0, c)), v(1, c)),
-				),
-			),
-		),
-	),
-);
-
-// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (𝘵 ⊆ τ(𝘦)) ∧ ((𝘵 > ExpEnd(𝘦)) ∧ 𝘗(𝘦)(𝘸))
-const hoai = λ(['v', ['s', 't']], [], c =>
-	λ('i', c, c =>
-		λ('s', c, c =>
-			some('v', c, c =>
-				and(
-					subinterval(v(2, c), app(temporalTrace(c), v(0, c))),
+		every(
+			's',
+			c,
+			c =>
+				some('v', c, c =>
 					and(
-						after(v(2, c), app(expectedEnd(c), v(0, c))),
+						subinterval(v(2, c), app(temporalTrace(c), v(0, c))),
 						app(app(v(3, c), v(0, c)), v(1, c)),
 					),
 				),
+			c => app(app(app(inertiaWorlds(c), v(0, c)), v(3, c)), v(1, c)),
+		),
+	),
+);
+
+// λ𝘗. λ𝘵. ∃𝘦. (τ(𝘦) < 𝘵) ∧ 𝘗(𝘦)
+const lui = λ(['v', 't'], [], c =>
+	λ('i', c, c =>
+		some('v', c, c =>
+			and(
+				before(app(temporalTrace(c), v(0, c)), v(1, c)),
+				app(v(2, c), v(0, c)),
 			),
 		),
 	),
 );
 
-// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (𝘵 ⊆ τ(𝘦)) ∧ ((𝘵 < ExpStart(𝘦)) ∧ 𝘗(𝘦)(𝘸))
-const hai = λ(['v', ['s', 't']], [], c =>
+// λ𝘗. λ𝘵. ∃𝘦. (τ(𝘦) > 𝘵) ∧ 𝘗(𝘦)
+const za = λ(['v', 't'], [], c =>
 	λ('i', c, c =>
-		λ('s', c, c =>
-			some('v', c, c =>
+		some('v', c, c =>
+			and(
+				after(app(temporalTrace(c), v(0, c)), v(1, c)),
+				app(v(2, c), v(0, c)),
+			),
+		),
+	),
+);
+
+// λ𝘗. λ𝘵. ∃𝘦. (𝘵 ⊆ τ(𝘦)) ∧ ((𝘵 > ExpEnd(𝘦)) ∧ 𝘗(𝘦))
+const hoai = λ(['v', 't'], [], c =>
+	λ('i', c, c =>
+		some('v', c, c =>
+			and(
+				subinterval(v(1, c), app(temporalTrace(c), v(0, c))),
 				and(
-					subinterval(v(2, c), app(temporalTrace(c), v(0, c))),
-					and(
-						before(v(2, c), app(expectedStart(c), v(0, c))),
-						app(app(v(3, c), v(0, c)), v(1, c)),
-					),
+					after(v(1, c), app(expectedEnd(c), v(0, c))),
+					app(v(2, c), v(0, c)),
 				),
 			),
 		),
 	),
 );
 
-// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) <.near 𝘵) ∧ 𝘗(𝘦)(𝘸)
-const hiq = λ(['v', ['s', 't']], [], c =>
+// λ𝘗. λ𝘵. ∃𝘦. (𝘵 ⊆ τ(𝘦)) ∧ ((𝘵 < ExpStart(𝘦)) ∧ 𝘗(𝘦))
+const hai = λ(['v', 't'], [], c =>
 	λ('i', c, c =>
-		λ('s', c, c =>
-			some('v', c, c =>
+		some('v', c, c =>
+			and(
+				subinterval(v(1, c), app(temporalTrace(c), v(0, c))),
 				and(
-					beforeNear(app(temporalTrace(c), v(0, c)), v(2, c)),
-					app(app(v(3, c), v(0, c)), v(1, c)),
+					before(v(1, c), app(expectedStart(c), v(0, c))),
+					app(v(2, c), v(0, c)),
 				),
 			),
 		),
 	),
 );
 
-// λ𝘗. λ𝘵. λ𝘸. ∃𝘦. (τ(𝘦) >.near 𝘵) ∧ 𝘗(𝘦)(𝘸)
-const fi = λ(['v', ['s', 't']], [], c =>
+// λ𝘗. λ𝘵. ∃𝘦. (τ(𝘦) <.near 𝘵) ∧ 𝘗(𝘦)
+const hiq = λ(['v', 't'], [], c =>
 	λ('i', c, c =>
-		λ('s', c, c =>
-			some('v', c, c =>
-				and(
-					afterNear(app(temporalTrace(c), v(0, c)), v(2, c)),
-					app(app(v(3, c), v(0, c)), v(1, c)),
-				),
+		some('v', c, c =>
+			and(
+				beforeNear(app(temporalTrace(c), v(0, c)), v(1, c)),
+				app(v(2, c), v(0, c)),
+			),
+		),
+	),
+);
+
+// λ𝘗. λ𝘵. ∃𝘦. (τ(𝘦) >.near 𝘵) ∧ 𝘗(𝘦)
+const fi = λ(['v', 't'], [], c =>
+	λ('i', c, c =>
+		some('v', c, c =>
+			and(
+				afterNear(app(temporalTrace(c), v(0, c)), v(1, c)),
+				app(v(2, c), v(0, c)),
 			),
 		),
 	),
@@ -220,32 +209,26 @@ const pu = presuppose(v(0, ['i']), before(v(0, ['i']), speechTime(['i'])));
 // t | (t > t0)
 const jia = presuppose(v(0, ['i']), after(v(0, ['i']), speechTime(['i'])));
 
-// λ𝘗. λ𝘸. ∃𝘵. 𝘗(𝘵)(𝘸)
-const sula = λ(['i', ['s', 't']], [], c =>
-	λ('s', c, c => some('i', c, c => app(app(v(2, c), v(0, c)), v(1, c)))),
-);
+// λ𝘗. ∃𝘵. 𝘗(𝘵)
+const sula = λ(['i', 't'], [], c => some('i', c, c => app(v(1, c), v(0, c))));
 
-// λ𝘗. λ𝘸. ∃𝘵 : 𝘵 < t0. 𝘗(𝘵)(𝘸)
-const mala = λ(['i', ['s', 't']], [], c =>
-	λ('s', c, c =>
-		some(
-			'i',
-			c,
-			c => app(app(v(2, c), v(0, c)), v(1, c)),
-			c => before(v(0, c), speechTime(c)),
-		),
+// λ𝘗. ∃𝘵 : 𝘵 < t0. 𝘗(𝘵)
+const mala = λ(['i', 't'], [], c =>
+	some(
+		'i',
+		c,
+		c => app(v(1, c), v(0, c)),
+		c => before(v(0, c), speechTime(c)),
 	),
 );
 
-// λ𝘗. λ𝘸. ∃𝘵 : 𝘵 > t0. 𝘗(𝘵)(𝘸)
-const jela = λ(['i', ['s', 't']], [], c =>
-	λ('s', c, c =>
-		some(
-			'i',
-			c,
-			c => app(app(v(2, c), v(0, c)), v(1, c)),
-			c => after(v(0, c), speechTime(c)),
-		),
+// λ𝘗. ∃𝘵 : 𝘵 > t0. 𝘗(𝘵)
+const jela = λ(['i', 't'], [], c =>
+	some(
+		'i',
+		c,
+		c => app(v(1, c), v(0, c)),
+		c => after(v(0, c), speechTime(c)),
 	),
 );
 
@@ -290,15 +273,13 @@ function denoteSpeechAct(toaq: string): string {
 function denoteVerb(toaq: string, arity: number): Expr {
 	switch (arity) {
 		case 2:
-			return λ('e', [], c =>
-				λ('v', c, c => λ('s', c, c => verb(toaq, [v(2, c)], v(1, c), v(0, c)))),
+			return λ('e', ['s'], c =>
+				λ('v', c, c => verb(toaq, [v(1, c)], v(0, c), v(2, c))),
 			);
 		case 3:
-			return λ('e', [], c =>
+			return λ('e', ['s'], c =>
 				λ('e', c, c =>
-					λ('v', c, c =>
-						λ('s', c, c => verb(toaq, [v(3, c), v(2, c)], v(1, c), v(0, c))),
-					),
+					λ('v', c, c => verb(toaq, [v(2, c), v(1, c)], v(0, c), v(3, c))),
 				),
 			);
 		default:
@@ -306,11 +287,9 @@ function denoteVerb(toaq: string, arity: number): Expr {
 	}
 }
 
-// λ𝘢. λ𝘦. λ𝘸. ᴀɢᴇɴᴛ(𝘦)(𝘸) = 𝘢
-const littleV = λ('e', [], c =>
-	λ('v', c, c =>
-		λ('s', c, c => equals(app(app(agent(c), v(1, c)), v(0, c)), v(2, c))),
-	),
+// λ𝘢. λ𝘦. ᴀɢᴇɴᴛ(𝘦)(𝘸) = 𝘢
+const littleV = λ('e', ['s'], c =>
+	λ('v', c, c => equals(app(app(agent(c), v(0, c)), v(2, c)), v(1, c))),
 );
 
 function denoteLeaf(leaf: Leaf): DTree {
@@ -461,97 +440,6 @@ function denoteLeaf(leaf: Leaf): DTree {
 	return { ...leaf, denotation, bindings };
 }
 
-/**
- * Unifies the denotations of two subtrees so that they share a common context,
- * and can be composed together.
- * @returns The rewritten denotation of the left subtree, followed by the
- * 	rewritten denotation of the right subtree, followed by the unified bindings.
- */
-export function unifyDenotations(
-	left: DTree,
-	right: DTree,
-): [Expr, Expr, Bindings] {
-	if (left.denotation === null)
-		throw new Error(
-			`Can't unify a semantically empty ${left.label} with a ${right.label}`,
-		);
-	if (right.denotation === null)
-		throw new Error(
-			`Can't unify a ${left.label} with a semantically empty ${right.label}`,
-		);
-
-	// To proceed, we start with the bindings of the left subtree, and iteratively
-	// incorporate each binding present in the right subtree
-	const bindings = cloneBindings(left.bindings);
-	const context = [...left.denotation.context];
-
-	const rightSubordinate = right.label === 'CP' || right.label === 'CPrel';
-	// This is the mapping from variable indices in the right context, to variable
-	// indices in the unified context - we'll fill it in as we go
-	const rightMapping = new Array<number>(right.denotation.context.length);
-
-	// TODO: implement the 'Cho máma hó/áq' rule using the subordinate field
-
-	// For each binding referenced in the right subtree
-	for (const [kind_, map] of Object.entries(right.bindings)) {
-		const kind = kind_ as keyof Bindings;
-		for (const [slot, rb_] of Object.entries(map)) {
-			const rb = rb_ as Binding;
-			if (rb !== undefined) {
-				// If there is a matching binding in the left subtree
-				const lb = (left.bindings[kind] as { [K in string]?: Binding })[slot];
-				if (lb !== undefined) {
-					// Then unify the variables
-					(bindings[kind] as { [K in string]?: Binding })[slot] = {
-						index: lb.index,
-						subordinate: lb.subordinate && rb.subordinate,
-					};
-					rightMapping[rb.index] = lb.index;
-				} else {
-					// Otherwise, create a new variable
-					(bindings[kind] as { [K in string]?: Binding })[slot] = {
-						index: context.length,
-						subordinate: rightSubordinate || rb.subordinate,
-					};
-					rightMapping[rb.index] = context.length;
-					context.push(right.denotation.context[rb.index]);
-				}
-			}
-		}
-	}
-
-	// Finally, account for free variables not associated with any bindings, to
-	// fill in the rest of rightMapping
-	for (let i = 0; i < rightMapping.length; i++) {
-		if (rightMapping[i] === undefined) {
-			const type = right.denotation.context[i];
-			if (type === 's') {
-				// Special case for the world variable: unify it with the left's world
-				// variable (of which there should be at most one)
-				const worldIndex = left.denotation.context.findIndex(t => t === 's');
-				if (worldIndex === -1) {
-					// Left has no world variable; create a new one
-					rightMapping[i] = context.length;
-					context.push('s');
-				} else {
-					// Unify them!
-					rightMapping[i] = worldIndex;
-				}
-			} else {
-				// Default to not unifying things
-				rightMapping[i] = context.length;
-				context.push(type);
-			}
-		}
-	}
-
-	return [
-		rewriteContext(left.denotation, context, i => i),
-		rewriteContext(right.denotation, context, i => rightMapping[i]),
-		bindings,
-	];
-}
-
 type CompositionRule = (
 	branch: Branch<StrictTree>,
 	left: DTree,
@@ -573,7 +461,15 @@ function functionalApplicationInner(
 	} else if (argument.denotation === null) {
 		({ denotation, bindings } = fn);
 	} else {
-		const [f, a, b] = unifyDenotations(fn, argument);
+		const [f, a, b] = unifyDenotations(
+			fn,
+			typesEqual(
+				(fn.denotation.type as [ExprType, ExprType])[0],
+				argument.denotation.type,
+			)
+				? argument
+				: makeWorldExplicit(argument),
+		);
 		denotation = reduce(app(f, a));
 		bindings = b;
 	}
@@ -587,29 +483,22 @@ const functionalApplication: CompositionRule = (branch, left, right) =>
 const reverseFunctionalApplication: CompositionRule = (branch, left, right) =>
 	functionalApplicationInner(branch, left, right, right, left);
 
-// λ𝘗. λ𝘘. λ𝘢. λ𝘦. λ𝘸. 𝘗(𝘢)(𝘦)(𝘸) ∧ 𝘘(𝘦)(𝘸)
+// λ𝘗. λ𝘘. λ𝘢. λ𝘦. 𝘗(𝘢)(𝘦) ∧ 𝘘(𝘦)
 const eventIdentificationTemplate = (context: ExprType[]) =>
-	λ(['e', ['v', ['s', 't']]], context, c =>
-		λ(['v', ['s', 't']], c, c =>
+	λ(['e', ['v', 't']], context, c =>
+		λ(['v', 't'], c, c =>
 			λ('e', c, c =>
 				λ('v', c, c =>
-					λ('s', c, c =>
-						and(
-							app(app(app(v(4, c), v(2, c)), v(1, c)), v(0, c)),
-							app(app(v(3, c), v(1, c)), v(0, c)),
-						),
-					),
+					and(app(app(v(3, c), v(1, c)), v(0, c)), app(v(2, c), v(0, c))),
 				),
 			),
 		),
 	);
 
-// λ𝘗. λ𝘢. λ𝘦. λ𝘸. 𝘗(𝘦)(𝘸)
+// λ𝘗. λ𝘢. λ𝘦. 𝘗(𝘦)
 const eventIdentificationRightOnlyTemplate = (context: ExprType[]) =>
-	λ(['v', ['s', 't']], context, c =>
-		λ('e', c, c =>
-			λ('v', c, c => λ('s', c, c => app(app(v(3, c), v(1, c)), v(0, c)))),
-		),
+	λ(['v', 't'], context, c =>
+		λ('e', c, c => λ('v', c, c => app(v(2, c), v(0, c)))),
 	);
 
 const eventIdentification: CompositionRule = (branch, left, right) => {
@@ -636,6 +525,34 @@ const eventIdentification: CompositionRule = (branch, left, right) => {
 	}
 
 	return { ...branch, left, right, denotation, bindings };
+};
+
+const cComposition: CompositionRule = (branch, left, right) => {
+	if (right.denotation === null) {
+		throw new Error(`C composition on a null ${right.label}`);
+	} else {
+		const worldIndex = right.denotation.context.findIndex(t => t === 's');
+		if (worldIndex === -1)
+			throw new Error(`C composition on something without a world variable`);
+
+		const newContext = [...right.denotation.context];
+		newContext.splice(worldIndex, 1);
+		const indexMapping = (i: number) =>
+			i === worldIndex ? 0 : i < worldIndex ? i + 1 : i;
+
+		return {
+			...branch,
+			left,
+			right,
+			denotation: λ('s', newContext, c =>
+				rewriteContext(right.denotation!, c, indexMapping),
+			),
+			bindings: mapBindings(right.bindings, b => ({
+				index: indexMapping(b.index),
+				subordinate: true,
+			})),
+		};
+	}
 };
 
 const cRelComposition: CompositionRule = (branch, left, right) => {
@@ -665,7 +582,6 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'V':
 		case 'Asp':
 		case '𝘷0':
-		case 'C':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -674,6 +590,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 				: reverseFunctionalApplication;
 		case '𝘷':
 			return eventIdentification;
+		case 'C':
+			return cComposition;
 		case 'Crel':
 			return cRelComposition;
 	}
