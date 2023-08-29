@@ -21,11 +21,21 @@ function leafToEnglish(leaf: Tree): string {
 	return new Glosser(true).glossWord(leafText(leaf));
 }
 
+function verbToEnglish(tree: Tree): string {
+	if ('word' in tree) {
+		return leafToEnglish(tree);
+	} else if ('left' in tree) {
+		return verbToEnglish(tree.left) + verbToEnglish(tree.right);
+	} else {
+		throw new Error('weird verb');
+	}
+}
+
 function serialToEnglish(serial: Tree): string {
 	if ('word' in serial && serial.word === 'covert') return '';
 	if (serial.label !== '*Serial') throw new Error('non-*Serial serial');
 	if (!('children' in serial)) throw new Error('non-Rose serial');
-	return serial.children.map(x => leafToEnglish(x)).join('-');
+	return serial.children.map(x => verbToEnglish(x)).join('-');
 }
 
 class ClauseTranslator {
@@ -37,7 +47,9 @@ class ClauseTranslator {
 	toaqAspect: string = 'tam';
 	negative: boolean = false;
 	subject?: string = undefined;
+	earlyAdjuncts: string[] = [];
 	objects: string[] = [];
+	lateAdjuncts: string[] = [];
 	modals: string[] = [];
 	constructor(toaqSpeechAct?: string) {
 		this.toaqSpeechAct = toaqSpeechAct;
@@ -56,11 +68,24 @@ class ClauseTranslator {
 			if ('children' in node) {
 				if (node.label !== '*𝘷P') throw new Error('non-*𝘷P Rose');
 				this.verb = serialToEnglish(node.children[0]);
-				if (node.children[1]) {
-					this.subject = treeToEnglish(node.children[1]);
-				}
-				for (let i = 2; i < node.children.length; i++) {
-					this.objects.push(treeToEnglish(node.children[i]));
+				let late = false;
+				for (let i = 1; i < node.children.length; i++) {
+					const child = node.children[i];
+					const english = treeToEnglish(child);
+					if (child.label === 'AdjunctP') {
+						if (late) {
+							this.lateAdjuncts.push(english);
+						} else {
+							this.earlyAdjuncts.push(english);
+						}
+					} else {
+						if (this.subject) {
+							this.objects.push(english);
+						} else {
+							this.subject = english;
+						}
+						late = true;
+					}
 				}
 				break;
 			} else if ('left' in node) {
@@ -179,19 +204,23 @@ class ClauseTranslator {
 				tense,
 				aspect,
 				auxiliary,
+				...this.earlyAdjuncts,
 				this.subject ?? '',
 				this.verb ?? '',
 				...this.objects,
+				...this.lateAdjuncts,
 			];
 		} else {
 			order = [
 				complementizer,
+				...this.earlyAdjuncts,
 				this.subject ?? '',
 				tense,
 				aspect,
 				auxiliary ?? '',
 				this.verb ?? '',
 				...this.objects,
+				...this.lateAdjuncts,
 			];
 		}
 

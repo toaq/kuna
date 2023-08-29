@@ -13,6 +13,8 @@ const {
     makeCovertLeaf,
 	makeLeaf,
 	makeOptLeaf,
+	makePrefixLeaf,
+	makePrefixP,
 	makeRose,
 	makeRose2,
 	makeSerial,
@@ -143,8 +145,10 @@ DP1 -> DP Roi DP1 {% makeConn %}
 CPsub1 -> CPsub {% id %}
 CPsub1 -> CPsub Conjunction CPsub1 {% makeConn %}
 T1 -> T {% id %}
+T1 -> T_prefix {% id %}
 T1 -> T Conjunction T1 {% makeConn %}
 Asp1 -> Asp {% id %}
+Asp1 -> Asp_prefix {% id %}
 Asp1 -> Asp Conjunction Asp1 {% makeConn %}
 AdjunctP1 -> AdjunctP {% id %}
 AdjunctP1 -> AdjunctP Conjunction AdjunctP1 {% makeConn %}
@@ -155,6 +159,7 @@ Vlast -> Verblike ConjunctionT1 Vlast {% makeConn %}
 Vlast -> Verblike {% id %}
 V1 -> Verblike {% id %}
 V1 -> Verblike ConjunctionT1 V1 {% makeConn %}
+Verblike -> Prefix Verblike {% makePrefixP %}
 Verblike -> V {% id %}
 Verblike -> ShuP {% id %}
 ShuP -> Shu Word {% makeBranch('shuP') %}
@@ -169,6 +174,7 @@ Conjunction -> %conjunction {% makeLeaf('&') %}
 ConjunctionT1 -> %conjunction_in_t1 {% makeLeaf('&') %}
 ConjunctionT4 -> %conjunction_in_t4 {% makeLeaf('&') %}
 Asp -> %aspect {% makeLeaf('Asp') %}
+Asp_prefix -> %prefix_aspect {% makeLeaf('Asp') %}
 Bi -> %topic_marker {% makeLeaf('Topic') %}
 C -> %complementizer {% makeLeaf('C') %}
 Copt -> C:? {% makeOptLeaf('C') %}
@@ -186,12 +192,14 @@ Mo -> %text_quote {% makeLeaf('mo') %}
 Modal -> %modality {% makeLeaf('Modal') %}
 ModalT4 -> %modality_with_complement {% makeLeaf('Modal') %}
 Na -> %cleft_verb {% makeLeaf('𝘷') %}
+Prefix -> %prefix {% makePrefixLeaf %}
 Roi -> %plural_coordinator {% makeLeaf('&') %}
 SA -> %illocution {% makeLeaf('SA') %}
 SAopt -> SA:? {% makeOptLeaf('SA') %}
 Sigma -> %polarity {% makeLeaf('Σ') %}
 Shu -> %word_quote {% makeLeaf('shu') %}
 T -> %tense {% makeLeaf('T') %}
+T_prefix -> %prefix_tense {% makeLeaf('T') %}
 Teo -> %end_quote {% makeLeaf('teo') %}
 # TODO: multiple-fragment quotes?
 Text -> Fragment {% id %}

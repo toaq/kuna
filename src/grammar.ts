@@ -10,6 +10,7 @@ declare var conjunction: any;
 declare var conjunction_in_t1: any;
 declare var conjunction_in_t4: any;
 declare var aspect: any;
+declare var prefix_aspect: any;
 declare var topic_marker: any;
 declare var complementizer: any;
 declare var subordinating_complementizer: any;
@@ -25,11 +26,13 @@ declare var text_quote: any;
 declare var modality: any;
 declare var modality_with_complement: any;
 declare var cleft_verb: any;
+declare var prefix: any;
 declare var plural_coordinator: any;
 declare var illocution: any;
 declare var polarity: any;
 declare var word_quote: any;
 declare var tense: any;
+declare var prefix_tense: any;
 declare var end_quote: any;
 declare var predicate: any;
 declare var object_incorporating_verb: any;
@@ -46,6 +49,8 @@ const {
     makeCovertLeaf,
 	makeLeaf,
 	makeOptLeaf,
+	makePrefixLeaf,
+	makePrefixP,
 	makeRose,
 	makeRose2,
 	makeSerial,
@@ -160,8 +165,10 @@ const grammar: Grammar = {
     {"name": "CPsub1", "symbols": ["CPsub"], "postprocess": id},
     {"name": "CPsub1", "symbols": ["CPsub", "Conjunction", "CPsub1"], "postprocess": makeConn},
     {"name": "T1", "symbols": ["T"], "postprocess": id},
+    {"name": "T1", "symbols": ["T_prefix"], "postprocess": id},
     {"name": "T1", "symbols": ["T", "Conjunction", "T1"], "postprocess": makeConn},
     {"name": "Asp1", "symbols": ["Asp"], "postprocess": id},
+    {"name": "Asp1", "symbols": ["Asp_prefix"], "postprocess": id},
     {"name": "Asp1", "symbols": ["Asp", "Conjunction", "Asp1"], "postprocess": makeConn},
     {"name": "AdjunctP1", "symbols": ["AdjunctP"], "postprocess": id},
     {"name": "AdjunctP1", "symbols": ["AdjunctP", "Conjunction", "AdjunctP1"], "postprocess": makeConn},
@@ -172,6 +179,7 @@ const grammar: Grammar = {
     {"name": "Vlast", "symbols": ["Verblike"], "postprocess": id},
     {"name": "V1", "symbols": ["Verblike"], "postprocess": id},
     {"name": "V1", "symbols": ["Verblike", "ConjunctionT1", "V1"], "postprocess": makeConn},
+    {"name": "Verblike", "symbols": ["Prefix", "Verblike"], "postprocess": makePrefixP},
     {"name": "Verblike", "symbols": ["V"], "postprocess": id},
     {"name": "Verblike", "symbols": ["ShuP"], "postprocess": id},
     {"name": "ShuP", "symbols": ["Shu", "Word"], "postprocess": makeBranch('shuP')},
@@ -185,6 +193,7 @@ const grammar: Grammar = {
     {"name": "ConjunctionT1", "symbols": [(lexer.has("conjunction_in_t1") ? {type: "conjunction_in_t1"} : conjunction_in_t1)], "postprocess": makeLeaf('&')},
     {"name": "ConjunctionT4", "symbols": [(lexer.has("conjunction_in_t4") ? {type: "conjunction_in_t4"} : conjunction_in_t4)], "postprocess": makeLeaf('&')},
     {"name": "Asp", "symbols": [(lexer.has("aspect") ? {type: "aspect"} : aspect)], "postprocess": makeLeaf('Asp')},
+    {"name": "Asp_prefix", "symbols": [(lexer.has("prefix_aspect") ? {type: "prefix_aspect"} : prefix_aspect)], "postprocess": makeLeaf('Asp')},
     {"name": "Bi", "symbols": [(lexer.has("topic_marker") ? {type: "topic_marker"} : topic_marker)], "postprocess": makeLeaf('Topic')},
     {"name": "C", "symbols": [(lexer.has("complementizer") ? {type: "complementizer"} : complementizer)], "postprocess": makeLeaf('C')},
     {"name": "Copt$ebnf$1", "symbols": ["C"], "postprocess": id},
@@ -206,6 +215,7 @@ const grammar: Grammar = {
     {"name": "Modal", "symbols": [(lexer.has("modality") ? {type: "modality"} : modality)], "postprocess": makeLeaf('Modal')},
     {"name": "ModalT4", "symbols": [(lexer.has("modality_with_complement") ? {type: "modality_with_complement"} : modality_with_complement)], "postprocess": makeLeaf('Modal')},
     {"name": "Na", "symbols": [(lexer.has("cleft_verb") ? {type: "cleft_verb"} : cleft_verb)], "postprocess": makeLeaf('𝘷')},
+    {"name": "Prefix", "symbols": [(lexer.has("prefix") ? {type: "prefix"} : prefix)], "postprocess": makePrefixLeaf},
     {"name": "Roi", "symbols": [(lexer.has("plural_coordinator") ? {type: "plural_coordinator"} : plural_coordinator)], "postprocess": makeLeaf('&')},
     {"name": "SA", "symbols": [(lexer.has("illocution") ? {type: "illocution"} : illocution)], "postprocess": makeLeaf('SA')},
     {"name": "SAopt$ebnf$1", "symbols": ["SA"], "postprocess": id},
@@ -214,6 +224,7 @@ const grammar: Grammar = {
     {"name": "Sigma", "symbols": [(lexer.has("polarity") ? {type: "polarity"} : polarity)], "postprocess": makeLeaf('Σ')},
     {"name": "Shu", "symbols": [(lexer.has("word_quote") ? {type: "word_quote"} : word_quote)], "postprocess": makeLeaf('shu')},
     {"name": "T", "symbols": [(lexer.has("tense") ? {type: "tense"} : tense)], "postprocess": makeLeaf('T')},
+    {"name": "T_prefix", "symbols": [(lexer.has("prefix_tense") ? {type: "prefix_tense"} : prefix_tense)], "postprocess": makeLeaf('T')},
     {"name": "Teo", "symbols": [(lexer.has("end_quote") ? {type: "end_quote"} : end_quote)], "postprocess": makeLeaf('teo')},
     {"name": "Text", "symbols": ["Fragment"], "postprocess": id},
     {"name": "V", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('V')},

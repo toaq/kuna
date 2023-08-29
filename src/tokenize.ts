@@ -97,10 +97,13 @@ export class ToaqTokenizer {
 	reset(text: string, _info?: {}): void {
 		this.tokens = [];
 		this.pos = 0;
-		for (const m of [...text.matchAll(/[\p{L}\p{N}\p{Diacritic}]+-?/gu)]) {
+		for (const m of [...text.matchAll(/[\p{L}\p{N}\p{Diacritic}-]+/gu)]) {
 			const { prefixes, root } = splitPrefixes(m[0]);
 			for (const tokenText of [...prefixes.map(p => p + '-'), root]) {
 				const lemmaForm = clean(tokenText);
+				if (!lemmaForm) {
+					throw new Error('empty token at ' + m.index);
+				}
 				const exactEntry = dictionary.get(lemmaForm);
 
 				if (exactEntry) {

@@ -172,7 +172,7 @@ const fi = λ(['v', 't'], [], c =>
 );
 
 function denoteAspect(toaq: string): Expr {
-	switch (toaq) {
+	switch (toaq.replace(/-$/, '')) {
 		case 'tam':
 			return tam;
 		case 'chum':
@@ -233,7 +233,7 @@ const jela = λ(['i', 't'], [], c =>
 );
 
 function denoteTense(toaq: string): Expr {
-	switch (toaq) {
+	switch (toaq.replace(/-$/, '')) {
 		case 'naı':
 			return nai;
 		case 'pu':
