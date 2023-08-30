@@ -287,6 +287,14 @@ function denoteVerb(toaq: string, arity: number): Expr {
 	}
 }
 
+// λ𝘗 : 𝘗(a). a
+const boundThe = λ(
+	['e', 't'],
+	['e'],
+	c => v(1, c),
+	c => app(v(0, c), v(1, c)),
+);
+
 // λ𝘢. λ𝘦. ᴀɢᴇɴᴛ(𝘦)(𝘸) = 𝘢
 const littleV = λ('e', ['s'], c =>
 	λ('v', c, c => equals(app(app(agent(c), v(0, c)), v(2, c)), v(1, c))),
@@ -381,6 +389,8 @@ function denoteLeaf(leaf: Leaf): DTree {
 			default:
 				throw new Error(`Unrecognized DP: ${toaq}`);
 		}
+	} else if (leaf.label === 'D') {
+		denotation = boundThe;
 	} else if (leaf.label === '𝘷') {
 		denotation = littleV;
 	} else if (leaf.label === '𝘷0') {
