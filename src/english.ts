@@ -25,6 +25,9 @@ function verbToEnglish(tree: Tree): string {
 	if ('word' in tree) {
 		return leafToEnglish(tree);
 	} else if ('left' in tree) {
+		if (tree.label === 'mıP') {
+			return verbToEnglish(tree.right).replace(/\b\w/, m => m.toUpperCase());
+		}
 		return verbToEnglish(tree.left) + verbToEnglish(tree.right);
 	} else {
 		throw new Error('weird verb');
@@ -258,7 +261,7 @@ function branchToEnglish(tree: Branch<Tree>): string {
 			if (clean(leafText(d)) === 'báq') {
 				return noun + 's';
 			} else {
-				return leafToEnglish(d) + ' ' + noun;
+				return (leafToEnglish(d) + ' ' + noun).trim();
 			}
 		}
 	}
