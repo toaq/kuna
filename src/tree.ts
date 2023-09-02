@@ -35,6 +35,8 @@ export type Label =
 	| 'DP'
 	| 'EvA'
 	| 'EvAP'
+	| 'Focus'
+	| 'FocusP'
 	| 'ge'
 	| 'geP'
 	| 'Interjection'
