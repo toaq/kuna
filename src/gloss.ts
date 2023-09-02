@@ -16,7 +16,7 @@ for (const line of fs
 	const fields = line.split('\t');
 	if (fields.length === 2) {
 		const [word, gloss] = fields;
-		toaduaGlosses.set(word, gloss.replace(/\s+/g, '.'));
+		toaduaGlosses.set(word.toLowerCase(), gloss.replace(/\s+/g, '.'));
 	}
 }
 
