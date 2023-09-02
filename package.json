@@ -16,7 +16,9 @@
 		"prettier:check": "npx -p prettier prettier -c .",
 		"prettier:format": "npx -p prettier prettier -w .",
 		"cli": "npx esr src/index.ts",
+		"cli:debug": "node --inspect-brk -r esbuild-runner/register src/index.ts",
 		"bot": "npx esr src/bot.ts",
+		"bot:debug": "node --inspect-brk -r esbuild-runner/register src/bot.ts",
 		"codegen": "npx nearleyc src/toaq.ne -o src/grammar.ts",
 		"ts:build": "npx tsc",
 		"ts:check": "npx tsc --noEmit"
