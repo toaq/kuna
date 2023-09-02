@@ -51,17 +51,55 @@ import {
 // 𝘢
 const hoa = v(0, ['e']);
 
+const hoaBindings = {
+	variable: {},
+	animacy: {},
+	head: {},
+	resumptive: { index: 0, subordinate: false },
+};
+
+const covertHoaBindings = {
+	variable: {},
+	animacy: {},
+	head: {},
+	covertResumptive: { index: 0, subordinate: false },
+};
+
 // 𝘢 | animate(𝘢)
 const ho = presuppose(v(0, ['e']), app(animate(['e']), v(0, ['e'])));
+
+const hoBindings = {
+	variable: {},
+	animacy: { animate: { index: 0, subordinate: false } },
+	head: {},
+};
 
 // 𝘢 | inanimate(𝘢)
 const maq = presuppose(v(0, ['e']), app(inanimate(['e']), v(0, ['e'])));
 
+const maqBindings = {
+	variable: {},
+	animacy: { inanimate: { index: 0, subordinate: false } },
+	head: {},
+};
+
 // 𝘢 | abstract(𝘢)
 const hoq = presuppose(v(0, ['e']), app(abstract(['e']), v(0, ['e'])));
 
+const hoqBindings = {
+	variable: {},
+	animacy: { abstract: { index: 0, subordinate: false } },
+	head: {},
+};
+
 // 𝘢
 const ta = hoa;
+
+const taBindings = {
+	variable: {},
+	animacy: { descriptive: { index: 0, subordinate: false } },
+	head: {},
+};
 
 // λ𝘗. λ𝘵. ∃𝘦. (τ(𝘦) ⊆ 𝘵) ∧ 𝘗(𝘦)
 const tam = λ(['v', 't'], [], c =>
@@ -316,78 +354,64 @@ function denoteLeaf(leaf: Leaf): DTree {
 		if (leaf.word === 'functional') {
 			throw new Error('Functional DP');
 		} else if (leaf.word === 'covert') {
-			toaq = 'hóa';
+			denotation = hoa;
+			bindings = covertHoaBindings;
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized DP: ${leaf.word.text}`);
 		} else {
-			toaq = leaf.word.entry.toaq;
-		}
+			const toaq = leaf.word.entry.toaq;
 
-		switch (toaq) {
-			case 'jí':
-				denotation = ji([]);
-				break;
-			case 'súq':
-				denotation = suq([]);
-				break;
-			case 'nháo':
-				denotation = nhao([]);
-				break;
-			case 'súna':
-				denotation = suna([]);
-				break;
-			case 'nhána':
-				denotation = nhana([]);
-				break;
-			case 'úmo':
-				denotation = umo([]);
-				break;
-			case 'íme':
-				denotation = ime([]);
-				break;
-			case 'súo':
-				denotation = suo([]);
-				break;
-			case 'áma':
-				denotation = ama([]);
-				break;
-			case 'hóa':
-				denotation = hoa;
-				break;
-			case 'hó':
-				denotation = ho;
-				bindings = {
-					variable: {},
-					animacy: { animate: { index: 0, subordinate: false } },
-					head: {},
-				};
-				break;
-			case 'máq':
-				denotation = maq;
-				bindings = {
-					variable: {},
-					animacy: { inanimate: { index: 0, subordinate: false } },
-					head: {},
-				};
-				break;
-			case 'hóq':
-				denotation = hoq;
-				bindings = {
-					variable: {},
-					animacy: { abstract: { index: 0, subordinate: false } },
-					head: {},
-				};
-				break;
-			case 'tá':
-				denotation = ta;
-				bindings = {
-					variable: {},
-					animacy: { descriptive: { index: 0, subordinate: false } },
-					head: {},
-				};
-				break;
-			default:
-				throw new Error(`Unrecognized DP: ${toaq}`);
+			switch (toaq) {
+				case 'jí':
+					denotation = ji([]);
+					break;
+				case 'súq':
+					denotation = suq([]);
+					break;
+				case 'nháo':
+					denotation = nhao([]);
+					break;
+				case 'súna':
+					denotation = suna([]);
+					break;
+				case 'nhána':
+					denotation = nhana([]);
+					break;
+				case 'úmo':
+					denotation = umo([]);
+					break;
+				case 'íme':
+					denotation = ime([]);
+					break;
+				case 'súo':
+					denotation = suo([]);
+					break;
+				case 'áma':
+					denotation = ama([]);
+					break;
+				case 'hóa':
+					denotation = hoa;
+					bindings = hoaBindings;
+					break;
+				case 'hó':
+					denotation = ho;
+					bindings = hoBindings;
+					break;
+				case 'máq':
+					denotation = maq;
+					bindings = maqBindings;
+					break;
+				case 'hóq':
+					denotation = hoq;
+					bindings = hoqBindings;
+					break;
+				case 'tá':
+					denotation = ta;
+					bindings = taBindings;
+					break;
+				default:
+					throw new Error(`Unrecognized DP: ${toaq}`);
+			}
 		}
 	} else if (leaf.label === 'D') {
 		denotation = boundThe;
@@ -456,7 +480,7 @@ type CompositionRule = (
 	right: DTree,
 ) => DTree;
 
-function functionalApplicationInner(
+function functionalApplication_(
 	branch: Branch<StrictTree>,
 	left: DTree,
 	right: DTree,
@@ -488,10 +512,10 @@ function functionalApplicationInner(
 }
 
 const functionalApplication: CompositionRule = (branch, left, right) =>
-	functionalApplicationInner(branch, left, right, left, right);
+	functionalApplication_(branch, left, right, left, right);
 
 const reverseFunctionalApplication: CompositionRule = (branch, left, right) =>
-	functionalApplicationInner(branch, left, right, right, left);
+	functionalApplication_(branch, left, right, right, left);
 
 // λ𝘗. λ𝘘. λ𝘢. λ𝘦. 𝘗(𝘢)(𝘦) ∧ 𝘘(𝘦)
 const eventIdentificationTemplate = (context: ExprType[]) =>
@@ -569,21 +593,43 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 	if (right.denotation === null) {
 		throw new Error(`Crel composition on a null ${right.label}`);
 	} else {
-		return {
-			...branch,
-			left,
-			right,
-			denotation: λ(
-				'e',
-				right.denotation.context.slice(1),
-				() => right.denotation!,
-			),
-			bindings: mapBindings(right.bindings, b => {
-				if (b.index === 0)
-					throw new Error("TODO: Relative clauses that don't use hóa");
-				return { index: b.index - 1, subordinate: true };
-			}),
-		};
+		const hoa = right.bindings.resumptive ?? right.bindings.covertResumptive;
+		if (hoa === undefined) {
+			return {
+				...branch,
+				left,
+				right,
+				denotation: λ('e', right.denotation.context, c =>
+					rewriteContext(right.denotation!, c, i => i + 1),
+				),
+				bindings: mapBindings(right.bindings, b => ({
+					index: b.index + 1,
+					subordinate: true,
+				})),
+			};
+		} else {
+			const newContext = [...right.denotation.context];
+			newContext.splice(hoa.index, 1);
+
+			return {
+				...branch,
+				left,
+				right,
+				denotation: λ('e', newContext, c =>
+					rewriteContext(right.denotation!, c, i =>
+						i === hoa.index ? 0 : i > hoa.index ? i : i + 1,
+					),
+				),
+				bindings: mapBindings(right.bindings, b =>
+					b.index === hoa.index
+						? undefined
+						: {
+								index: b.index > hoa.index ? b.index - 1 : b.index,
+								subordinate: true,
+						  },
+				),
+			};
+		}
 	}
 };
 

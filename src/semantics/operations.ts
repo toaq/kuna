@@ -194,16 +194,51 @@ export function reduce(e: Expr): Expr {
 	}
 }
 
-export function mapBindings(
+function forEachBinding(
 	bs: Bindings,
-	mapping: (b: Binding) => Binding,
-): Bindings {
-	const newBindings = cloneBindings(bs);
-	for (const map of Object.values(newBindings)) {
-		for (const [slot, b] of Object.entries(map)) {
-			map[slot] = mapping(b as Binding);
+	fn: (
+		b: Binding,
+		getter: (bs: Bindings) => Binding | undefined,
+		setter: (bs: Bindings, b: Binding | undefined) => void,
+	) => void,
+) {
+	for (const kind_ of ['variable', 'animacy', 'head']) {
+		const kind = kind_ as 'variable' | 'animacy' | 'head';
+		const map = bs[kind];
+		for (const [slot_, b] of Object.entries(map)) {
+			if (b !== undefined) {
+				const slot = slot_ as keyof Bindings[typeof kind];
+				fn(
+					b,
+					bs => bs[kind][slot],
+					(bs, b) => (bs[kind][slot] = b),
+				);
+			}
 		}
 	}
+
+	if (bs.resumptive !== undefined)
+		fn(
+			bs.resumptive,
+			bs => bs.resumptive,
+			(bs, b) => (bs.resumptive = b),
+		);
+	if (bs.covertResumptive !== undefined)
+		fn(
+			bs.covertResumptive,
+			bs => bs.covertResumptive,
+			(bs, b) => (bs.covertResumptive = b),
+		);
+}
+
+export function mapBindings(
+	bs: Bindings,
+	mapping: (b: Binding) => Binding | undefined,
+): Bindings {
+	const newBindings = cloneBindings(bs);
+	forEachBinding(newBindings, (b, _getter, setter) =>
+		setter(newBindings, mapping(b)),
+	);
 	return newBindings;
 }
 
@@ -239,32 +274,26 @@ export function unifyDenotations(
 	// TODO: implement the 'Cho máma hó/áq' rule using the subordinate field
 
 	// For each binding referenced in the right subtree
-	for (const [kind_, map] of Object.entries(right.bindings)) {
-		const kind = kind_ as keyof Bindings;
-		for (const [slot, rb_] of Object.entries(map)) {
-			const rb = rb_ as Binding;
-			if (rb !== undefined) {
-				// If there is a matching binding in the left subtree
-				const lb = (left.bindings[kind] as { [K in string]?: Binding })[slot];
-				if (lb !== undefined) {
-					// Then unify the variables
-					(bindings[kind] as { [K in string]?: Binding })[slot] = {
-						index: lb.index,
-						subordinate: lb.subordinate && rb.subordinate,
-					};
-					rightMapping[rb.index] = lb.index;
-				} else {
-					// Otherwise, create a new variable
-					(bindings[kind] as { [K in string]?: Binding })[slot] = {
-						index: context.length,
-						subordinate: rightSubordinate || rb.subordinate,
-					};
-					rightMapping[rb.index] = context.length;
-					context.push(right.denotation.context[rb.index]);
-				}
-			}
+	forEachBinding(right.bindings, (rb, getter, setter) => {
+		// If there is a matching binding in the left subtree
+		const lb = getter(left.bindings);
+		if (lb !== undefined) {
+			// Then unify the variables
+			setter(bindings, {
+				index: lb.index,
+				subordinate: lb.subordinate && rb.subordinate,
+			});
+			rightMapping[rb.index] = lb.index;
+		} else {
+			// Otherwise, create a new variable
+			setter(bindings, {
+				index: context.length,
+				subordinate: rightSubordinate || rb.subordinate,
+			});
+			rightMapping[rb.index] = context.length;
+			context.push(right.denotation!.context[rb.index]);
 		}
-	}
+	});
 
 	// Finally, account for free variables not associated with any bindings, to
 	// fill in the rest of rightMapping

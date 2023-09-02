@@ -167,6 +167,8 @@ export interface Bindings {
 	variable: { [V in string]?: Binding };
 	animacy: { [A in AnimacyClass]?: Binding };
 	head: { [H in string]?: Binding };
+	resumptive?: Binding;
+	covertResumptive?: Binding;
 }
 
 export const noBindings: Bindings = { variable: {}, animacy: {}, head: {} };
@@ -176,6 +178,8 @@ export function cloneBindings(b: Bindings): Bindings {
 		variable: { ...b.variable },
 		animacy: { ...b.animacy },
 		head: { ...b.head },
+		resumptive: b.resumptive,
+		covertResumptive: b.covertResumptive,
 	};
 }
 
