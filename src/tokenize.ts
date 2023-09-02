@@ -59,7 +59,7 @@ export function tone(word: string): Tone {
 function splitIntoRaku(word: string): string[] {
 	return [
 		...word.matchAll(
-			/(b|c|ch|d|f|g|h|j|k|l|m|n|p|r|s|sh|t|vy?|wy?|ꝡ|y|z|')?[aeiıou]\p{Diacritic}?[aeiıou]*(q|m(?![aeiıou]))?-?/giu,
+			/(b|c|ch|d|f|g|h|j|k|l|m|n|nh|p|r|s|sh|t|vy?|wy?|ꝡ|y|z|')?[aeiıou]\p{Diacritic}?[aeiıou]*(q|m(?![aeiıou]))?-?/giu,
 		),
 	].map(m => {
 		return m[0];
