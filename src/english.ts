@@ -25,12 +25,15 @@ function verbToEnglish(tree: Tree): string {
 	if ('word' in tree) {
 		return leafToEnglish(tree);
 	} else if ('left' in tree) {
+		const right = verbToEnglish(tree.right);
 		if (tree.label === 'mıP') {
-			return verbToEnglish(tree.right).replace(/\b\w/, m => m.toUpperCase());
+			return right.replace(/\b\w/, m => m.toUpperCase());
 		}
-		return verbToEnglish(tree.left) + verbToEnglish(tree.right);
+		const left = verbToEnglish(tree.left);
+		const sep = left.endsWith('-') ? '' : ' ';
+		return left + sep + right;
 	} else {
-		throw new Error('weird verb');
+		throw new Error('weird verb ' + tree.label);
 	}
 }
 
