@@ -165,3 +165,10 @@ export class ToaqTokenizer {
 		return underscoredWordTypes.includes(tokenType);
 	}
 }
+
+export function tokenString(sentence: string): string {
+	const tokenizer = new ToaqTokenizer();
+	tokenizer.reset(sentence);
+	const tokens = tokenizer.tokens.map(t => t.value);
+	return tokens.join(' ');
+}

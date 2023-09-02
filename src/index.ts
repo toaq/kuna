@@ -12,7 +12,7 @@ import { initializeDictionary } from './dictionary';
 import { textual_tree_from_json } from './textual-tree';
 import { testSentences } from './test-sentences';
 import { denote } from './semantics/denote';
-import { ToaqTokenizer } from './tokenize';
+import { ToaqTokenizer, tokenString } from './tokenize';
 import { boxSentenceToMarkdown, boxify } from './boxes';
 import { toEnglish } from './english';
 
@@ -188,7 +188,7 @@ yargs
 			});
 		},
 		function (argv) {
-			testSentences((argv as any).failures as boolean);
+			testSentences((argv as any).failures as boolean, toEnglish);
 		},
 	)
 	.command(

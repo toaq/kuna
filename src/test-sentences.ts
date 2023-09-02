@@ -1,8 +1,10 @@
 import * as fs from 'fs';
 import { parse } from './parse';
-import { ToaqTokenizer } from './tokenize';
 
-export function testSentences(onlyPrintFailures: boolean) {
+export function testSentences(
+	onlyPrintFailures: boolean,
+	procedure?: (sentence: string) => string,
+) {
 	// const files = ['data/refgram-sentences.txt', 'data/a-sentences.txt'];
 	const files = ['data/refgram-sentences.txt'];
 	const sentences = files.flatMap(x =>
@@ -16,9 +18,6 @@ export function testSentences(onlyPrintFailures: boolean) {
 		let error: string = '';
 		if (s.startsWith('*')) continue;
 		total++;
-		const tokenizer = new ToaqTokenizer();
-		tokenizer.reset(s);
-		const tokens = tokenizer.tokens.map(t => t.value);
 		try {
 			const parses = parse(s);
 			if (parses.length === 0) {
@@ -37,9 +36,20 @@ export function testSentences(onlyPrintFailures: boolean) {
 			error = '\x1b[2m' + String(e).split('\n')[0] + '\x1b[0m';
 			failure = true;
 		}
-		const tok = '  \x1b[36m' + tokens.join(' ') + '\x1b[0m  ';
+
+		let post = '';
+		if (!failure && procedure) {
+			let output = '(crashed)';
+			try {
+				output = procedure(s);
+			} catch (e) {
+				console.log(e);
+			}
+			post = '  \x1b[36m' + output + '\x1b[0m  ';
+		}
+
 		if (!onlyPrintFailures || failure) {
-			console.log(status + ' ' + s + tok + error);
+			console.log(status + ' ' + s + post + error);
 		}
 	}
 	console.log(`Parsed ${ok}/${total} sentences.`);
