@@ -20,7 +20,9 @@ for (const line of fs
 	}
 }
 
-const words = [...toaduaGlosses.keys()].concat([...dictionary.keys()]);
+const words = [...toaduaGlosses.keys()]
+	.concat([...dictionary.keys()])
+	.filter(x => x);
 words.sort((a, b) => b.length - a.length);
 const partRegExp = new RegExp(
 	words.join('|') + "(?=[bcdfghjklmnpqrstvwxzꝡ']|$)",
@@ -41,7 +43,10 @@ const easyGlossMap: Record<string, string> = {
 	'AFF.CONTR': 'is!',
 	'EXS.FUT': 'will.ever',
 	'EXS.PST': 'has.ever',
-	'FOC.CONTR': '!',
+	'it.I': 'they',
+	'it.II': 'it',
+	'it.III': 'it',
+	'it.IV': 'it',
 	'NAME.QUOTE': 'named',
 	'NEAR.FUT': 'will.soon',
 	'NEAR.PST': 'did.just',
@@ -65,7 +70,6 @@ const easyGlossMap: Record<string, string> = {
 	EXO: 'the',
 	EXPL: "it's.that",
 	EXS: 'ever',
-	FOC: '!',
 	FUT: 'will',
 	GA: 'of',
 	GEN: '',
