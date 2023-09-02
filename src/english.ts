@@ -305,6 +305,17 @@ function branchToEnglish(tree: Branch<Tree>): string {
 			treeToEnglish(tree.right.right)
 		);
 	}
+	if (tree.label === 'FocusP') {
+		const left = treeToEnglish(tree.left);
+		const right = leafToEnglish(tree.right);
+		switch (left) {
+			case 'FOC':
+			case 'FOC.CONTR':
+				return '*' + right + '*';
+			default:
+				return left + ' ' + right;
+		}
+	}
 	throw new Error('unimplemented in branchToEnglish: ' + tree.label);
 }
 
