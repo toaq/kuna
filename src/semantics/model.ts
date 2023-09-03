@@ -223,7 +223,7 @@ export function assertContextsEqual(c1: ExprType[], c2: ExprType[]): void {
  * Constructor for variable expressions.
  */
 export function v(index: number, context: ExprType[]): Expr {
-	if (index >= context.length)
+	if (index < 0 || index >= context.length)
 		throw new Error(`Index ${index} out of bounds for context ${context}`);
 
 	return { head: 'variable', type: context[index], context, index };

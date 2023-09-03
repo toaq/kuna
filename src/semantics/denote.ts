@@ -665,8 +665,10 @@ const cComposition: CompositionRule = (branch, left, right) => {
 			...branch,
 			left,
 			right,
-			denotation: λ('s', newContext, c =>
-				rewriteContext(right.denotation!, c, indexMapping),
+			denotation: reduce(
+				λ('s', newContext, c =>
+					rewriteContext(right.denotation!, c, indexMapping),
+				),
 			),
 			bindings: mapBindings(right.bindings, b => ({
 				index: indexMapping(b.index),
@@ -686,8 +688,10 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 				...branch,
 				left,
 				right,
-				denotation: λ('e', right.denotation.context, c =>
-					rewriteContext(right.denotation!, c, i => i + 1),
+				denotation: reduce(
+					λ('e', right.denotation.context, c =>
+						rewriteContext(right.denotation!, c, i => i + 1),
+					),
 				),
 				bindings: mapBindings(right.bindings, b => ({
 					index: b.index + 1,
@@ -702,9 +706,11 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 				...branch,
 				left,
 				right,
-				denotation: λ('e', newContext, c =>
-					rewriteContext(right.denotation!, c, i =>
-						i === hoa.index ? 0 : i > hoa.index ? i : i + 1,
+				denotation: reduce(
+					λ('e', newContext, c =>
+						rewriteContext(right.denotation!, c, i =>
+							i === hoa.index ? 0 : i > hoa.index ? i : i + 1,
+						),
 					),
 				),
 				bindings: mapBindings(right.bindings, b =>

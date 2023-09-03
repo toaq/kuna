@@ -1,4 +1,5 @@
 import {
+	and,
 	app,
 	Binding,
 	Bindings,
@@ -120,7 +121,6 @@ function substitute(index: number, target: Expr, e: Expr): Expr {
  */
 function reduceOnce(e: Expr): Expr {
 	if (e.head === 'apply' && e.fn.head === 'lambda') {
-		// TODO: lift presuppositions
 		const body = substitute(0, e.argument, e.fn.body);
 		return e.fn.restriction === undefined
 			? body
@@ -134,64 +134,129 @@ function reduceOnce(e: Expr): Expr {
  * β-reduces an expression to normal form.
  */
 export function reduce(e: Expr): Expr {
+	let body: Expr;
+	// Presuppositions will be lifted out of subexpressions and appended to the
+	// body at the very end
+	const presuppositions: Expr[] = [];
+
+	// Reduces a subexpression and isolates it from any presuppositions
+	const reduceAndIsolate = (e: Expr) => {
+		let reduced = reduce(e);
+		if (reduced.head === 'presuppose') {
+			presuppositions.push(reduced.presupposition);
+			return reduced.body;
+		} else {
+			return reduced;
+		}
+	};
+
+	// Reduces a subexpression inside a quantifier and isolates it from any
+	// presuppositions
+	const quantifierReduceAndIsolate = (e: Expr) => {
+		let reduced = reduce(e);
+		if (reduced.head === 'presuppose') {
+			try {
+				presuppositions.push(
+					rewriteContext(
+						reduced.presupposition,
+						reduced.presupposition.context.slice(1),
+						i => i - 1,
+					),
+				);
+				return reduced.body;
+			} catch (e) {
+				// This presupposition evidently uses the quantified variable and cannot be
+				// lifted
+				return reduced;
+			}
+		} else {
+			return reduced;
+		}
+	};
+
 	switch (e.head) {
 		case 'variable': {
-			return e;
+			body = e;
+			break;
 		}
 		case 'verb': {
-			return verb(
+			body = verb(
 				e.name,
-				e.args.map(reduce) as [] | [Expr] | [Expr, Expr],
-				reduce(e.event),
-				reduce(e.world),
+				e.args.map(reduceAndIsolate) as [] | [Expr] | [Expr, Expr],
+				reduceAndIsolate(e.event),
+				reduceAndIsolate(e.world),
 			);
+			break;
 		}
 		case 'lambda': {
-			return λ(
+			body = λ(
 				e.body.context[0],
 				e.context,
-				() => reduce(e.body),
-				e.restriction === undefined ? undefined : () => reduce(e.restriction!),
+				() => quantifierReduceAndIsolate(e.body),
+				e.restriction === undefined
+					? undefined
+					: () => quantifierReduceAndIsolate(e.restriction!),
 			);
+			break;
 		}
 		case 'apply': {
 			// Reduce each subexpression before attempting a β-reduction, in case this
 			// reveals a new β-reduction opportunity
-			const subexprsReduced = app(reduce(e.fn), reduce(e.argument)) as Expr & {
+			const subexprsReduced = app(
+				reduceAndIsolate(e.fn),
+				reduceAndIsolate(e.argument),
+			) as Expr & {
 				head: 'apply';
 			};
-			return subexprsReduced.fn.head === 'lambda'
-				? reduce(reduceOnce(subexprsReduced))
-				: subexprsReduced;
+			body =
+				subexprsReduced.fn.head === 'lambda'
+					? reduceAndIsolate(reduceOnce(subexprsReduced))
+					: subexprsReduced;
+			break;
 		}
 		case 'presuppose': {
-			return presuppose(reduce(e.body), reduce(e.presupposition));
+			presuppositions.push(reduceAndIsolate(e.presupposition));
+			body = reduceAndIsolate(e.body);
+			break;
 		}
 		case 'infix': {
-			return infix(
+			body = infix(
 				e.name,
 				e.left.type,
 				e.type,
-				reduce(e.left),
-				reduce(e.right),
+				reduceAndIsolate(e.left),
+				reduceAndIsolate(e.right),
 			);
+			break;
 		}
 		case 'polarizer': {
-			return polarizer(e.name, reduce(e.body));
+			body = polarizer(e.name, reduceAndIsolate(e.body));
+			break;
 		}
 		case 'quantifier': {
-			return quantifier(
+			body = quantifier(
 				e.name,
 				e.body.context[0] as 'e' | 's' | 'v',
 				e.context,
-				() => reduce(e.body),
-				e.restriction === undefined ? undefined : () => reduce(e.restriction!),
+				() => quantifierReduceAndIsolate(e.body),
+				e.restriction === undefined
+					? undefined
+					: () => quantifierReduceAndIsolate(e.restriction!),
 			);
+			break;
 		}
 		case 'constant': {
-			return e;
+			body = e;
+			break;
 		}
 	}
+
+	return presuppositions.length > 0
+		? presuppose(
+				body,
+				presuppositions.reduce((ps, p) => and(ps, p)),
+		  )
+		: body;
 }
 
 function forEachBinding(
