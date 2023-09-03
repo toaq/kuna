@@ -722,9 +722,9 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 
 const dComposition: CompositionRule = (branch, left, right) => {
 	if (left.denotation === null) {
-		throw new Error('D composition on a null ${left.label}');
+		throw new Error(`D composition on a null ${left.label}`);
 	} else if (right.denotation === null) {
-		throw new Error('D composition on a null ${right.label}');
+		throw new Error(`D composition on a null ${right.label}`);
 	} else {
 		// Because unifyDenotations is heuristic and asymmetric, and nP will have more
 		// binding information than D, we need to pretend that nP is on the left here
