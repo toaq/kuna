@@ -53,14 +53,14 @@ import {
 // 𝘢
 const hoa = v(0, ['e']);
 
-const hoaBindings = {
+const hoaBindings: Bindings = {
 	variable: {},
 	animacy: {},
 	head: {},
 	resumptive: { index: 0, subordinate: false },
 };
 
-const covertHoaBindings = {
+const covertHoaBindings: Bindings = {
 	variable: {},
 	animacy: {},
 	head: {},
@@ -70,7 +70,7 @@ const covertHoaBindings = {
 // 𝘢 | animate(𝘢)
 const ho = presuppose(v(0, ['e']), app(animate(['e']), v(0, ['e'])));
 
-const hoBindings = {
+const hoBindings: Bindings = {
 	variable: {},
 	animacy: { animate: { index: 0, subordinate: false } },
 	head: {},
@@ -79,7 +79,7 @@ const hoBindings = {
 // 𝘢 | inanimate(𝘢)
 const maq = presuppose(v(0, ['e']), app(inanimate(['e']), v(0, ['e'])));
 
-const maqBindings = {
+const maqBindings: Bindings = {
 	variable: {},
 	animacy: { inanimate: { index: 0, subordinate: false } },
 	head: {},
@@ -88,7 +88,7 @@ const maqBindings = {
 // 𝘢 | abstract(𝘢)
 const hoq = presuppose(v(0, ['e']), app(abstract(['e']), v(0, ['e'])));
 
-const hoqBindings = {
+const hoqBindings: Bindings = {
 	variable: {},
 	animacy: { abstract: { index: 0, subordinate: false } },
 	head: {},
@@ -97,7 +97,7 @@ const hoqBindings = {
 // 𝘢
 const ta = hoa;
 
-const taBindings = {
+const taBindings: Bindings = {
 	variable: {},
 	animacy: { descriptive: { index: 0, subordinate: false } },
 	head: {},
@@ -336,6 +336,13 @@ const boundThe = λ(
 	c => app(v(0, c), v(1, c)),
 );
 
+const boundTheBindings: Bindings = {
+	variable: {},
+	animacy: {},
+	head: {},
+	covertResumptive: { index: 0, subordinate: false },
+};
+
 // λ𝘢. λ𝘦. ᴀɢᴇɴᴛ(𝘦)(𝘸) = 𝘢
 const littleV = λ('e', ['s'], c =>
 	λ('v', c, c => equals(app(app(agent(c), v(0, c)), v(2, c)), v(1, c))),
@@ -458,6 +465,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		}
 	} else if (leaf.label === 'D') {
 		denotation = boundThe;
+		bindings = boundTheBindings;
 	} else if (leaf.label === 'n') {
 		if (cCommand === null) throw new Error("Can't denote an n in isolation");
 		const vp = findVp(cCommand);
@@ -492,6 +500,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			variable: { [(word.entry as VerbEntry).toaq]: binding },
 			animacy: { [animacy]: binding },
 			head: {},
+			covertResumptive: binding,
 		};
 	} else if (leaf.label === '𝘷') {
 		denotation = littleV;
@@ -711,6 +720,23 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 	}
 };
 
+const dComposition: CompositionRule = (branch, left, right) => {
+	if (left.denotation === null) {
+		throw new Error('D composition on a null ${left.label}');
+	} else if (right.denotation === null) {
+		throw new Error('D composition on a null ${right.label}');
+	} else {
+		// Because unifyDenotations is heuristic and asymmetric, and nP will have more
+		// binding information than D, we need to pretend that nP is on the left here
+		const [np, d, bindings] = unifyDenotations(right, left);
+		// Delete the covert resumptive binding as it was only needed to perform this
+		// composition and should not leak outside the DP
+		bindings.covertResumptive = undefined;
+
+		return { ...branch, left, right, denotation: reduce(app(d, np)), bindings };
+	}
+};
+
 function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (left.label) {
 		case 'V':
@@ -729,6 +755,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 			return cComposition;
 		case 'Crel':
 			return cRelComposition;
+		case 'D':
+			return dComposition;
 	}
 
 	switch (right.label) {
