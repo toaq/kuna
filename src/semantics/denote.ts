@@ -1,4 +1,5 @@
-import { Branch, Leaf, StrictTree } from '../tree';
+import { VerbEntry } from '../dictionary';
+import { Branch, Leaf, StrictTree, Word } from '../tree';
 import {
 	after,
 	afterNear,
@@ -39,6 +40,7 @@ import {
 	inanimate,
 	abstract,
 	typesEqual,
+	AnimacyClass,
 } from './model';
 import {
 	makeWorldExplicit,
@@ -339,7 +341,48 @@ const littleV = λ('e', ['s'], c =>
 	λ('v', c, c => equals(app(app(agent(c), v(0, c)), v(2, c)), v(1, c))),
 );
 
-function denoteLeaf(leaf: Leaf): DTree {
+function findVp(tree: StrictTree): StrictTree | null {
+	if (tree.label === 'VP') {
+		return tree;
+	} else if ('word' in tree) {
+		return null;
+	} else {
+		return findVp(tree.right) ?? findVp(tree.left);
+	}
+}
+
+function animacyClass(verb: VerbEntry): AnimacyClass {
+	switch (verb.pronominal_class) {
+		case 'ho':
+			return 'animate';
+		case 'maq':
+			return 'inanimate';
+		case 'hoq':
+			return 'abstract';
+		default:
+			return 'descriptive';
+	}
+}
+
+function denoteAnimacy(
+	animacy: AnimacyClass,
+): ((context: ExprType[]) => Expr) | null {
+	switch (animacy) {
+		case 'animate':
+			return animate;
+		case 'inanimate':
+			return inanimate;
+		case 'abstract':
+			return abstract;
+		case 'descriptive':
+			return null;
+	}
+}
+
+// λ𝘗. 𝘗
+const nWithoutPresupposition = λ(['e', 't'], ['e'], c => v(0, c));
+
+function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	let denotation: Expr | null;
 	let bindings = noBindings;
 
@@ -351,7 +394,6 @@ function denoteLeaf(leaf: Leaf): DTree {
 
 		denotation = denoteVerb(entry.toaq, entry.frame.split(' ').length);
 	} else if (leaf.label === 'DP') {
-		let toaq: string;
 		if (leaf.word === 'functional') {
 			throw new Error('Functional DP');
 		} else if (leaf.word === 'covert') {
@@ -416,6 +458,40 @@ function denoteLeaf(leaf: Leaf): DTree {
 		}
 	} else if (leaf.label === 'D') {
 		denotation = boundThe;
+	} else if (leaf.label === 'n') {
+		if (cCommand === null) throw new Error("Can't denote an n in isolation");
+		const vp = findVp(cCommand);
+		if (vp === null) throw new Error("Can't find the VP for this n");
+
+		let word: Word;
+		if ('word' in vp) {
+			word = vp.word as Word;
+		} else {
+			const v = vp.left;
+			if (v.label !== 'V' || !('word' in v))
+				throw new Error('Unrecognized VP shape');
+			word = v.word as Word;
+		}
+
+		const animacy = animacyClass(word.entry as VerbEntry);
+		const animacyPredicate = denoteAnimacy(animacy);
+
+		if (animacyPredicate === null) {
+			denotation = nWithoutPresupposition;
+		} else {
+			denotation = λ(
+				['e', 't'],
+				['e'],
+				c => v(0, c),
+				c => app(animacyPredicate(c), v(1, c)),
+			);
+		}
+
+		bindings = {
+			variable: {},
+			animacy: { [animacy]: { index: 0, subordinate: false } },
+			head: {},
+		};
 	} else if (leaf.label === '𝘷') {
 		denotation = littleV;
 	} else if (leaf.label === '𝘷0') {
@@ -671,16 +747,19 @@ function denoteBranch(
 	return getCompositionRule(left, right)(branch, left, right);
 }
 
+export function denote_(tree: StrictTree, cCommand: StrictTree | null): DTree {
+	if ('word' in tree) {
+		return denoteLeaf(tree, cCommand);
+	} else {
+		const left = denote_(tree.left, tree.right);
+		const right = denote_(tree.right, tree.right);
+		return denoteBranch(tree, left, right);
+	}
+}
+
 /**
  * Annotates a tree with denotations.
  */
 export function denote(tree: StrictTree): DTree {
-	if ('word' in tree) {
-		// TODO: n and SA leaves require information about their sibling
-		return denoteLeaf(tree);
-	} else {
-		const left = denote(tree.left);
-		const right = denote(tree.right);
-		return denoteBranch(tree, left, right);
-	}
+	return denote_(tree, null);
 }
