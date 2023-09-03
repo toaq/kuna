@@ -487,9 +487,10 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			);
 		}
 
+		const binding = { index: 0, subordinate: false };
 		bindings = {
-			variable: {},
-			animacy: { [animacy]: { index: 0, subordinate: false } },
+			variable: { [(word.entry as VerbEntry).toaq]: binding },
+			animacy: { [animacy]: binding },
 			head: {},
 		};
 	} else if (leaf.label === '𝘷') {
