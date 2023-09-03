@@ -310,6 +310,7 @@ function denoteSpeechAct(toaq: string): string {
 
 function denoteVerb(toaq: string, arity: number): Expr {
 	switch (arity) {
+		case 1: // For the moment, pretend that all intranstive verbs are unaccusative
 		case 2:
 			return λ('e', ['s'], c =>
 				λ('v', c, c => verb(toaq, [v(1, c)], v(0, c), v(2, c))),
