@@ -4,6 +4,11 @@ import { bare, clean } from './tokenize';
 import { Branch, Label, Leaf, Tree, isQuestion } from './tree';
 import { VerbForm, conjugate } from './english-conjugation';
 
+interface Constituent {
+	text: string;
+	person?: VerbForm;
+}
+
 function leafText(tree: Tree): string {
 	if (!('word' in tree)) {
 		throw new Error('Unexpected non-leaf ' + tree.label);
@@ -53,16 +58,15 @@ class ClauseTranslator {
 	topics: string[] = [];
 	toaqAspect: string = 'tam';
 	negative: boolean = false;
-	subject?: string = undefined;
+	subject?: Constituent = undefined;
 	earlyAdjuncts: string[] = [];
-	objects: string[] = [];
+	objects: Constituent[] = [];
 	lateAdjuncts: string[] = [];
 	modals: string[] = [];
 	constructor(toaqSpeechAct?: string) {
 		this.toaqSpeechAct = toaqSpeechAct;
 	}
 
-	/// Process a CP.
 	public processCP(tree: Tree): void {
 		assertBranch(tree);
 		const c = clean(leafText(tree.left as Leaf));
@@ -81,9 +85,9 @@ class ClauseTranslator {
 					const english = treeToEnglish(child);
 					if (child.label === 'AdjunctP') {
 						if (late) {
-							this.lateAdjuncts.push(english);
+							this.lateAdjuncts.push(english.text);
 						} else {
-							this.earlyAdjuncts.push(english);
+							this.earlyAdjuncts.push(english.text);
 						}
 					} else {
 						if (this.subject) {
@@ -98,7 +102,7 @@ class ClauseTranslator {
 			} else if ('left' in node) {
 				switch (node.label) {
 					case 'TopicP':
-						this.topics.push(treeToEnglish(node.left));
+						this.topics.push(treeToEnglish(node.left).text);
 						node = node.right;
 						break;
 					case "Topic'":
@@ -120,7 +124,7 @@ class ClauseTranslator {
 						break;
 					case '𝘷P':
 						if (node.left.label === 'ModalP') {
-							this.modals.push(treeToEnglish(node.left));
+							this.modals.push(treeToEnglish(node.left).text);
 						}
 						node = node.right;
 						break;
@@ -139,10 +143,10 @@ class ClauseTranslator {
 
 	public emit(mode?: 'DP'): string {
 		if (mode !== 'DP') {
-			this.subject ||= 'it';
+			this.subject ||= { text: 'it' };
 		}
-		if (this.subject === 'me') {
-			this.subject = 'I';
+		if (this.subject?.text === 'me') {
+			this.subject.text = 'I';
 		}
 		let complementizer: string = '';
 		switch (this.toaqComplementizer) {
@@ -154,13 +158,15 @@ class ClauseTranslator {
 				break;
 		}
 
-		let verbForm: VerbForm = VerbForm.Third;
+		const subjectVerbForm = this.subject?.person ?? VerbForm.Third;
+		let verbForm = subjectVerbForm;
 		let auxiliary: string = '';
 		if (this.negative || this.toaqComplementizer === 'ma') {
 			auxiliary = 'do';
 			verbForm = VerbForm.Infinitive;
 		}
 		const nt: string = this.negative ? "n't" : '';
+		let preVerb: string = '';
 		let postVerb: string = '';
 		const past: boolean = this.toaqTense === 'pu';
 
@@ -169,27 +175,25 @@ class ClauseTranslator {
 				break;
 			case 'mala':
 				auxiliary = 'have';
-				postVerb = 'ever';
-				verbForm = VerbForm.Infinitive;
+				preVerb = 'ever';
+				verbForm = VerbForm.PastParticiple;
 				break;
 			case 'sula':
 				auxiliary = 'do';
-				postVerb = 'ever';
-				verbForm = VerbForm.Infinitive;
+				preVerb = 'ever';
+				verbForm = VerbForm.PastParticiple;
 				break;
 			case 'jela':
 				auxiliary = 'will';
-				postVerb = 'ever';
-				verbForm = VerbForm.Infinitive;
+				preVerb = 'ever';
+				verbForm = VerbForm.PastParticiple;
 				break;
 			case 'jıa':
 				auxiliary = 'will';
 				verbForm = VerbForm.Infinitive;
 				break;
 		}
-		let aspect: string = '';
 		let auxiliary2: string = '';
-		let preVerb: string = '';
 		switch (this.toaqAspect) {
 			case 'luı':
 				if (!auxiliary || auxiliary === 'do') {
@@ -244,36 +248,39 @@ class ClauseTranslator {
 
 		let order: string[];
 		if (auxiliary) {
-			auxiliary = conjugate(auxiliary, VerbForm.Third, past);
+			auxiliary = conjugate(auxiliary, subjectVerbForm, past);
 			auxiliary += nt;
 		}
 		const verb = this.verb
 			? conjugate(this.verb, verbForm, auxiliary ? false : past)
 			: '';
 
+		const subject = this.subject?.text ?? '';
+		const objects = this.objects.map(x => x.text);
+
 		if (this.toaqComplementizer === 'ma') {
 			order = [
 				auxiliary,
 				...this.earlyAdjuncts,
-				this.subject ?? '',
+				subject,
 				auxiliary2,
 				preVerb,
 				verb,
 				postVerb,
-				...this.objects,
+				...objects,
 				...this.lateAdjuncts,
 			];
 		} else {
 			order = [
 				complementizer,
 				...this.earlyAdjuncts,
-				this.subject ?? '',
+				subject,
 				auxiliary ?? '',
 				auxiliary2,
 				preVerb,
 				verb,
 				postVerb,
-				...this.objects,
+				...objects,
 				...this.lateAdjuncts,
 			];
 		}
@@ -285,7 +292,7 @@ class ClauseTranslator {
 	}
 }
 
-function branchToEnglish(tree: Branch<Tree>): string {
+function branchToEnglish(tree: Branch<Tree>): Constituent {
 	if (tree.label === 'SAP') {
 		const sa = clean(leafText(tree.right as Leaf));
 		const cp = tree.left;
@@ -293,27 +300,26 @@ function branchToEnglish(tree: Branch<Tree>): string {
 		translator.processCP(cp);
 		const englishClause = translator.emit();
 		const punctuation = isQuestion(cp) ? '?' : '.';
-		return englishClause.replace(/[a-z]/i, x => x.toUpperCase()) + punctuation;
+		return {
+			text: englishClause.replace(/./, x => x.toUpperCase()) + punctuation,
+		};
 	}
 	if (tree.label === 'CP') {
 		const translator = new ClauseTranslator();
 		translator.processCP(tree);
-		return translator.emit();
+		return { text: translator.emit() };
 	}
 	if (tree.label === 'DP') {
-		if ('word' in tree) {
-			return leafToEnglish(tree);
+		const d = tree.left;
+		const nP = tree.right as Branch<Tree>;
+		const translator = new ClauseTranslator();
+		translator.processCP(nP.right);
+		const noun = translator.emit('DP');
+		if (clean(leafText(d)) === 'báq') {
+			return { text: noun + 's', person: VerbForm.Plural };
 		} else {
-			const d = tree.left;
-			const nP = tree.right as Branch<Tree>;
-			const translator = new ClauseTranslator();
-			translator.processCP(nP.right);
-			const noun = translator.emit('DP');
-			if (clean(leafText(d)) === 'báq') {
-				return noun + 's';
-			} else {
-				return (leafToEnglish(d) + ' ' + noun).trim();
-			}
+			const det = leafToEnglish(d);
+			return { text: (det + ' ' + noun).trim() };
 		}
 	}
 	if (tree.label === 'AdjunctP') {
@@ -321,10 +327,10 @@ function branchToEnglish(tree: Branch<Tree>): string {
 			assertBranch(tree.right);
 			const serial = tree.right.left;
 			const object = tree.right.right;
-			return serialToEnglish(serial) + ' ' + treeToEnglish(object);
+			return { text: serialToEnglish(serial) + ' ' + treeToEnglish(object) };
 		} else {
 			const serial = tree.right;
-			return serialToEnglish(serial) + 'ly';
+			return { text: serialToEnglish(serial) + 'ly' };
 		}
 	}
 	if (tree.label === 'ModalP') {
@@ -338,38 +344,57 @@ function branchToEnglish(tree: Branch<Tree>): string {
 				bare(leafText(modal))
 			] ?? '?';
 		if (c.word === 'covert' || c.word === 'functional') {
-			return eng;
+			return { text: eng };
 		} else {
-			return 'if ' + translator.emit().replace(/^that /, '') + ', then ' + eng;
+			return {
+				text: 'if ' + translator.emit().replace(/^that /, '') + ', then ' + eng,
+			};
 		}
 	}
 	if (tree.label === '&P') {
 		assertBranch(tree.right);
-		return (
-			treeToEnglish(tree.left) +
-			' ' +
-			leafToEnglish(tree.right.left) +
-			' ' +
-			treeToEnglish(tree.right.right)
-		);
+		return {
+			text:
+				treeToEnglish(tree.left).text +
+				' ' +
+				leafToEnglish(tree.right.left) +
+				' ' +
+				treeToEnglish(tree.right.right).text,
+			person: VerbForm.Plural,
+		};
 	}
 	if (tree.label === 'FocusP') {
-		const left = treeToEnglish(tree.left);
-		const right = leafToEnglish(tree.right);
+		const left = leafToEnglish(tree.left);
+		const right = treeToEnglish(tree.right);
 		switch (left) {
 			case 'FOC':
 			case 'FOC.CONTR':
-				return '*' + right + '*';
+				return { text: '*' + right + '*', person: right.person };
 			default:
-				return left + ' ' + right;
+				return { text: left + ' ' + right, person: right.person };
 		}
 	}
 	throw new Error('unimplemented in branchToEnglish: ' + tree.label);
 }
 
-function treeToEnglish(tree: Tree): string {
+function treeToEnglish(tree: Tree): Constituent {
 	if ('word' in tree) {
-		return leafToEnglish(tree);
+		const text = leafToEnglish(tree);
+		let person: VerbForm;
+		switch (text) {
+			case 'me':
+			case 'I':
+				person = VerbForm.First;
+				break;
+			case 'you':
+			case 'we':
+			case 'they':
+				person = VerbForm.Plural;
+				break;
+			default:
+				person = VerbForm.Third;
+		}
+		return { text, person };
 	} else if ('left' in tree) {
 		return branchToEnglish(tree);
 	} else {
@@ -377,10 +402,10 @@ function treeToEnglish(tree: Tree): string {
 	}
 }
 
-export function toEnglish(text: string) {
+export function toEnglish(text: string): string {
 	const trees = parse(text);
 	if (trees.length === 0) return 'No parse';
 	if (trees.length > 1) return 'Ambiguous parse';
 	const tree = trees[0];
-	return treeToEnglish(tree);
+	return treeToEnglish(tree).text;
 }
