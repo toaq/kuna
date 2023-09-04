@@ -1,11 +1,17 @@
 {
 	"devDependencies": {
 		"@types/jest": "^29.2.5",
+		"@types/react": "^18.2.21",
+		"@types/react-dom": "^18.2.7",
+		"@vitejs/plugin-react": "^4.0.4",
 		"esbuild-runner": "^2.2.2",
 		"jest": "^29.3.1",
 		"prettier": "^3.0.0",
 		"ts-jest": "^29.0.3",
-		"typescript": "^4.9.4"
+		"typescript": "^4.9.4",
+		"vite": "^4.4.9",
+		"vite-plugin-require-transform": "^1.0.21",
+		"vite-tsconfig-paths": "^4.2.0"
 	},
 	"name": "kuna",
 	"version": "0.0.1",
@@ -39,6 +45,8 @@
 		"canvas": "^2.11.0",
 		"discord.js": "^14.7.1",
 		"nearley": "^2.20.1",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
 		"yargs": "^17.6.2"
 	},
 	"jest": {
