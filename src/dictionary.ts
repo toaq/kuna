@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import { inTone } from './tokenize';
 import { Tone } from './types';
 import dictionaryJson from '../dictionary/dictionary.json';
