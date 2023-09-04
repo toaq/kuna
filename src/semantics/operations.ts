@@ -340,23 +340,37 @@ export function unifyDenotations(
 
 	// For each binding referenced in the right subtree
 	forEachBinding(right.bindings, (rb, getter, setter) => {
-		// If there is a matching binding in the left subtree
-		const lb = getter(left.bindings);
-		if (lb !== undefined) {
-			// Then unify the variables
-			setter(bindings, {
-				index: lb.index,
-				subordinate: lb.subordinate && rb.subordinate,
-			});
-			rightMapping[rb.index] = lb.index;
+		// If this variable has already been resolved
+		const resolvedIndex = rightMapping[rb.index];
+		if (resolvedIndex !== undefined) {
+			// Then, as long as no bindings from the left subtree override this binding,
+			// keep it
+			const b = getter(bindings);
+			if (b === undefined || b.index === resolvedIndex) {
+				setter(bindings, {
+					index: resolvedIndex,
+					subordinate: (b?.subordinate ?? true) && rb.subordinate,
+				});
+			}
 		} else {
-			// Otherwise, create a new variable
-			setter(bindings, {
-				index: context.length,
-				subordinate: rightSubordinate || rb.subordinate,
-			});
-			rightMapping[rb.index] = context.length;
-			context.push(right.denotation!.context[rb.index]);
+			// Otherwise, if there is a matching binding in the left subtree
+			const lb = getter(left.bindings);
+			if (lb !== undefined) {
+				// Then unify the variables
+				setter(bindings, {
+					index: lb.index,
+					subordinate: lb.subordinate && rb.subordinate,
+				});
+				rightMapping[rb.index] = lb.index;
+			} else {
+				// Otherwise, create a new variable
+				setter(bindings, {
+					index: context.length,
+					subordinate: rightSubordinate || rb.subordinate,
+				});
+				rightMapping[rb.index] = context.length;
+				context.push(right.denotation!.context[rb.index]);
+			}
 		}
 	});
 

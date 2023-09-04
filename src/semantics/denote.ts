@@ -582,16 +582,17 @@ function functionalApplication_(
 	} else if (argument.denotation === null) {
 		({ denotation, bindings } = fn);
 	} else {
-		const [f, a, b] = unifyDenotations(
-			fn,
-			typesEqual(
-				(fn.denotation.type as [ExprType, ExprType])[0],
-				argument.denotation.type,
-			)
-				? argument
-				: makeWorldExplicit(argument),
-		);
-		denotation = reduce(app(f, a));
+		const compatibleArgument = typesEqual(
+			(fn.denotation.type as [ExprType, ExprType])[0],
+			argument.denotation.type,
+		)
+			? argument
+			: makeWorldExplicit(argument);
+		const [l, r, b] =
+			fn === left
+				? unifyDenotations(fn, compatibleArgument)
+				: unifyDenotations(compatibleArgument, fn);
+		denotation = reduce(fn === left ? app(l, r) : app(r, l));
 		bindings = b;
 	}
 
