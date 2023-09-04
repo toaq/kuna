@@ -77,9 +77,12 @@ client.on('interactionCreate', async interaction => {
 				content: `Found ${trees.length} parses.`,
 				files: trees.map(
 					(tree, i) =>
-						new AttachmentBuilder(pngDrawTree(tree, 'dark'), {
-							name: `tree${i}.png`,
-						}),
+						new AttachmentBuilder(
+							pngDrawTree(tree, 'dark').toBuffer('image/png'),
+							{
+								name: `tree${i}.png`,
+							},
+						),
 				),
 			});
 		} catch (e) {
