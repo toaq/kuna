@@ -17,6 +17,16 @@ h1 {
 	margin: 0;
 }
 
+.settings .buttons {
+    margin-top: 8px;
+}
+
+.settings button {
+	cursor: pointer;
+	padding: 4px 12px;
+    margin: 2px;
+}
+
 .kuna {
 	display: flex;
 	flex-direction: column;
@@ -59,13 +69,21 @@ h1 {
 	justify-content: center;
 }
 
-/* .output img {
-	max-height: calc(100vh - 260px);
-} */
-
 .output iframe {
 	width: 90vw;
 	height: 50vh;
 	border: none;
 	overflow: scroll;
+}
+
+.gloss-output {
+	display: flex;
+}
+
+.gloss-item {
+	padding: 0px 4px;
+}
+
+.gloss-toaq {
+	font-weight: bold;
 }

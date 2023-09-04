@@ -6,85 +6,64 @@ import { initializeDictionary } from '../dictionary';
 import { pngDrawTree } from '../draw-tree';
 import { fix } from '../fix';
 import { denote } from '../semantics/denote';
+import { Glosser } from '../gloss';
 
 export function App() {
-	const [outputMode, setOutputMode] = useState<string>('tree-png');
 	const [inputText, setInputText] = useState<string>('Poq jí da.');
 	const [latestOutput, setLatestOutput] = useState<ReactElement>(
 		<>Output will appear here.</>,
 	);
-	const [fixEnabled, setFixEnabled] = useState(false);
-	const [denoteEnabled, setDenoteEnabled] = useState(false);
 	useEffect(() => {
 		initializeDictionary();
 	});
-	function get(e: FormEvent<HTMLFormElement>) {
-		e.preventDefault();
-		if (outputMode === 'english') {
-			setLatestOutput(<>{toEnglish(inputText)}</>);
-		} else if (outputMode === 'tree-png') {
-			const trees = parse(inputText);
-			if (trees.length === 1) {
-				const theme = 'light';
-				let tree = trees[0];
-				if (fixEnabled) {
-					tree = fix(tree);
-					if (denoteEnabled) tree = denote(tree as any);
-				}
-				const canvas = pngDrawTree(tree, theme);
-				const url = canvas.toDataURL();
-				setLatestOutput(<img style={{ maxHeight: '500px' }} src={url} />);
+	function showEnglish() {
+		setLatestOutput(<>{toEnglish(inputText)}</>);
+	}
+	function showGloss(easy: boolean) {
+		setLatestOutput(
+			<div className="gloss-output">
+				{new Glosser(easy).glossSentence(inputText).map((g, i) => (
+					<div className="gloss-item" key={i}>
+						<div className="gloss-toaq">{g.toaq}</div>
+						<div className="gloss-english">{g.english}</div>
+					</div>
+				))}
+			</div>,
+		);
+	}
+	function showTree(fixEnabled: boolean, denoteEnabled: boolean) {
+		const trees = parse(inputText);
+		if (trees.length === 1) {
+			const theme = 'light';
+			let tree = trees[0];
+			if (fixEnabled) {
+				tree = fix(tree);
+				if (denoteEnabled) tree = denote(tree as any);
 			}
+			const canvas = pngDrawTree(tree, theme);
+			const url = canvas.toDataURL();
+			setLatestOutput(<img style={{ maxHeight: '500px' }} src={url} />);
 		}
 	}
 	return (
 		<div className="kuna">
-			<h1>Kuna</h1>
+			<h1>mí Kuna</h1>
 			<div className="card settings">
-				<form onSubmit={get}>
-					<label>
-						Output mode:&nbsp;
-						<select
-							value={outputMode}
-							onChange={e => setOutputMode(e.target.value)}
-						>
-							<option value="english">English</option>
-							<option value="tree-png">Tree</option>
-						</select>
-					</label>
-					<label>
-						<input
-							type="checkbox"
-							checked={fixEnabled}
-							onChange={e => {
-								if (fixEnabled) {
-									setDenoteEnabled(false);
-								}
-								setFixEnabled(!fixEnabled);
-							}}
-						></input>
-						Restore deep structure
-					</label>
-					<label>
-						<input
-							type="checkbox"
-							checked={denoteEnabled}
-							onChange={e => {
-								if (!denoteEnabled) {
-									setFixEnabled(true);
-								}
-								setDenoteEnabled(!denoteEnabled);
-							}}
-						></input>
-						Show semantics
-					</label>
-					<textarea
-						rows={3}
-						value={inputText}
-						onChange={e => setInputText(e.target.value)}
-					/>
-					<button type="submit">Submit</button>
-				</form>
+				<textarea
+					rows={3}
+					value={inputText}
+					onChange={e => setInputText(e.target.value)}
+				/>
+				<div className="buttons">
+					<button onClick={() => showTree(true, false)}>Syntax tree</button>
+					<button onClick={() => showTree(true, true)}>Semantics tree</button>
+					<button onClick={() => showTree(false, false)}>Raw tree</button>
+					<br />
+					<button onClick={() => showGloss(true)}>Gloss</button>
+					<button onClick={() => showGloss(false)}>Technical gloss</button>
+					<button onClick={() => showEnglish()}>English</button>
+					<br />
+				</div>
 			</div>
 			<div className="card output">{latestOutput}</div>
 		</div>
