@@ -365,13 +365,13 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 	}
 	if (tree.label === 'FocusP') {
 		const left = leafToEnglish(tree.left);
-		const right = treeToEnglish(tree.right);
+		const { text: right, person } = treeToEnglish(tree.right);
 		switch (left) {
 			case 'FOC':
 			case 'FOC.CONTR':
-				return { text: '*' + right + '*', person: right.person };
+				return { text: '*' + right + '*', person };
 			default:
-				return { text: left + ' ' + right, person: right.person };
+				return { text: left + ' ' + right, person };
 		}
 	}
 	throw new Error('unimplemented in branchToEnglish: ' + tree.label);
