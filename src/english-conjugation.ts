@@ -18,9 +18,6 @@ const irregularVerbs: Record<string, string> = {
 };
 
 export function conjugate(verb: string, person: VerbForm, past: boolean) {
-	if (person === VerbForm.Infinitive) {
-		return verb;
-	}
 	if (verb === 'be' && person == VerbForm.First && !past) {
 		return 'am';
 	}
@@ -29,13 +26,15 @@ export function conjugate(verb: string, person: VerbForm, past: boolean) {
 	}
 	const irr = irregularVerbs[verb];
 	if (irr) {
-		const [go, goes, went, going, gone] = irr.split(',');
+		const [go, goes, went, go_inf, going, gone] = irr.split(',');
 		if (person === VerbForm.PresentParticiple) {
 			return going;
 		} else if (person === VerbForm.PastParticiple) {
 			return gone;
 		} else if (past) {
 			return went;
+		} else if (person === VerbForm.Infinitive) {
+			return go_inf;
 		} else if (person === VerbForm.Third) {
 			return goes;
 		} else {
