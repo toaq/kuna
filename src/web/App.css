@@ -18,13 +18,13 @@ h1 {
 }
 
 .settings .buttons {
-    margin-top: 8px;
+	margin-top: 8px;
 }
 
 .settings button {
 	cursor: pointer;
 	padding: 4px 12px;
-    margin: 2px;
+	margin: 2px;
 }
 
 .kuna {
