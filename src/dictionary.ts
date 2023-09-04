@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { inTone } from './tokenize';
 import { Tone } from './types';
+import dictionaryJson from '../dictionary/dictionary.json';
 
 export const verbTypes = [
 	'name quote',
@@ -87,9 +88,7 @@ export interface NonVerbEntry extends BaseEntry {
 
 export type Entry = VerbEntry | NonVerbEntry;
 
-const entries: Entry[] = JSON.parse(
-	fs.readFileSync('dictionary/dictionary.json').toString('utf-8'),
-);
+const entries: Entry[] = dictionaryJson as Entry[];
 
 export const dictionary = new Map<string, Entry>();
 

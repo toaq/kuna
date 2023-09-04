@@ -30,9 +30,12 @@ def gloss(body, head):
     return None
 
 
+glosses = {}
 for entry in sorted(json.load(open("toadua-basic.json")), key=lambda x: x["head"]):
     head = entry["head"]
     body = entry["body"]
     g = gloss(body, head)
     if g and 1 <= len(g) <= 22 and len(head) <= 30:
-        print(head, g, sep="\t")
+        glosses[head] = g
+
+print(json.dumps(glosses))

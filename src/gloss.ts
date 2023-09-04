@@ -2,6 +2,7 @@ import { Entry, dictionary } from './dictionary';
 import { bare, clean, splitPrefixes, tone } from './tokenize';
 import { Tone } from './types';
 import * as fs from 'fs';
+import toaduaGlossesJson from '../data/toadua-glosses.json';
 
 interface Gloss {
 	toaq: string;
@@ -9,15 +10,8 @@ interface Gloss {
 }
 
 let toaduaGlosses = new Map();
-for (const line of fs
-	.readFileSync('data/toadua-glosses.tsv')
-	.toString()
-	.split('\n')) {
-	const fields = line.split('\t');
-	if (fields.length === 2) {
-		const [word, gloss] = fields;
-		toaduaGlosses.set(word.toLowerCase(), gloss.replace(/\s+/g, '.'));
-	}
+for (const [word, gloss] of Object.entries(toaduaGlossesJson)) {
+	toaduaGlosses.set(word.toLowerCase(), gloss.replace(/\s+/g, '.'));
 }
 
 const words = [...toaduaGlosses.keys()]
