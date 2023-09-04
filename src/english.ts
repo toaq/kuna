@@ -2,6 +2,7 @@ import { Glosser } from './gloss';
 import { parse } from './parse';
 import { bare, clean } from './tokenize';
 import { Branch, Label, Leaf, Tree, isQuestion } from './tree';
+import { VerbForm, conjugate } from './english-conjugation';
 
 function leafText(tree: Tree): string {
 	if (!('word' in tree)) {
@@ -152,67 +153,113 @@ class ClauseTranslator {
 				complementizer = 'if';
 				break;
 		}
-		let tense: string = '';
+
+		let verbForm: VerbForm = VerbForm.Third;
+		let auxiliary: string = '';
+		if (this.negative || this.toaqComplementizer === 'ma') {
+			auxiliary = 'do';
+			verbForm = VerbForm.Infinitive;
+		}
+		const nt: string = this.negative ? "n't" : '';
+		let postVerb: string = '';
+		const past: boolean = this.toaqTense === 'pu';
+
 		switch (this.toaqTense) {
 			case 'pu':
-				tense = 'did';
 				break;
 			case 'mala':
-				tense = 'has ever';
+				auxiliary = 'have';
+				postVerb = 'ever';
+				verbForm = VerbForm.Infinitive;
 				break;
 			case 'sula':
-				tense = 'ever';
+				auxiliary = 'do';
+				postVerb = 'ever';
+				verbForm = VerbForm.Infinitive;
 				break;
 			case 'jela':
-				tense = 'will ever';
+				auxiliary = 'will';
+				postVerb = 'ever';
+				verbForm = VerbForm.Infinitive;
 				break;
 			case 'jıa':
-				tense = 'will';
+				auxiliary = 'will';
+				verbForm = VerbForm.Infinitive;
 				break;
 		}
 		let aspect: string = '';
+		let auxiliary2: string = '';
+		let preVerb: string = '';
 		switch (this.toaqAspect) {
 			case 'luı':
-				aspect = 'has';
-				this.verb += '-en';
+				if (!auxiliary || auxiliary === 'do') {
+					auxiliary = 'have';
+				} else {
+					auxiliary2 = 'have';
+				}
+				verbForm = VerbForm.PastParticiple;
 				break;
 			case 'chum':
-				aspect = 'is';
-				this.verb += '-ing';
+				if (!auxiliary || auxiliary === 'do') {
+					auxiliary = 'be';
+				} else {
+					auxiliary2 = 'be';
+				}
+				verbForm = VerbForm.PresentParticiple;
 				break;
 			case 'za':
-				aspect = 'is yet to';
+				if (!auxiliary || auxiliary === 'do') {
+					auxiliary = 'be';
+				} else {
+					auxiliary2 = 'be';
+				}
+				preVerb = 'yet to';
+				verbForm = VerbForm.Infinitive;
 				break;
 			case 'hoaı':
-				aspect = 'still';
+				preVerb = 'still';
 				break;
 			case 'haı':
-				aspect = 'already';
+				preVerb = 'already';
 				break;
 			case 'hıq':
-				aspect = 'just';
+				if (auxiliary === 'do') {
+					auxiliary = 'have';
+				} else {
+					auxiliary2 = 'have';
+				}
+				preVerb = 'just';
+				verbForm = VerbForm.PastParticiple;
 				break;
 			case 'fı':
-				aspect = 'is about to';
+				if (!auxiliary || auxiliary === 'do') {
+					auxiliary = 'be';
+				} else {
+					auxiliary2 = 'be';
+				}
+				preVerb = 'about to';
+				verbForm = VerbForm.Infinitive;
 				break;
-		}
-
-		let auxiliary: string = '';
-		if (this.negative) {
-			auxiliary = "don't";
 		}
 
 		let order: string[];
+		if (auxiliary) {
+			auxiliary = conjugate(auxiliary, VerbForm.Third, past);
+			auxiliary += nt;
+		}
+		const verb = this.verb
+			? conjugate(this.verb, verbForm, auxiliary ? false : past)
+			: '';
 
 		if (this.toaqComplementizer === 'ma') {
-			auxiliary ||= 'do';
 			order = [
-				tense,
-				aspect,
 				auxiliary,
 				...this.earlyAdjuncts,
 				this.subject ?? '',
-				this.verb ?? '',
+				auxiliary2,
+				preVerb,
+				verb,
+				postVerb,
 				...this.objects,
 				...this.lateAdjuncts,
 			];
@@ -221,10 +268,11 @@ class ClauseTranslator {
 				complementizer,
 				...this.earlyAdjuncts,
 				this.subject ?? '',
-				tense,
-				aspect,
 				auxiliary ?? '',
-				this.verb ?? '',
+				auxiliary2,
+				preVerb,
+				verb,
+				postVerb,
 				...this.objects,
 				...this.lateAdjuncts,
 			];
