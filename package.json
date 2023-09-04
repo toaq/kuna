@@ -27,7 +27,8 @@
 		"bot:debug": "node --inspect-brk -r esbuild-runner/register src/bot.ts",
 		"codegen": "npx nearleyc src/toaq.ne -o src/grammar.ts",
 		"ts:build": "npx tsc",
-		"ts:check": "npx tsc --noEmit"
+		"ts:check": "npx tsc --noEmit",
+		"vite:build": "npx vite build"
 	},
 	"repository": {
 		"type": "git",
