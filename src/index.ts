@@ -132,7 +132,9 @@ yargs
 				);
 			}
 			const theme = argv.light ? 'light' : 'dark';
-			fs.writeFileSync(argv.output as string, pngDrawTree(trees[0], theme));
+			const canvas = pngDrawTree(trees[0], theme);
+			const png = canvas.toBuffer('image/png');
+			fs.writeFileSync(argv.output as string, png);
 		},
 	)
 	.command(

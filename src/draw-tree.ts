@@ -1,4 +1,4 @@
-import { createCanvas, CanvasRenderingContext2D } from 'canvas';
+import { createCanvas, CanvasRenderingContext2D, Canvas } from 'canvas';
 import { DTree, Expr } from './semantics/model';
 import { toPlainText, typeToPlainText } from './semantics/render';
 import { Branch, Leaf, Rose, Tree } from './tree';
@@ -282,10 +282,13 @@ function drawArrows(ctx: CanvasRenderingContext2D, state: DrawState) {
 export function pngDrawTree(
 	tree: Tree | DTree,
 	theme: 'light' | 'dark',
-): Buffer {
+	canvas?: Canvas,
+): Canvas {
 	const width = 8400;
 	const height = 4400;
-	const canvas = createCanvas(width, height);
+	if (!canvas) {
+		canvas = createCanvas(width, height);
+	}
 	const ctx = canvas.getContext('2d');
 	ctx.fillStyle = themes[theme].backgroundColor;
 	ctx.fillRect(0, 0, width, height);
@@ -310,7 +313,5 @@ export function pngDrawTree(
 	canvas.width = cropWidth;
 	canvas.height = cropHeight;
 	ctx.putImageData(temp, 0, 0);
-
-	const imgBuffer = canvas.toBuffer('image/png');
-	return imgBuffer;
+	return canvas;
 }
