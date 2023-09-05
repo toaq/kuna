@@ -26,9 +26,9 @@ function getTrees(argv: {
 }): Tree[] {
 	let trees = parse(argv.sentence!);
 	if (argv.semantics) {
-		trees = trees.map(fix).map(denote);
+		trees = trees.map(t => fix(t)).map(denote);
 	} else if (!argv.surface) {
-		trees = trees.map(fix);
+		trees = trees.map(t => fix(t));
 	}
 	if (argv.compact) {
 		trees = trees.map(compact);
