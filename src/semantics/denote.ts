@@ -718,7 +718,7 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 					),
 				),
 				bindings: mapBindings(right.bindings, b => ({
-					index: b.index + 1,
+					index: b.index,
 					subordinate: true,
 				})),
 			};
