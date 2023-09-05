@@ -1,7 +1,7 @@
 import { Branch, Leaf, Tree, nodeType } from './tree';
 
 function isCovert(tree: Tree): boolean {
-	return 'word' in tree && typeof tree.word === 'string';
+	return 'word' in tree && tree.word.covert;
 }
 
 export function compact(tree: Tree): Tree {

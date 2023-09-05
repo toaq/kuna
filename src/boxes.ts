@@ -46,7 +46,7 @@ function skipFree(tree: Tree): Tree {
 
 function words(tree: Tree): string {
 	if ('word' in tree) {
-		if (tree.word === 'covert' || tree.word === 'functional') {
+		if (tree.word.covert) {
 			return '';
 		} else {
 			return tree.word.text;
@@ -91,7 +91,7 @@ function boxifyClause(tree: Tree): BoxClause {
 	if (!('left' in cp)) throw new Error('bad CP?');
 	const c = cp.left;
 	if (!('word' in c)) throw new Error('C without word?');
-	if (c.word !== 'covert' && c.word !== 'functional') {
+	if (!c.word.covert) {
 		complementizer = c.word.text;
 	}
 	for (let node = cp.right; ; ) {
@@ -149,7 +149,7 @@ export function boxify(tree: Tree): BoxSentence {
 	const sa = tree.right;
 	if (sa.label !== 'SA') throw new Error('SAP without SA?');
 	if (!('word' in sa)) throw new Error('SA without word?');
-	if (sa.word !== 'covert' && sa.word !== 'functional') {
+	if (!sa.word.covert) {
 		speechAct = sa.word.text;
 	}
 	const cp = tree.left;
