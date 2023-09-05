@@ -409,6 +409,41 @@ function denoteAnimacy(
 	}
 }
 
+// λR. λS. ∃x: R(x). S(x)
+const qSome = λ(['e', 't'], [], c =>
+	λ(['e', 't'], c, c =>
+		some(
+			'e',
+			c,
+			c => app(v(1, c), v(0, c)),
+			c => app(v(2, c), v(0, c)),
+		),
+	),
+);
+
+// λR. λS. ∀x: R(x). S(x)
+const qEvery = λ(['e', 't'], [], c =>
+	λ(['e', 't'], c, c =>
+		every(
+			'e',
+			c,
+			c => app(v(1, c), v(0, c)),
+			c => app(v(2, c), v(0, c)),
+		),
+	),
+);
+
+function denoteQuantifier(value: CovertValue): Expr {
+	switch (value) {
+		case '[∃]':
+			return qSome;
+		case '[∀]':
+			return qEvery;
+		default:
+			throw new Error(`Unrecognized quantifier: ${value}`);
+	}
+}
+
 // λ𝘗. 𝘗
 const nWithoutPresupposition = λ(['e', 't'], ['e'], c => v(0, c));
 
@@ -573,6 +608,11 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 				),
 			),
 		);
+	} else if (leaf.label === 'Q') {
+		if (!leaf.word.covert) {
+			throw new Error(`Overt Q: ${leaf.word.text}`);
+		}
+		denotation = denoteQuantifier(leaf.word.value);
 	} else {
 		throw new Error(`TODO: ${leaf.label}`);
 	}
@@ -763,11 +803,16 @@ const dComposition: CompositionRule = (branch, left, right) => {
 	}
 };
 
+const predicateAbstraction: CompositionRule = (branch, left, right) => {
+	throw new Error(`TODO: implement predicate abstraction`);
+};
+
 function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (left.label) {
 		case 'V':
 		case 'Asp':
 		case 'n':
+		case 'Q':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -785,6 +830,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 			return cRelComposition;
 		case 'D':
 			return dComposition;
+		case 'QP':
+			return predicateAbstraction;
 	}
 
 	switch (right.label) {
