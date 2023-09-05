@@ -362,7 +362,7 @@ function denoteCovertLittleV(value: CovertValue): Expr | null {
 	}
 }
 
-function denoteOvertLittleV(toaq: string): Expr | null {
+function denoteOvertLittleV(toaq: string): Expr {
 	switch (toaq) {
 		case 'nä':
 			return na;
