@@ -1,4 +1,5 @@
 import { dictionary, underscoredWordTypes, WordType } from './dictionary';
+import { Impossible } from './error';
 import { Tone } from './types';
 
 // Vyái → ꝡáı
@@ -107,7 +108,7 @@ export class ToaqTokenizer {
 			for (const tokenText of [...prefixes.map(p => p + '-'), root]) {
 				const lemmaForm = clean(tokenText);
 				if (!lemmaForm) {
-					throw new Error('empty token at ' + m.index);
+					throw new Impossible('empty token at ' + m.index);
 				}
 				const exactEntry = dictionary.get(lemmaForm);
 

@@ -3,6 +3,7 @@ import { Glosser } from './gloss';
 import { inTone } from './tokenize';
 import { Branch, Tree, assertBranch, isQuestion } from './tree';
 import { Tone } from './types';
+import { Impossible, Ungrammatical, Unimplemented } from './error';
 
 export interface PostField {
 	earlyAdjuncts: string[];
@@ -88,15 +89,15 @@ function boxifyClause(tree: Tree): BoxClause {
 	let postField: PostField | undefined = undefined;
 	let conjunction: AndClause | undefined = undefined;
 	const cp = skipFree(tree);
-	if (!('left' in cp)) throw new Error('bad CP?');
+	if (!('left' in cp)) throw new Impossible('bad CP?');
 	const c = cp.left;
-	if (!('word' in c)) throw new Error('C without word?');
+	if (!('word' in c)) throw new Impossible('C without word?');
 	if (!c.word.covert) {
 		complementizer = c.word.text;
 	}
 	for (let node = cp.right; ; ) {
 		if ('children' in node) {
-			if (node.label !== '*𝘷P') throw new Error('non-*𝘷P Rose');
+			if (node.label !== '*𝘷P') throw new Impossible('non-*𝘷P Rose');
 			const serial = node.children[0];
 			verbalComplexWords.push(words(serial));
 			postField = boxifyPostField(node.children.slice(1));
@@ -131,10 +132,10 @@ function boxifyClause(tree: Tree): BoxClause {
 					break;
 				default:
 					console.log(node);
-					throw new Error('unimplemented in boxifyClause: ' + node.label);
+					throw new Unimplemented('in boxifyClause: ' + node.label);
 			}
 		} else {
-			throw new Error('unexpected leaf in clause');
+			throw new Impossible('hit leaf in boxifyClause');
 		}
 	}
 	const verbalComplex = verbalComplexWords.join(' ').trim();
@@ -144,11 +145,12 @@ function boxifyClause(tree: Tree): BoxClause {
 export function boxify(tree: Tree): BoxSentence {
 	let speechAct: string = '';
 	tree = skipFree(tree);
-	if (tree.label !== 'SAP') throw new Error('Cannot boxify non-sentence');
-	if (!('left' in tree)) throw new Error('bad SAP?');
+	if (tree.label !== 'SAP')
+		throw new Ungrammatical('Cannot boxify non-sentence');
+	if (!('left' in tree)) throw new Impossible('bad SAP?');
 	const sa = tree.right;
-	if (sa.label !== 'SA') throw new Error('SAP without SA?');
-	if (!('word' in sa)) throw new Error('SA without word?');
+	if (sa.label !== 'SA') throw new Impossible('SAP without SA?');
+	if (!('word' in sa)) throw new Impossible('SA without word?');
 	if (!sa.word.covert) {
 		speechAct = sa.word.text;
 	}

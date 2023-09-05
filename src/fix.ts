@@ -1,5 +1,6 @@
 import { analyzeSerial } from './serial';
 import { CovertValue, StrictTree, Tree, assertLeaf } from './tree';
+import { Impossible } from './error';
 
 interface Quantification {
 	quantifier: CovertValue;
@@ -55,13 +56,14 @@ export function fix(tree: Tree, scope?: Scope): StrictTree {
 	if ('children' in tree) {
 		if (tree.label === '*𝘷P') {
 			const serial = tree.children[0];
-			if (!serial) throw new Error('*𝘷P without children');
-			if (serial.label !== '*Serial') throw new Error('*𝘷P without *Serial');
-			if (!('children' in serial)) throw new Error('strange *Serial');
+			if (!serial) throw new Impossible('*𝘷P without children');
+			if (serial.label !== '*Serial')
+				throw new Impossible('*𝘷P without *Serial');
+			if (!('children' in serial)) throw new Impossible('strange *Serial');
 			const vP = analyzeSerial(serial, tree.children.slice(1));
 			return fix(vP, scope);
 		} else {
-			throw new Error('unexpected non-binary tree');
+			throw new Impossible('unexpected non-binary tree');
 		}
 	} else if ('left' in tree) {
 		if (tree.label === 'CP') {
@@ -78,7 +80,7 @@ export function fix(tree: Tree, scope?: Scope): StrictTree {
 		if (scope && tree.label === 'DP') {
 			const d = tree.left;
 			assertLeaf(d);
-			if (d.word.covert) throw new Error('covert D');
+			if (d.word.covert) throw new Impossible('covert D');
 			const q = quantifiers[d.word.entry?.toaq ?? ''];
 			if (q) {
 				scope.quantify(q, right);

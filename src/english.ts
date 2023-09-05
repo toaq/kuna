@@ -3,6 +3,7 @@ import { parse } from './parse';
 import { bare, clean } from './tokenize';
 import { Branch, Label, Leaf, Tree, assertBranch, isQuestion } from './tree';
 import { VerbForm, conjugate } from './english-conjugation';
+import { Impossible, Unimplemented } from './error';
 
 interface Constituent {
 	text: string;
@@ -11,7 +12,7 @@ interface Constituent {
 
 function leafText(tree: Tree): string {
 	if (!('word' in tree)) {
-		throw new Error('Unexpected non-leaf ' + tree.label);
+		throw new Impossible('Unexpected non-leaf ' + tree.label);
 	}
 	if (tree.word.covert) return '';
 	return tree.word.text;
@@ -42,14 +43,14 @@ function verbToEnglish(tree: Tree): string {
 		const sep = left.endsWith('-') ? '' : ' ';
 		return left + sep + right;
 	} else {
-		throw new Error('weird verb ' + tree.label);
+		throw new Impossible('weird verb ' + tree.label);
 	}
 }
 
 function serialToEnglish(serial: Tree): string {
 	if ('word' in serial && serial.word.covert) return '';
-	if (serial.label !== '*Serial') throw new Error('non-*Serial serial');
-	if (!('children' in serial)) throw new Error('non-Rose serial');
+	if (serial.label !== '*Serial') throw new Impossible('non-*Serial serial');
+	if (!('children' in serial)) throw new Impossible('non-Rose serial');
 	return serial.children.map(x => verbToEnglish(x)).join('-');
 }
 
@@ -81,7 +82,7 @@ class ClauseTranslator {
 	public processClause(tree: Tree): void {
 		for (let node = tree; ; ) {
 			if ('children' in node) {
-				if (node.label !== '*𝘷P') throw new Error('non-*𝘷P Rose');
+				if (node.label !== '*𝘷P') throw new Impossible('non-*𝘷P Rose');
 				this.verb = serialToEnglish(node.children[0]);
 				let late = false;
 				for (let i = 1; i < node.children.length; i++) {
@@ -141,10 +142,10 @@ class ClauseTranslator {
 						break;
 					default:
 						console.log(node);
-						throw new Error('unimplemented in processClause: ' + node.label);
+						throw new Unimplemented('in processClause: ' + node.label);
 				}
 			} else {
-				throw new Error('unexpected leaf in clause');
+				throw new Impossible('hit leaf in clause');
 			}
 		}
 	}
@@ -395,7 +396,7 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 				return { text: left + ' ' + right, person };
 		}
 	}
-	throw new Error('unimplemented in branchToEnglish: ' + tree.label);
+	throw new Unimplemented('in branchToEnglish: ' + tree.label);
 }
 
 function treeToEnglish(tree: Tree): Constituent {
@@ -419,7 +420,7 @@ function treeToEnglish(tree: Tree): Constituent {
 	} else if ('left' in tree) {
 		return branchToEnglish(tree);
 	} else {
-		throw new Error('unexpected Rose in treeToEnglish: ' + tree.label);
+		throw new Impossible('unexpected Rose in treeToEnglish: ' + tree.label);
 	}
 }
 

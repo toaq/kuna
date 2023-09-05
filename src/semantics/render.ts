@@ -1,3 +1,4 @@
+import { Impossible } from '../error';
 import { Expr, ExprType } from './model';
 
 type NameType = 'e' | 'v' | 'i' | 's' | 'fn';
@@ -39,7 +40,7 @@ const noNames: Names = {
 };
 
 function getNameType(type: ExprType): NameType {
-	if (type === 't') throw new Error('There can be no variables of type t');
+	if (type === 't') throw new Impossible('There can be no variables of type t');
 	return typeof type === 'string' ? type : 'fn';
 }
 

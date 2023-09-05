@@ -1,4 +1,5 @@
 import { NonVerbEntry, VerbEntry } from '../dictionary';
+import { Impossible } from '../error';
 import { Branch, Leaf } from '../tree';
 
 /**
@@ -204,7 +205,7 @@ export function typesEqual(t1: ExprType, t2: ExprType): boolean {
 
 export function assertTypesEqual(t1: ExprType, t2: ExprType): void {
 	if (!typesEqual(t1, t2))
-		throw new Error(`Types ${t1} and ${t2} are not equal`);
+		throw new Impossible(`Types ${t1} and ${t2} are not equal`);
 }
 
 export function contextsEqual(c1: ExprType[], c2: ExprType[]): boolean {
@@ -216,7 +217,7 @@ export function contextsEqual(c1: ExprType[], c2: ExprType[]): boolean {
 
 export function assertContextsEqual(c1: ExprType[], c2: ExprType[]): void {
 	if (!contextsEqual(c1, c2))
-		throw new Error(`Contexts ${c1} and ${c2} are not equal`);
+		throw new Impossible(`Contexts ${c1} and ${c2} are not equal`);
 }
 
 /**
@@ -224,7 +225,7 @@ export function assertContextsEqual(c1: ExprType[], c2: ExprType[]): void {
  */
 export function v(index: number, context: ExprType[]): Expr {
 	if (index < 0 || index >= context.length)
-		throw new Error(`Index ${index} out of bounds for context ${context}`);
+		throw new Impossible(`Index ${index} out of bounds for context ${context}`);
 
 	return { head: 'variable', type: context[index], context, index };
 }
@@ -262,7 +263,7 @@ export function λ(
  * Constructor for function application expressions.
  */
 export function app(fn: Expr, argument: Expr): Expr {
-	if (!Array.isArray(fn.type)) throw new Error(`${fn} is not a function`);
+	if (!Array.isArray(fn.type)) throw new Impossible(`${fn} is not a function`);
 	const [inputType, outputType] = fn.type;
 	assertTypesEqual(inputType, argument.type);
 	assertContextsEqual(fn.context, argument.context);

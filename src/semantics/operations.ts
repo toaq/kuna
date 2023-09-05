@@ -1,3 +1,4 @@
+import { Impossible } from '../error';
 import {
 	and,
 	app,
@@ -318,11 +319,11 @@ export function unifyDenotations(
 	right: DTree,
 ): [Expr, Expr, Bindings] {
 	if (left.denotation === null)
-		throw new Error(
+		throw new Impossible(
 			`Can't unify a semantically empty ${left.label} with a ${right.label}`,
 		);
 	if (right.denotation === null)
-		throw new Error(
+		throw new Impossible(
 			`Can't unify a ${left.label} with a semantically empty ${right.label}`,
 		);
 
@@ -413,10 +414,11 @@ export function unifyDenotations(
 export function makeWorldExplicit(tree: DTree): DTree {
 	const e = tree.denotation;
 	if (e === null)
-		throw new Error("Can't make world explicit in a null denotation");
+		throw new Impossible("Can't make world explicit in a null denotation");
 
 	const worldIndex = e.context.findIndex(t => t === 's');
-	if (worldIndex === -1) throw new Error('No world variable to make explicit');
+	if (worldIndex === -1)
+		throw new Impossible('No world variable to make explicit');
 
 	// Given an input expression 𝘗, build the expression
 	// λ𝘢. λ𝘣. … λ𝘸'. 𝘗[𝘸/𝘸'](𝘢)(𝘣)…

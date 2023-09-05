@@ -1,4 +1,5 @@
 import { VerbEntry } from '../dictionary';
+import { Impossible, Unimplemented, Unrecognized } from '../error';
 import { Branch, CovertValue, Leaf, StrictTree, Word } from '../tree';
 import {
 	after,
@@ -230,7 +231,7 @@ function denoteAspect(toaq: string): Expr {
 		case 'fı':
 			return fi;
 		default:
-			throw new Error(`Unrecognized aspect: ${toaq}`);
+			throw new Unrecognized(`aspect: ${toaq}`);
 	}
 }
 
@@ -287,7 +288,7 @@ function denoteTense(toaq: string): Expr {
 		case 'jela':
 			return jela;
 		default:
-			throw new Error(`Unrecognized tense: ${toaq}`);
+			throw new Unrecognized(`tense: ${toaq}`);
 	}
 }
 
@@ -306,7 +307,7 @@ function denoteSpeechAct(toaq: string): string {
 		case 'móq':
 			return 'teqga';
 		default:
-			throw new Error(`Unrecognized speech act: ${toaq}`);
+			throw new Unrecognized(`speech act: ${toaq}`);
 	}
 }
 
@@ -324,7 +325,7 @@ function denoteVerb(toaq: string, arity: number): Expr {
 				),
 			);
 		default:
-			throw new Error(`Unhandled verb arity: ${toaq} (${arity})`);
+			throw new Impossible(`Invalid verb arity: ${toaq} (${arity})`);
 	}
 }
 
@@ -358,7 +359,7 @@ function denoteCovertLittleV(value: CovertValue): Expr | null {
 		case 'BE':
 			return null;
 		default:
-			throw new Error(`Unrecognized 𝘷: ${value}`);
+			throw new Unrecognized(`𝘷: ${value}`);
 	}
 }
 
@@ -367,7 +368,7 @@ function denoteOvertLittleV(toaq: string): Expr {
 		case 'nä':
 			return na;
 		default:
-			throw new Error(`Unrecognized 𝘷: ${toaq}`);
+			throw new Unrecognized(`𝘷: ${toaq}`);
 	}
 }
 
@@ -440,7 +441,7 @@ function denoteQuantifier(value: CovertValue): Expr {
 		case '[∀]':
 			return qEvery;
 		default:
-			throw new Error(`Unrecognized quantifier: ${value}`);
+			throw new Unrecognized(`quantifier: ${value}`);
 	}
 }
 
@@ -452,10 +453,10 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	let bindings = noBindings;
 
 	if (leaf.label === 'V') {
-		if (leaf.word.covert) throw new Error('covert V');
+		if (leaf.word.covert) throw new Impossible('covert V');
 		const entry = leaf.word.entry;
-		if (!entry) throw new Error();
-		if (entry.type !== 'predicate') throw new Error();
+		if (!entry) throw new Unrecognized('verb: ' + leaf.word.text);
+		if (entry.type !== 'predicate') throw new Impossible('non-predicate V');
 
 		denotation = denoteVerb(entry.toaq, entry.frame.split(' ').length);
 	} else if (leaf.label === 'DP') {
@@ -463,7 +464,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			denotation = hoa;
 			bindings = covertHoaBindings;
 		} else if (leaf.word.entry === undefined) {
-			throw new Error(`Unrecognized DP: ${leaf.word.text}`);
+			throw new Unrecognized(`DP: ${leaf.word.text}`);
 		} else {
 			const toaq = leaf.word.entry.toaq;
 
@@ -516,16 +517,17 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 					bindings = taBindings;
 					break;
 				default:
-					throw new Error(`Unrecognized DP: ${toaq}`);
+					throw new Unrecognized(`DP: ${toaq}`);
 			}
 		}
 	} else if (leaf.label === 'D') {
 		denotation = boundThe;
 		bindings = boundTheBindings;
 	} else if (leaf.label === 'n') {
-		if (cCommand === null) throw new Error("Can't denote an n in isolation");
+		if (cCommand === null)
+			throw new Impossible("Can't denote an n in isolation");
 		const vp = findVp(cCommand);
-		if (vp === null) throw new Error("Can't find the VP for this n");
+		if (vp === null) throw new Impossible("Can't find the VP for this n");
 
 		let word: Word;
 		if ('word' in vp) {
@@ -533,7 +535,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		} else {
 			const v = vp.left;
 			if (v.label !== 'V' || !('word' in v))
-				throw new Error('Unrecognized VP shape');
+				throw new Impossible('Unrecognized VP shape');
 			word = v.word as Word;
 		}
 
@@ -562,7 +564,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (leaf.word.covert) {
 			denotation = denoteCovertLittleV(leaf.word.value);
 		} else if (leaf.word.entry === undefined) {
-			throw new Error(`Unrecognized 𝘷: ${leaf.word.text}`);
+			throw new Unrecognized(`𝘷: ${leaf.word.text}`);
 		} else {
 			denotation = denoteOvertLittleV(leaf.word.entry.toaq);
 		}
@@ -571,7 +573,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (leaf.word.covert) {
 			toaq = 'tam';
 		} else if (leaf.word.entry === undefined) {
-			throw new Error(`Unrecognized Asp: ${leaf.word.text}`);
+			throw new Unrecognized(`Asp: ${leaf.word.text}`);
 		} else {
 			toaq = leaf.word.entry.toaq;
 		}
@@ -581,7 +583,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (leaf.word.covert) {
 			denotation = defaultTense;
 		} else if (leaf.word.entry === undefined) {
-			throw new Error(`Unrecognized T: ${leaf.word.text}`);
+			throw new Unrecognized(`T: ${leaf.word.text}`);
 		} else {
 			denotation = denoteTense(leaf.word.entry.toaq);
 		}
@@ -592,7 +594,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (leaf.word.covert) {
 			toaq = 'da'; // TODO: covert móq
 		} else if (leaf.word.entry === undefined) {
-			throw new Error(`Unrecognized SA: ${leaf.word.text}`);
+			throw new Unrecognized(`SA: ${leaf.word.text}`);
 		} else {
 			toaq = leaf.word.entry.toaq;
 		}
@@ -610,11 +612,11 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		);
 	} else if (leaf.label === 'Q') {
 		if (!leaf.word.covert) {
-			throw new Error(`Overt Q: ${leaf.word.text}`);
+			throw new Impossible(`Overt Q: ${leaf.word.text}`);
 		}
 		denotation = denoteQuantifier(leaf.word.value);
 	} else {
-		throw new Error(`TODO: ${leaf.label}`);
+		throw new Unimplemented(`TODO: ${leaf.label}`);
 	}
 
 	return { ...leaf, denotation, bindings };
@@ -710,11 +712,13 @@ const eventIdentification: CompositionRule = (branch, left, right) => {
 
 const cComposition: CompositionRule = (branch, left, right) => {
 	if (right.denotation === null) {
-		throw new Error(`C composition on a null ${right.label}`);
+		throw new Impossible(`C composition on a null ${right.label}`);
 	} else {
 		const worldIndex = right.denotation.context.findIndex(t => t === 's');
 		if (worldIndex === -1)
-			throw new Error(`C composition on something without a world variable`);
+			throw new Impossible(
+				`C composition on something without a world variable`,
+			);
 
 		const newContext = [...right.denotation.context];
 		newContext.splice(worldIndex, 1);
@@ -740,7 +744,7 @@ const cComposition: CompositionRule = (branch, left, right) => {
 
 const cRelComposition: CompositionRule = (branch, left, right) => {
 	if (right.denotation === null) {
-		throw new Error(`Crel composition on a null ${right.label}`);
+		throw new Impossible(`Crel composition on a null ${right.label}`);
 	} else {
 		const hoa = right.bindings.resumptive ?? right.bindings.covertResumptive;
 		if (hoa === undefined) {
@@ -788,9 +792,9 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 
 const dComposition: CompositionRule = (branch, left, right) => {
 	if (left.denotation === null) {
-		throw new Error(`D composition on a null ${left.label}`);
+		throw new Impossible(`D composition on a null ${left.label}`);
 	} else if (right.denotation === null) {
-		throw new Error(`D composition on a null ${right.label}`);
+		throw new Impossible(`D composition on a null ${right.label}`);
 	} else {
 		// Because unifyDenotations is heuristic and asymmetric, and nP will have more
 		// binding information than D, we need to pretend that nP is on the left here
@@ -804,7 +808,7 @@ const dComposition: CompositionRule = (branch, left, right) => {
 };
 
 const predicateAbstraction: CompositionRule = (branch, left, right) => {
-	throw new Error(`TODO: implement predicate abstraction`);
+	throw new Unimplemented(`TODO: implement predicate abstraction`);
 };
 
 function getCompositionRule(left: DTree, right: DTree): CompositionRule {
@@ -841,7 +845,9 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 			return reverseFunctionalApplication;
 	}
 
-	throw new Error(`TODO: composition of ${left.label} and ${right.label}`);
+	throw new Unimplemented(
+		`TODO: composition of ${left.label} and ${right.label}`,
+	);
 }
 
 function denoteBranch(

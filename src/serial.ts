@@ -1,3 +1,4 @@
+import { Impossible, Ungrammatical } from './error';
 import { Branch, Label, Tree, makeNull } from './tree';
 
 const arityPreservingVerbPrefixes: Label[] = ['buP', 'muP', 'buqP', 'geP'];
@@ -6,11 +7,11 @@ const pro: Tree = { label: 'DP', word: { covert: true, value: 'PRO' } };
 
 export function getFrame(verb: Tree): string {
 	if ('word' in verb) {
-		if (verb.word.covert) throw new Error('covert verb?');
+		if (verb.word.covert) throw new Impossible('covert verb in a serial?');
 		if (verb.word.entry?.type === 'predicate') {
 			return verb.word.entry.frame;
 		} else {
-			throw new Error('weird verb');
+			throw new Impossible('weird verb');
 		}
 	} else if (verb.label === '&P' && 'left' in verb) {
 		return getFrame(verb.left);
@@ -26,7 +27,7 @@ export function getFrame(verb: Tree): string {
 	} else if (arityPreservingVerbPrefixes.includes(verb.label)) {
 		return getFrame((verb as Branch<Tree>).right);
 	} else {
-		throw new Error('weird nonverb: ' + verb.label);
+		throw new Impossible('weird nonverb: ' + verb.label);
 	}
 }
 
@@ -35,7 +36,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 	if (verbs.length === 1) {
 		const arity = firstFrame.split(' ').length;
 		if (args.length < arity) {
-			throw new Error('not enough arguments');
+			throw new Ungrammatical('not enough arguments');
 		}
 
 		if (arity === 1) {
@@ -69,24 +70,24 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 				},
 			};
 		} else {
-			throw new Error('bad arity');
+			throw new Impossible('bad arity');
 		}
 	} else {
 		const frame = firstFrame.replace(/a/g, 'c').split(' ');
 		for (let i = 0; i < frame.length - 1; i++) {
 			if (frame[i] !== 'c') {
-				throw new Error('too many numbers to serialize: ' + firstFrame);
+				throw new Ungrammatical("frame can't serialize: " + firstFrame);
 			}
 		}
 		if (frame[frame.length - 1] === 'c') {
-			throw new Error('no slot to serialize: ' + firstFrame);
+			throw new Ungrammatical("frame can't serialize: " + firstFrame);
 		}
 		const cCount = frame.length - 1;
 		const jaCount = Number(frame[frame.length - 1][0]);
 		// TODO pro coindexation
 		const pros: Tree[] = new Array(jaCount).fill(pro);
 		if (args.length < cCount) {
-			throw new Error('not enough arguments');
+			throw new Ungrammatical('not enough arguments');
 		}
 		const innerArgs: Tree[] = [...pros, ...args.slice(cCount)];
 		const inner = serialTovP(verbs.slice(1), innerArgs);
@@ -122,7 +123,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 				},
 			};
 		} else {
-			throw new Error('bad arity ' + arity);
+			throw new Impossible('bad arity ' + arity);
 		}
 	}
 }
@@ -155,14 +156,14 @@ function attachAdjective(VP: Tree, vP: Tree): Tree {
 
 export function analyzeSerial(tree: Tree, args: Tree[]): Tree {
 	if (tree.label !== '*Serial') {
-		throw new Error('not a serial');
+		throw new Impossible('not a serial');
 	}
 	if (!('children' in tree)) {
-		throw new Error('no children');
+		throw new Impossible('no children');
 	}
 	const children = tree.children;
 	if (children.length === 0) {
-		throw new Error('zero children');
+		throw new Impossible('zero children');
 	}
 
 	const frames = children.map(getFrame);
