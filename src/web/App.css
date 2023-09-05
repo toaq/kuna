@@ -89,3 +89,7 @@ h1 {
 .gloss-toaq {
 	font-weight: bold;
 }
+
+.error {
+	color: #ff0080;
+}

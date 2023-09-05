@@ -9,6 +9,12 @@ import { denote } from '../semantics/denote';
 import { Glosser } from '../gloss';
 import { compact } from '../compact';
 
+function errorString(e: any): string {
+	const string = String(e);
+    // Abbreviate nearleyjs's enormous error messages.
+	return string.replace(/Instead, I .*$/ms, '');
+}
+
 export function App() {
 	const [inputText, setInputText] = useState<string>('Poq jí da.');
 	const [latestOutput, setLatestOutput] = useState<ReactElement>(
@@ -17,11 +23,18 @@ export function App() {
 	useEffect(() => {
 		initializeDictionary();
 	});
+	function show(f: () => ReactElement) {
+		try {
+			setLatestOutput(f());
+		} catch (e) {
+			setLatestOutput(<span className="error">{errorString(e)}</span>);
+		}
+	}
 	function showEnglish() {
-		setLatestOutput(<>{toEnglish(inputText)}</>);
+		show(() => <>{toEnglish(inputText)}</>);
 	}
 	function showGloss(easy: boolean) {
-		setLatestOutput(
+		show(() => (
 			<div className="gloss-output">
 				{new Glosser(easy).glossSentence(inputText).map((g, i) => (
 					<div className="gloss-item" key={i}>
@@ -29,12 +42,17 @@ export function App() {
 						<div className="gloss-english">{g.english}</div>
 					</div>
 				))}
-			</div>,
-		);
+			</div>
+		));
 	}
 	function showTree(level: 'raw' | 'fixed' | 'compacted' | 'denoted') {
-		const trees = parse(inputText);
-		if (trees.length === 1) {
+		show(() => {
+			const trees = parse(inputText);
+			if (trees.length > 1) {
+				return <span>Parse ambiguity ({trees.length} parses).</span>;
+			} else if (trees.length === 0) {
+				return <span>No parse.</span>;
+			}
 			const theme = 'light';
 			let tree = trees[0];
 			if (level !== 'raw') tree = fix(tree);
@@ -42,8 +60,8 @@ export function App() {
 			if (level === 'denoted') tree = denote(tree as any);
 			const canvas = pngDrawTree(tree, theme);
 			const url = canvas.toDataURL();
-			setLatestOutput(<img style={{ maxHeight: '500px' }} src={url} />);
-		}
+			return <img style={{ maxHeight: '500px' }} src={url} />;
+		});
 	}
 	return (
 		<div className="kuna">
