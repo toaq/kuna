@@ -4,13 +4,13 @@ import { inTone } from './tokenize';
 import { Branch, Tree, isQuestion } from './tree';
 import { Tone } from './types';
 
-interface PostField {
+export interface PostField {
 	earlyAdjuncts: string[];
 	arguments: string[];
 	lateAdjuncts: string[];
 }
 
-interface BoxClause {
+export interface BoxClause {
 	/// If empty, means covert "ꝡa"
 	complementizer: string;
 	topic?: string;
@@ -18,7 +18,7 @@ interface BoxClause {
 	postField: PostField;
 }
 
-interface BoxSentence {
+export interface BoxSentence {
 	clause: BoxClause;
 	/// If empty, means covert "da"
 	speechAct: string;

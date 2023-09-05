@@ -10,9 +10,11 @@ import { Glosser } from '../gloss';
 import { compact } from '../compact';
 import { useDarkMode } from 'usehooks-ts';
 import { textual_tree_from_json } from '../textual-tree';
+import { boxify } from '../boxes';
+import { Boxes } from './Boxes';
 
 type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
-type Mode = TreeMode | 'gloss' | 'technical-gloss' | 'english';
+type Mode = 'boxes' | TreeMode | 'gloss' | 'technical-gloss' | 'english';
 type TreeFormat = 'png' | 'textual' | 'json';
 
 function errorString(e: any): string {
@@ -41,6 +43,15 @@ export function App() {
 		() => latestMode && generate(latestMode),
 		[darkMode.isDarkMode, treeFormat],
 	);
+
+	function getBoxes(): ReactElement {
+		const trees = parse(inputText);
+		if (trees.length === 0) return <span>No parse</span>;
+		if (trees.length > 1) return <span>Ambiguous parse</span>;
+		const tree = trees[0];
+		const boxSentence = boxify(tree);
+		return <Boxes sentence={boxSentence} />;
+	}
 
 	function getEnglish(): ReactElement {
 		return <>{toEnglish(inputText)}</>;
@@ -87,6 +98,8 @@ export function App() {
 
 	function getOutput(mode: Mode): ReactElement {
 		switch (mode) {
+			case 'boxes':
+				return getBoxes();
 			case 'syntax-tree':
 			case 'compact-tree':
 			case 'semantics-tree':
@@ -140,6 +153,7 @@ export function App() {
 					</button>
 					<button onClick={() => generate('raw-tree')}>Raw tree</button>
 					<br />
+					<button onClick={() => generate('boxes')}>Boxes</button>
 					<button onClick={() => generate('gloss')}>Gloss</button>
 					<button onClick={() => generate('technical-gloss')}>
 						Technical gloss
