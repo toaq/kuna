@@ -1,8 +1,5 @@
 name: Check types and formatting
-on:
-  pull_request: {}
-  push:
-    branches: [main]
+on: [push, pull_request]
 jobs:
   check:
     name: Check types and formatting
