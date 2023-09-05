@@ -2,15 +2,17 @@
 	box-sizing: border-box;
 }
 
+html,
+#root {
+	height: 100%;
+	width: 100%;
+}
+
 body {
 	font-family: 'Inter', sans-serif;
 	font-size: 16px;
-	margin: 20px;
-	background-color: hsl(220deg, 90%, 95%);
-	color: #333;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+	margin: 0px;
+	height: 100%;
 }
 
 h1 {
@@ -28,9 +30,24 @@ h1 {
 }
 
 .kuna {
+	background-color: hsl(220deg, 90%, 95%);
+	color: #333;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	padding: 20px;
+	height: 100%;
+	width: 100%;
+	overflow-y: auto;
+	transition:
+		background-color 0.1s,
+		color 0.1s;
+}
+
+.dark-mode.kuna {
+	color: #eee;
+	background-color: #334;
+	color-scheme: dark;
 }
 
 .card {
@@ -41,6 +58,11 @@ h1 {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+}
+
+.dark-mode .card {
+	border: 2px solid rgba(0, 0, 0, 0.2);
+	background-color: rgba(0, 0, 0, 0.2);
 }
 
 .settings,
@@ -57,7 +79,6 @@ h1 {
 
 .settings textarea {
 	font-family: inherit;
-	color: #222;
 }
 
 .settings form > * + * {
@@ -92,4 +113,5 @@ h1 {
 
 .error {
 	color: #ff0080;
+	white-space: pre-wrap;
 }

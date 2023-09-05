@@ -8,33 +8,39 @@ import { fix } from '../fix';
 import { denote } from '../semantics/denote';
 import { Glosser } from '../gloss';
 import { compact } from '../compact';
+import { useDarkMode } from 'usehooks-ts';
+
+type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
+type Mode = TreeMode | 'gloss' | 'technical-gloss' | 'english';
 
 function errorString(e: any): string {
 	const string = String(e);
-    // Abbreviate nearleyjs's enormous error messages.
-	return string.replace(/Instead, I .*$/ms, '');
+	// Abbreviate nearleyjs's enormous error messages.
+	if (/based on:/.test(string)) {
+		return string
+			.replace(/token based on:(\n .+)*/gm, '')
+			.replace(/^A /gm, '    - a ')
+			.replace(/_/g, ' ');
+	}
+	return string;
 }
 
 export function App() {
+	const darkMode = useDarkMode();
 	const [inputText, setInputText] = useState<string>('Poq jí da.');
+	const [latestMode, setLatestMode] = useState<Mode>();
 	const [latestOutput, setLatestOutput] = useState<ReactElement>(
 		<>Output will appear here.</>,
 	);
-	useEffect(() => {
-		initializeDictionary();
-	});
-	function show(f: () => ReactElement) {
-		try {
-			setLatestOutput(f());
-		} catch (e) {
-			setLatestOutput(<span className="error">{errorString(e)}</span>);
-		}
+	useEffect(initializeDictionary, []);
+	useEffect(() => latestMode && generate(latestMode), [darkMode.isDarkMode]);
+
+	function getEnglish(): ReactElement {
+		return <>{toEnglish(inputText)}</>;
 	}
-	function showEnglish() {
-		show(() => <>{toEnglish(inputText)}</>);
-	}
-	function showGloss(easy: boolean) {
-		show(() => (
+
+	function getGloss(easy: boolean): ReactElement {
+		return (
 			<div className="gloss-output">
 				{new Glosser(easy).glossSentence(inputText).map((g, i) => (
 					<div className="gloss-item" key={i}>
@@ -43,28 +49,53 @@ export function App() {
 					</div>
 				))}
 			</div>
-		));
+		);
 	}
-	function showTree(level: 'raw' | 'fixed' | 'compacted' | 'denoted') {
-		show(() => {
-			const trees = parse(inputText);
-			if (trees.length > 1) {
-				return <span>Parse ambiguity ({trees.length} parses).</span>;
-			} else if (trees.length === 0) {
-				return <span>No parse.</span>;
-			}
-			const theme = 'light';
-			let tree = trees[0];
-			if (level !== 'raw') tree = fix(tree);
-			if (level === 'compacted') tree = compact(tree);
-			if (level === 'denoted') tree = denote(tree as any);
-			const canvas = pngDrawTree(tree, theme);
-			const url = canvas.toDataURL();
-			return <img style={{ maxHeight: '500px' }} src={url} />;
-		});
+
+	function getTree(level: TreeMode): ReactElement {
+		const trees = parse(inputText);
+		if (trees.length > 1) {
+			return <span>Parse ambiguity ({trees.length} parses).</span>;
+		} else if (trees.length === 0) {
+			return <span>No parse.</span>;
+		}
+		const theme = darkMode.isDarkMode ? 'dark' : 'light';
+		let tree = trees[0];
+		if (level !== 'raw-tree') tree = fix(tree);
+		if (level === 'compact-tree') tree = compact(tree);
+		if (level === 'semantics-tree') tree = denote(tree as any);
+		const canvas = pngDrawTree(tree, theme);
+		const url = canvas.toDataURL();
+		return <img style={{ maxHeight: '500px' }} src={url} />;
 	}
+
+	function getOutput(mode: Mode): ReactElement {
+		switch (mode) {
+			case 'syntax-tree':
+			case 'compact-tree':
+			case 'semantics-tree':
+			case 'raw-tree':
+				return getTree(mode);
+			case 'gloss':
+				return getGloss(true);
+			case 'technical-gloss':
+				return getGloss(false);
+			case 'english':
+				return getEnglish();
+		}
+	}
+
+	function generate(mode: Mode): void {
+		setLatestMode(mode);
+		try {
+			setLatestOutput(getOutput(mode));
+		} catch (e) {
+			setLatestOutput(<span className="error">{errorString(e)}</span>);
+		}
+	}
+
 	return (
-		<div className="kuna">
+		<div className={darkMode.isDarkMode ? 'kuna dark-mode' : 'kuna'}>
 			<h1>mí Kuna</h1>
 			<div className="card settings">
 				<textarea
@@ -73,15 +104,19 @@ export function App() {
 					onChange={e => setInputText(e.target.value)}
 				/>
 				<div className="buttons">
-					<button onClick={() => showTree('fixed')}>Syntax tree</button>
-					<button onClick={() => showTree('compacted')}>Compact tree</button>
-					<button onClick={() => showTree('denoted')}>Semantics tree</button>
-					<button onClick={() => showTree('raw')}>Raw tree</button>
+					<button onClick={() => generate('syntax-tree')}>Syntax tree</button>
+					<button onClick={() => generate('compact-tree')}>Compact tree</button>
+					<button onClick={() => generate('semantics-tree')}>
+						Semantics tree
+					</button>
+					<button onClick={() => generate('raw-tree')}>Raw tree</button>
 					<br />
-					<button onClick={() => showGloss(true)}>Gloss</button>
-					<button onClick={() => showGloss(false)}>Technical gloss</button>
-					<button onClick={() => showEnglish()}>English</button>
-					<br />
+					<button onClick={() => generate('gloss')}>Gloss</button>
+					<button onClick={() => generate('technical-gloss')}>
+						Technical gloss
+					</button>
+					<button onClick={() => generate('english')}>English</button>
+					<button onClick={darkMode.toggle}>Toggle dark mode</button>
 				</div>
 			</div>
 			<div className="card output">{latestOutput}</div>
