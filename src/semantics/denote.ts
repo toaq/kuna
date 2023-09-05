@@ -344,9 +344,23 @@ const boundTheBindings: Bindings = {
 };
 
 // λ𝘢. λ𝘦. ᴀɢᴇɴᴛ(𝘦)(𝘸) = 𝘢
-const littleV = λ('e', ['s'], c =>
+const littleVAgent = λ('e', ['s'], c =>
 	λ('v', c, c => equals(app(app(agent(c), v(0, c)), v(2, c)), v(1, c))),
 );
+
+// λ𝘗. 𝘗
+const na = λ(['e', 't'], [], c => v(0, c));
+
+function denoteLittleV(toaq: string | null): Expr {
+	switch (toaq) {
+		case null:
+			return littleVAgent;
+		case 'nä':
+			return na;
+		default:
+			throw new Error(`Unrecognized 𝘷: ${toaq}`);
+	}
+}
 
 function findVp(tree: StrictTree): StrictTree | null {
 	if (tree.label === 'VP') {
@@ -503,7 +517,16 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			covertResumptive: binding,
 		};
 	} else if (leaf.label === '𝘷') {
-		denotation = littleV;
+		let toaq: string | null;
+		if (typeof leaf.word === 'string') {
+			toaq = null;
+		} else if (leaf.word.entry === undefined) {
+			throw new Error(`Unrecognized 𝘷: ${leaf.word.text}`);
+		} else {
+			toaq = leaf.word.entry.toaq;
+		}
+
+		denotation = denoteLittleV(toaq);
 	} else if (leaf.label === '𝘷0') {
 		denotation = null;
 	} else if (leaf.label === 'Asp') {
@@ -757,7 +780,10 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 				? functionalApplication
 				: reverseFunctionalApplication;
 		case '𝘷':
-			return eventIdentification;
+			return left.denotation !== null &&
+				typesEqual(left.denotation.type, ['e', ['v', 't']])
+				? eventIdentification
+				: functionalApplication;
 		case 'C':
 			return cComposition;
 		case 'Crel':
