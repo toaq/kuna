@@ -19,6 +19,13 @@ export interface CovertWord {
 	value: CovertValue;
 }
 
+/**
+ * Make a null leaf with the given label.
+ */
+export function makeNull(label: Label): Leaf {
+	return { label, word: { covert: true, value: '∅' } };
+}
+
 export type Label =
 	| '*Serial'
 	| '*𝘷P'
@@ -177,10 +184,7 @@ export function makeLeaf(label: Label) {
 }
 
 export function makeCovertLeaf(label: Label) {
-	return () => ({
-		label,
-		word: { covert: true, value: '∅' },
-	});
+	return () => makeNull(label);
 }
 
 export function makeBranch(label: Label) {
@@ -197,7 +201,7 @@ export function makeBranchCovertLeft(label: Label, covertLabel: Label) {
 	return ([right]: [Tree, Tree]) => {
 		return {
 			label,
-			left: { label: covertLabel, word: { covert: true, value: '∅' } },
+			left: makeNull(covertLabel),
 			right,
 		};
 	};
@@ -242,7 +246,7 @@ export function makeSingleChild(label: Label) {
 
 export function makeOptLeaf(label: Label) {
 	return ([leaf]: [Leaf | undefined]) => {
-		return leaf ?? { label, word: { covert: true, value: '∅' } };
+		return leaf ?? makeNull(label);
 	};
 }
 
@@ -299,7 +303,7 @@ export function makevPdet([serial]: [Tree], location: number, reject: Object) {
 	}
 	return {
 		label: '*𝘷P',
-		children: [serial, { label: 'DP', word: { covert: true, value: '∅' } }],
+		children: [serial, { label: 'DP', word: { covert: true, value: 'PRO' } }],
 	};
 }
 
@@ -351,10 +355,7 @@ export function makeT1ModalvP([modal, tp]: [Tree, Tree]) {
 		left: {
 			label: 'ModalP',
 			left: modal,
-			right: {
-				label: 'CP',
-				word: { covert: true, value: '∅' },
-			},
+			right: makeNull('CP'),
 		},
 		right: {
 			label: "𝘷'",
@@ -395,7 +396,7 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 		label: '𝘷P',
 		left: {
 			label: 'CP',
-			left: { label: 'C', word: { covert: true, value: '∅' } },
+			left: makeNull('C'),
 			right: tp,
 		},
 		right: {
@@ -403,7 +404,7 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 			left: vgo,
 			right: {
 				label: 'CPrel',
-				left: { label: 'C', word: { covert: true, value: '∅' } },
+				left: makeNull('C'),
 				right: clause,
 			},
 		},

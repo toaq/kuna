@@ -1,4 +1,4 @@
-import { Branch, Label, Tree } from './tree';
+import { Branch, Label, Tree, makeNull } from './tree';
 
 const arityPreservingVerbPrefixes: Label[] = ['buP', 'muP', 'buqP', 'geP'];
 
@@ -133,21 +133,18 @@ function attachAdjective(VP: Tree, vP: Tree): Tree {
 		left: VP,
 		right: {
 			label: 'aP',
-			left: {
-				label: 'a',
-				word: { covert: true, value: '∅' }, // TODO ki
-			},
+			left: makeNull('a'), // TODO ki-
 			right: {
 				// TODO: oh god, adjectives can have T and Asp?
 				// needs rework in nearley grammar
 				label: 'CPrel',
-				left: { label: 'C', word: { covert: true, value: '∅' } },
+				left: makeNull('C'),
 				right: {
 					label: 'TP',
-					left: { label: 'T', word: { covert: true, value: '∅' } },
+					left: makeNull('T'),
 					right: {
 						label: 'AspP',
-						left: { label: 'Asp', word: { covert: true, value: '∅' } },
+						left: makeNull('Asp'),
 						right: vP,
 					},
 				},
