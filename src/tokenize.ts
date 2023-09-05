@@ -57,13 +57,18 @@ export function tone(word: string): Tone {
 }
 
 function splitIntoRaku(word: string): string[] {
-	return [
+	const raku = [
 		...word.matchAll(
 			/(b|c|ch|d|f|g|h|j|k|l|m|n|nh|p|r|s|sh|t|vy?|wy?|ꝡ|y|z|')?[aeiıou]\p{Diacritic}?[aeiıou]*(q|m(?![aeiıou]))?-?/giu,
 		),
 	].map(m => {
 		return m[0];
 	});
+	if (raku.reduce((a, b) => a + b.length, 0) === word.length) {
+		return raku;
+	} else {
+		return [word];
+	}
 }
 
 export function splitPrefixes(word: string): {
