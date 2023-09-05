@@ -12,7 +12,7 @@ export interface Word {
 	entry: Entry | undefined;
 }
 
-type CovertValue = '∅' | 'BE' | 'CAUSE' | 'PRO';
+export type CovertValue = '∅' | 'BE' | 'CAUSE' | 'PRO';
 
 export interface CovertWord {
 	covert: true;

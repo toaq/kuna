@@ -1,5 +1,5 @@
 import { VerbEntry } from '../dictionary';
-import { Branch, Leaf, StrictTree, Word } from '../tree';
+import { Branch, CovertValue, Leaf, StrictTree, Word } from '../tree';
 import {
 	after,
 	afterNear,
@@ -351,12 +351,19 @@ const littleVAgent = λ('e', ['s'], c =>
 // λ𝘗. 𝘗
 const na = λ(['e', 't'], [], c => v(0, c));
 
-function denoteLittleV(toaq: string | null): Expr | null {
-	switch (toaq) {
+function denoteCovertLittleV(value: CovertValue): Expr | null {
+	switch (value) {
 		case 'CAUSE':
 			return littleVAgent;
 		case 'BE':
 			return null;
+		default:
+			throw new Error(`Unrecognized 𝘷: ${value}`);
+	}
+}
+
+function denoteOvertLittleV(toaq: string | null): Expr | null {
+	switch (toaq) {
 		case 'nä':
 			return na;
 		default:
@@ -517,15 +524,13 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			covertResumptive: binding,
 		};
 	} else if (leaf.label === '𝘷') {
-		let toaq: string | null;
 		if (leaf.word.covert) {
-			toaq = leaf.word.value;
+			denotation = denoteCovertLittleV(leaf.word.value);
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized 𝘷: ${leaf.word.text}`);
 		} else {
-			toaq = leaf.word.entry.toaq;
+			denotation = denoteOvertLittleV(leaf.word.entry.toaq);
 		}
-		denotation = denoteLittleV(toaq);
 	} else if (leaf.label === 'Asp') {
 		let toaq: string;
 		if (leaf.word.covert) {
