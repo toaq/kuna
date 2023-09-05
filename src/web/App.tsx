@@ -9,9 +9,11 @@ import { denote } from '../semantics/denote';
 import { Glosser } from '../gloss';
 import { compact } from '../compact';
 import { useDarkMode } from 'usehooks-ts';
+import { textual_tree_from_json } from '../textual-tree';
 
 type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
 type Mode = TreeMode | 'gloss' | 'technical-gloss' | 'english';
+type TreeFormat = 'png' | 'textual';
 
 function errorString(e: any): string {
 	const string = String(e);
@@ -32,8 +34,12 @@ export function App() {
 	const [latestOutput, setLatestOutput] = useState<ReactElement>(
 		<>Output will appear here.</>,
 	);
+	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png');
 	useEffect(initializeDictionary, []);
-	useEffect(() => latestMode && generate(latestMode), [darkMode.isDarkMode]);
+	useEffect(
+		() => latestMode && generate(latestMode),
+		[darkMode.isDarkMode, treeFormat],
+	);
 
 	function getEnglish(): ReactElement {
 		return <>{toEnglish(inputText)}</>;
@@ -64,9 +70,16 @@ export function App() {
 		if (level !== 'raw-tree') tree = fix(tree);
 		if (level === 'compact-tree') tree = compact(tree);
 		if (level === 'semantics-tree') tree = denote(tree as any);
-		const canvas = pngDrawTree(tree, theme);
-		const url = canvas.toDataURL();
-		return <img style={{ maxHeight: '500px' }} src={url} />;
+		switch (treeFormat) {
+			case 'textual':
+				return (
+					<pre>{textual_tree_from_json(tree).replace(/\x1b\[\d+m/g, '')}</pre>
+				);
+			case 'png':
+				const canvas = pngDrawTree(tree, theme);
+				const url = canvas.toDataURL();
+				return <img style={{ maxHeight: '500px' }} src={url} />;
+		}
 	}
 
 	function getOutput(mode: Mode): ReactElement {
@@ -97,12 +110,24 @@ export function App() {
 	return (
 		<div className={darkMode.isDarkMode ? 'kuna dark-mode' : 'kuna'}>
 			<h1>mí Kuna</h1>
+			<button className="toggle-dark-mode" onClick={darkMode.toggle}>
+				Toggle dark mode
+			</button>
 			<div className="card settings">
 				<textarea
 					rows={3}
 					value={inputText}
 					onChange={e => setInputText(e.target.value)}
 				/>
+				<div className="toggles">
+					<label>
+						Tree format:
+						<select onChange={e => setTreeFormat(e.target.value as TreeFormat)}>
+							<option value="png">Image</option>
+							<option value="textual">Text art</option>
+						</select>
+					</label>
+				</div>
 				<div className="buttons">
 					<button onClick={() => generate('syntax-tree')}>Syntax tree</button>
 					<button onClick={() => generate('compact-tree')}>Compact tree</button>
@@ -116,7 +141,6 @@ export function App() {
 						Technical gloss
 					</button>
 					<button onClick={() => generate('english')}>English</button>
-					<button onClick={darkMode.toggle}>Toggle dark mode</button>
 				</div>
 			</div>
 			<div className="card output">{latestOutput}</div>

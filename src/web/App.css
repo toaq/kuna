@@ -115,3 +115,17 @@ h1 {
 	color: #ff0080;
 	white-space: pre-wrap;
 }
+
+.toggle-dark-mode {
+	position: absolute;
+	left: 8px;
+	top: 8px;
+}
+
+.toggles {
+	margin-top: 8px;
+}
+
+.toggles label select {
+	margin-inline-start: 8px;
+}
