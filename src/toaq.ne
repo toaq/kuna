@@ -15,6 +15,7 @@ const {
 	makeOptLeaf,
 	makePrefixLeaf,
 	makePrefixP,
+	makeRetroactiveCleft,
 	makeRose,
 	makeRose2,
 	makeSerial,
@@ -71,6 +72,8 @@ Clause -> DP Na CPrelna {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
 Clause -> ModalP Na MTP {% make3L('𝘷P', "𝘷'") %}
 ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
+# hao jí gö hao jí
+Clause -> MTP Go Clause {% makeRetroactiveCleft %}
 
 # "MTP" is a TP that can have a t1 modal in front.
 
@@ -188,6 +191,7 @@ D -> %determiner {% makeLeaf('D') %}
 Dincorp -> %incorporated_determiner {% makeLeaf('D') %}
 EvA -> %event_accessor {% makeLeaf('EvA') %}
 Focus -> %focus_particle {% makeLeaf('Focus') %}
+Go -> %retroactive_cleft {% makeLeaf('𝘷') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
 Mo -> %text_quote {% makeLeaf('mo') %}

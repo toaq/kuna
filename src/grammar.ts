@@ -20,6 +20,7 @@ declare var determiner: any;
 declare var incorporated_determiner: any;
 declare var event_accessor: any;
 declare var focus_particle: any;
+declare var retroactive_cleft: any;
 declare var interjection: any;
 declare var name_verb: any;
 declare var text_quote: any;
@@ -51,6 +52,7 @@ const {
 	makeOptLeaf,
 	makePrefixLeaf,
 	makePrefixP,
+	makeRetroactiveCleft,
 	makeRose,
 	makeRose2,
 	makeSerial,
@@ -114,6 +116,7 @@ const grammar: Grammar = {
     {"name": "Clause", "symbols": ["DP", "Na", "CPrelna"], "postprocess": make3L('𝘷P', "𝘷'")},
     {"name": "Clause", "symbols": ["ModalP", "Na", "MTP"], "postprocess": make3L('𝘷P', "𝘷'")},
     {"name": "ModalP", "symbols": ["ModalT4", "CPsub"], "postprocess": makeBranch('ModalP')},
+    {"name": "Clause", "symbols": ["MTP", "Go", "Clause"], "postprocess": makeRetroactiveCleft},
     {"name": "MTP", "symbols": ["TP1"], "postprocess": id},
     {"name": "MTP", "symbols": ["Modal", "TP1"], "postprocess": makeT1ModalvP},
     {"name": "MTP", "symbols": ["Sigma", "Modal", "TP1"], "postprocess": makeSigmaT1ModalvP},
@@ -211,6 +214,7 @@ const grammar: Grammar = {
     {"name": "Dincorp", "symbols": [(lexer.has("incorporated_determiner") ? {type: "incorporated_determiner"} : incorporated_determiner)], "postprocess": makeLeaf('D')},
     {"name": "EvA", "symbols": [(lexer.has("event_accessor") ? {type: "event_accessor"} : event_accessor)], "postprocess": makeLeaf('EvA')},
     {"name": "Focus", "symbols": [(lexer.has("focus_particle") ? {type: "focus_particle"} : focus_particle)], "postprocess": makeLeaf('Focus')},
+    {"name": "Go", "symbols": [(lexer.has("retroactive_cleft") ? {type: "retroactive_cleft"} : retroactive_cleft)], "postprocess": makeLeaf('𝘷')},
     {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('mı')},
     {"name": "Mo", "symbols": [(lexer.has("text_quote") ? {type: "text_quote"} : text_quote)], "postprocess": makeLeaf('mo')},

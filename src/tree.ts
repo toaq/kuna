@@ -395,3 +395,19 @@ export function makePrefixP([prefix, verb]: [Tree, Tree]) {
 		right: verb,
 	};
 }
+
+export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
+	return {
+		label: '𝘷P',
+		left: { label: 'CP', left: { label: 'C', word: 'covert' }, right: tp },
+		right: {
+			label: "𝘷'",
+			left: vgo,
+			right: {
+				label: 'CPrel',
+				left: { label: 'C', word: 'covert' },
+				right: clause,
+			},
+		},
+	};
+}
