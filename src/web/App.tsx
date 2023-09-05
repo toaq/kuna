@@ -13,10 +13,11 @@ import { textual_tree_from_json } from '../textual-tree';
 
 type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
 type Mode = TreeMode | 'gloss' | 'technical-gloss' | 'english';
-type TreeFormat = 'png' | 'textual';
+type TreeFormat = 'png' | 'textual' | 'json';
 
 function errorString(e: any): string {
 	const string = String(e);
+	console.error(e);
 	// Abbreviate nearleyjs's enormous error messages.
 	if (/based on:/.test(string)) {
 		return string
@@ -79,6 +80,8 @@ export function App() {
 				const canvas = pngDrawTree(tree, theme);
 				const url = canvas.toDataURL();
 				return <img style={{ maxHeight: '500px' }} src={url} />;
+			case 'json':
+				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
 		}
 	}
 
@@ -125,6 +128,7 @@ export function App() {
 						<select onChange={e => setTreeFormat(e.target.value as TreeFormat)}>
 							<option value="png">Image</option>
 							<option value="textual">Text art</option>
+							<option value="json">JSON</option>
 						</select>
 					</label>
 				</div>
