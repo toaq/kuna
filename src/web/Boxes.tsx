@@ -1,6 +1,7 @@
 import { ReactElement, useState, useEffect, ReactNode } from 'react';
 import { BoxClause, BoxSentence, PostField } from '../boxes';
 import './Boxes.css';
+import { useDarkMode } from 'usehooks-ts';
 
 interface BoxProps {
 	color: string;
@@ -9,13 +10,14 @@ interface BoxProps {
 }
 
 function Box(props: BoxProps) {
+	const darkMode = useDarkMode();
 	const { color, label, children } = props;
+	const other = darkMode.isDarkMode ? '#444 80%' : 'white 80%';
 	return (
 		<div
 			className="boxes-box"
 			style={{
-				// border: `2px solid ${color}`,
-				background: `color-mix(in srgb, ${color}, white 80%)`,
+				background: `color-mix(in srgb, ${color}, ${other})`,
 			}}
 		>
 			<div className="boxes-label">{label}</div>
