@@ -12,7 +12,7 @@ export interface Word {
 	entry: Entry | undefined;
 }
 
-export type CovertValue = '∅' | 'BE' | 'CAUSE' | 'PRO';
+export type CovertValue = '∅' | 'BE' | 'CAUSE' | 'PRO' | '[∃]' | '[∀]';
 
 export interface CovertWord {
 	covert: true;
@@ -67,6 +67,8 @@ export type Label =
 	| 'muP'
 	| 'n'
 	| 'nP'
+	| 'Q'
+	| 'QP'
 	| 'SA'
 	| 'SAP'
 	| 'shu'
@@ -147,6 +149,11 @@ export interface Rose<T> {
 export type Tree = Leaf | Branch<Tree> | Rose<Tree>;
 
 export type StrictTree = Leaf | Branch<StrictTree>;
+
+export function assertLeaf(tree: Tree): asserts tree is Leaf {
+	if ('word' in tree) return;
+	throw new Error('Unexpected non-leaf ' + tree.label);
+}
 
 export function assertBranch(tree: Tree): asserts tree is Branch<Tree> {
 	if ('left' in tree) return;
