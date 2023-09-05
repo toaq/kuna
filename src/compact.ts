@@ -1,7 +1,7 @@
 import { Branch, Leaf, Tree, nodeType } from './tree';
 
-function isCovert(tree: Tree): boolean {
-	return 'word' in tree && tree.word.covert;
+function isNull(tree: Tree): boolean {
+	return 'word' in tree && tree.word.covert && tree.word.value === '∅';
 }
 
 export function compact(tree: Tree): Tree {
@@ -11,9 +11,9 @@ export function compact(tree: Tree): Tree {
 		return { label: tree.label, children: tree.children.map(compact) };
 	}
 
-	if (isCovert(tree.left)) {
+	if (isNull(tree.left)) {
 		return compact(tree.right);
-	} else if (isCovert(tree.right)) {
+	} else if (isNull(tree.right)) {
 		return compact(tree.left);
 	} else {
 		return {
