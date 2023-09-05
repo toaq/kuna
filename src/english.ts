@@ -24,6 +24,10 @@ function assertBranch(tree: Tree): asserts tree is Branch<Tree> {
 }
 
 function leafToEnglish(leaf: Tree): string {
+	const text = leafText(leaf);
+	if (text === '◌́') {
+		return 'the';
+	}
 	return new Glosser(true).glossWord(leafText(leaf));
 }
 
@@ -31,6 +35,11 @@ function verbToEnglish(tree: Tree): string {
 	if ('word' in tree) {
 		return leafToEnglish(tree);
 	} else if ('left' in tree) {
+		if (tree.label === 'EvAP') {
+			let k = new ClauseTranslator();
+			k.processClause(tree.right);
+			return 'event of ' + k.emit();
+		}
 		const right = verbToEnglish(tree.right);
 		if (tree.label === 'mıP') {
 			return right.replace(/\b\w/, m => m.toUpperCase());
@@ -63,6 +72,7 @@ class ClauseTranslator {
 	objects: Constituent[] = [];
 	lateAdjuncts: string[] = [];
 	modals: string[] = [];
+	conjunct?: string = undefined;
 	constructor(toaqSpeechAct?: string) {
 		this.toaqSpeechAct = toaqSpeechAct;
 	}
@@ -131,9 +141,13 @@ class ClauseTranslator {
 					case "𝘷'":
 						node = node.right;
 						break;
+					case '&P':
+						this.conjunct = treeToEnglish(node.right).text;
+						node = node.left;
+						break;
 					default:
 						console.log(node);
-						throw new Error('unimplemented: ' + node.label);
+						throw new Error('unimplemented in processClause: ' + node.label);
 				}
 			} else {
 				throw new Error('unexpected leaf in clause');
@@ -252,16 +266,19 @@ class ClauseTranslator {
 			auxiliary += nt;
 		}
 		const verb = this.verb
-			? conjugate(this.verb, verbForm, auxiliary ? false : past)
+			? mode === 'DP'
+				? this.verb
+				: conjugate(this.verb, verbForm, auxiliary ? false : past)
 			: '';
 
+		const earlyAdjuncts = this.earlyAdjuncts.map(x => x + ',');
 		const subject = this.subject?.text ?? '';
 		const objects = this.objects.map(x => x.text);
 
 		if (this.toaqComplementizer === 'ma') {
 			order = [
 				auxiliary,
-				...this.earlyAdjuncts,
+				...earlyAdjuncts,
 				subject,
 				auxiliary2,
 				preVerb,
@@ -269,11 +286,12 @@ class ClauseTranslator {
 				postVerb,
 				...objects,
 				...this.lateAdjuncts,
+				this.conjunct ?? '',
 			];
 		} else {
 			order = [
 				complementizer,
-				...this.earlyAdjuncts,
+				...earlyAdjuncts,
 				subject,
 				auxiliary ?? '',
 				auxiliary2,
@@ -282,6 +300,7 @@ class ClauseTranslator {
 				postVerb,
 				...objects,
 				...this.lateAdjuncts,
+				this.conjunct ?? '',
 			];
 		}
 
@@ -309,6 +328,11 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 		translator.processCP(tree);
 		return { text: translator.emit() };
 	}
+	if (tree.label === 'TP') {
+		const translator = new ClauseTranslator();
+		translator.processClause(tree);
+		return { text: translator.emit() };
+	}
 	if (tree.label === 'DP') {
 		const d = tree.left;
 		const nP = tree.right as Branch<Tree>;
@@ -327,7 +351,9 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 			assertBranch(tree.right);
 			const serial = tree.right.left;
 			const object = tree.right.right;
-			return { text: serialToEnglish(serial) + ' ' + treeToEnglish(object) };
+			return {
+				text: serialToEnglish(serial) + ' ' + treeToEnglish(object).text,
+			};
 		} else {
 			const serial = tree.right;
 			return { text: serialToEnglish(serial) + 'ly' };
@@ -352,14 +378,15 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 		}
 	}
 	if (tree.label === '&P') {
-		assertBranch(tree.right);
 		return {
 			text:
-				treeToEnglish(tree.left).text +
-				' ' +
-				leafToEnglish(tree.right.left) +
-				' ' +
-				treeToEnglish(tree.right.right).text,
+				treeToEnglish(tree.left).text + ' ' + treeToEnglish(tree.right).text,
+			person: VerbForm.Plural,
+		};
+	}
+	if (tree.label === "&'") {
+		return {
+			text: leafToEnglish(tree.left) + ' ' + treeToEnglish(tree.right).text,
 			person: VerbForm.Plural,
 		};
 	}

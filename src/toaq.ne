@@ -62,10 +62,10 @@ nP -> nP CPrel {% makeBranch('nP') %}
 # (sá) ∅ hao
 nP -> CPdet {% makeBranchFunctionalLeft('nP', 'n') %}
 
-# pu hao
-Clause -> MTP {% id %}
 # ní bï pu hao
 Clause -> term Bi Clause {% make3L('TopicP', "Topic'") %}
+# pu hao
+Clause -> MTP {% id %}
 # jí nä pu hao hóa
 Clause -> DP Na CPrelna {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
@@ -75,9 +75,9 @@ ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
 # "MTP" is a TP that can have a t1 modal in front.
 
 # ao pu chum hao jí
-MTP -> TP {% id %}
-MTP -> Modal TP {% makeT1ModalvP %}
-MTP -> Sigma Modal TP {% makeSigmaT1ModalvP %}
+MTP -> TP1 {% id %}
+MTP -> Modal TP1 {% makeT1ModalvP %}
+MTP -> Sigma Modal TP1 {% makeSigmaT1ModalvP %}
 
 # (sá) ao hao
 MTPdet -> TPdet {% id %}
@@ -85,6 +85,8 @@ MTPdet -> Modal TPdet {% makeT1ModalvP %}
 MTPdet -> Sigma Modal TPdet {% makeSigmaT1ModalvP %}
 
 # pu chum hao jí
+TP1 -> TP {% id %}
+TP1 -> TP Conjunction TP1 {% makeConn %}
 TP -> AspP {% makeBranchCovertLeft('TP', 'T') %}
 TP -> T1 AspP {% makeBranch('TP') %}
 TP -> Sigma T1 AspP {% make3L('ΣP', 'TP') %}
