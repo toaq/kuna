@@ -1,4 +1,5 @@
 import { dictionary, Entry, VerbEntry } from './dictionary';
+import { getFrame } from './serial';
 import { bare, clean, ToaqToken, tone } from './tokenize';
 import { Tone } from './types';
 
@@ -17,6 +18,8 @@ export type Label =
 	| '&'
 	| "&'"
 	| '&P'
+	| 'a'
+	| 'aP'
 	| 'Adjunct'
 	| 'AdjunctP'
 	| 'Asp'
@@ -242,35 +245,6 @@ export function makeOptLeaf(label: Label) {
 	return ([leaf]: [Leaf | undefined]) => {
 		return leaf ?? { label, word: 'covert' };
 	};
-}
-
-const arityPreservingVerbPrefixes: Label[] = ['buP', 'muP', 'buqP', 'geP'];
-
-function getFrame(verb: Tree): string {
-	if ('word' in verb) {
-		if (verb.word === 'covert') throw new Error('covert verb?');
-		if (verb.word === 'functional') throw new Error('functional verb?');
-		if (verb.word.entry?.type === 'predicate') {
-			return verb.word.entry.frame;
-		} else {
-			throw new Error('weird verb');
-		}
-	} else if (verb.label === '&P' && 'left' in verb) {
-		return getFrame(verb.left);
-	} else if (verb.label === 'shuP' || verb.label === 'mıP') {
-		return 'c';
-	} else if (verb.label === 'VP') {
-		// object incorporation... check that the verb is transitive?
-		return 'c';
-	} else if (verb.label === 'EvAP') {
-		return 'c';
-	} else if (verb.label === 'beP') {
-		return 'c';
-	} else if (arityPreservingVerbPrefixes.includes(verb.label)) {
-		return getFrame((verb as Branch<Tree>).right);
-	} else {
-		throw new Error('weird nonverb: ' + verb.label);
-	}
 }
 
 export function makeSerial(
