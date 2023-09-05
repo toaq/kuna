@@ -7,6 +7,13 @@ For proper PNG rendering, install
 
 ## Usage
 
+To run as a web app (at <http://localhost:5173/>):
+
+```sh
+npm install
+npm run web -- --port 5173
+```
+
 To run as a CLI app:
 
 ```sh
