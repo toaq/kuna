@@ -1,4 +1,4 @@
-import { ReactElement, FormEvent, useState, useEffect } from 'react';
+import { ReactElement, useState, useEffect } from 'react';
 import './App.css';
 import { parse } from '../parse';
 import { toEnglish } from '../english';
@@ -7,6 +7,7 @@ import { pngDrawTree } from '../draw-tree';
 import { fix } from '../fix';
 import { denote } from '../semantics/denote';
 import { Glosser } from '../gloss';
+import { compact } from '../compact';
 
 export function App() {
 	const [inputText, setInputText] = useState<string>('Poq jí da.');
@@ -31,15 +32,14 @@ export function App() {
 			</div>,
 		);
 	}
-	function showTree(fixEnabled: boolean, denoteEnabled: boolean) {
+	function showTree(level: 'raw' | 'fixed' | 'compacted' | 'denoted') {
 		const trees = parse(inputText);
 		if (trees.length === 1) {
 			const theme = 'light';
 			let tree = trees[0];
-			if (fixEnabled) {
-				tree = fix(tree);
-				if (denoteEnabled) tree = denote(tree as any);
-			}
+			if (level !== 'raw') tree = fix(tree);
+			if (level === 'compacted') tree = compact(tree);
+			if (level === 'denoted') tree = denote(tree as any);
 			const canvas = pngDrawTree(tree, theme);
 			const url = canvas.toDataURL();
 			setLatestOutput(<img style={{ maxHeight: '500px' }} src={url} />);
@@ -55,9 +55,10 @@ export function App() {
 					onChange={e => setInputText(e.target.value)}
 				/>
 				<div className="buttons">
-					<button onClick={() => showTree(true, false)}>Syntax tree</button>
-					<button onClick={() => showTree(true, true)}>Semantics tree</button>
-					<button onClick={() => showTree(false, false)}>Raw tree</button>
+					<button onClick={() => showTree('fixed')}>Syntax tree</button>
+					<button onClick={() => showTree('compacted')}>Compact tree</button>
+					<button onClick={() => showTree('denoted')}>Semantics tree</button>
+					<button onClick={() => showTree('raw')}>Raw tree</button>
 					<br />
 					<button onClick={() => showGloss(true)}>Gloss</button>
 					<button onClick={() => showGloss(false)}>Technical gloss</button>
