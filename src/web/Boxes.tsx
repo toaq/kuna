@@ -26,9 +26,6 @@ function Box(props: BoxProps) {
 
 function PostFieldBox(props: { postField: PostField }) {
 	const { earlyAdjuncts, arguments: args, lateAdjuncts } = props.postField;
-	if (earlyAdjuncts.length + args.length + lateAdjuncts.length === 0) {
-		return undefined;
-	}
 	return (
 		<Box color="#ffcc00" label="Post-field">
 			{earlyAdjuncts.map((a, i) => (
@@ -65,7 +62,11 @@ function ClauseBox(props: { clause: BoxClause }) {
 			<Box color="green" label="Verbal complex">
 				<div className="boxes-toaq">{verbalComplex}</div>
 			</Box>
-			<PostFieldBox postField={postField} />
+			{postField.earlyAdjuncts.length +
+			postField.arguments.length +
+			postField.lateAdjuncts.length ? (
+				<PostFieldBox postField={postField} />
+			) : undefined}
 		</Box>
 	);
 }
