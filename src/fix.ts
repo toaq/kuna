@@ -1,12 +1,5 @@
-import { entryArity } from './dictionary';
-import { analyzeSerial, getFrame } from './serial';
-import {
-	CovertValue,
-	StrictTree,
-	Tree,
-	assertBranch,
-	assertLeaf,
-} from './tree';
+import { analyzeSerial } from './serial';
+import { CovertValue, StrictTree, Tree, assertLeaf } from './tree';
 
 interface Quantification {
 	quantifier: CovertValue;
