@@ -351,10 +351,12 @@ const littleVAgent = λ('e', ['s'], c =>
 // λ𝘗. 𝘗
 const na = λ(['e', 't'], [], c => v(0, c));
 
-function denoteLittleV(toaq: string | null): Expr {
+function denoteLittleV(toaq: string | null): Expr | null {
 	switch (toaq) {
-		case null:
+		case 'CAUSE':
 			return littleVAgent;
+		case 'BE':
+			return null;
 		case 'nä':
 			return na;
 		default:
@@ -415,9 +417,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 
 		denotation = denoteVerb(entry.toaq, entry.frame.split(' ').length);
 	} else if (leaf.label === 'DP') {
-		if (leaf.word === 'functional') {
-			throw new Error('Functional DP');
-		} else if (leaf.word === 'covert') {
+		if (leaf.word === 'covert') {
 			denotation = hoa;
 			bindings = covertHoaBindings;
 		} else if (leaf.word.entry === undefined) {
@@ -518,22 +518,17 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		};
 	} else if (leaf.label === '𝘷') {
 		let toaq: string | null;
-		if (typeof leaf.word === 'string') {
-			toaq = null;
+		if (leaf.word === 'covert') {
+			toaq = leaf.value;
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized 𝘷: ${leaf.word.text}`);
 		} else {
 			toaq = leaf.word.entry.toaq;
 		}
-
 		denotation = denoteLittleV(toaq);
-	} else if (leaf.label === '𝘷0') {
-		denotation = null;
 	} else if (leaf.label === 'Asp') {
 		let toaq: string;
-		if (leaf.word === 'functional') {
-			throw new Error('Functional Asp');
-		} else if (leaf.word === 'covert') {
+		if (leaf.word === 'covert') {
 			toaq = 'tam';
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized Asp: ${leaf.word.text}`);
@@ -543,9 +538,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 
 		denotation = denoteAspect(toaq);
 	} else if (leaf.label === 'T') {
-		if (leaf.word === 'functional') {
-			throw new Error('Functional T');
-		} else if (leaf.word === 'covert') {
+		if (leaf.word === 'covert') {
 			denotation = defaultTense;
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized T: ${leaf.word.text}`);
@@ -556,9 +549,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		denotation = null;
 	} else if (leaf.label === 'SA') {
 		let toaq: string;
-		if (leaf.word === 'functional') {
-			throw new Error('Functional SA');
-		} else if (leaf.word === 'covert') {
+		if (leaf.word === 'covert') {
 			toaq = 'da'; // TODO: covert móq
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized SA: ${leaf.word.text}`);
@@ -771,7 +762,6 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (left.label) {
 		case 'V':
 		case 'Asp':
-		case '𝘷0':
 		case 'n':
 			return functionalApplication;
 		case 'T':

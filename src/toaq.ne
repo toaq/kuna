@@ -8,7 +8,6 @@ const {
 	makeAdjunctPT,
 	makeBranch,
 	makeBranchCovertLeft,
-	makeBranchFunctionalLeft,
 	makeConn,
     makeCovertLeaf,
 	makeLeaf,
@@ -61,7 +60,7 @@ DP -> Focus DP {% makeBranch('FocusP') %}
 # (sá) ꝡë hao
 nP -> nP CPrel {% makeBranch('nP') %}
 # (sá) ∅ hao
-nP -> CPdet {% makeBranchFunctionalLeft('nP', 'n') %}
+nP -> CPdet {% makeBranchCovertLeft('nP', 'n') %}
 
 # ní bï pu hao
 Clause -> term Bi Clause {% make3L('TopicP', "Topic'") %}

@@ -3,11 +3,7 @@ import { Tree } from './tree';
 function ttree_converted(data: Tree): { label: string; branches: any } {
 	if ('word' in data) {
 		const b =
-			data.word === 'covert'
-				? '∅'
-				: data.word === 'functional'
-				? '🅵'
-				: data.word.text.toLowerCase();
+			data.word === 'covert' ? data.value : data.word.text.toLowerCase();
 		return { label: data.label, branches: [b] };
 	} else if ('left' in data) {
 		return {

@@ -62,7 +62,6 @@ export type Label =
 	| "Topic'"
 	| 'TopicP'
 	| '𝘷'
-	| '𝘷0'
 	| "𝘷'"
 	| 'V'
 	| "V'"
@@ -87,11 +86,7 @@ export function containsWords(
 	stopLabels: Label[],
 ): boolean {
 	if ('word' in tree) {
-		return (
-			tree.word !== 'covert' &&
-			tree.word !== 'functional' &&
-			words.includes(clean(tree.word.text))
-		);
+		return tree.word !== 'covert' && words.includes(clean(tree.word.text));
 	} else if ('left' in tree) {
 		return (
 			(!stopLabels.includes(tree.left.label) &&
@@ -116,12 +111,24 @@ export function isQuestion(tree: Tree): boolean {
 	);
 }
 
-export interface Leaf {
+export interface OvertLeaf {
 	label: Label;
 	id?: string;
 	movedTo?: string;
-	word: Word | 'covert' | 'functional';
+	word: Word;
 }
+
+type CovertValue = '∅' | 'BE' | 'CAUSE' | 'PRO';
+
+export interface CovertLeaf {
+	label: Label;
+	id?: string;
+	movedTo?: string;
+	word: 'covert';
+	value: CovertValue;
+}
+
+export type Leaf = OvertLeaf | CovertLeaf;
 
 export interface Branch<T> {
 	label: Label;
@@ -184,16 +191,6 @@ export function makeBranch(label: Label) {
 		return {
 			label,
 			left,
-			right,
-		};
-	};
-}
-
-export function makeBranchFunctionalLeft(label: Label, functionalLabel: Label) {
-	return ([right]: [Tree, Tree]) => {
-		return {
-			label,
-			left: { label: functionalLabel, word: 'functional' },
 			right,
 		};
 	};
@@ -366,7 +363,7 @@ export function makeT1ModalvP([modal, tp]: [Tree, Tree]) {
 			label: "𝘷'",
 			left: {
 				label: '𝘷',
-				word: 'functional',
+				word: 'covert',
 			},
 			right: tp,
 		},

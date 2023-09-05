@@ -26,9 +26,6 @@ export function toLatex(tree: Tree | DTree): string {
 		const children = tree.children.map(toLatex).join(' ');
 		return `[${label} ${children}]`;
 	} else {
-		if (tree.word === 'functional') {
-			return `[${label}]`;
-		}
 		if (tree.word === 'covert') {
 			return `[${label} [$\\varnothing$]]`;
 		}

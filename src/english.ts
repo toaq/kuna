@@ -14,7 +14,6 @@ function leafText(tree: Tree): string {
 		throw new Error('Unexpected non-leaf ' + tree.label);
 	}
 	if (tree.word === 'covert') return '';
-	if (tree.word === 'functional') return '';
 	return tree.word.text;
 }
 
@@ -364,7 +363,7 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 			{ she: 'necessarily', ao: 'would', daı: 'possibly', ea: 'could' }[
 				bare(leafText(modal))
 			] ?? '?';
-		if (c.word === 'covert' || c.word === 'functional') {
+		if (c.word === 'covert') {
 			return { text: eng };
 		} else {
 			return {

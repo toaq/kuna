@@ -53,12 +53,7 @@ export function placeLeaf(
 	const gloss =
 		typeof leaf.word === 'string' ? undefined : leaf.word.entry?.gloss;
 	const label = getLabel(leaf);
-	const word =
-		leaf.word === 'functional'
-			? undefined
-			: leaf.word === 'covert'
-			? '∅'
-			: leaf.word.text;
+	const word = leaf.word === 'covert' ? leaf.value : leaf.word.text;
 	const denotation =
 		'denotation' in leaf && leaf.denotation !== null
 			? toPlainText(leaf.denotation)
