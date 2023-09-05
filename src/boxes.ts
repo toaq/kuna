@@ -1,7 +1,7 @@
 import { parse } from './parse';
 import { Glosser } from './gloss';
 import { inTone } from './tokenize';
-import { Branch, Tree, isQuestion } from './tree';
+import { Branch, Tree, assertBranch, isQuestion } from './tree';
 import { Tone } from './types';
 
 export interface PostField {
@@ -10,12 +10,18 @@ export interface PostField {
 	lateAdjuncts: string[];
 }
 
+export interface AndClause {
+	word: string;
+	clause: BoxClause;
+}
+
 export interface BoxClause {
 	/// If empty, means covert "ꝡa"
 	complementizer: string;
 	topic?: string;
 	verbalComplex: string;
 	postField: PostField;
+	conjunction?: AndClause;
 }
 
 export interface BoxSentence {
@@ -80,6 +86,7 @@ function boxifyClause(tree: Tree): BoxClause {
 	let topic: string | undefined = undefined;
 	let verbalComplexWords = [];
 	let postField: PostField | undefined = undefined;
+	let conjunction: AndClause | undefined = undefined;
 	const cp = skipFree(tree);
 	if (!('left' in cp)) throw new Error('bad CP?');
 	const c = cp.left;
@@ -114,16 +121,24 @@ function boxifyClause(tree: Tree): BoxClause {
 					w && verbalComplexWords.push(w);
 					node = node.right;
 					break;
+				case '&P':
+					assertBranch(node.right);
+					conjunction = {
+						word: words(node.right.left),
+						clause: boxifyClause(node.right.right),
+					};
+					node = node.left;
+					break;
 				default:
 					console.log(node);
-					throw new Error('unimplemented: ' + node.label);
+					throw new Error('unimplemented in boxifyClause: ' + node.label);
 			}
 		} else {
 			throw new Error('unexpected leaf in clause');
 		}
 	}
 	const verbalComplex = verbalComplexWords.join(' ').trim();
-	return { complementizer, topic, verbalComplex, postField };
+	return { complementizer, topic, verbalComplex, postField, conjunction };
 }
 
 export function boxify(tree: Tree): BoxSentence {

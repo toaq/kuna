@@ -1,7 +1,7 @@
 import { Glosser } from './gloss';
 import { parse } from './parse';
 import { bare, clean } from './tokenize';
-import { Branch, Label, Leaf, Tree, isQuestion } from './tree';
+import { Branch, Label, Leaf, Tree, assertBranch, isQuestion } from './tree';
 import { VerbForm, conjugate } from './english-conjugation';
 
 interface Constituent {
@@ -16,11 +16,6 @@ function leafText(tree: Tree): string {
 	if (tree.word === 'covert') return '';
 	if (tree.word === 'functional') return '';
 	return tree.word.text;
-}
-
-function assertBranch(tree: Tree): asserts tree is Branch<Tree> {
-	if ('left' in tree) return;
-	throw new Error('Unexpected non-branch ' + tree.label);
 }
 
 function leafToEnglish(leaf: Tree): string {

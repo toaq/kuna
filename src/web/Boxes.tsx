@@ -49,8 +49,32 @@ function PostFieldBox(props: { postField: PostField }) {
 	);
 }
 
+function ClauseInner(props: { clause: BoxClause }) {
+	const { verbalComplex, postField, conjunction } = props.clause;
+	return (
+		<>
+			<Box color="green" label="Verbal complex">
+				<div className="boxes-toaq">{verbalComplex}</div>
+			</Box>
+			{postField.earlyAdjuncts.length +
+			postField.arguments.length +
+			postField.lateAdjuncts.length ? (
+				<PostFieldBox postField={postField} />
+			) : undefined}
+			{conjunction && (
+				<>
+					<Box color="gray" label="Conjunction">
+						<div className="boxes-toaq">{conjunction.word}</div>
+					</Box>
+					<ClauseInner clause={conjunction.clause} />
+				</>
+			)}
+		</>
+	);
+}
+
 function ClauseBox(props: { clause: BoxClause }) {
-	const { complementizer, topic, verbalComplex, postField } = props.clause;
+	const { complementizer, topic } = props.clause;
 	return (
 		<Box color="red" label="Clause">
 			<Box color="orange" label="Comp.">
@@ -61,14 +85,7 @@ function ClauseBox(props: { clause: BoxClause }) {
 					<div className="boxes-toaq">{topic}</div>
 				</Box>
 			)}
-			<Box color="green" label="Verbal complex">
-				<div className="boxes-toaq">{verbalComplex}</div>
-			</Box>
-			{postField.earlyAdjuncts.length +
-			postField.arguments.length +
-			postField.lateAdjuncts.length ? (
-				<PostFieldBox postField={postField} />
-			) : undefined}
+			<ClauseInner clause={props.clause} />
 		</Box>
 	);
 }

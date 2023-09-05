@@ -138,6 +138,11 @@ export type Tree = Leaf | Branch<Tree> | Rose<Tree>;
 
 export type StrictTree = Leaf | Branch<StrictTree>;
 
+export function assertBranch(tree: Tree): asserts tree is Branch<Tree> {
+	if ('left' in tree) return;
+	throw new Error('Unexpected non-branch ' + tree.label);
+}
+
 export function makeWord([token]: [ToaqToken]): Word {
 	const lemmaForm = token.value.toLowerCase().normalize();
 	const bareWord = bare(token.value);
