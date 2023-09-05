@@ -2,11 +2,11 @@ import { Branch, Label, Tree } from './tree';
 
 const arityPreservingVerbPrefixes: Label[] = ['buP', 'muP', 'buqP', 'geP'];
 
-const pro: Tree = { label: 'DP', word: 'covert', value: 'PRO' };
+const pro: Tree = { label: 'DP', word: { covert: true, value: 'PRO' } };
 
 export function getFrame(verb: Tree): string {
 	if ('word' in verb) {
-		if (verb.word === 'covert') throw new Error('covert verb?');
+		if (verb.word.covert) throw new Error('covert verb?');
 		if (verb.word.entry?.type === 'predicate') {
 			return verb.word.entry.frame;
 		} else {
@@ -41,7 +41,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 		if (arity === 1) {
 			return {
 				label: '𝘷P',
-				left: { label: '𝘷', word: 'covert', value: 'BE' },
+				left: { label: '𝘷', word: { covert: true, value: 'BE' } },
 				right: { label: 'VP', left: verbs[0], right: args[0] },
 			};
 		} else if (arity === 2) {
@@ -50,7 +50,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 				left: args[0],
 				right: {
 					label: "𝘷'",
-					left: { label: '𝘷', word: 'covert', value: 'CAUSE' },
+					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
 					right: { label: 'VP', left: verbs[0], right: args[1] },
 				},
 			};
@@ -60,7 +60,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 				left: args[0],
 				right: {
 					label: "𝘷'",
-					left: { label: '𝘷', word: 'covert', value: 'CAUSE' },
+					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
 					right: {
 						label: 'VP',
 						left: args[1],
@@ -94,7 +94,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 		if (arity === 1) {
 			return {
 				label: '𝘷P',
-				left: { label: '𝘷', word: 'covert', value: 'BE' },
+				left: { label: '𝘷', word: { covert: true, value: 'BE' } },
 				right: { label: 'VP', left: verbs[0], right: inner },
 			};
 		} else if (arity === 2) {
@@ -103,7 +103,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 				left: args[0],
 				right: {
 					label: "𝘷'",
-					left: { label: '𝘷', word: 'covert', value: 'CAUSE' },
+					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
 					right: { label: 'VP', left: verbs[0], right: inner },
 				},
 			};
@@ -113,7 +113,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 				left: args[0],
 				right: {
 					label: "𝘷'",
-					left: { label: '𝘷', word: 'covert', value: 'CAUSE' },
+					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
 					right: {
 						label: 'VP',
 						left: args[1],
@@ -135,20 +135,19 @@ function attachAdjective(VP: Tree, vP: Tree): Tree {
 			label: 'aP',
 			left: {
 				label: 'a',
-				word: 'covert', // TODO ki
-				value: '∅',
+				word: { covert: true, value: '∅' }, // TODO ki
 			},
 			right: {
 				// TODO: oh god, adjectives can have T and Asp?
 				// needs rework in nearley grammar
 				label: 'CPrel',
-				left: { label: 'C', word: 'covert', value: '∅' },
+				left: { label: 'C', word: { covert: true, value: '∅' } },
 				right: {
 					label: 'TP',
-					left: { label: 'T', word: 'covert', value: '∅' },
+					left: { label: 'T', word: { covert: true, value: '∅' } },
 					right: {
 						label: 'AspP',
-						left: { label: 'Asp', word: 'covert', value: '∅' },
+						left: { label: 'Asp', word: { covert: true, value: '∅' } },
 						right: vP,
 					},
 				},

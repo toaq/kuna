@@ -4,11 +4,19 @@ import { bare, clean, ToaqToken, tone } from './tokenize';
 import { Tone } from './types';
 
 export interface Word {
+	covert: false;
 	index: number | undefined;
 	text: string;
 	bare: string;
 	tone: Tone;
 	entry: Entry | undefined;
+}
+
+type CovertValue = '∅' | 'BE' | 'CAUSE' | 'PRO';
+
+export interface CovertWord {
+	covert: true;
+	value: CovertValue;
 }
 
 export type Label =
@@ -86,7 +94,7 @@ export function containsWords(
 	stopLabels: Label[],
 ): boolean {
 	if ('word' in tree) {
-		return tree.word !== 'covert' && words.includes(clean(tree.word.text));
+		return !tree.word.covert && words.includes(clean(tree.word.text));
 	} else if ('left' in tree) {
 		return (
 			(!stopLabels.includes(tree.left.label) &&
@@ -111,24 +119,12 @@ export function isQuestion(tree: Tree): boolean {
 	);
 }
 
-export interface OvertLeaf {
+export interface Leaf {
 	label: Label;
 	id?: string;
 	movedTo?: string;
-	word: Word;
+	word: Word | CovertWord;
 }
-
-type CovertValue = '∅' | 'BE' | 'CAUSE' | 'PRO';
-
-export interface CovertLeaf {
-	label: Label;
-	id?: string;
-	movedTo?: string;
-	word: 'covert';
-	value: CovertValue;
-}
-
-export type Leaf = OvertLeaf | CovertLeaf;
 
 export interface Branch<T> {
 	label: Label;
@@ -154,6 +150,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 	const lemmaForm = token.value.toLowerCase().normalize();
 	const bareWord = bare(token.value);
 	return {
+		covert: false,
 		index: token.index,
 		text: token.value,
 		bare: bareWord,
@@ -182,7 +179,7 @@ export function makeLeaf(label: Label) {
 export function makeCovertLeaf(label: Label) {
 	return () => ({
 		label,
-		word: 'covert',
+		word: { covert: true, value: '∅' },
 	});
 }
 
@@ -200,7 +197,7 @@ export function makeBranchCovertLeft(label: Label, covertLabel: Label) {
 	return ([right]: [Tree, Tree]) => {
 		return {
 			label,
-			left: { label: covertLabel, word: 'covert' },
+			left: { label: covertLabel, word: { covert: true, value: '∅' } },
 			right,
 		};
 	};
@@ -245,7 +242,7 @@ export function makeSingleChild(label: Label) {
 
 export function makeOptLeaf(label: Label) {
 	return ([leaf]: [Leaf | undefined]) => {
-		return leaf ?? { label, word: 'covert' };
+		return leaf ?? { label, word: { covert: true, value: '∅' } };
 	};
 }
 
@@ -302,7 +299,7 @@ export function makevPdet([serial]: [Tree], location: number, reject: Object) {
 	}
 	return {
 		label: '*𝘷P',
-		children: [serial, { label: 'DP', word: 'covert' }],
+		children: [serial, { label: 'DP', word: { covert: true, value: '∅' } }],
 	};
 }
 
@@ -356,14 +353,14 @@ export function makeT1ModalvP([modal, tp]: [Tree, Tree]) {
 			left: modal,
 			right: {
 				label: 'CP',
-				word: 'covert',
+				word: { covert: true, value: '∅' },
 			},
 		},
 		right: {
 			label: "𝘷'",
 			left: {
 				label: '𝘷',
-				word: 'covert',
+				word: { covert: true, value: 'BE' },
 			},
 			right: tp,
 		},
@@ -396,13 +393,17 @@ export function makePrefixP([prefix, verb]: [Tree, Tree]) {
 export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 	return {
 		label: '𝘷P',
-		left: { label: 'CP', left: { label: 'C', word: 'covert' }, right: tp },
+		left: {
+			label: 'CP',
+			left: { label: 'C', word: { covert: true, value: '∅' } },
+			right: tp,
+		},
 		right: {
 			label: "𝘷'",
 			left: vgo,
 			right: {
 				label: 'CPrel',
-				left: { label: 'C', word: 'covert' },
+				left: { label: 'C', word: { covert: true, value: '∅' } },
 				right: clause,
 			},
 		},

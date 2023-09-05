@@ -50,10 +50,9 @@ export function placeLeaf(
 	ctx: CanvasRenderingContext2D,
 	leaf: Leaf | (Leaf & { denotation: Expr | null }),
 ): PlacedLeaf {
-	const gloss =
-		typeof leaf.word === 'string' ? undefined : leaf.word.entry?.gloss;
+	const gloss = leaf.word.covert ? undefined : leaf.word.entry?.gloss;
 	const label = getLabel(leaf);
-	const word = leaf.word === 'covert' ? leaf.value : leaf.word.text;
+	const word = leaf.word.covert ? leaf.word.value : leaf.word.text;
 	const denotation =
 		'denotation' in leaf && leaf.denotation !== null
 			? toPlainText(leaf.denotation)

@@ -13,7 +13,7 @@ function leafText(tree: Tree): string {
 	if (!('word' in tree)) {
 		throw new Error('Unexpected non-leaf ' + tree.label);
 	}
-	if (tree.word === 'covert') return '';
+	if (tree.word.covert) return '';
 	return tree.word.text;
 }
 
@@ -47,7 +47,7 @@ function verbToEnglish(tree: Tree): string {
 }
 
 function serialToEnglish(serial: Tree): string {
-	if ('word' in serial && serial.word === 'covert') return '';
+	if ('word' in serial && serial.word.covert) return '';
 	if (serial.label !== '*Serial') throw new Error('non-*Serial serial');
 	if (!('children' in serial)) throw new Error('non-Rose serial');
 	return serial.children.map(x => verbToEnglish(x)).join('-');
@@ -363,7 +363,7 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 			{ she: 'necessarily', ao: 'would', daı: 'possibly', ea: 'could' }[
 				bare(leafText(modal))
 			] ?? '?';
-		if (c.word === 'covert') {
+		if (c.word.covert) {
 			return { text: eng };
 		} else {
 			return {

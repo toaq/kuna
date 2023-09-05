@@ -410,14 +410,14 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	let bindings = noBindings;
 
 	if (leaf.label === 'V') {
-		if (typeof leaf.word === 'string') throw new Error();
+		if (leaf.word.covert) throw new Error('covert V');
 		const entry = leaf.word.entry;
 		if (!entry) throw new Error();
 		if (entry.type !== 'predicate') throw new Error();
 
 		denotation = denoteVerb(entry.toaq, entry.frame.split(' ').length);
 	} else if (leaf.label === 'DP') {
-		if (leaf.word === 'covert') {
+		if (leaf.word.covert) {
 			denotation = hoa;
 			bindings = covertHoaBindings;
 		} else if (leaf.word.entry === undefined) {
@@ -518,8 +518,8 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		};
 	} else if (leaf.label === '𝘷') {
 		let toaq: string | null;
-		if (leaf.word === 'covert') {
-			toaq = leaf.value;
+		if (leaf.word.covert) {
+			toaq = leaf.word.value;
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized 𝘷: ${leaf.word.text}`);
 		} else {
@@ -528,7 +528,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		denotation = denoteLittleV(toaq);
 	} else if (leaf.label === 'Asp') {
 		let toaq: string;
-		if (leaf.word === 'covert') {
+		if (leaf.word.covert) {
 			toaq = 'tam';
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized Asp: ${leaf.word.text}`);
@@ -538,7 +538,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 
 		denotation = denoteAspect(toaq);
 	} else if (leaf.label === 'T') {
-		if (leaf.word === 'covert') {
+		if (leaf.word.covert) {
 			denotation = defaultTense;
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized T: ${leaf.word.text}`);
@@ -549,7 +549,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		denotation = null;
 	} else if (leaf.label === 'SA') {
 		let toaq: string;
-		if (leaf.word === 'covert') {
+		if (leaf.word.covert) {
 			toaq = 'da'; // TODO: covert móq
 		} else if (leaf.word.entry === undefined) {
 			throw new Error(`Unrecognized SA: ${leaf.word.text}`);
