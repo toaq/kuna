@@ -1,4 +1,4 @@
-import { Impossible, Ungrammatical } from './error';
+import { Impossible, Ungrammatical, Unimplemented } from './error';
 import { Branch, Label, Tree, makeNull } from './tree';
 
 const arityPreservingVerbPrefixes: Label[] = ['buP', 'muP', 'buqP', 'geP'];
@@ -10,6 +10,8 @@ export function getFrame(verb: Tree): string {
 		if (verb.word.covert) throw new Impossible('covert verb in a serial?');
 		if (verb.word.entry?.type === 'predicate') {
 			return verb.word.entry.frame;
+		} else if (verb.word.entry?.type === 'adjective marker') {
+			return 'kı';
 		} else {
 			throw new Impossible('weird verb');
 		}
@@ -27,16 +29,17 @@ export function getFrame(verb: Tree): string {
 	} else if (arityPreservingVerbPrefixes.includes(verb.label)) {
 		return getFrame((verb as Branch<Tree>).right);
 	} else {
-		throw new Impossible('weird nonverb: ' + verb.label);
+		throw new Unimplemented("Can't get frame of " + verb.label);
 	}
 }
 
 function serialTovP(verbs: Tree[], args: Tree[]): Tree {
+	console.log('verbs', verbs);
 	const firstFrame = getFrame(verbs[0]);
 	if (verbs.length === 1) {
 		const arity = firstFrame.split(' ').length;
-		if (args.length < arity) {
-			throw new Ungrammatical('not enough arguments');
+		while (args.length < arity) {
+			args.push(makeNull('DP'));
 		}
 
 		if (arity === 1) {
@@ -83,11 +86,15 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			throw new Ungrammatical("frame can't serialize: " + firstFrame);
 		}
 		const cCount = frame.length - 1;
+		console.log(frame);
 		const jaCount = Number(frame[frame.length - 1][0]);
 		// TODO pro coindexation
 		const pros: Tree[] = new Array(jaCount).fill(pro);
-		if (args.length < cCount) {
-			throw new Ungrammatical('not enough arguments');
+		// if (args.length < cCount) {
+		// 	throw new Ungrammatical('not enough arguments');
+		// }
+		while (args.length < cCount) {
+			args.push(makeNull('DP'));
 		}
 		const innerArgs: Tree[] = [...pros, ...args.slice(cCount)];
 		const inner = serialTovP(verbs.slice(1), innerArgs);
@@ -128,13 +135,27 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 	}
 }
 
-function attachAdjective(VP: Tree, vP: Tree): Tree {
+interface KivP {
+	ki?: Tree;
+	vP: Tree;
+}
+
+function segmentToKivP(segment: Tree[], args: Tree[]): KivP {
+	if (segment[0].label === '𝘢') {
+		return { ki: segment[0], vP: serialTovP(segment.slice(1), args) };
+	} else {
+		return { vP: serialTovP(segment, args) };
+	}
+}
+
+function attachAdjective(VP: Tree, kivP: KivP): Tree {
+	const { ki, vP } = kivP;
 	return {
 		label: 'VP',
 		left: VP,
 		right: {
 			label: '𝘢P',
-			left: makeNull('𝘢'), // TODO ki-
+			left: ki ?? makeNull('𝘢'),
 			right: {
 				// TODO: oh god, adjectives can have T and Asp?
 				// needs rework in nearley grammar
@@ -171,18 +192,26 @@ export function analyzeSerial(tree: Tree, args: Tree[]): Tree {
 	let segments = [];
 	let end = children.length;
 	for (let i = children.length - 2; i >= 0; i--) {
+		if (frames[i] === 'kı') {
+			segments.unshift(children.slice(i, end));
+			end = i;
+			continue;
+		}
 		const frame = frames[i].split(' ');
-		const last = frame.at(-1)![0];
-		if (last === 'c') {
+		const last = frame.at(-1)!;
+		if (last === 'c' && i + 1 !== end) {
 			// So everything to the right is an adjective.
 			segments.unshift(children.slice(i + 1, end));
 			end = i + 1;
 		}
 	}
-	segments.unshift(children.slice(0, end));
+	if (0 !== end) segments.unshift(children.slice(0, end));
 
 	// Now the first segment is the serial verb and everything after it is serial adjectives.
-	let vP = serialTovP(segments[0], args);
+	let { ki, vP } = segmentToKivP(segments[0], args);
+	if (ki) {
+		throw new Ungrammatical("Serial can't start with kı-");
+	}
 
 	// Attach adjectives to VP
 	let ptr = vP as Branch<Tree>;
@@ -190,7 +219,7 @@ export function analyzeSerial(tree: Tree, args: Tree[]): Tree {
 		ptr = ptr.right as Branch<Tree>;
 	}
 	for (let i = 1; i < segments.length; i++) {
-		ptr.right = attachAdjective(ptr.right, serialTovP(segments[i], [pro]));
+		ptr.right = attachAdjective(ptr.right, segmentToKivP(segments[i], [pro]));
 	}
 	return vP;
 }

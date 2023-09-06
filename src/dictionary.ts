@@ -14,6 +14,7 @@ export const verbTypes = [
 export type VerbType = (typeof verbTypes)[number];
 
 export const nonVerbTypes = [
+	'adjective marker',
 	'aspect',
 	'cleft verb',
 	'complementizer',
@@ -97,6 +98,10 @@ export function entryArity(entry: VerbEntry): number {
 		: (entry.english.split(';')[0].match(/▯/g) || []).length;
 }
 
+/**
+ * Initialize the `dictionary`. This must be called before calling other kuna
+ * functions.
+ */
 export function initializeDictionary(): void {
 	for (const e of entries) {
 		delete (e as any).examples;
@@ -124,6 +129,9 @@ export function initializeDictionary(): void {
 		}
 		if (e.toaq == 'na-') {
 			e.type = 'prefix conjunctionizer';
+		}
+		if (e.toaq == 'kı-') {
+			e.type = 'adjective marker';
 		}
 		dictionary.set(e.toaq.toLowerCase(), e);
 

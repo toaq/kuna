@@ -60,6 +60,7 @@ export type Label =
 	| 'geP'
 	| 'Interjection'
 	| 'InterjectionP'
+	| 'kı'
 	| 'mı'
 	| 'mıP'
 	| 'Modal'

@@ -124,7 +124,9 @@ AdjunctP -> Adjunct Serial term {% makeAdjunctPT %}
 AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
 
 # tua hao
-Serial -> V1:* Vlast {% makeSerial %}
+Serial -> V1orKi:* Vlast {% makeSerial %}
+V1orKi -> V1 {% id %}
+V1orKi -> Ki {% id %}
 # (sá) tua hao
 Serialdet -> Serial {% id %}
 # (sá) ∅
@@ -192,6 +194,7 @@ EvA -> %event_accessor {% makeLeaf('EvA') %}
 Focus -> %focus_particle {% makeLeaf('Focus') %}
 Go -> %retroactive_cleft {% makeLeaf('𝘷') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
+Ki -> %adjective_marker {% makeLeaf('𝘢') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
 Mo -> %text_quote {% makeLeaf('mo') %}
 Modal -> %modality {% makeLeaf('Modal') %}
