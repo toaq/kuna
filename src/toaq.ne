@@ -58,9 +58,9 @@ DP -> D nP {% makeBranch('DP') %}
 # kú jí
 DP -> Focus DP {% makeBranch('FocusP') %}
 # (sá) ꝡë hao
-nP -> nP CPrel {% makeBranch('nP') %}
+nP -> nP CPrel {% makeBranch('𝘯P') %}
 # (sá) ∅ hao
-nP -> CPdet {% makeBranchCovertLeft('nP', 'n') %}
+nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 
 # ní bï pu hao
 Clause -> term Bi Clause {% make3L('TopicP', "Topic'") %}

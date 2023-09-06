@@ -133,8 +133,8 @@ function attachAdjective(VP: Tree, vP: Tree): Tree {
 		label: 'VP',
 		left: VP,
 		right: {
-			label: 'aP',
-			left: makeNull('a'), // TODO ki-
+			label: '𝘢P',
+			left: makeNull('𝘢'), // TODO ki-
 			right: {
 				// TODO: oh god, adjectives can have T and Asp?
 				// needs rework in nearley grammar
