@@ -12,6 +12,7 @@ import { useDarkMode } from 'usehooks-ts';
 import { textual_tree_from_json } from '../textual-tree';
 import { boxify } from '../boxes';
 import { Boxes } from './Boxes';
+import { useLocalStorage } from 'usehooks-ts';
 
 type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
 type Mode = 'boxes' | TreeMode | 'gloss' | 'technical-gloss' | 'english';
@@ -32,7 +33,10 @@ function errorString(e: any): string {
 
 export function App() {
 	const darkMode = useDarkMode();
-	const [inputText, setInputText] = useState<string>('Poq jí da.');
+	const [inputText, setInputText] = useLocalStorage<string>(
+		'input',
+		'Poq jí da.',
+	);
 	const [latestMode, setLatestMode] = useState<Mode>();
 	const [latestOutput, setLatestOutput] = useState<ReactElement>(
 		<>Output will appear here.</>,
