@@ -18,6 +18,8 @@
               cairo
               pango
             ];
+
+            env.LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath (with pkgs; [ libuuid ]);
           };
       });
 }
