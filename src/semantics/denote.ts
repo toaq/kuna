@@ -523,7 +523,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	} else if (leaf.label === 'D') {
 		denotation = boundThe;
 		bindings = boundTheBindings;
-	} else if (leaf.label === 'n') {
+	} else if (leaf.label === '𝘯') {
 		if (cCommand === null)
 			throw new Impossible("Can't denote an n in isolation");
 		const vp = findVp(cCommand);
@@ -815,7 +815,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (left.label) {
 		case 'V':
 		case 'Asp':
-		case 'n':
+		case '𝘯':
 		case 'Q':
 			return functionalApplication;
 		case 'T':

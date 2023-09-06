@@ -58,6 +58,8 @@ export function toDocument(trees: (Tree | DTree)[]): string {
 %\\newunicodechar{ꝡ}{w\\hspace{-5pt}\\clipbox{0pt 0pt 0pt 4.3pt}{y}}
 \\newunicodechar{Ꝡ}{W\\hspace{-4.9pt}\\clipbox{0pt 0pt 0pt 4pt}{y}}
 \\newunicodechar{ꝡ}{w\\hspace{-4.2pt}\\clipbox{0pt 0pt 0pt 4pt}{y}}
+\\newunicodechar{𝘢}{$a$}
+\\newunicodechar{𝘯}{$n$}
 \\newunicodechar{𝘷}{$v$}
 \\usetikzlibrary{arrows.meta}
 \\tikzset{>={Stealth[width=2mm,length=2mm]}}

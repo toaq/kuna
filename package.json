@@ -18,6 +18,7 @@
 	"description": "Tools for parsing Toaq Delta",
 	"main": "index.js",
 	"scripts": {
+		"postinstall": "npm run codegen",
 		"test": "echo \"Error: no tests configured\" && exit 1",
 		"prettier:check": "npx -p prettier prettier -c .",
 		"prettier:format": "npx -p prettier prettier -w .",
