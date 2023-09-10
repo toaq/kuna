@@ -44,10 +44,12 @@ import {
 	AnimacyClass,
 } from './model';
 import {
+	filterPresuppositions,
 	makeWorldExplicit,
 	mapBindings,
 	reduce,
 	rewriteContext,
+	someSubexpression,
 	unifyDenotations,
 } from './operations';
 
@@ -796,7 +798,7 @@ const dComposition: CompositionRule = (branch, left, right) => {
 	} else if (right.denotation === null) {
 		throw new Impossible(`D composition on a null ${right.label}`);
 	} else {
-		// Because unifyDenotations is heuristic and asymmetric, and nP will have more
+		// Because unifyDenotations is heuristic and asymmetric, and 𝘯P will have more
 		// binding information than D, we need to pretend that nP is on the left here
 		const [np, d, bindings] = unifyDenotations(right, left);
 		// Delete the covert resumptive binding as it was only needed to perform this
@@ -807,14 +809,39 @@ const dComposition: CompositionRule = (branch, left, right) => {
 	}
 };
 
+const qComposition: CompositionRule = (branch, left, right) => {
+	if (left.denotation === null) {
+		throw new Impossible(`Q composition on a null ${left.label}`);
+	} else if (right.denotation === null) {
+		throw new Impossible(`Q composition on a null ${right.label}`);
+	} else {
+		const [l, r, bindings] = unifyDenotations(left, right);
+		// Drop all references to the bindings originating in 𝘯
+		if (bindings.covertResumptive === undefined)
+			throw new Impossible("Can't identify the references to be dropped");
+		const index = bindings.covertResumptive.index;
+		const rPruned = filterPresuppositions(
+			r,
+			p =>
+				!someSubexpression(p, e => e.head === 'variable' && e.index === index),
+		);
+
+		return {
+			...branch,
+			left,
+			right,
+			denotation: reduce(app(l, rPruned)),
+			bindings,
+		};
+	}
+};
+
 const predicateAbstraction: CompositionRule = (branch, left, right) => {
 	if (left.denotation === null) {
 		throw new Impossible(`Predicate abstraction on a null ${left.label}`);
 	} else if (right.denotation === null) {
 		throw new Impossible(`Predicate abstraction on a null ${right.label}`);
 	} else {
-		// Given right, rewrite matching bindings to zero and then wrap in lambda and app left
-		// Left bindings can be discarded at the end, rewritten right bindings survive
 		const [l, r, bindings] = unifyDenotations(left, right);
 		if (bindings.covertResumptive === undefined)
 			throw new Error("Can't identify the variable to be abstracted");
@@ -844,7 +871,6 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'V':
 		case 'Asp':
 		case '𝘯':
-		case 'Q':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -862,6 +888,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 			return cRelComposition;
 		case 'D':
 			return dComposition;
+		case 'Q':
+			return qComposition;
 		case 'QP':
 			return predicateAbstraction;
 	}

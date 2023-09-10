@@ -459,3 +459,59 @@ export function makeWorldExplicit(tree: DTree): DTree {
 		})),
 	};
 }
+
+/**
+ * Filters an expression's presuppositions by a given predicate.
+ */
+export function filterPresuppositions(
+	e: Expr,
+	predicate: (presupposition: Expr) => boolean,
+): Expr {
+	if (e.head === 'presuppose') {
+		const body = filterPresuppositions(e.body, predicate);
+		return predicate(e.presupposition)
+			? presuppose(body, e.presupposition)
+			: body;
+	} else {
+		return e;
+	}
+}
+
+/**
+ * Determines whether some subexpression satsifies the given predicate.
+ */
+export function someSubexpression(
+	e: Expr,
+	predicate: (e: Expr) => boolean,
+): boolean {
+	if (predicate(e)) return true;
+
+	const sub = (...es: Expr[]) => es.some(e => someSubexpression(e, predicate));
+
+	switch (e.head) {
+		case 'variable':
+			return sub();
+		case 'verb':
+			return sub(...e.args, e.event, e.world);
+		case 'lambda':
+			return sub(
+				e.body,
+				...(e.restriction === undefined ? [] : [e.restriction]),
+			);
+		case 'apply':
+			return sub(e.fn, e.argument);
+		case 'presuppose':
+			return sub(e.body, e.presupposition);
+		case 'infix':
+			return sub(e.left, e.right);
+		case 'polarizer':
+			return sub(e.body);
+		case 'quantifier':
+			return sub(
+				e.body,
+				...(e.restriction === undefined ? [] : [e.restriction]),
+			);
+		case 'constant':
+			return sub();
+	}
+}
