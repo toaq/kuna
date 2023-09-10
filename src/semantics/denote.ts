@@ -844,10 +844,17 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 	} else {
 		const [l, r, bindings] = unifyDenotations(left, right);
 		if (bindings.covertResumptive === undefined)
-			throw new Error("Can't identify the variable to be abstracted");
-		// TODO: destroy this variable in the final denotation (first we must ensure
-		// in Q composition that all its usages get deleted)
+			throw new Impossible("Can't identify the variable to be abstracted");
 		const index = bindings.covertResumptive.index;
+
+		// Remove the abstracted binding from the final denotation
+		const newContext = [...r.context];
+		newContext.splice(index, 1);
+		const indexMapping = (i: number) => {
+			if (i === index)
+				throw new Impossible('Abstracted variable is still used');
+			return i > index ? i - 1 : i;
+		};
 
 		return {
 			...branch,
@@ -855,13 +862,19 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 			right,
 			denotation: reduce(
 				app(
-					l,
-					λ('e', r.context, c =>
-						rewriteContext(r, c, i => (i === index ? 0 : i + 1)),
+					rewriteContext(l, newContext, indexMapping),
+					λ('e', newContext, c =>
+						rewriteContext(r, c, i =>
+							i === index ? 0 : i > index ? i : i + 1,
+						),
 					),
 				),
 			),
-			bindings: mapBindings(bindings, b => (b.index === index ? undefined : b)),
+			bindings: mapBindings(bindings, b =>
+				b.index === index
+					? undefined
+					: { index: indexMapping(b.index), subordinate: b.subordinate },
+			),
 		};
 	}
 };
