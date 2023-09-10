@@ -1,10 +1,36 @@
 import { Impossible, Ungrammatical, Unimplemented } from './error';
 import { Branch, Label, Tree, makeNull } from './tree';
 
+/**
+ * Toaq serials are too complicated to parse directly in the context-free
+ * grammar, so we parse something called a *𝘷P and fix that up in this file.
+ *
+ * A *𝘷P consists of a "verbal complex", internally called a *Serial, followed
+ * by "terms" (adjuncts or arguments). This is a "PEG parser style" view of the
+ * verbal complex and the post-field.
+ *
+ * A *Serial consists of a serial verb, followed by 0 or more serial adjectives.
+ * For example, the refgram gives the example
+ *
+ *     du rua jaq de
+ *     "very beautiful thing which seems to be a flower"
+ *
+ * which is the serial verb "du rua" followed by a serial adjective "jaq de".
+ *
+ * We call "du rua" and "jaq de" the "segments" of this *Serial.
+ *
+ * We know (c)-frame words like rua mark the end of segments, and kı- marks the
+ * beginning of a segment. We use these rules to split the *Serial and interpret
+ * each sub-serial.
+ */
+
 const arityPreservingVerbPrefixes: Label[] = ['buP', 'muP', 'buqP', 'geP'];
 
-const pro: Tree = { label: 'DP', word: { covert: true, value: 'PRO' } };
+export const pro: Tree = { label: 'DP', word: { covert: true, value: 'PRO' } };
 
+/**
+ * Get a frame string like "c" or "c c 1j" for this verbal subtree.
+ */
 export function getFrame(verb: Tree): string {
 	if ('word' in verb) {
 		if (verb.word.covert) throw new Impossible('covert verb in a serial?');
@@ -33,6 +59,10 @@ export function getFrame(verb: Tree): string {
 	}
 }
 
+/**
+ * Given a *Serial and the arguments from a *𝘷P, make a proper 𝘷P. If there
+ * aren't enough arguments this will pad with PRO.
+ */
 function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 	const firstFrame = getFrame(verbs[0]);
 	if (verbs.length === 1) {
@@ -133,11 +163,18 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 	}
 }
 
+/**
+ * This is a "proper" 𝘷P, with an optional kı node to fill the 𝘢 in an 𝘢P.
+ */
 interface KivP {
 	ki?: Tree;
 	vP: Tree;
 }
 
+/**
+ * Given a *Serial with possible kı-, and the arguments from a *𝘷P, make a
+ * proper 𝘷P tagged with possible kı-.
+ */
 function segmentToKivP(segment: Tree[], args: Tree[]): KivP {
 	if (segment[0].label === '𝘢') {
 		return { ki: segment[0], vP: serialTovP(segment.slice(1), args) };
@@ -146,6 +183,9 @@ function segmentToKivP(segment: Tree[], args: Tree[]): KivP {
 	}
 }
 
+/**
+ * Attach `kivP`, as an 𝘢P (created by pulling out the kı to make 𝘢), to `VP`.
+ */
 function attachAdjective(VP: Tree, kivP: KivP): Tree {
 	const { ki, vP } = kivP;
 	return {
@@ -173,7 +213,17 @@ function attachAdjective(VP: Tree, kivP: KivP): Tree {
 	};
 }
 
-export function analyzeSerial(tree: Tree, args: Tree[]): Tree {
+/**
+ * Turn the given *Serial and terms into a proper 𝘷P, by:
+ *
+ * - splitting the *Serial into segments,
+ * - separating adjuncts from arguments,
+ * - expanding the serial verb using the arguments,
+ * - expanding the serial adjectives with a PRO argument,
+ * - attaching all the adjectives, and
+ * - attaching the adjuncts.
+ */
+export function fixSerial(tree: Tree, terms: Tree[]): Tree {
 	if (tree.label !== '*Serial') {
 		throw new Impossible('not a serial');
 	}
@@ -205,6 +255,19 @@ export function analyzeSerial(tree: Tree, args: Tree[]): Tree {
 	}
 	if (0 !== end) segments.unshift(children.slice(0, end));
 
+	let earlyAdjuncts = [];
+	let args = [];
+	let lateAdjuncts = [];
+	for (const term of terms) {
+		if (term.label === 'DP' || term.label === 'CP') {
+			args.push(term);
+		} else if (args.length) {
+			lateAdjuncts.push(term);
+		} else {
+			earlyAdjuncts.push(term);
+		}
+	}
+
 	// Now the first segment is the serial verb and everything after it is serial adjectives.
 	let { ki, vP } = segmentToKivP(segments[0], args);
 	if (ki) {
@@ -219,5 +282,14 @@ export function analyzeSerial(tree: Tree, args: Tree[]): Tree {
 	for (let i = 1; i < segments.length; i++) {
 		ptr.right = attachAdjective(ptr.right, segmentToKivP(segments[i], [pro]));
 	}
+
+	// Attach AdjunctPs to 𝘷P
+	for (const a of lateAdjuncts) {
+		vP = { label: '𝘷P', left: vP, right: a };
+	}
+	for (const a of earlyAdjuncts.reverse()) {
+		vP = { label: '𝘷P', left: a, right: vP };
+	}
+
 	return vP;
 }

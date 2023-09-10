@@ -1,5 +1,11 @@
-import { analyzeSerial } from './serial';
-import { CovertValue, StrictTree, Tree, assertLeaf } from './tree';
+import { fixSerial, pro } from './serial';
+import {
+	CovertValue,
+	StrictTree,
+	Tree,
+	assertBranch,
+	assertLeaf,
+} from './tree';
 import { Impossible } from './error';
 
 interface Quantification {
@@ -60,12 +66,20 @@ export function fix(tree: Tree, scope?: Scope): StrictTree {
 			if (serial.label !== '*Serial')
 				throw new Impossible('*𝘷P without *Serial');
 			if (!('children' in serial)) throw new Impossible('strange *Serial');
-			const vP = analyzeSerial(serial, tree.children.slice(1));
+			const vP = fixSerial(serial, tree.children.slice(1));
+			console.log(vP);
 			return fix(vP, scope);
 		} else {
-			throw new Impossible('unexpected non-binary tree');
+			throw new Impossible('unexpected non-binary tree: ' + tree.label);
 		}
 	} else if ('left' in tree) {
+		if (tree.label === 'VP' && tree.left.label === '*Serial') {
+			// Tiny hack to extract a VP from fixSerial:
+			const vP = fixSerial(tree.left, [pro, tree.right]);
+			assertBranch(vP);
+			assertBranch(vP.right);
+			return fix(vP.right.right);
+		}
 		if (tree.label === 'CP') {
 			const newScope = new Scope();
 			const right = fix(tree.right, newScope);
