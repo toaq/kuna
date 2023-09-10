@@ -808,7 +808,35 @@ const dComposition: CompositionRule = (branch, left, right) => {
 };
 
 const predicateAbstraction: CompositionRule = (branch, left, right) => {
-	throw new Unimplemented(`TODO: implement predicate abstraction`);
+	if (left.denotation === null) {
+		throw new Impossible(`Predicate abstraction on a null ${left.label}`);
+	} else if (right.denotation === null) {
+		throw new Impossible(`Predicate abstraction on a null ${right.label}`);
+	} else {
+		// Given right, rewrite matching bindings to zero and then wrap in lambda and app left
+		// Left bindings can be discarded at the end, rewritten right bindings survive
+		const [l, r, bindings] = unifyDenotations(left, right);
+		if (bindings.covertResumptive === undefined)
+			throw new Error("Can't identify the variable to be abstracted");
+		// TODO: destroy this variable in the final denotation (first we must ensure
+		// in Q composition that all its usages get deleted)
+		const index = bindings.covertResumptive.index;
+
+		return {
+			...branch,
+			left,
+			right,
+			denotation: reduce(
+				app(
+					l,
+					λ('e', r.context, c =>
+						rewriteContext(r, c, i => (i === index ? 0 : i + 1)),
+					),
+				),
+			),
+			bindings: mapBindings(bindings, b => (b.index === index ? undefined : b)),
+		};
+	}
 };
 
 function getCompositionRule(left: DTree, right: DTree): CompositionRule {
