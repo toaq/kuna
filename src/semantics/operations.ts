@@ -161,7 +161,10 @@ export function reduce(e: Expr): Expr {
 					rewriteContext(
 						reduced.presupposition,
 						reduced.presupposition.context.slice(1),
-						i => i - 1,
+						i => {
+							if (i === 0) throw new Impossible('Quantified variable used');
+							return i - 1;
+						},
 					),
 				);
 			} catch (e) {
