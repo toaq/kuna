@@ -166,14 +166,31 @@ export function mergeConstructions(
 
 export function verbFormFor(englishWord: string): VerbForm {
 	switch (englishWord) {
-		case 'me':
 		case 'I':
+		case 'me':
 			return VerbForm.First;
 		case 'you':
 		case 'we':
+		case 'us':
 		case 'they':
+		case 'them':
 			return VerbForm.Plural;
 		default:
 			return VerbForm.Third;
+	}
+}
+
+export function nominative(pronoun: string): string {
+	switch (pronoun) {
+		case 'us':
+			return 'we';
+		case 'me':
+			return 'I';
+		case 'her':
+			return 'she';
+		case 'them':
+			return 'they';
+		default:
+			return pronoun;
 	}
 }

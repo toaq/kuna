@@ -6,6 +6,7 @@ import {
 	conjugate,
 	mergeConstructions,
 	negateAuxiliary,
+	nominative,
 	realizeAspect,
 	realizeTense,
 } from './conjugation';
@@ -127,8 +128,8 @@ export class ClauseTranslator {
 		if (mode !== 'DP') {
 			this.subject ||= { text: 'it' };
 		}
-		if (this.subject?.text === 'me') {
-			this.subject.text = 'I';
+		if (this.subject?.text) {
+			this.subject.text = nominative(this.subject.text);
 		}
 		let complementizer: string = '';
 		switch (this.toaqComplementizer) {
