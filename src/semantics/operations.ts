@@ -252,12 +252,7 @@ export function reduce(e: Expr): Expr {
 		}
 	}
 
-	return presuppositions.length > 0
-		? presuppose(
-				body,
-				presuppositions.reduce((ps, p) => and(ps, p)),
-		  )
-		: body;
+	return presuppositions.reduce((acc, p) => presuppose(acc, p), body);
 }
 
 function forEachBinding(
