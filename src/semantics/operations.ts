@@ -143,19 +143,19 @@ export function reduce(e: Expr): Expr {
 	// Reduces a subexpression and isolates it from any presuppositions
 	const reduceAndIsolate = (e: Expr) => {
 		let reduced = reduce(e);
-		if (reduced.head === 'presuppose') {
+		while (reduced.head === 'presuppose') {
 			presuppositions.push(reduced.presupposition);
-			return reduced.body;
-		} else {
-			return reduced;
+			reduced = reduced.body;
 		}
+		return reduced;
 	};
 
-	// Reduces a subexpression inside a quantifier and isolates it from any
-	// presuppositions
+	// Reduces a subexpression inside a quantifier and isolates it from
+	// presuppositions where possible
 	const quantifierReduceAndIsolate = (e: Expr) => {
 		let reduced = reduce(e);
-		if (reduced.head === 'presuppose') {
+		const innerPresuppositions: Expr[] = [];
+		while (reduced.head === 'presuppose') {
 			try {
 				presuppositions.push(
 					rewriteContext(
@@ -164,15 +164,17 @@ export function reduce(e: Expr): Expr {
 						i => i - 1,
 					),
 				);
-				return reduced.body;
 			} catch (e) {
 				// This presupposition evidently uses the quantified variable and cannot be
 				// lifted
-				return reduced;
+				innerPresuppositions.push(reduced.presupposition);
 			}
-		} else {
-			return reduced;
+			reduced = reduced.body;
 		}
+		return innerPresuppositions.reduceRight(
+			(acc, p) => presuppose(acc, p),
+			reduced,
+		);
 	};
 
 	switch (e.head) {
@@ -252,7 +254,7 @@ export function reduce(e: Expr): Expr {
 		}
 	}
 
-	return presuppositions.reduce((acc, p) => presuppose(acc, p), body);
+	return presuppositions.reduceRight((acc, p) => presuppose(acc, p), body);
 }
 
 function forEachBinding(
