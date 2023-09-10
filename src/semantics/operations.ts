@@ -1,6 +1,6 @@
 import { Impossible } from '../error';
+import { zip } from '../misc';
 import {
-	and,
 	app,
 	Binding,
 	Bindings,
@@ -337,6 +337,17 @@ export function unifyDenotations(
 	// indices in the unified context - we'll fill it in as we go
 	const rightMapping = new Array<number>(right.denotation.context.length);
 
+	const resolve = (rIndex: number, lIndex: number | null) => {
+		if (lIndex === null) {
+			context.push(right.denotation!.context[rIndex]);
+			rightMapping[rIndex] = context.length - 1;
+			return context.length - 1;
+		} else {
+			rightMapping[rIndex] = lIndex;
+			return lIndex;
+		}
+	};
+
 	// TODO: implement the 'Cho máma hó/áq' rule using the subordinate field
 
 	// For each binding referenced in the right subtree
@@ -346,11 +357,22 @@ export function unifyDenotations(
 		if (resolvedIndex !== undefined) {
 			// Then, as long as no bindings from the left subtree override this binding,
 			// keep it
-			const b = getter(bindings);
-			if (b === undefined || b.index === resolvedIndex) {
+			const lb = getter(bindings);
+			if (lb === undefined) {
 				setter(bindings, {
 					index: resolvedIndex,
-					subordinate: (b?.subordinate ?? true) && rb.subordinate,
+					subordinate: rb.subordinate,
+					timeIntervals: rb.timeIntervals.map(
+						v => rightMapping[v] ?? resolve(v, null),
+					),
+				});
+			} else if (lb.index === resolvedIndex) {
+				setter(bindings, {
+					index: resolvedIndex,
+					subordinate: lb.subordinate && rb.subordinate,
+					timeIntervals: zip(rb.timeIntervals, lb.timeIntervals).map(
+						([rv, lv]) => (rv === undefined ? lv! : resolve(rv, lv ?? null)),
+					),
 				});
 			}
 		} else {
@@ -359,18 +381,19 @@ export function unifyDenotations(
 			if (lb !== undefined) {
 				// Then unify the variables
 				setter(bindings, {
-					index: lb.index,
+					index: resolve(rb.index, lb.index),
 					subordinate: lb.subordinate && rb.subordinate,
+					timeIntervals: zip(rb.timeIntervals, lb.timeIntervals).map(
+						([rv, lv]) => (rv === undefined ? lv! : resolve(rv, lv ?? null)),
+					),
 				});
-				rightMapping[rb.index] = lb.index;
 			} else {
 				// Otherwise, create a new variable
 				setter(bindings, {
-					index: context.length,
+					index: resolve(rb.index, null),
 					subordinate: rightSubordinate || rb.subordinate,
+					timeIntervals: rb.timeIntervals.map(v => resolve(v, null)),
 				});
-				rightMapping[rb.index] = context.length;
-				context.push(right.denotation!.context[rb.index]);
 			}
 		}
 	});
@@ -405,6 +428,25 @@ export function unifyDenotations(
 		rewriteContext(right.denotation, context, i => rightMapping[i]),
 		bindings,
 	];
+}
+
+/**
+ * Gets the De Bruijn indices of all time interval variables in the expression
+ * not associated with any binding.
+ */
+export function getUnboundTimeIntervals(e: Expr, bs: Bindings): Set<number> {
+	const result = new Set<number>();
+
+	// First, collect all time interval variables present in the expression
+	for (let i = 0; i < e.context.length; i++) {
+		if (e.context[i] === 'i') result.add(i);
+	}
+	// Then filter out the ones that are already associated with a binding
+	forEachBinding(bs, b => {
+		for (const v of b.timeIntervals) result.delete(v);
+	});
+
+	return result;
 }
 
 /**

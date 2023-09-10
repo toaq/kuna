@@ -162,6 +162,11 @@ export interface Binding {
 	 * Whether this binding originates from a subordinate clause.
 	 */
 	subordinate: boolean;
+	/**
+	 * The De Bruijn indices of the time interval variables associated with this
+	 * binding.
+	 */
+	timeIntervals: number[];
 }
 
 export interface Bindings {

@@ -45,6 +45,7 @@ import {
 } from './model';
 import {
 	filterPresuppositions,
+	getUnboundTimeIntervals,
 	makeWorldExplicit,
 	mapBindings,
 	reduce,
@@ -60,14 +61,14 @@ const hoaBindings: Bindings = {
 	variable: {},
 	animacy: {},
 	head: {},
-	resumptive: { index: 0, subordinate: false },
+	resumptive: { index: 0, subordinate: false, timeIntervals: [] },
 };
 
 const covertHoaBindings: Bindings = {
 	variable: {},
 	animacy: {},
 	head: {},
-	covertResumptive: { index: 0, subordinate: false },
+	covertResumptive: { index: 0, subordinate: false, timeIntervals: [] },
 };
 
 // 𝘢 | animate(𝘢)
@@ -75,7 +76,7 @@ const ho = presuppose(v(0, ['e']), app(animate(['e']), v(0, ['e'])));
 
 const hoBindings: Bindings = {
 	variable: {},
-	animacy: { animate: { index: 0, subordinate: false } },
+	animacy: { animate: { index: 0, subordinate: false, timeIntervals: [] } },
 	head: {},
 };
 
@@ -84,7 +85,7 @@ const maq = presuppose(v(0, ['e']), app(inanimate(['e']), v(0, ['e'])));
 
 const maqBindings: Bindings = {
 	variable: {},
-	animacy: { inanimate: { index: 0, subordinate: false } },
+	animacy: { inanimate: { index: 0, subordinate: false, timeIntervals: [] } },
 	head: {},
 };
 
@@ -93,7 +94,7 @@ const hoq = presuppose(v(0, ['e']), app(abstract(['e']), v(0, ['e'])));
 
 const hoqBindings: Bindings = {
 	variable: {},
-	animacy: { abstract: { index: 0, subordinate: false } },
+	animacy: { abstract: { index: 0, subordinate: false, timeIntervals: [] } },
 	head: {},
 };
 
@@ -102,7 +103,7 @@ const ta = hoa;
 
 const taBindings: Bindings = {
 	variable: {},
-	animacy: { descriptive: { index: 0, subordinate: false } },
+	animacy: { descriptive: { index: 0, subordinate: false, timeIntervals: [] } },
 	head: {},
 };
 
@@ -343,7 +344,7 @@ const boundTheBindings: Bindings = {
 	variable: {},
 	animacy: {},
 	head: {},
-	covertResumptive: { index: 0, subordinate: false },
+	covertResumptive: { index: 0, subordinate: false, timeIntervals: [] },
 };
 
 // λ𝘢. λ𝘦. ᴀɢᴇɴᴛ(𝘦)(𝘸) = 𝘢
@@ -555,7 +556,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			);
 		}
 
-		const binding = { index: 0, subordinate: false };
+		const binding = { index: 0, subordinate: false, timeIntervals: [] };
 		bindings = {
 			variable: { [(word.entry as VerbEntry).toaq]: binding },
 			animacy: { [animacy]: binding },
@@ -739,6 +740,7 @@ const cComposition: CompositionRule = (branch, left, right) => {
 			bindings: mapBindings(right.bindings, b => ({
 				index: indexMapping(b.index),
 				subordinate: true,
+				timeIntervals: b.timeIntervals.map(indexMapping),
 			})),
 		};
 	}
@@ -760,7 +762,7 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 					),
 				),
 				bindings: mapBindings(right.bindings, b => ({
-					index: b.index,
+					...b,
 					subordinate: true,
 				})),
 			};
@@ -785,10 +787,43 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 						: {
 								index: b.index > hoa.index ? b.index - 1 : b.index,
 								subordinate: true,
+								timeIntervals: b.timeIntervals.map(v =>
+									v > hoa.index ? v - 1 : v,
+								),
 						  },
 				),
 			};
 		}
+	}
+};
+
+const nComposition: CompositionRule = (branch, left, right) => {
+	if (left.denotation === null) {
+		throw new Impossible(`𝘯 composition on a null ${left.label}`);
+	} else if (right.denotation === null) {
+		throw new Impossible(`𝘯 composition on a null ${right.label}`);
+	} else {
+		const [n, cpRel, bindings] = unifyDenotations(left, right);
+		if (bindings.covertResumptive === undefined)
+			throw new Impossible("𝘯 doesn't create a binding");
+		const index = bindings.covertResumptive.index;
+
+		// Associate all new time interval variables with this binding
+		const unboundTimeIntervals = getUnboundTimeIntervals(cpRel, bindings);
+		return {
+			...branch,
+			left,
+			right,
+			denotation: reduce(app(n, cpRel)),
+			bindings: mapBindings(bindings, b =>
+				b.index === index
+					? {
+							...b,
+							timeIntervals: [...b.timeIntervals, ...unboundTimeIntervals],
+					  }
+					: b,
+			),
+		};
 	}
 };
 
@@ -873,7 +908,11 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 			bindings: mapBindings(bindings, b =>
 				b.index === index
 					? undefined
-					: { index: indexMapping(b.index), subordinate: b.subordinate },
+					: {
+							index: indexMapping(b.index),
+							subordinate: b.subordinate,
+							timeIntervals: b.timeIntervals.map(indexMapping),
+					  },
 			),
 		};
 	}
@@ -883,7 +922,6 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (left.label) {
 		case 'V':
 		case 'Asp':
-		case '𝘯':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -899,6 +937,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 			return cComposition;
 		case 'Crel':
 			return cRelComposition;
+		case '𝘯':
+			return nComposition;
 		case 'D':
 			return dComposition;
 		case 'Q':
