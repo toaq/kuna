@@ -1,3 +1,5 @@
+import { Unimplemented } from './error';
+
 export enum VerbForm {
 	First,
 	Third,
@@ -57,5 +59,121 @@ export function conjugate(verb: string, person: VerbForm, past: boolean) {
 		}
 	} else {
 		return verb;
+	}
+}
+
+export function negateAuxiliary(auxiliary: string) {
+	switch (auxiliary) {
+		case 'am':
+			return 'am not';
+		case 'shall':
+			return "shan't";
+		case 'will':
+			return "won't";
+		default:
+			return auxiliary.replace(/n$/, '') + "n't";
+	}
+}
+
+interface VerbConstruction {
+	past?: boolean;
+	auxiliary?: string;
+	auxiliary2?: string;
+	preVerb?: string;
+	verbForm?: VerbForm;
+}
+
+export function realizeTense(toaqTense: string): VerbConstruction {
+	switch (toaqTense) {
+		case '':
+		case 'naı':
+		case 'tuom':
+			return {};
+		case 'pu':
+			return { past: true };
+		case 'mala':
+			return {
+				auxiliary: 'have',
+				preVerb: 'ever',
+				verbForm: VerbForm.PastParticiple,
+			};
+		case 'sula':
+			return { preVerb: 'ever' };
+		case 'jela':
+			return {
+				auxiliary: 'will',
+				preVerb: 'ever',
+				verbForm: VerbForm.Infinitive,
+			};
+		case 'jıa':
+			return { auxiliary: 'will', verbForm: VerbForm.Infinitive };
+		default:
+			throw new Unimplemented('realizeTense: ' + toaqTense);
+	}
+}
+
+export function realizeAspect(toaqAspect: string): VerbConstruction {
+	switch (toaqAspect) {
+		case '':
+		case 'tam':
+			return {};
+		case 'luı':
+			return { auxiliary: 'have', verbForm: VerbForm.PastParticiple };
+		case 'chum':
+			return { auxiliary: 'be', verbForm: VerbForm.PresentParticiple };
+		case 'za':
+			return {
+				auxiliary: 'be',
+				preVerb: 'yet to',
+				verbForm: VerbForm.Infinitive,
+			};
+		case 'hoaı':
+			return { preVerb: 'still' };
+		case 'haı':
+			return { preVerb: 'already' };
+		case 'hıq':
+			return {
+				auxiliary: 'have',
+				preVerb: 'just',
+				verbForm: VerbForm.PastParticiple,
+			};
+		case 'fı':
+			return {
+				auxiliary: 'be',
+				preVerb: 'about to',
+				verbForm: VerbForm.Infinitive,
+			};
+		default:
+			throw new Unimplemented('realizeAspect: ' + toaqAspect);
+	}
+}
+
+export function mergeConstructions(
+	tense: VerbConstruction,
+	aspect: VerbConstruction,
+): VerbConstruction {
+	// TODO it's actually more complex
+	let merged = { ...tense, ...aspect };
+	if (aspect.auxiliary) {
+		if (!tense.auxiliary || tense.auxiliary === 'do') {
+			merged.auxiliary = aspect.auxiliary;
+		} else {
+			merged.auxiliary2 = aspect.auxiliary;
+		}
+	}
+	return merged;
+}
+
+export function verbFormFor(englishWord: string): VerbForm {
+	switch (englishWord) {
+		case 'me':
+		case 'I':
+			return VerbForm.First;
+		case 'you':
+		case 'we':
+		case 'they':
+			return VerbForm.Plural;
+		default:
+			return VerbForm.Third;
 	}
 }

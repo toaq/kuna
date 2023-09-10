@@ -2,8 +2,17 @@ import { Glosser } from './gloss';
 import { parse } from './parse';
 import { bare, clean } from './tokenize';
 import { Branch, Label, Leaf, Tree, assertBranch, isQuestion } from './tree';
-import { VerbForm, conjugate } from './english-conjugation';
+import {
+	VerbForm,
+	conjugate,
+	mergeConstructions,
+	negateAuxiliary,
+	realizeAspect,
+	realizeTense,
+	verbFormFor,
+} from './english-conjugation';
 import { Impossible, Unimplemented } from './error';
+import { fix } from './fix';
 
 interface Constituent {
 	text: string;
@@ -18,17 +27,24 @@ function leafText(tree: Tree): string {
 	return tree.word.text;
 }
 
-function leafToEnglish(leaf: Tree): string {
-	const text = leafText(leaf);
+function leafTextToEnglish(text: string): string {
 	if (text === '◌́') {
 		return 'the';
 	}
-	return new Glosser(true).glossWord(leafText(leaf));
+	return new Glosser(true).glossWord(text);
+}
+
+function leafToEnglish(tree: Leaf): Constituent {
+	const text = leafTextToEnglish(leafText(tree));
+	return {
+		text,
+		person: verbFormFor(text),
+	};
 }
 
 function verbToEnglish(tree: Tree): string {
 	if ('word' in tree) {
-		return leafToEnglish(tree);
+		return leafTextToEnglish(leafText(tree));
 	} else if ('left' in tree) {
 		if (tree.label === 'EvAP') {
 			let k = new ClauseTranslator();
@@ -104,48 +120,47 @@ class ClauseTranslator {
 					}
 				}
 				break;
-			} else if ('left' in node) {
-				switch (node.label) {
-					case 'TopicP':
-						this.topics.push(treeToEnglish(node.left).text);
-						node = node.right;
-						break;
-					case "Topic'":
-						node = node.right;
-						break;
-					case 'ΣP':
-						if (clean(leafText(node.left)) === 'bu') {
-							this.negative = !this.negative;
-						}
-						node = node.right;
-						break;
-					case 'TP':
-						this.toaqTense = clean(leafText(node.left));
-						node = node.right;
-						break;
-					case 'AspP':
-						this.toaqAspect = clean(leafText(node.left));
-						node = node.right;
-						break;
-					case '𝘷P':
-						if (node.left.label === 'ModalP') {
-							this.modals.push(treeToEnglish(node.left).text);
-						}
-						node = node.right;
-						break;
-					case "𝘷'":
-						node = node.right;
-						break;
-					case '&P':
-						this.conjunct = treeToEnglish(node.right).text;
-						node = node.left;
-						break;
-					default:
-						console.log(node);
-						throw new Unimplemented('in processClause: ' + node.label);
-				}
-			} else {
+			} else if ('word' in node) {
 				throw new Impossible('hit leaf in clause');
+			}
+			switch (node.label) {
+				case 'TopicP':
+					this.topics.push(treeToEnglish(node.left).text);
+					node = node.right;
+					break;
+				case "Topic'":
+					node = node.right;
+					break;
+				case 'ΣP':
+					if (clean(leafText(node.left)) === 'bu') {
+						this.negative = !this.negative;
+					}
+					node = node.right;
+					break;
+				case 'TP':
+					this.toaqTense = clean(leafText(node.left));
+					node = node.right;
+					break;
+				case 'AspP':
+					this.toaqAspect = clean(leafText(node.left));
+					node = node.right;
+					break;
+				case '𝘷P':
+					if (node.left.label === 'ModalP') {
+						this.modals.push(treeToEnglish(node.left).text);
+					}
+					node = node.right;
+					break;
+				case "𝘷'":
+					node = node.right;
+					break;
+				case '&P':
+					this.conjunct = treeToEnglish(node.right).text;
+					node = node.left;
+					break;
+				default:
+					console.log(node);
+					throw new Unimplemented('in processClause: ' + node.label);
 			}
 		}
 	}
@@ -174,91 +189,17 @@ class ClauseTranslator {
 			auxiliary = 'do';
 			verbForm = VerbForm.Infinitive;
 		}
-		const nt: string = this.negative ? "n't" : '';
-		let preVerb: string = '';
-		let postVerb: string = '';
-		const past: boolean = this.toaqTense === 'pu';
+		const tenseConstruction = realizeTense(this.toaqTense);
+		const aspectConstruction = realizeAspect(this.toaqAspect);
+		const merged = mergeConstructions(tenseConstruction, aspectConstruction);
+		const past = merged.past ?? false;
+		if (merged.auxiliary) auxiliary = merged.auxiliary;
+		const auxiliary2 = merged.auxiliary2 ?? '';
+		const preVerb = merged.preVerb ?? '';
 
-		switch (this.toaqTense) {
-			case 'pu':
-				break;
-			case 'mala':
-				auxiliary = 'have';
-				preVerb = 'ever';
-				verbForm = VerbForm.PastParticiple;
-				break;
-			case 'sula':
-				auxiliary = 'do';
-				preVerb = 'ever';
-				verbForm = VerbForm.PastParticiple;
-				break;
-			case 'jela':
-				auxiliary = 'will';
-				preVerb = 'ever';
-				verbForm = VerbForm.PastParticiple;
-				break;
-			case 'jıa':
-				auxiliary = 'will';
-				verbForm = VerbForm.Infinitive;
-				break;
-		}
-		let auxiliary2: string = '';
-		switch (this.toaqAspect) {
-			case 'luı':
-				if (!auxiliary || auxiliary === 'do') {
-					auxiliary = 'have';
-				} else {
-					auxiliary2 = 'have';
-				}
-				verbForm = VerbForm.PastParticiple;
-				break;
-			case 'chum':
-				if (!auxiliary || auxiliary === 'do') {
-					auxiliary = 'be';
-				} else {
-					auxiliary2 = 'be';
-				}
-				verbForm = VerbForm.PresentParticiple;
-				break;
-			case 'za':
-				if (!auxiliary || auxiliary === 'do') {
-					auxiliary = 'be';
-				} else {
-					auxiliary2 = 'be';
-				}
-				preVerb = 'yet to';
-				verbForm = VerbForm.Infinitive;
-				break;
-			case 'hoaı':
-				preVerb = 'still';
-				break;
-			case 'haı':
-				preVerb = 'already';
-				break;
-			case 'hıq':
-				if (auxiliary === 'do') {
-					auxiliary = 'have';
-				} else {
-					auxiliary2 = 'have';
-				}
-				preVerb = 'just';
-				verbForm = VerbForm.PastParticiple;
-				break;
-			case 'fı':
-				if (!auxiliary || auxiliary === 'do') {
-					auxiliary = 'be';
-				} else {
-					auxiliary2 = 'be';
-				}
-				preVerb = 'about to';
-				verbForm = VerbForm.Infinitive;
-				break;
-		}
-
-		let order: string[];
 		if (auxiliary) {
 			auxiliary = conjugate(auxiliary, subjectVerbForm, past);
-			auxiliary += nt;
+			if (this.negative) auxiliary = negateAuxiliary(auxiliary);
 		}
 		const verb = this.verb
 			? mode === 'DP'
@@ -269,7 +210,7 @@ class ClauseTranslator {
 		const earlyAdjuncts = this.earlyAdjuncts.map(x => x + ',');
 		const subject = this.subject?.text ?? '';
 		const objects = this.objects.map(x => x.text);
-
+		let order: string[];
 		if (this.toaqComplementizer === 'ma') {
 			order = [
 				auxiliary,
@@ -278,7 +219,6 @@ class ClauseTranslator {
 				auxiliary2,
 				preVerb,
 				verb,
-				postVerb,
 				...objects,
 				...this.lateAdjuncts,
 				this.conjunct ?? '',
@@ -292,7 +232,6 @@ class ClauseTranslator {
 				auxiliary2,
 				preVerb,
 				verb,
-				postVerb,
 				...objects,
 				...this.lateAdjuncts,
 				this.conjunct ?? '',
@@ -301,7 +240,6 @@ class ClauseTranslator {
 
 		order = [...this.topics.map(x => `as for ${x},`), ...order];
 		order = [...this.modals, ...order];
-
 		return order.join(' ').trim().replace(/\s+/g, ' ');
 	}
 }
@@ -337,7 +275,7 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 		if (clean(leafText(d)) === 'báq') {
 			return { text: noun + 's', person: VerbForm.Plural };
 		} else {
-			const det = leafToEnglish(d);
+			const det = treeToEnglish(d).text;
 			return { text: (det + ' ' + noun).trim() };
 		}
 	}
@@ -372,21 +310,15 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 			};
 		}
 	}
-	if (tree.label === '&P') {
+	if (tree.label === '&P' || tree.label === "&'") {
 		return {
 			text:
 				treeToEnglish(tree.left).text + ' ' + treeToEnglish(tree.right).text,
 			person: VerbForm.Plural,
 		};
 	}
-	if (tree.label === "&'") {
-		return {
-			text: leafToEnglish(tree.left) + ' ' + treeToEnglish(tree.right).text,
-			person: VerbForm.Plural,
-		};
-	}
 	if (tree.label === 'FocusP') {
-		const left = leafToEnglish(tree.left);
+		const left = treeToEnglish(tree.left).text;
 		const { text: right, person } = treeToEnglish(tree.right);
 		switch (left) {
 			case 'FOC':
@@ -401,22 +333,7 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 
 function treeToEnglish(tree: Tree): Constituent {
 	if ('word' in tree) {
-		const text = leafToEnglish(tree);
-		let person: VerbForm;
-		switch (text) {
-			case 'me':
-			case 'I':
-				person = VerbForm.First;
-				break;
-			case 'you':
-			case 'we':
-			case 'they':
-				person = VerbForm.Plural;
-				break;
-			default:
-				person = VerbForm.Third;
-		}
-		return { text, person };
+		return leafToEnglish(tree);
 	} else if ('left' in tree) {
 		return branchToEnglish(tree);
 	} else {
