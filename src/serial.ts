@@ -34,7 +34,6 @@ export function getFrame(verb: Tree): string {
 }
 
 function serialTovP(verbs: Tree[], args: Tree[]): Tree {
-	console.log('verbs', verbs);
 	const firstFrame = getFrame(verbs[0]);
 	if (verbs.length === 1) {
 		const arity = firstFrame.split(' ').length;
@@ -86,7 +85,6 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			throw new Ungrammatical("frame can't serialize: " + firstFrame);
 		}
 		const cCount = frame.length - 1;
-		console.log(frame);
 		const jaCount = Number(frame[frame.length - 1][0]);
 		// TODO pro coindexation
 		const pros: Tree[] = new Array(jaCount).fill(pro);
