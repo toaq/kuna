@@ -1,4 +1,4 @@
-import { Unimplemented } from './error';
+import { Unimplemented } from '../error';
 
 export enum VerbForm {
 	First,

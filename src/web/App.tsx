@@ -4,7 +4,7 @@ import { boxify } from '../boxes';
 import { compact } from '../compact';
 import { initializeDictionary } from '../dictionary';
 import { pngDrawTree } from '../draw-tree';
-import { toEnglish } from '../english';
+import { toEnglish } from '../english/tree';
 import { fix } from '../fix';
 import { Glosser } from '../gloss';
 import { parse } from '../parse';
