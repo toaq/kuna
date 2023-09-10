@@ -448,7 +448,7 @@ function render(
 		}
 		case 'presuppose': {
 			const p = 1;
-			const bracket = leftPrecedence >= p || rightPrecedence >= p;
+			const bracket = leftPrecedence >= p || rightPrecedence > p;
 			const body = render(e.body, names, fmt, bracket ? 0 : leftPrecedence, p);
 			const presupposition = render(
 				e.presupposition,
