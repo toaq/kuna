@@ -1,21 +1,30 @@
-import { ReactElement, useState, useEffect } from 'react';
-import './App.css';
-import { parse } from '../parse';
-import { toEnglish } from '../english';
+import { ReactElement, useEffect, useState } from 'react';
+import { useDarkMode, useLocalStorage } from 'usehooks-ts';
+import { boxify } from '../boxes';
+import { compact } from '../compact';
 import { initializeDictionary } from '../dictionary';
 import { pngDrawTree } from '../draw-tree';
+import { toEnglish } from '../english';
 import { fix } from '../fix';
-import { denote } from '../semantics/denote';
 import { Glosser } from '../gloss';
-import { compact } from '../compact';
-import { useDarkMode } from 'usehooks-ts';
+import { parse } from '../parse';
+import { denote } from '../semantics/denote';
+import { Expr } from '../semantics/model';
+import { toLatex, toPlainText } from '../semantics/render';
 import { textual_tree_from_json } from '../textual-tree';
-import { boxify } from '../boxes';
+import { Tree } from '../tree';
+import './App.css';
 import { Boxes } from './Boxes';
-import { useLocalStorage } from 'usehooks-ts';
 
 type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
-type Mode = 'boxes' | TreeMode | 'gloss' | 'technical-gloss' | 'english';
+type Mode =
+	| 'boxes'
+	| TreeMode
+	| 'gloss'
+	| 'technical-gloss'
+	| 'logical-form'
+	| 'logical-form-latex'
+	| 'english';
 type TreeFormat = 'png' | 'textual' | 'json';
 
 function errorString(e: any): string {
@@ -48,17 +57,37 @@ export function App() {
 		[darkMode.isDarkMode, treeFormat],
 	);
 
-	function getBoxes(): ReactElement {
+	function parseInput(): Tree {
 		const trees = parse(inputText);
-		if (trees.length === 0) return <span>No parse</span>;
-		if (trees.length > 1) return <span>Ambiguous parse</span>;
-		const tree = trees[0];
+		if (trees.length === 0) throw new Error('No parse');
+		if (trees.length > 1) throw new Error('Ambiguous parse');
+		return trees[0];
+	}
+
+	function getBoxes(): ReactElement {
+		const tree = parseInput();
 		const boxSentence = boxify(tree);
 		return <Boxes sentence={boxSentence} />;
 	}
 
-	function getEnglish(): ReactElement {
-		return <>{toEnglish(inputText)}</>;
+	function getTree(mode: TreeMode): ReactElement {
+		let tree = parseInput();
+		if (mode !== 'raw-tree') tree = fix(tree);
+		if (mode === 'compact-tree') tree = compact(tree);
+		if (mode === 'semantics-tree') tree = denote(tree as any);
+		switch (treeFormat) {
+			case 'textual':
+				return (
+					<pre>{textual_tree_from_json(tree).replace(/\x1b\[\d+m/g, '')}</pre>
+				);
+			case 'png':
+				const theme = darkMode.isDarkMode ? 'dark' : 'light';
+				const canvas = pngDrawTree(tree, theme);
+				const url = canvas.toDataURL();
+				return <img style={{ maxHeight: '500px' }} src={url} />;
+			case 'json':
+				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
+		}
 	}
 
 	function getGloss(easy: boolean): ReactElement {
@@ -74,30 +103,13 @@ export function App() {
 		);
 	}
 
-	function getTree(level: TreeMode): ReactElement {
-		const trees = parse(inputText);
-		if (trees.length > 1) {
-			return <span>Parse ambiguity ({trees.length} parses).</span>;
-		} else if (trees.length === 0) {
-			return <span>No parse.</span>;
-		}
-		const theme = darkMode.isDarkMode ? 'dark' : 'light';
-		let tree = trees[0];
-		if (level !== 'raw-tree') tree = fix(tree);
-		if (level === 'compact-tree') tree = compact(tree);
-		if (level === 'semantics-tree') tree = denote(tree as any);
-		switch (treeFormat) {
-			case 'textual':
-				return (
-					<pre>{textual_tree_from_json(tree).replace(/\x1b\[\d+m/g, '')}</pre>
-				);
-			case 'png':
-				const canvas = pngDrawTree(tree, theme);
-				const url = canvas.toDataURL();
-				return <img style={{ maxHeight: '500px' }} src={url} />;
-			case 'json':
-				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
-		}
+	function getLogicalForm(renderer: (e: Expr) => string): ReactElement {
+		const expr = denote(fix(parseInput())).denotation;
+		return <>{expr ? renderer(expr) : 'No denotation'}</>;
+	}
+
+	function getEnglish(): ReactElement {
+		return <>{toEnglish(inputText)}</>;
 	}
 
 	function getOutput(mode: Mode): ReactElement {
@@ -113,6 +125,10 @@ export function App() {
 				return getGloss(true);
 			case 'technical-gloss':
 				return getGloss(false);
+			case 'logical-form':
+				return getLogicalForm(toPlainText);
+			case 'logical-form-latex':
+				return getLogicalForm(toLatex);
 			case 'english':
 				return getEnglish();
 		}
@@ -163,6 +179,11 @@ export function App() {
 						Technical gloss
 					</button>
 					<button onClick={() => generate('english')}>English</button>
+					<br />
+					<button onClick={() => generate('logical-form')}>Logical form</button>
+					<button onClick={() => generate('logical-form-latex')}>
+						Logical form (LaTeX)
+					</button>
 				</div>
 			</div>
 			<div className="card output">{latestOutput}</div>
