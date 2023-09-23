@@ -17,6 +17,7 @@ import {
 	verb,
 	λ,
 } from './model';
+import { toPlainText } from './render';
 
 function mapVariables(
 	e: Expr,
@@ -120,7 +121,7 @@ function substitute(index: number, target: Expr, e: Expr): Expr {
 /**
  * Performs a single β-reduction on an expression.
  */
-function reduceOnce(e: Expr): Expr {
+function betaReduce(e: Expr): Expr {
 	if (e.head === 'apply' && e.fn.head === 'lambda') {
 		const body = substitute(0, e.argument, e.fn.body);
 		return e.fn.restriction === undefined
@@ -132,9 +133,10 @@ function reduceOnce(e: Expr): Expr {
 }
 
 /**
- * β-reduces an expression to normal form.
+ * Reduces a subexpression to normal form.
+ * @param premises The plain-text representations of all premises in scope.
  */
-export function reduce(e: Expr): Expr {
+export function reduce_(e: Expr, premises: Set<string>): Expr {
 	let body: Expr;
 	// Presuppositions will be lifted out of subexpressions and appended to the
 	// body at the very end
@@ -142,7 +144,7 @@ export function reduce(e: Expr): Expr {
 
 	// Reduces a subexpression and isolates it from any presuppositions
 	const reduceAndIsolate = (e: Expr) => {
-		let reduced = reduce(e);
+		let reduced = reduce_(e, premises);
 		while (reduced.head === 'presuppose') {
 			presuppositions.push(reduced.presupposition);
 			reduced = reduced.body;
@@ -153,7 +155,7 @@ export function reduce(e: Expr): Expr {
 	// Reduces a subexpression inside a quantifier and isolates it from
 	// presuppositions where possible
 	const quantifierReduceAndIsolate = (e: Expr) => {
-		let reduced = reduce(e);
+		let reduced = reduce_(e, premises);
 		const innerPresuppositions: Expr[] = [];
 		while (reduced.head === 'presuppose') {
 			try {
@@ -180,6 +182,21 @@ export function reduce(e: Expr): Expr {
 		);
 	};
 
+	const withPremise = <T>(p: Expr | undefined, f: () => T): T => {
+		if (p !== undefined) {
+			const key = toPlainText(p);
+			if (!premises.has(key)) {
+				premises.add(key);
+				const result = f();
+				premises.delete(key);
+				return result;
+			}
+		}
+		return f();
+	};
+
+	const isPremise = (p: Expr) => premises.has(toPlainText(p));
+
 	switch (e.head) {
 		case 'variable': {
 			body = e;
@@ -195,13 +212,16 @@ export function reduce(e: Expr): Expr {
 			break;
 		}
 		case 'lambda': {
+			const restriction =
+				e.restriction === undefined
+					? undefined
+					: quantifierReduceAndIsolate(e.restriction);
 			body = λ(
 				e.body.context[0],
 				e.context,
-				() => quantifierReduceAndIsolate(e.body),
-				e.restriction === undefined
-					? undefined
-					: () => quantifierReduceAndIsolate(e.restriction!),
+				() =>
+					withPremise(restriction, () => quantifierReduceAndIsolate(e.body)),
+				restriction === undefined ? undefined : () => restriction,
 			);
 			break;
 		}
@@ -216,13 +236,14 @@ export function reduce(e: Expr): Expr {
 			};
 			body =
 				subexprsReduced.fn.head === 'lambda'
-					? reduceAndIsolate(reduceOnce(subexprsReduced))
+					? reduceAndIsolate(betaReduce(subexprsReduced))
 					: subexprsReduced;
 			break;
 		}
 		case 'presuppose': {
-			presuppositions.push(reduceAndIsolate(e.presupposition));
-			body = reduceAndIsolate(e.body);
+			const presupposition = reduceAndIsolate(e.presupposition);
+			if (!isPremise(presupposition)) presuppositions.push(presupposition);
+			body = withPremise(presupposition, () => reduceAndIsolate(e.body));
 			break;
 		}
 		case 'infix': {
@@ -240,14 +261,17 @@ export function reduce(e: Expr): Expr {
 			break;
 		}
 		case 'quantifier': {
+			const restriction =
+				e.restriction === undefined
+					? undefined
+					: quantifierReduceAndIsolate(e.restriction);
 			body = quantifier(
 				e.name,
 				e.body.context[0] as 'e' | 's' | 'v',
 				e.context,
-				() => quantifierReduceAndIsolate(e.body),
-				e.restriction === undefined
-					? undefined
-					: () => quantifierReduceAndIsolate(e.restriction!),
+				() =>
+					withPremise(restriction, () => quantifierReduceAndIsolate(e.body)),
+				restriction === undefined ? undefined : () => restriction,
 			);
 			break;
 		}
@@ -258,6 +282,14 @@ export function reduce(e: Expr): Expr {
 	}
 
 	return presuppositions.reduceRight((acc, p) => presuppose(acc, p), body);
+}
+
+/**
+ * Reduces an expression to normal form by performing β-reduction, lifting
+ * presuppositions out of subexpressions, and deleting redundant premises.
+ */
+export function reduce(e: Expr): Expr {
+	return reduce_(e, new Set());
 }
 
 function forEachBinding(
