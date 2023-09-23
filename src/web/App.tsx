@@ -1,5 +1,6 @@
 import { ReactElement, useEffect, useState } from 'react';
 import { useDarkMode, useLocalStorage } from 'usehooks-ts';
+import classNames from 'classnames';
 import { boxify } from '../boxes';
 import { compact } from '../compact';
 import { initializeDictionary } from '../dictionary';
@@ -46,10 +47,13 @@ export function App() {
 		'input',
 		'Poq jí da.',
 	);
+
 	const [latestMode, setLatestMode] = useState<Mode>();
 	const [latestOutput, setLatestOutput] = useState<ReactElement>(
 		<>Output will appear here.</>,
 	);
+	const math = latestMode === 'logical-form';
+
 	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png');
 	useEffect(initializeDictionary, []);
 	useEffect(
@@ -186,7 +190,9 @@ export function App() {
 					</button>
 				</div>
 			</div>
-			<div className="card output">{latestOutput}</div>
+			<div className={classNames('card', 'output', { math })}>
+				{latestOutput}
+			</div>
 		</div>
 	);
 }

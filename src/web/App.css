@@ -111,6 +111,10 @@ h1 {
 	font-weight: bold;
 }
 
+.math {
+	font-family: 'Noto Sans', 'Noto Sans Math', sans-serif;
+}
+
 .error {
 	color: #ff0080;
 	white-space: pre-wrap;
