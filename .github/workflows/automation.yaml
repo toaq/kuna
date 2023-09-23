@@ -76,7 +76,7 @@ jobs:
 
   deploy:
     name: Deploy web app
-    needs: check
+    needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
