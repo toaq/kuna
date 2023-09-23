@@ -67,7 +67,6 @@ export function fix(tree: Tree, scope?: Scope): StrictTree {
 				throw new Impossible('*𝘷P without *Serial');
 			if (!('children' in serial)) throw new Impossible('strange *Serial');
 			const vP = fixSerial(serial, tree.children.slice(1));
-			console.log(vP);
 			return fix(vP, scope);
 		} else {
 			throw new Impossible('unexpected non-binary tree: ' + tree.label);
