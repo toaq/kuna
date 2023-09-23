@@ -40,6 +40,8 @@ declare var predicate: any;
 declare var object_incorporating_verb: any;
 
 import { ToaqTokenizer } from "./tokenize";
+import * as TreeModule from "./tree";
+
 const {
 	make3L,
 	makeAdjunctPI,
@@ -62,7 +64,7 @@ const {
 	makeWord,
 	makevP,
 	makevPdet,
-} = require('./tree');
+} = TreeModule as any;
 const lexer = new ToaqTokenizer();
 
 interface NearleyToken {
