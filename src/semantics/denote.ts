@@ -769,6 +769,7 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 		} else {
 			const newContext = [...right.denotation.context];
 			newContext.splice(hoa.index, 1);
+			const indexMapping = (i: number) => (i > hoa.index ? i - 1 : i);
 
 			return {
 				...branch,
@@ -777,7 +778,7 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 				denotation: reduce(
 					λ('e', newContext, c =>
 						rewriteContext(right.denotation!, c, i =>
-							i === hoa.index ? 0 : i > hoa.index ? i : i + 1,
+							i === hoa.index ? 0 : indexMapping(i) + 1,
 						),
 					),
 				),
@@ -785,11 +786,9 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 					b.index === hoa.index
 						? undefined
 						: {
-								index: b.index > hoa.index ? b.index - 1 : b.index,
+								index: indexMapping(b.index),
 								subordinate: true,
-								timeIntervals: b.timeIntervals.map(v =>
-									v > hoa.index ? v - 1 : v,
-								),
+								timeIntervals: b.timeIntervals.map(indexMapping),
 						  },
 				),
 			};

@@ -497,12 +497,15 @@ export function makeWorldExplicit(tree: DTree): DTree {
 		result = λ(type, outerContext, () => result);
 	}
 
+	const indexMapping = (i: number) => (i > worldIndex ? i - 1 : i);
+
 	return {
 		...tree,
 		denotation: reduce(result),
 		bindings: mapBindings(tree.bindings, b => ({
 			...b,
-			index: b.index < worldIndex ? b.index + 1 : b.index,
+			index: indexMapping(b.index),
+			timeIntervals: b.timeIntervals.map(indexMapping),
 		})),
 	};
 }
