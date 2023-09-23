@@ -1,0 +1,92 @@
+name: Automation
+on: [push, pull_request]
+jobs:
+  types:
+    name: Check types
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up cache
+        uses: actions/setup-node@v3
+        with:
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Check types
+        run: npm run ts:check
+
+  formatting:
+    name: Check formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up cache
+        uses: actions/setup-node@v3
+        with:
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Check formatting
+        run: npm run prettier:check
+
+  tests:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up cache
+        uses: actions/setup-node@v3
+        with:
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Test
+        run: npm run test
+
+  build:
+    name: Build web app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up cache
+        uses: actions/setup-node@v3
+        with:
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Build web app
+        run: npm run web:build
+      - name: Upload production-ready build files
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-files
+          path: ./dist
+
+  deploy:
+    name: Deploy web app
+    needs: check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: production-files
+          path: ./dist
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
