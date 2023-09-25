@@ -1,5 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`Dua jí hóq 1`] = `"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ dua.𝘸(a)(𝘦'))(𝘦) | abstract(a)"`;
-
-exports[`Hıo jí súq ka 1`] = `"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ karuaq.w(λ𝘸. ∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ hıo.𝘸(súq)(𝘦'))(𝘦)"`;

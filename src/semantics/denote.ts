@@ -303,10 +303,12 @@ function denoteSpeechAct(toaq: string): string {
 			return 'karuaq';
 		case 'ba':
 			return 'baruaq';
-		case 'ꝡo':
-			return 'zaru';
 		case 'nha':
 			return 'nue';
+		case 'doa':
+			return 'shoe';
+		case 'ꝡo':
+			return 'zaru';
 		case 'móq':
 			return 'teqga';
 		default:
