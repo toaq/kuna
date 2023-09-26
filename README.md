@@ -30,10 +30,3 @@ export KUNA_TOKEN=your.discord.bot.token
 npm install
 npm run bot
 ```
-
-To regenerate the grammar:
-
-```sh
-npm install
-npm run codegen
-```
