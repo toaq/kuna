@@ -14,8 +14,16 @@ interface Quantification {
 }
 
 const quantifiers: Record<string, CovertValue> = {
-	sá: '[∃]',
-	tú: '[∀]',
+	sá: '∃',
+	sía: '¬∃',
+	tútu: '∀',
+	tú: '∀.SING',
+	túq: '∀.CUML',
+	báq: 'GEN',
+	ké: 'EXO',
+	hú: 'ENDO',
+	ní: 'DEM',
+	níjuı: 'PROX',
 };
 
 /**

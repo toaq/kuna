@@ -240,6 +240,9 @@ const plainText: Format = {
 	quantifierSymbols: {
 		some: '∃',
 		every: '∀',
+		every_sing: '∀.SING ',
+		every_cuml: '∀.CUML ',
+		gen: 'GEN ',
 		lambda: 'λ',
 	},
 	quantifier: (symbol, name, body) => `${symbol}${name}. ${body}`,
@@ -302,6 +305,9 @@ const latex: Format = {
 	quantifierSymbols: {
 		some: '\\exists',
 		every: '\\forall',
+		every_sing: '\\forall_{\\textsc{sing}}',
+		every_cuml: '\\forall_{\\textsc{cuml}}',
+		gen: '\\textsc{gen}\\ ',
 		lambda: '\\lambda',
 	},
 	quantifier: (symbol, name, body) => `${symbol} ${name}.\\ ${body}`,

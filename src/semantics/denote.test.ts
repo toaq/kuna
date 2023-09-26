@@ -110,7 +110,7 @@ test('it denotes the optative speech act', () => {
 
 test('it denotes the promissive speech act', () => {
 	expect(d('Jıa faq sía huı nha')).toMatchInlineSnapshot(
-		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nue.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ faq.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ huı.𝘸(a)(𝘦')))(𝘦) | t' > t0\"",
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nue.w(λ𝘸. ¬∃𝘢 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ huı.𝘸(𝘢)(𝘦'). ∃𝘦'. τ(𝘦') ⊆ t ∧ faq.𝘸(𝘢)(𝘦'))(𝘦) | t > t0\"",
 	);
 });
 
@@ -248,7 +248,61 @@ test('it denotes sá', () => {
 
 test('it denotes tú', () => {
 	expect(d('Maı jí tú poq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∀.SING 𝘢 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(𝘢)(𝘦'). (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(𝘢)(𝘦') | animate(𝘢)))(𝘦)\"",
+	);
+});
+
+test('it denotes sía', () => {
+	expect(d('Maı jí sía poq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ¬∃𝘢 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(𝘢)(𝘦'). (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(𝘢)(𝘦') | animate(𝘢)))(𝘦)\"",
+	);
+});
+
+test('it denotes túq', () => {
+	expect(d('Maı jí túq poq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∀.CUML 𝘢 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(𝘢)(𝘦'). (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(𝘢)(𝘦') | animate(𝘢)))(𝘦)\"",
+	);
+});
+
+test('it denotes tútu', () => {
+	expect(d('Maı jí tútu poq')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∀𝘢 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(𝘢)(𝘦'). (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(𝘢)(𝘦') | animate(𝘢)))(𝘦)\"",
+	);
+});
+
+test('it denotes báq', () => {
+	expect(d('Maı jí báq poq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. GEN 𝘢 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(𝘢)(𝘦'). (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(𝘢)(𝘦') | animate(𝘢)))(𝘦)\"",
+	);
+});
+
+test('it denotes ní', () => {
+	expect(d('Maı jí ní poq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(a)(𝘦')))(𝘦) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
+	);
+});
+
+test('it denotes níjuı', () => {
+	expect(d('Maı jí níjuı poq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(a)(𝘦')))(𝘦) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ tıjuı.w(a, jí)(𝘦)\"",
+	);
+});
+
+test('it denotes níjao', () => {
+	expect(d('Maı jí níjao poq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ poq.𝘸(a)(𝘦')))(𝘦) | animate(a)\"",
+	);
+});
+
+test('it denotes ké', () => {
+	expect(d('Maı jí ké poq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(a)(𝘦')))(𝘦) | animate(a) | ¬∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
+	);
+});
+
+test('it denotes hú', () => {
+	expect(d('Maı jí hú poq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(a)(𝘦')))(𝘦) | animate(a) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
 	);
 });
 

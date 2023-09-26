@@ -42,6 +42,10 @@ import {
 	abstract,
 	typesEqual,
 	AnimacyClass,
+	not,
+	everySing,
+	everyCuml,
+	gen,
 } from './model';
 import {
 	filterPresuppositions,
@@ -53,6 +57,7 @@ import {
 	someSubexpression,
 	unifyDenotations,
 } from './operations';
+import { toPlainText } from './render';
 
 // 𝘢
 const hoa = v(0, ['e']);
@@ -427,6 +432,20 @@ const qSome = λ(['e', 't'], [], c =>
 	),
 );
 
+// λ𝘗. λ𝘘. ¬∃𝘢 : 𝘗(𝘢). 𝘘(𝘢)
+const qNone = λ(['e', 't'], [], c =>
+	λ(['e', 't'], c, c =>
+		not(
+			some(
+				'e',
+				c,
+				c => app(v(1, c), v(0, c)),
+				c => app(v(2, c), v(0, c)),
+			),
+		),
+	),
+);
+
 // λ𝘗. λ𝘘. ∀𝘢 : 𝘗(𝘢). 𝘘(𝘢)
 const qEvery = λ(['e', 't'], [], c =>
 	λ(['e', 't'], c, c =>
@@ -439,12 +458,173 @@ const qEvery = λ(['e', 't'], [], c =>
 	),
 );
 
+// λ𝘗. λ𝘘. ∀.SING 𝘢 : 𝘗(𝘢). 𝘘(𝘢)
+const qEach = λ(['e', 't'], [], c =>
+	λ(['e', 't'], c, c =>
+		everySing(
+			'e',
+			c,
+			c => app(v(1, c), v(0, c)),
+			c => app(v(2, c), v(0, c)),
+		),
+	),
+);
+
+// λ𝘗. λ𝘘. ∀.CUML 𝘢 : 𝘗(𝘢). 𝘘(𝘢)
+const qAll = λ(['e', 't'], [], c =>
+	λ(['e', 't'], c, c =>
+		everyCuml(
+			'e',
+			c,
+			c => app(v(1, c), v(0, c)),
+			c => app(v(2, c), v(0, c)),
+		),
+	),
+);
+
+// λ𝘗. λ𝘘. GEN 𝘢 : 𝘗(𝘢). 𝘘(𝘢)
+const qGen = λ(['e', 't'], [], c =>
+	λ(['e', 't'], c, c =>
+		gen(
+			'e',
+			c,
+			c => app(v(1, c), v(0, c)),
+			c => app(v(2, c), v(0, c)),
+		),
+	),
+);
+
+// λ𝘗 : 𝘗(a). λ𝘘. 𝘘(a) | ¬∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)
+const qExo = presuppose(
+	λ(
+		['e', 't'],
+		['e'],
+		c => λ(['e', 't'], c, c => app(v(0, c), v(2, c))),
+		c => app(v(0, c), v(1, c)),
+	),
+	not(
+		some('v', ['e'], c =>
+			and(
+				beforeNear(app(temporalTrace(c), v(0, c)), speechTime(c)),
+				verb('meakuq', [v(1, c)], v(0, c), realWorld(c)),
+			),
+		),
+	),
+);
+
+// λ𝘗 : 𝘗(a). λ𝘘. 𝘘(a) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)
+const qEndo = presuppose(
+	λ(
+		['e', 't'],
+		['e'],
+		c => λ(['e', 't'], c, c => app(v(0, c), v(2, c))),
+		c => app(v(0, c), v(1, c)),
+	),
+	some('v', ['e'], c =>
+		and(
+			beforeNear(app(temporalTrace(c), v(0, c)), speechTime(c)),
+			verb('meakuq', [v(1, c)], v(0, c), realWorld(c)),
+		),
+	),
+);
+
+// λ𝘗 : 𝘗(a). λ𝘘. 𝘘(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)
+const qDem = presuppose(
+	λ(
+		['e', 't'],
+		['e'],
+		c => λ(['e', 't'], c, c => app(v(0, c), v(2, c))),
+		c => app(v(0, c), v(1, c)),
+	),
+	some('v', ['e'], c =>
+		and(
+			subinterval(app(temporalTrace(c), v(0, c)), speechTime(c)),
+			and(
+				equals(app(app(agent(c), v(0, c)), realWorld(c)), ji(c)),
+				verb('nıka', [v(1, c)], v(0, c), realWorld(c)),
+			),
+		),
+	),
+);
+
+// λ𝘗 : 𝘗(a). λ𝘘. 𝘘(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ tıjuı.w(a, jí)(𝘦)
+const qProx = presuppose(
+	presuppose(
+		λ(
+			['e', 't'],
+			['e'],
+			c => λ(['e', 't'], c, c => app(v(0, c), v(2, c))),
+			c => app(v(0, c), v(1, c)),
+		),
+		some('v', ['e'], c =>
+			and(
+				subinterval(app(temporalTrace(c), v(0, c)), speechTime(c)),
+				and(
+					equals(app(app(agent(c), v(0, c)), realWorld(c)), ji(c)),
+					verb('nıka', [v(1, c)], v(0, c), realWorld(c)),
+				),
+			),
+		),
+	),
+	some('v', ['e'], c =>
+		and(
+			subinterval(app(temporalTrace(c), v(0, c)), speechTime(c)),
+			verb('tıjuı', [v(1, c), ji(c)], v(0, c), realWorld(c)),
+		),
+	),
+);
+
+// λ𝘗 : 𝘗(a). λ𝘘. 𝘘(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ tıjao.w(a, jí)(𝘦)
+const qDist = presuppose(
+	presuppose(
+		λ(
+			['e', 't'],
+			['e'],
+			c => λ(['e', 't'], c, c => app(v(0, c), v(2, c))),
+			c => app(v(0, c), v(1, c)),
+		),
+		some('v', ['e'], c =>
+			and(
+				subinterval(app(temporalTrace(c), v(0, c)), speechTime(c)),
+				and(
+					equals(app(app(agent(c), v(0, c)), realWorld(c)), ji(c)),
+					verb('nıka', [v(1, c)], v(0, c), realWorld(c)),
+				),
+			),
+		),
+	),
+	some('v', ['e'], c =>
+		and(
+			subinterval(app(temporalTrace(c), v(0, c)), speechTime(c)),
+			verb('tıjao', [v(1, c), ji(c)], v(0, c), realWorld(c)),
+		),
+	),
+);
+
 function denoteQuantifier(value: CovertValue): Expr {
 	switch (value) {
-		case '[∃]':
+		case '∃':
 			return qSome;
-		case '[∀]':
+		case '¬∃':
+			return qNone;
+		case '∀':
 			return qEvery;
+		case '∀.SING':
+			return qEach;
+		case '∀.CUML':
+			return qAll;
+		case 'GEN':
+			return qGen;
+		case 'EXO':
+			return qExo;
+		case 'ENDO':
+			return qEndo;
+		case 'DEM':
+			return qDem;
+		case 'PROX':
+			return qProx;
+		case 'DIST':
+			return qDist;
 		default:
 			throw new Unrecognized(`quantifier: ${value}`);
 	}

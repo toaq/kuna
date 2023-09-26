@@ -1,4 +1,4 @@
-import { dictionary, Entry, VerbEntry } from './dictionary';
+import { dictionary, Entry } from './dictionary';
 import { Impossible } from './error';
 import { getFrame } from './serial';
 import { bare, clean, ToaqToken, tone } from './tokenize';
@@ -13,7 +13,22 @@ export interface Word {
 	entry: Entry | undefined;
 }
 
-export type CovertValue = '∅' | 'BE' | 'CAUSE' | 'PRO' | '[∃]' | '[∀]';
+export type CovertValue =
+	| '∅'
+	| 'BE'
+	| 'CAUSE'
+	| 'PRO'
+	| '∃'
+	| '¬∃'
+	| '∀'
+	| '∀.SING'
+	| '∀.CUML'
+	| 'GEN'
+	| 'EXO'
+	| 'ENDO'
+	| 'DEM'
+	| 'PROX'
+	| 'DIST';
 
 export interface CovertWord {
 	covert: true;

@@ -1,4 +1,3 @@
-import { NonVerbEntry, VerbEntry } from '../dictionary';
 import { Impossible } from '../error';
 import { Branch, Leaf } from '../tree';
 
@@ -120,6 +119,9 @@ export type Expr =
 	| Polarizer<'indeed'>
 	| Quantifier<'some'>
 	| Quantifier<'every'>
+	| Quantifier<'every_sing'>
+	| Quantifier<'every_cuml'>
+	| Quantifier<'gen'>
 	| Infix<'equals', 't'>
 	| TimeRelation<'subinterval'>
 	| TimeRelation<'before'>
@@ -406,6 +408,33 @@ export function every(
 	restriction?: (context: ExprType[]) => Expr,
 ): Expr {
 	return quantifier('every', domain, context, body, restriction);
+}
+
+export function everySing(
+	domain: ExprType,
+	context: ExprType[],
+	body: (context: ExprType[]) => Expr,
+	restriction?: (context: ExprType[]) => Expr,
+): Expr {
+	return quantifier('every_sing', domain, context, body, restriction);
+}
+
+export function everyCuml(
+	domain: ExprType,
+	context: ExprType[],
+	body: (context: ExprType[]) => Expr,
+	restriction?: (context: ExprType[]) => Expr,
+): Expr {
+	return quantifier('every_cuml', domain, context, body, restriction);
+}
+
+export function gen(
+	domain: ExprType,
+	context: ExprType[],
+	body: (context: ExprType[]) => Expr,
+	restriction?: (context: ExprType[]) => Expr,
+): Expr {
+	return quantifier('gen', domain, context, body, restriction);
 }
 
 export function equals(left: Expr, right: Expr): Expr {
