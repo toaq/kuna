@@ -317,3 +317,15 @@ test('it denotes a relative clause', () => {
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ joaı.𝘸(a)(𝘦') | (∃𝘦'. τ(𝘦') ⊆ t'' ∧ kue.𝘸(a)(𝘦')) ∧ ∃𝘦'. τ(𝘦') <.near t' ∧ AGENT(𝘦')(𝘸) = jí ∧ noaq.𝘸(a)(𝘦')))(𝘦) | inanimate(a) | ¬∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
 	);
 });
+
+test('it denotes bu', () => {
+	expect(d('Bu mala geq jí nháo')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ¬∃𝘵 : 𝘵 < t0. ∃𝘦'. τ(𝘦') ⊆ 𝘵 ∧ AGENT(𝘦')(𝘸) = jí ∧ geq.𝘸(nháo)(𝘦'))(𝘦)\"",
+	);
+});
+
+test('it denotes jeo', () => {
+	expect(d('Jeo jıa gaq jí súna nha')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nue.w(λ𝘸. †∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ gaq.𝘸(a, súna)(𝘦'))(𝘦) | t > t0\"",
+	);
+});

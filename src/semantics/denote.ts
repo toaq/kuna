@@ -46,6 +46,7 @@ import {
 	everySing,
 	everyCuml,
 	gen,
+	indeed,
 } from './model';
 import {
 	bindTimeIntervals,
@@ -296,6 +297,23 @@ function denoteTense(toaq: string): Expr {
 			return jela;
 		default:
 			throw new Unrecognized(`tense: ${toaq}`);
+	}
+}
+
+// λ𝘗. ¬𝘗(𝘸)
+const bu = λ(['s', 't'], ['s'], c => not(app(v(0, c), v(1, c))));
+
+// λ𝘗. †𝘗(𝘸)
+const jeo = λ(['s', 't'], ['s'], c => indeed(app(v(0, c), v(1, c))));
+
+function denotePolarity(toaq: string): Expr {
+	switch (toaq.replace(/-$/, '')) {
+		case 'bu':
+			return bu;
+		case 'jeo':
+			return jeo;
+		default:
+			throw new Unrecognized(`polarity: ${toaq}`);
 	}
 }
 
@@ -771,6 +789,11 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		} else {
 			denotation = denoteTense(leaf.word.entry.toaq);
 		}
+	} else if (leaf.label === 'Σ') {
+		if (leaf.word.covert) throw new Impossible('Covert Σ');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`Σ: ${leaf.word.text}`);
+		denotation = denotePolarity(leaf.word.entry.toaq);
 	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
 		denotation = null;
 	} else if (leaf.label === 'SA') {
@@ -1132,6 +1155,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (left.label) {
 		case 'V':
 		case 'Asp':
+		case 'Σ':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
