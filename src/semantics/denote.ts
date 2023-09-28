@@ -48,8 +48,8 @@ import {
 	gen,
 } from './model';
 import {
+	bindTimeIntervals,
 	filterPresuppositions,
-	getUnboundTimeIntervals,
 	makeWorldExplicit,
 	mapBindings,
 	reduce,
@@ -57,7 +57,6 @@ import {
 	someSubexpression,
 	unifyDenotations,
 } from './operations';
-import { toPlainText } from './render';
 
 // 𝘢
 const hoa = v(0, ['e']);
@@ -710,9 +709,9 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		bindings = boundTheBindings;
 	} else if (leaf.label === '𝘯') {
 		if (cCommand === null)
-			throw new Impossible("Can't denote an n in isolation");
+			throw new Impossible("Can't denote an 𝘯 in isolation");
 		const vp = findVp(cCommand);
-		if (vp === null) throw new Impossible("Can't find the VP for this n");
+		if (vp === null) throw new Impossible("Can't find the VP for this 𝘯");
 
 		let word: Word;
 		if ('word' in vp) {
@@ -895,6 +894,33 @@ const eventIdentification: CompositionRule = (branch, left, right) => {
 	return { ...branch, left, right, denotation, bindings };
 };
 
+// λ𝘗. λ𝘘. λ𝘢. 𝘗(𝘢) ∧ 𝘘(𝘢)
+const predicateModificationTemplate = (context: ExprType[]) =>
+	λ(['e', 't'], context, c =>
+		λ(['e', 't'], c, c =>
+			λ('e', c, c => and(app(v(2, c), v(0, c)), app(v(1, c), v(0, c)))),
+		),
+	);
+
+const predicateModification: CompositionRule = (branch, left, right) => {
+	let denotation: Expr | null;
+	let bindings: Bindings;
+
+	if (left.denotation === null) {
+		({ denotation, bindings } = right);
+	} else if (right.denotation === null) {
+		({ denotation, bindings } = left);
+	} else {
+		const [l, r, b] = unifyDenotations(left, right);
+		denotation = reduce(
+			app(app(predicateModificationTemplate(l.context), l), r),
+		);
+		bindings = b;
+	}
+
+	return { ...branch, left, right, denotation, bindings };
+};
+
 const cComposition: CompositionRule = (branch, left, right) => {
 	if (right.denotation === null) {
 		throw new Impossible(`C composition on a null ${right.label}`);
@@ -989,21 +1015,13 @@ const nComposition: CompositionRule = (branch, left, right) => {
 			throw new Impossible("𝘯 doesn't create a binding");
 		const index = bindings.covertResumptive.index;
 
-		// Associate all new time interval variables with this binding
-		const unboundTimeIntervals = getUnboundTimeIntervals(cpRel, bindings);
 		return {
 			...branch,
 			left,
 			right,
 			denotation: reduce(app(n, cpRel)),
-			bindings: mapBindings(bindings, b =>
-				b.index === index
-					? {
-							...b,
-							timeIntervals: [...b.timeIntervals, ...unboundTimeIntervals],
-					  }
-					: b,
-			),
+			// Associate all new time interval variables with this binding
+			bindings: bindTimeIntervals(cpRel, bindings, index),
 		};
 	}
 };
@@ -1017,11 +1035,21 @@ const dComposition: CompositionRule = (branch, left, right) => {
 		// Because unifyDenotations is heuristic and asymmetric, and 𝘯P will have more
 		// binding information than D, we need to pretend that nP is on the left here
 		const [np, d, bindings] = unifyDenotations(right, left);
+		if (bindings.covertResumptive === undefined)
+			throw new Impossible("𝘯P doesn't create a binding");
+		const index = bindings.covertResumptive.index;
 		// Delete the covert resumptive binding as it was only needed to perform this
 		// composition and should not leak outside the DP
 		bindings.covertResumptive = undefined;
 
-		return { ...branch, left, right, denotation: reduce(app(d, np)), bindings };
+		return {
+			...branch,
+			left,
+			right,
+			denotation: reduce(app(d, np)),
+			// Associate all new time interval variables with this binding
+			bindings: bindTimeIntervals(np, bindings, index),
+		};
 	}
 };
 
@@ -1047,7 +1075,8 @@ const qComposition: CompositionRule = (branch, left, right) => {
 			left,
 			right,
 			denotation: reduce(app(l, rPruned)),
-			bindings,
+			// Associate all new time interval variables with this binding
+			bindings: bindTimeIntervals(r, bindings, index),
 		};
 	}
 };
@@ -1133,6 +1162,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'SA':
 		case "V'":
 			return reverseFunctionalApplication;
+		case 'CPrel':
+			return predicateModification;
 	}
 
 	throw new Unimplemented(
@@ -1153,7 +1184,7 @@ export function denote_(tree: StrictTree, cCommand: StrictTree | null): DTree {
 		return denoteLeaf(tree, cCommand);
 	} else {
 		const left = denote_(tree.left, tree.right);
-		const right = denote_(tree.right, tree.right);
+		const right = denote_(tree.right, tree.left);
 		return denoteBranch(tree, left, right);
 	}
 }

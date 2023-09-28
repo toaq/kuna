@@ -311,3 +311,9 @@ test('it denotes imperfective aspect + quantification', () => {
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘢 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ deo.𝘸(𝘢)(𝘦'). (∀𝘸' : IW(𝘸')(𝘸)(t). (∃𝘦'. t ⊆ τ(𝘦') ∧ AGENT(𝘦')(𝘸') = jí ∧ joaı.𝘸'(𝘢)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ deo.𝘸'(𝘢)(𝘦')) | animate(𝘢)))(𝘦)\"",
 	);
 });
+
+test('it denotes a relative clause', () => {
+	expect(d('Joaı jí ké kue, ꝡë hıq noaq jí hóa')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ joaı.𝘸(a)(𝘦') | (∃𝘦'. τ(𝘦') ⊆ t'' ∧ kue.𝘸(a)(𝘦')) ∧ ∃𝘦'. τ(𝘦') <.near t' ∧ AGENT(𝘦')(𝘸) = jí ∧ noaq.𝘸(a)(𝘦')))(𝘦) | inanimate(a) | ¬∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
+	);
+});

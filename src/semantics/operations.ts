@@ -466,7 +466,7 @@ export function unifyDenotations(
  * Gets the De Bruijn indices of all time interval variables in the expression
  * not associated with any binding.
  */
-export function getUnboundTimeIntervals(e: Expr, bs: Bindings): Set<number> {
+function getUnboundTimeIntervals(e: Expr, bs: Bindings): Set<number> {
 	const result = new Set<number>();
 
 	// First, collect all time interval variables present in the expression
@@ -479,6 +479,27 @@ export function getUnboundTimeIntervals(e: Expr, bs: Bindings): Set<number> {
 	});
 
 	return result;
+}
+
+/**
+ * Finds all time interval variables in the expression not yet associated with
+ * any binding, and associates them with the bindings for the given De Bruijn
+ * index.
+ */
+export function bindTimeIntervals(
+	e: Expr,
+	bs: Bindings,
+	index: number,
+): Bindings {
+	const unboundTimeIntervals = getUnboundTimeIntervals(e, bs);
+	return mapBindings(bs, b =>
+		b.index === index
+			? {
+					...b,
+					timeIntervals: [...b.timeIntervals, ...unboundTimeIntervals],
+			  }
+			: b,
+	);
 }
 
 /**

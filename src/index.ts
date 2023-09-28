@@ -12,8 +12,8 @@ import { initializeDictionary } from './dictionary';
 import { textual_tree_from_json } from './textual-tree';
 import { testSentences } from './test-sentences';
 import { denote } from './semantics/denote';
-import { ToaqTokenizer, tokenString } from './tokenize';
-import { boxSentenceToMarkdown, boxify } from './boxes';
+import { ToaqTokenizer } from './tokenize';
+import { boxSentenceToMarkdown } from './boxes';
 import { toEnglish } from './english/tree';
 
 initializeDictionary();
