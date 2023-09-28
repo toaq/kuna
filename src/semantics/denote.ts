@@ -258,6 +258,18 @@ const pu = presuppose(v(0, ['i']), before(v(0, ['i']), speechTime(['i'])));
 // t | t > t0
 const jia = presuppose(v(0, ['i']), after(v(0, ['i']), speechTime(['i'])));
 
+// t | t <.near t0
+const pujui = presuppose(
+	v(0, ['i']),
+	beforeNear(v(0, ['i']), speechTime(['i'])),
+);
+
+// t | t >.near t0
+const jiajui = presuppose(
+	v(0, ['i']),
+	afterNear(v(0, ['i']), speechTime(['i'])),
+);
+
 // λ𝘗. ∃𝘵. 𝘗(𝘵)
 const sula = λ(['i', 't'], [], c => some('i', c, c => app(v(1, c), v(0, c))));
 
@@ -289,6 +301,10 @@ function denoteTense(toaq: string): Expr {
 			return pu;
 		case 'jıa':
 			return jia;
+		case 'pujuı':
+			return pujui;
+		case 'jıajuı':
+			return jiajui;
 		case 'sula':
 			return sula;
 		case 'mala':

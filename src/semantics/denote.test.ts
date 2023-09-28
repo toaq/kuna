@@ -144,6 +144,18 @@ test('it denotes the future tense', () => {
 	);
 });
 
+test('it denotes the near past tense', () => {
+	expect(d('Pujuı jaı jí')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘦'. τ(𝘦') ⊆ t ∧ jaı.𝘸(jí)(𝘦'))(𝘦) | t <.near t0\"",
+	);
+});
+
+test('it denotes the near future tense', () => {
+	expect(d('Jıajuı jaı jí')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘦'. τ(𝘦') ⊆ t ∧ jaı.𝘸(jí)(𝘦'))(𝘦) | t >.near t0\"",
+	);
+});
+
 test('it denotes the unrestricted existential tense', () => {
 	expect(d('Sula jaı jí')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘵. ∃𝘦'. τ(𝘦') ⊆ 𝘵 ∧ jaı.𝘸(jí)(𝘦'))(𝘦)\"",
