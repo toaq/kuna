@@ -24,6 +24,7 @@ const quantifiers: Record<string, CovertValue> = {
 	hú: 'ENDO',
 	ní: 'DEM',
 	níjuı: 'PROX',
+	níjao: 'DIST',
 };
 
 /**

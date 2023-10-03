@@ -302,7 +302,7 @@ test('it denotes níjuı', () => {
 
 test('it denotes níjao', () => {
 	expect(d('Maı jí níjao poq')).toMatchInlineSnapshot(
-		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ poq.𝘸(a)(𝘦')))(𝘦) | animate(a)\"",
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ maı.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(a)(𝘦')))(𝘦) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ tıjao.w(a, jí)(𝘦)\"",
 	);
 });
 
