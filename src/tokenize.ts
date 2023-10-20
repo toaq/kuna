@@ -8,6 +8,7 @@ export function clean(word: string): string {
 		.toLowerCase()
 		.replace(/i/gu, 'ı')
 		.replace(/vy?|wy?|y/gu, 'ꝡ')
+		.replace(/‘|’/gu, "'")
 		.normalize();
 }
 
@@ -57,15 +58,27 @@ export function tone(word: string): Tone {
 	}[norm[0]]!;
 }
 
-function splitIntoRaku(word: string): string[] {
+/**
+ * Split a word into raku. The output is a list of NFKD-normalized strings, i.e.
+ * diacritcs are turned into combining characters.
+ */
+export function splitIntoRaku(word: string): string[] {
 	const raku = [
-		...word.matchAll(
-			/(b|c|ch|d|f|g|h|j|k|l|m|n|nh|p|r|s|sh|t|vy?|wy?|ꝡ|y|z|')?[aeiıou]\p{Diacritic}?[aeiıou]*(q|m(?![aeiıou]))?-?/giu,
-		),
+		...word
+			.normalize('NFKD')
+			.matchAll(
+				/(b|c|ch|d|f|g|h|j|k|l|m|n|nh|p|r|s|sh|t|vy?|wy?|ꝡ|y|z|')?[aeiıou]\p{Diacritic}*[aeiıou]*(q|m(?![aeiıou]))?-?/giu,
+			),
 	].map(m => {
 		return m[0];
 	});
-	if (raku.reduce((a, b) => a + b.length, 0) === word.length) {
+
+	// By summing lengths and comparing them to the length of the word, we check
+	// if the matches for the above regex completely cover the word. If it does,
+	// we successfully split a Toaq word into raku: "Lojibaq" → [Lo, ji, baq].
+	// If it doesn't, we return an unsplit "foreign" word: "Lojban" → [Lojban].
+	const totalLength = raku.reduce((a, b) => a + b.length, 0);
+	if (totalLength === word.normalize('NFKD').length) {
 		return raku;
 	} else {
 		return [word];
@@ -76,17 +89,27 @@ export function splitPrefixes(word: string): {
 	prefixes: string[];
 	root: string;
 } {
-	const raku = splitIntoRaku(word.normalize('NFKD')).map(x =>
+	let raku = splitIntoRaku(word.normalize('NFKD')).map(x =>
 		x.includes('\u0323') ? x.replace(/\u0323/gu, '') + '-' : x,
 	);
+	const diacriticIndex = raku.findIndex(r =>
+		/[\u0300\u0301\u0308\u0302]/.test(r),
+	);
+	if (diacriticIndex > 0) {
+		// This word is written using the prefix reform. Fix it up:
+		raku[diacriticIndex] = raku[diacriticIndex].replace(/\u0300/gu, '');
+		raku[diacriticIndex - 1] += '-';
+	}
 	const prefixCount = raku.findIndex(p => p.endsWith('-')) + 1;
 	const prefixes = raku
 		.slice(0, prefixCount)
-		.map(x => x.normalize('NFC').replace(/-$/, ''));
-	const root = raku
+		.map(x => bare(x).replace(/-$/, ''));
+	const t = tone(word);
+	const baseRoot = raku
 		.slice(prefixCount)
 		.map(x => x.normalize('NFC'))
 		.join('');
+	const root = inTone(baseRoot, t);
 	return { prefixes, root };
 }
 
