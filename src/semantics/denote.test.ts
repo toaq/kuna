@@ -72,9 +72,15 @@ function d(sentence: string): string {
 	return denotationText;
 }
 
-test('it denotes an intranstive verb', () => {
+test('it denotes an unaccusative verb', () => {
 	expect(d('Nuo páqda')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ nuo.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ paqda.𝘸(a)(𝘦')))(𝘦) | animate(a)\"",
+	);
+});
+
+test('it denotes an unergative verb', () => {
+	expect(d('Marao páqda')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ AGENT(𝘦')(𝘸) = a ∧ marao.𝘸(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ paqda.𝘸(a)(𝘦')))(𝘦) | animate(a)\"",
 	);
 });
 

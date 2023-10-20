@@ -1,4 +1,4 @@
-import { VerbEntry } from '../dictionary';
+import { VerbEntry, dictionary } from '../dictionary';
 import { Impossible, Unimplemented, Unrecognized } from '../error';
 import { Branch, CovertValue, Leaf, StrictTree, Word } from '../tree';
 import {
@@ -356,7 +356,12 @@ function denoteSpeechAct(toaq: string): string {
 
 function denoteVerb(toaq: string, arity: number): Expr {
 	switch (arity) {
-		case 1: // For the moment, pretend that all intranstive verbs are unaccusative
+		case 1:
+			const entry = dictionary.get(toaq);
+			if (entry?.type === 'predicate' && entry.agent_subject) {
+				return λ('v', ['s'], c => verb(toaq, [], v(0, c), v(1, c)));
+			}
+		// Otherwise fall through: unaccusative intransitives and transitives are denoted the same.
 		case 2:
 			return λ('e', ['s'], c =>
 				λ('v', c, c => verb(toaq, [v(1, c)], v(0, c), v(2, c))),
@@ -670,7 +675,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	let denotation: Expr | null;
 	let bindings = noBindings;
 
-	if (leaf.label === 'V') {
+	if (leaf.label === 'V' || leaf.label === 'VP') {
 		if (leaf.word.covert) throw new Impossible('covert V');
 		const entry = leaf.word.entry;
 		if (!entry) throw new Unrecognized('verb: ' + leaf.word.text);

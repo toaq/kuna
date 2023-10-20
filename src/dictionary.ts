@@ -80,6 +80,7 @@ export interface VerbEntry extends BaseEntry {
 	frame: string;
 	distribution: string;
 	pronominal_class: PronominalClass | '';
+	agent_subject: boolean;
 }
 
 export interface NonVerbEntry extends BaseEntry {
