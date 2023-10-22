@@ -165,6 +165,12 @@ test('it denotes aspects', () => {
 	);
 });
 
+test('it denotes tense and aspect prefixes', () => {
+	expect(d('Naılụıshıesho jí')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘦'. τ(𝘦') < t ∧ shıesho.𝘸(jí)(𝘦'))(𝘦) | t ⊆ t0\"",
+	);
+});
+
 test('it denotes exophoric references', () => {
 	expect(d('Sao jío')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ sao.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ jıo.𝘸(a)(𝘦')))(𝘦) | inanimate(a)\"",
