@@ -71,7 +71,23 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			args.push(makeNull('DP'));
 		}
 
-		if (arity === 1) {
+		if (
+			arity === 1 &&
+			'word' in verbs[0] &&
+			!verbs[0].word.covert &&
+			verbs[0].word.entry?.type === 'predicate' &&
+			verbs[0].word.entry.agent_subject
+		) {
+			return {
+				label: '𝘷P',
+				left: args[0],
+				right: {
+					label: "𝘷'",
+					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
+					right: { label: 'VP', word: verbs[0].word },
+				},
+			};
+		} else if (arity === 1) {
 			return {
 				label: '𝘷P',
 				left: { label: '𝘷', word: { covert: true, value: 'BE' } },
@@ -127,7 +143,23 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 		const innerArgs: Tree[] = [...pros, ...args.slice(cCount)];
 		const inner = serialTovP(verbs.slice(1), innerArgs);
 		const arity = frame.length;
-		if (arity === 1) {
+		if (
+			arity === 1 &&
+			'word' in verbs[0] &&
+			!verbs[0].word.covert &&
+			verbs[0].word.entry?.type === 'predicate' &&
+			verbs[0].word.entry.agent_subject
+		) {
+			return {
+				label: '𝘷P',
+				left: args[0],
+				right: {
+					label: "𝘷'",
+					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
+					right: inner,
+				},
+			};
+		} else if (arity === 1) {
 			return {
 				label: '𝘷P',
 				left: { label: '𝘷', word: { covert: true, value: 'BE' } },
