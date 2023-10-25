@@ -1,6 +1,7 @@
 import { inTone } from './tokenize';
 import { Tone } from './types';
 import dictionaryJson from '../dictionary/dictionary.json';
+import unofficialJson from '../data/unofficial.json';
 
 export const verbTypes = [
 	'name quote',
@@ -121,7 +122,7 @@ export class Dictionary {
 	}
 
 	private initialize() {
-		const entries: Entry[] = dictionaryJson as Entry[];
+		const entries: Entry[] = [...dictionaryJson, ...unofficialJson] as Entry[];
 
 		for (const e of entries) {
 			delete (e as any).examples;
