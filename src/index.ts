@@ -8,15 +8,12 @@ import { fix } from './fix';
 import { compact } from './compact';
 import { pngDrawTree } from './draw-tree';
 import { parse } from './parse';
-import { initializeDictionary } from './dictionary';
 import { textual_tree_from_json } from './textual-tree';
 import { testSentences } from './test-sentences';
 import { denote } from './semantics/denote';
 import { ToaqTokenizer } from './tokenize';
 import { boxSentenceToMarkdown } from './boxes';
 import { toEnglish } from './english/tree';
-
-initializeDictionary();
 
 function getTrees(argv: {
 	sentence: string | undefined;

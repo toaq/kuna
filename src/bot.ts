@@ -1,7 +1,6 @@
 import { REST, Routes } from 'discord.js';
 import { AttachmentBuilder } from 'discord.js';
 import { Client, GatewayIntentBits } from 'discord.js';
-import { initializeDictionary } from './dictionary';
 import { pngDrawTree } from './draw-tree';
 import { parse } from './parse';
 import { pngGlossSentence } from './png-gloss';
@@ -92,5 +91,4 @@ client.on('interactionCreate', async interaction => {
 	}
 });
 
-initializeDictionary();
 client.login(TOKEN);

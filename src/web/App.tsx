@@ -3,7 +3,6 @@ import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 import classNames from 'classnames';
 import { boxify } from '../boxes';
 import { compact } from '../compact';
-import { initializeDictionary } from '../dictionary';
 import { pngDrawTree } from '../draw-tree';
 import { toEnglish } from '../english/tree';
 import { fix } from '../fix';
@@ -55,7 +54,6 @@ export function App() {
 	const math = latestMode === 'logical-form';
 
 	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png');
-	useEffect(initializeDictionary, []);
 	useEffect(
 		() => latestMode && generate(latestMode),
 		[darkMode.isDarkMode, treeFormat],

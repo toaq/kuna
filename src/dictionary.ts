@@ -89,134 +89,157 @@ export interface NonVerbEntry extends BaseEntry {
 
 export type Entry = VerbEntry | NonVerbEntry;
 
-const entries: Entry[] = dictionaryJson as Entry[];
-
-export const dictionary = new Map<string, Entry>();
-
 export function entryArity(entry: VerbEntry): number {
 	return entry.frame
 		? entry.frame.split(' ').length
 		: (entry.english.split(';')[0].match(/▯/g) || []).length;
 }
 
-/**
- * Initialize the `dictionary`. This must be called before calling other kuna
- * functions.
- */
-export function initializeDictionary(): void {
-	for (const e of entries) {
-		delete (e as any).examples;
-		delete (e as any).keywords;
-		delete (e as any).notes;
-		if (e.type === 'complementizer') {
-			if (e.english.includes('relative')) {
-				e.type = 'relative clause complementizer';
-			} else if (/subordinate|property/.test(e.english)) {
-				e.type = 'subordinating complementizer';
-				const ic = inTone(e.toaq, Tone.T4);
-				dictionary.set(ic, {
-					toaq: ic,
+export class Dictionary {
+	private initialized = false;
+	private inner = new Map<string, Entry>();
+
+	public get(head: string): Entry | undefined {
+		if (!this.initialized) {
+			this.initialize();
+		}
+		return this.inner.get(head);
+	}
+
+	public has(head: string): boolean {
+		if (!this.initialized) {
+			this.initialize();
+		}
+		return this.inner.has(head);
+	}
+
+	public keys(): IterableIterator<string> {
+		if (!this.initialized) {
+			this.initialize();
+		}
+		return this.inner.keys();
+	}
+
+	private initialize() {
+		const entries: Entry[] = dictionaryJson as Entry[];
+
+		for (const e of entries) {
+			delete (e as any).examples;
+			delete (e as any).keywords;
+			delete (e as any).notes;
+			if (e.type === 'complementizer') {
+				if (e.english.includes('relative')) {
+					e.type = 'relative clause complementizer';
+				} else if (/subordinate|property/.test(e.english)) {
+					e.type = 'subordinating complementizer';
+					const ic = inTone(e.toaq, Tone.T4);
+					this.inner.set(ic, {
+						toaq: ic,
+						english: e.english,
+						gloss: 'of.' + e.gloss,
+						type: 'incorporated complementizer',
+					});
+				}
+			}
+
+			// We'll assume "prefix" is a verb-to-verb prefix, and make some
+			// sub-types for special prefixes.
+			if (e.toaq == 'hu-') {
+				e.type = 'prefix pronoun';
+			}
+			if (e.toaq == 'na-') {
+				e.type = 'prefix conjunctionizer';
+			}
+			if (e.toaq == 'kı-') {
+				e.type = 'adjective marker';
+			}
+			this.inner.set(e.toaq.toLowerCase(), e);
+
+			if (e.type === 'determiner') {
+				const oid = inTone(e.toaq, Tone.T4);
+				this.inner.set(oid, {
+					toaq: oid,
 					english: e.english,
 					gloss: 'of.' + e.gloss,
-					type: 'incorporated complementizer',
+					type: 'incorporated determiner',
+				});
+			}
+
+			if (e.type === 'pronoun') {
+				const oip = inTone(e.toaq, Tone.T4);
+				this.inner.set(oip, {
+					toaq: oip,
+					english: e.english,
+					gloss: 'of.' + e.gloss,
+					type: 'incorporated pronoun',
+				});
+			}
+
+			if (e.type === 'conjunction') {
+				const t1 = inTone(e.toaq, Tone.T1);
+				this.inner.set(t1, {
+					toaq: t1,
+					english: e.english,
+					gloss: e.gloss,
+					type: 'conjunction in t1',
+				});
+				const t4 = inTone(e.toaq, Tone.T4);
+				this.inner.set(t4, {
+					toaq: t4,
+					english: e.english,
+					gloss: e.gloss,
+					type: 'conjunction in t4',
+				});
+			}
+
+			if (e.type === 'modality') {
+				const t4 = inTone(e.toaq, Tone.T4);
+				this.inner.set(t4, {
+					toaq: t4,
+					english: e.english,
+					gloss: e.gloss,
+					type: 'modality with complement',
+				});
+			}
+
+			if (e.type === 'aspect') {
+				const prefix = e.toaq + '-';
+				this.inner.set(prefix, {
+					toaq: prefix,
+					english: e.english,
+					gloss: e.gloss,
+					type: 'prefix aspect',
+				});
+			}
+
+			if (e.type === 'tense') {
+				const prefix = e.toaq + '-';
+				this.inner.set(prefix, {
+					toaq: prefix,
+					english: e.english,
+					gloss: e.gloss,
+					type: 'prefix tense',
 				});
 			}
 		}
 
-		// We'll assume "prefix" is a verb-to-verb prefix, and make some
-		// sub-types for special prefixes.
-		if (e.toaq == 'hu-') {
-			e.type = 'prefix pronoun';
-		}
-		if (e.toaq == 'na-') {
-			e.type = 'prefix conjunctionizer';
-		}
-		if (e.toaq == 'kı-') {
-			e.type = 'adjective marker';
-		}
-		dictionary.set(e.toaq.toLowerCase(), e);
+		this.inner.set('◌́', {
+			toaq: '◌́',
+			english: 'the',
+			gloss: 'the',
+			type: 'determiner',
+		});
 
-		if (e.type === 'determiner') {
-			const oid = inTone(e.toaq, Tone.T4);
-			dictionary.set(oid, {
-				toaq: oid,
-				english: e.english,
-				gloss: 'of.' + e.gloss,
-				type: 'incorporated determiner',
-			});
-		}
+		this.inner.set('◌̂', {
+			toaq: '◌̂',
+			english: 'with',
+			gloss: 'with',
+			type: 'preposition',
+		});
 
-		if (e.type === 'pronoun') {
-			const oip = inTone(e.toaq, Tone.T4);
-			dictionary.set(oip, {
-				toaq: oip,
-				english: e.english,
-				gloss: 'of.' + e.gloss,
-				type: 'incorporated pronoun',
-			});
-		}
-
-		if (e.type === 'conjunction') {
-			const t1 = inTone(e.toaq, Tone.T1);
-			dictionary.set(t1, {
-				toaq: t1,
-				english: e.english,
-				gloss: e.gloss,
-				type: 'conjunction in t1',
-			});
-			const t4 = inTone(e.toaq, Tone.T4);
-			dictionary.set(t4, {
-				toaq: t4,
-				english: e.english,
-				gloss: e.gloss,
-				type: 'conjunction in t4',
-			});
-		}
-
-		if (e.type === 'modality') {
-			const t4 = inTone(e.toaq, Tone.T4);
-			dictionary.set(t4, {
-				toaq: t4,
-				english: e.english,
-				gloss: e.gloss,
-				type: 'modality with complement',
-			});
-		}
-
-		if (e.type === 'aspect') {
-			const prefix = e.toaq + '-';
-			dictionary.set(prefix, {
-				toaq: prefix,
-				english: e.english,
-				gloss: e.gloss,
-				type: 'prefix aspect',
-			});
-		}
-
-		if (e.type === 'tense') {
-			const prefix = e.toaq + '-';
-			dictionary.set(prefix, {
-				toaq: prefix,
-				english: e.english,
-				gloss: e.gloss,
-				type: 'prefix tense',
-			});
-		}
+		this.inner.delete('ló');
+		this.initialized = true;
 	}
-
-	dictionary.set('◌́', {
-		toaq: '◌́',
-		english: 'the',
-		gloss: 'the',
-		type: 'determiner',
-	});
-
-	dictionary.set('◌̂', {
-		toaq: '◌̂',
-		english: 'with',
-		gloss: 'with',
-		type: 'preposition',
-	});
-
-	dictionary.delete('ló');
 }
+
+export const dictionary = new Dictionary();
