@@ -51,6 +51,12 @@ export const commands = [
 					{ name: 'All', value: 'all' },
 				],
 			},
+            {
+				name: 'author',
+				description: 'Quiz definitions by the given author',
+				type: stringType,
+				required: false,
+			},
 		],
 	},
 ];

@@ -138,8 +138,12 @@ export class KunaBot {
 		const entries: ToaduaEntry[] = [];
 
 		const mode = interaction.options.getString('mode', false) ?? 'official';
+		const author = interaction.options.getString('author', false);
+
 		let ok = (entry: ToaduaEntry) => entry.user === 'official';
-		if (mode === 'upvoted') {
+		if (author) {
+			ok = entry => entry.user === author;
+		} else if (mode === 'upvoted') {
 			ok = entry => entry.score > 0;
 		} else if (mode === 'official_and_upvoted') {
 			ok = entry => entry.user === 'official' || entry.score > 0;
@@ -150,6 +154,10 @@ export class KunaBot {
 		const candidates = toadua.filter(
 			entry => entry.scope === 'en' && ok(entry),
 		);
+		if (candidates.length < 2 * n) {
+			await interaction.reply('Not enough words!');
+			return;
+		}
 		while (entries.length < 2 * n) {
 			const newEntry = choose(candidates);
 			if (entries.includes(newEntry)) continue;
@@ -158,7 +166,9 @@ export class KunaBot {
 
 		const message = await interaction.reply({
 			content:
-				`Quizzing in **${mode}** mode. Translate the following between Toaq and English:\n` +
+				`Quizzing **${
+					author ?? mode
+				}** words. Translate the following between Toaq and English:\n` +
 				entries
 					.map((e, i) => `${i + 1}. ${i < n ? e.head : e.body}`)
 					.join('\n') +
