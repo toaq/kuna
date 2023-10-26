@@ -8,6 +8,17 @@ import { pngDrawTree } from '../draw-tree';
 import { parse } from '../parse';
 import { pngGlossSentence } from '../png-gloss';
 import { dictionary } from '../dictionary';
+import toaduaDump from '../../data/toadua-dump.json';
+import toaduaGlosses from '../../data/toadua-glosses.json';
+
+interface ToaduaEntry {
+	head: string;
+	body: string;
+	user: string;
+	score: number;
+}
+
+const toadua = (toaduaDump as any).results as ToaduaEntry[];
 
 function choose<T>(values: T[]): T {
 	return values[(Math.random() * values.length) | 0];
@@ -25,6 +36,8 @@ export class KunaBot {
 				this.respondStree(interaction);
 			} else if (interaction.commandName === 'nuotoa') {
 				this.respondNuotoa(interaction);
+			} else if (interaction.commandName === 'whodunnit') {
+				this.respondWhodunnit(interaction);
 			} else {
 				await interaction.reply(
 					`Error: unknown command "${interaction.commandName}"`,
@@ -81,5 +94,40 @@ export class KunaBot {
 		await interaction.reply(
 			'Here are some random compounds:\n\n' + lines.join('\n'),
 		);
+	}
+
+	private async respondWhodunnit(interaction: ChatInputCommandInteraction) {
+		const entries: ToaduaEntry[] = [];
+		while (entries.length < 6) {
+			const newEntry = choose(
+				toadua.filter(
+					entry =>
+						!entry.head.includes(' ') &&
+						!entries.some(previous => entry.user === previous.user),
+				),
+			);
+			entries.push(newEntry);
+		}
+		const authors = entries.map(e => e.user);
+		authors.sort();
+
+		const message = await interaction.reply({
+			content:
+				`Who defined which word? (${authors.join(', ')})\n\n` +
+				entries.map((e, i) => `${i + 1}. **${e.head}**`).join('\n') +
+				`\n\n(React with an emoji to reveal the answers.)`,
+			fetchReply: true,
+		});
+
+		console.log(message);
+		message.awaitReactions({ max: 1 }).then(collected => {
+			console.log(collected);
+			interaction.followUp(
+				'Answers:\n\n' +
+					entries
+						.map((e, i) => `${i + 1}. **${e.head}** ← ${e.user}`)
+						.join('\n'),
+			);
+		});
 	}
 }

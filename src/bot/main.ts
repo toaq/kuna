@@ -1,4 +1,4 @@
-import { REST, Routes } from 'discord.js';
+import { Events, REST, Routes } from 'discord.js';
 import { Client, GatewayIntentBits } from 'discord.js';
 import { commands } from './commands';
 import { KunaBot } from './bot';
@@ -20,14 +20,23 @@ const rest = new REST({ version: '10' }).setToken(TOKEN);
 	}
 })();
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+	intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.DirectMessages,
+		GatewayIntentBits.DirectMessageReactions,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.GuildMessageReactions,
+	],
+});
+
 const kunaBot = new KunaBot(client);
 
-client.on('ready', () => {
+client.on(Events.ClientReady, () => {
 	console.log(`Logged in as ${client.user?.tag}!`);
 });
 
-client.on('interactionCreate', async interaction => {
+client.on(Events.InteractionCreate, async interaction => {
 	kunaBot.respond(interaction);
 });
 

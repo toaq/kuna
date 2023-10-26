@@ -30,4 +30,9 @@ export const commands = [
 		description: 'Make some random compounds',
 		options: [],
 	},
+	{
+		name: 'whodunnit',
+		description: 'Game where we guess who defined which Toadua word',
+		options: [],
+	},
 ];
