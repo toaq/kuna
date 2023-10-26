@@ -136,10 +136,10 @@ export class KunaBot {
 	}
 
 	private async respondQuiz(interaction: ChatInputCommandInteraction) {
-		let r = interaction.options.getInteger('recognition', false);
-		let p = interaction.options.getInteger('production', false);
-		r = Math.max(0, Math.min(r ?? 0, 10));
-		p = Math.max(0, Math.min(p ?? 0, 10));
+		let r = interaction.options.getInteger('recognition', false) ?? 0;
+		let p = interaction.options.getInteger('production', false) ?? 0;
+		r = Math.max(0, Math.min(r, 10));
+		p = Math.max(0, Math.min(p, 10));
 		if (r + p === 0) {
 			r = p = 3;
 		}
