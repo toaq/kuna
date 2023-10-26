@@ -35,4 +35,22 @@ export const commands = [
 		description: 'Game where we guess who defined which Toadua word',
 		options: [],
 	},
+	{
+		name: 'quiz',
+		description: 'Quiz some Toaq vocabulary',
+		options: [
+			{
+				name: 'mode',
+				description: 'Which definitions to include in the quiz',
+				type: stringType,
+				required: false,
+				choices: [
+					{ name: 'Official', value: 'official' },
+					{ name: 'Upvoted', value: 'upvoted' },
+					{ name: 'Official and upvoted', value: 'official_and_upvoted' },
+					{ name: 'All', value: 'all' },
+				],
+			},
+		],
+	},
 ];

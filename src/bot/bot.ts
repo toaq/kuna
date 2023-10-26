@@ -7,7 +7,7 @@ import {
 import { pngDrawTree } from '../draw-tree';
 import { parse } from '../parse';
 import { pngGlossSentence } from '../png-gloss';
-import { dictionary } from '../dictionary';
+import { Entry, dictionary } from '../dictionary';
 import toaduaDump from '../../data/toadua-dump.json';
 import toaduaGlosses from '../../data/toadua-glosses.json';
 
@@ -39,6 +39,8 @@ export class KunaBot {
 				this.respondNuotoa(interaction);
 			} else if (interaction.commandName === 'whodunnit') {
 				this.respondWhodunnit(interaction);
+			} else if (interaction.commandName === 'quiz') {
+				this.respondQuiz(interaction);
 			} else {
 				await interaction.reply(
 					`Error: unknown command "${interaction.commandName}"`,
@@ -126,6 +128,49 @@ export class KunaBot {
 				'Answers:\n\n' +
 					entries
 						.map((e, i) => `${i + 1}. **${e.head}** ← ${e.user}`)
+						.join('\n'),
+			);
+		});
+	}
+
+	private async respondQuiz(interaction: ChatInputCommandInteraction) {
+		const n = 3;
+		const entries: ToaduaEntry[] = [];
+
+		const mode = interaction.options.getString('mode', false) ?? 'official';
+		let ok = (entry: ToaduaEntry) => entry.user === 'official';
+		if (mode === 'upvoted') {
+			ok = entry => entry.score > 0;
+		} else if (mode === 'official_and_upvoted') {
+			ok = entry => entry.user === 'official' || entry.score > 0;
+		} else if (mode === 'all') {
+			ok = entry => true;
+		}
+
+		const candidates = toadua.filter(
+			entry => entry.scope === 'en' && ok(entry),
+		);
+		while (entries.length < 2 * n) {
+			const newEntry = choose(candidates);
+			if (entries.includes(newEntry)) continue;
+			entries.push(newEntry);
+		}
+
+		const message = await interaction.reply({
+			content:
+				`Quizzing in **${mode}** mode. Translate the following between Toaq and English:\n` +
+				entries
+					.map((e, i) => `${i + 1}. ${i < n ? e.head : e.body}`)
+					.join('\n') +
+				`\n\n(React with an emoji to reveal the answers.)`,
+			fetchReply: true,
+		});
+
+		message.awaitReactions({ max: 1 }).then(collected => {
+			interaction.followUp(
+				'Answers:\n\n' +
+					entries
+						.map((e, i) => `${i + 1}. ${i < n ? e.body : e.head}`)
 						.join('\n'),
 			);
 		});
