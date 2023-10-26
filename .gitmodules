@@ -1,3 +1,6 @@
 [submodule "dictionary"]
 	path = dictionary
 	url = https://github.com/toaq/dictionary
+[submodule "data"]
+	path = data
+	url = https://github.com/toaq/data

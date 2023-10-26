@@ -1,7 +1,7 @@
 import { Entry, dictionary } from './dictionary';
 import { bare, clean, splitPrefixes, tone } from './tokenize';
 import { Tone } from './types';
-import toaduaGlossesJson from '../data/toadua-glosses.json';
+import toaduaGlossesJson from '../data/toadua/glosses.json';
 
 interface Gloss {
 	toaq: string;

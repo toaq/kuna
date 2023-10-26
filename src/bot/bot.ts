@@ -8,8 +8,8 @@ import { pngDrawTree } from '../draw-tree';
 import { parse } from '../parse';
 import { pngGlossSentence } from '../png-gloss';
 import { Entry, dictionary } from '../dictionary';
-import toaduaDump from '../../data/toadua-dump.json';
-import toaduaGlosses from '../../data/toadua-glosses.json';
+import toaduaDump from '../../data/toadua/dump.json';
+import toaduaGlosses from '../../data/toadua/glosses.json';
 
 interface ToaduaEntry {
 	head: string;
