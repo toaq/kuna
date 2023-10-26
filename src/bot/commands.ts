@@ -25,4 +25,9 @@ export const commands = [
 			},
 		],
 	},
+	{
+		name: 'nuotoa',
+		description: 'Make some random compounds',
+		options: [],
+	},
 ];

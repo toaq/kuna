@@ -7,6 +7,11 @@ import {
 import { pngDrawTree } from '../draw-tree';
 import { parse } from '../parse';
 import { pngGlossSentence } from '../png-gloss';
+import { dictionary } from '../dictionary';
+
+function choose<T>(values: T[]): T {
+	return values[(Math.random() * values.length) | 0];
+}
 
 export class KunaBot {
 	constructor(private client: Client) {}
@@ -18,6 +23,8 @@ export class KunaBot {
 				this.respondGloss(interaction);
 			} else if (interaction.commandName === 'stree') {
 				this.respondStree(interaction);
+			} else if (interaction.commandName === 'nuotoa') {
+				this.respondNuotoa(interaction);
 			} else {
 				await interaction.reply(
 					`Error: unknown command "${interaction.commandName}"`,
@@ -37,6 +44,7 @@ export class KunaBot {
 			files: [new AttachmentBuilder(png, { name: 'gloss.png' })],
 		});
 	}
+
 	private async respondStree(interaction: ChatInputCommandInteraction) {
 		const text = interaction.options.getString('text', true);
 		const trees = parse(text);
@@ -53,5 +61,25 @@ export class KunaBot {
 					),
 			),
 		});
+	}
+
+	private async respondNuotoa(interaction: ChatInputCommandInteraction) {
+		const predicates = [];
+		for (const entry of dictionary.values()) {
+			if (entry.type === 'predicate') {
+				predicates.push(entry);
+			}
+		}
+		const lines = [];
+		for (let i = 0; i < 5; i++) {
+			const a = choose(predicates);
+			const b = choose(predicates);
+			const oaomo = /^{aeıou}/.test(b.toaq) ? "'" : '';
+			const compound = a.toaq + oaomo + b.toaq;
+			lines.push(`* **${compound}** (${a.gloss}-${b.gloss})`);
+		}
+		await interaction.reply(
+			'Here are some random compounds:\n\n' + lines.join('\n'),
+		);
 	}
 }

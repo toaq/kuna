@@ -121,6 +121,13 @@ export class Dictionary {
 		return this.inner.keys();
 	}
 
+	public values(): IterableIterator<Entry> {
+		if (!this.initialized) {
+			this.initialize();
+		}
+		return this.inner.values();
+	}
+
 	private initialize() {
 		const entries: Entry[] = [...dictionaryJson, ...unofficialJson] as Entry[];
 
