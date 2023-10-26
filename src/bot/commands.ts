@@ -1,4 +1,5 @@
 const stringType = 3;
+const integerType = 4;
 
 export const commands = [
 	{
@@ -33,7 +34,14 @@ export const commands = [
 	{
 		name: 'whodunnit',
 		description: 'Game where we guess who defined which Toadua word',
-		options: [],
+		options: [
+			{
+				name: 'amount',
+				description: 'Amount of definitions (default 6)',
+				type: integerType,
+				required: false,
+			},
+		],
 	},
 	{
 		name: 'quiz',
@@ -51,10 +59,22 @@ export const commands = [
 					{ name: 'All', value: 'all' },
 				],
 			},
-            {
+			{
 				name: 'author',
 				description: 'Quiz definitions by the given author',
 				type: stringType,
+				required: false,
+			},
+			{
+				name: 'recognition',
+				description: 'Amount of recognition questions (default 3)',
+				type: integerType,
+				required: false,
+			},
+			{
+				name: 'production',
+				description: 'Amount of production questions (default 3)',
+				type: integerType,
 				required: false,
 			},
 		],

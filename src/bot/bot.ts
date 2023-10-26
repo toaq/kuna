@@ -100,8 +100,10 @@ export class KunaBot {
 	}
 
 	private async respondWhodunnit(interaction: ChatInputCommandInteraction) {
+		let amount = interaction.options.getInteger('amount', false) ?? 6;
+		amount = Math.max(0, Math.min(amount, 10));
 		const entries: ToaduaEntry[] = [];
-		while (entries.length < 6) {
+		while (entries.length < amount) {
 			const newEntry = choose(
 				toadua.filter(
 					entry =>
@@ -134,7 +136,14 @@ export class KunaBot {
 	}
 
 	private async respondQuiz(interaction: ChatInputCommandInteraction) {
-		const n = 3;
+		let r = interaction.options.getInteger('recognition', false);
+		let p = interaction.options.getInteger('production', false);
+		r = Math.max(0, Math.min(r ?? 0, 10));
+		p = Math.max(0, Math.min(p ?? 0, 10));
+		if (r + p === 0) {
+			r = p = 3;
+		}
+
 		const entries: ToaduaEntry[] = [];
 
 		const mode = interaction.options.getString('mode', false) ?? 'official';
@@ -154,11 +163,11 @@ export class KunaBot {
 		const candidates = toadua.filter(
 			entry => entry.scope === 'en' && ok(entry),
 		);
-		if (candidates.length < 2 * n) {
+		if (candidates.length < r + p) {
 			await interaction.reply('Not enough words!');
 			return;
 		}
-		while (entries.length < 2 * n) {
+		while (entries.length < r + p) {
 			const newEntry = choose(candidates);
 			if (entries.includes(newEntry)) continue;
 			entries.push(newEntry);
@@ -170,7 +179,7 @@ export class KunaBot {
 					author ?? mode
 				}** words. Translate the following between Toaq and English:\n` +
 				entries
-					.map((e, i) => `${i + 1}. ${i < n ? e.head : e.body}`)
+					.map((e, i) => `${i + 1}. ${i < r ? e.head : e.body}`)
 					.join('\n') +
 				`\n\n(React with an emoji to reveal the answers.)`,
 			fetchReply: true,
@@ -180,7 +189,7 @@ export class KunaBot {
 			interaction.followUp(
 				'Answers:\n\n' +
 					entries
-						.map((e, i) => `${i + 1}. ${i < n ? e.body : e.head}`)
+						.map((e, i) => `${i + 1}. ${i < r ? e.body : e.head}`)
 						.join('\n'),
 			);
 		});
