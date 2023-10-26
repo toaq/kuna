@@ -3,7 +3,7 @@
 Tools for parsing Toaq Delta. Very unfinished.
 
 For proper PNG rendering, install
-[Noto Math Sans](https://fonts.google.com/noto/specimen/Noto+Sans+Math).
+[Noto Sans Math](https://fonts.google.com/noto/specimen/Noto+Sans+Math).
 
 ## Usage
 
@@ -26,6 +26,7 @@ npm run cli -- tree-text --sentence "Jaı jí"
 To run as a Discord bot:
 
 ```sh
+export KUNA_CLIENT_ID=your.discord.client.id
 export KUNA_TOKEN=your.discord.bot.token
 npm install
 npm run bot
