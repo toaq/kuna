@@ -15,6 +15,7 @@ interface ToaduaEntry {
 	head: string;
 	body: string;
 	user: string;
+	scope: string;
 	score: number;
 }
 
@@ -102,6 +103,7 @@ export class KunaBot {
 			const newEntry = choose(
 				toadua.filter(
 					entry =>
+						entry.scope === 'en' &&
 						!entry.head.includes(' ') &&
 						!entries.some(previous => entry.user === previous.user),
 				),
@@ -119,9 +121,7 @@ export class KunaBot {
 			fetchReply: true,
 		});
 
-		console.log(message);
 		message.awaitReactions({ max: 1 }).then(collected => {
-			console.log(collected);
 			interaction.followUp(
 				'Answers:\n\n' +
 					entries
