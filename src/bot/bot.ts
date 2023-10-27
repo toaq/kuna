@@ -41,6 +41,8 @@ export class KunaBot {
 				this.respondWhodunnit(interaction);
 			} else if (interaction.commandName === 'quiz') {
 				this.respondQuiz(interaction);
+			} else if (interaction.commandName === 'stats') {
+				this.respondStats(interaction);
 			} else {
 				await interaction.reply(
 					`Error: unknown command "${interaction.commandName}"`,
@@ -193,5 +195,41 @@ export class KunaBot {
 						.join('\n'),
 			);
 		});
+	}
+
+	private async respondStats(interaction: ChatInputCommandInteraction) {
+		let total = 0;
+		const heads = new Set<string>();
+		const authors = new Map<string, number>();
+		const boringUsers = [
+			'countries',
+			'examples',
+			'oldcountries',
+			'oldexamples',
+			'oldofficial',
+			'spreadsheet',
+		];
+
+		for (const entry of toadua) {
+			total++;
+			heads.add(entry.head);
+			if (!boringUsers.includes(entry.user)) {
+				authors.set(entry.user, (authors.get(entry.user) ?? 0) + 1);
+			}
+		}
+
+		let top = [...authors.entries()];
+		top.sort((a, b) => b[1] - a[1]);
+
+		const n1 = total.toLocaleString('en-US');
+		const n2 = heads.size.toLocaleString('en-US');
+		await interaction.reply(
+			`Toadua has ${n1} entries for ${n2} heads.\n\n` +
+				`Top definition authors:\n` +
+				top
+					.slice(0, 10)
+					.map((x, i) => `${i + 1}. ${x[0]} (${x[1].toLocaleString('en-US')})`)
+					.join('\n'),
+		);
 	}
 }

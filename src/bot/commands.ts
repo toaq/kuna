@@ -79,4 +79,9 @@ export const commands = [
 			},
 		],
 	},
+	{
+		name: 'stats',
+		description: 'Stats about Toadua',
+		options: [],
+	},
 ];
