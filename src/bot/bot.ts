@@ -19,7 +19,7 @@ interface ToaduaEntry {
 	score: number;
 }
 
-const toadua = (toaduaDump as any).results as ToaduaEntry[];
+const toadua = toaduaDump as ToaduaEntry[];
 
 function choose<T>(values: T[]): T {
 	return values[(Math.random() * values.length) | 0];
