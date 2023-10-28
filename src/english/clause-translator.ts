@@ -37,6 +37,7 @@ export class ClauseTranslator {
 	topics: string[] = [];
 	toaqAspect: string = 'tam';
 	negative: boolean = false;
+	hoaReferent?: Constituent = undefined;
 	subject?: Constituent = undefined;
 	earlyAdjuncts: string[] = [];
 	objects: Constituent[] = [];
@@ -108,9 +109,17 @@ export class ClauseTranslator {
 					if (node.left.label === 'ModalP') {
 						this.modals.push(treeToEnglish(node.left).text);
 					}
+					if (
+						'left' in node.right &&
+						'word' in node.right.left &&
+						clean(leafText(node.right.left)) == 'nä'
+					) {
+						this.hoaReferent = treeToEnglish(node.left);
+					}
 					node = node.right;
 					break;
 				case "𝘷'":
+				case 'CPrel':
 					node = node.right;
 					break;
 				case '&P':
@@ -167,8 +176,15 @@ export class ClauseTranslator {
 			: '';
 
 		const earlyAdjuncts = this.earlyAdjuncts.map(x => x + ',');
-		const subject = this.subject?.text ?? '';
-		const objects = this.objects.map(x => x.text);
+		const text = (constituent?: Constituent) =>
+			constituent
+				? constituent.text === 'RSM' && this.hoaReferent
+					? this.hoaReferent.text
+					: constituent.text
+				: '';
+
+		const subject = text(this.subject);
+		const objects = this.objects.map(text);
 		let order: string[];
 		if (this.toaqComplementizer === 'ma') {
 			order = [
