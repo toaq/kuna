@@ -7,12 +7,12 @@ import {
 	Client,
 	Interaction,
 } from 'discord.js';
+import _ from 'lodash';
+import toaduaDump from '../../data/toadua/dump.json';
+import { dictionary } from '../dictionary';
 import { pngDrawTree } from '../draw-tree';
 import { parse } from '../parse';
 import { pngGlossSentence } from '../png-gloss';
-import { Entry, dictionary } from '../dictionary';
-import toaduaDump from '../../data/toadua/dump.json';
-import toaduaGlosses from '../../data/toadua/glosses.json';
 
 interface ToaduaEntry {
 	head: string;
@@ -23,10 +23,6 @@ interface ToaduaEntry {
 }
 
 const toadua = toaduaDump as ToaduaEntry[];
-
-function choose<T>(values: T[]): T {
-	return values[(Math.random() * values.length) | 0];
-}
 
 export class KunaBot {
 	constructor(private client: Client) {}
@@ -91,8 +87,7 @@ export class KunaBot {
 		}
 		const lines = [];
 		for (let i = 0; i < 5; i++) {
-			const a = choose(predicates);
-			const b = choose(predicates);
+			const [a, b] = _.sampleSize(predicates, 2);
 			const oaomo = /^{aeıou}/.test(b.toaq) ? "'" : '';
 			const compound = a.toaq + oaomo + b.toaq;
 			lines.push(`* **${compound}** (${a.gloss}-${b.gloss})`);
@@ -107,7 +102,7 @@ export class KunaBot {
 		amount = Math.max(0, Math.min(amount, 10));
 		const entries: ToaduaEntry[] = [];
 		while (entries.length < amount) {
-			const newEntry = choose(
+			const newEntry = _.sample(
 				toadua.filter(
 					entry =>
 						entry.scope === 'en' &&
@@ -115,6 +110,10 @@ export class KunaBot {
 						!entries.some(previous => entry.user === previous.user),
 				),
 			);
+			if (!newEntry) {
+				await interaction.reply('Not enough words!');
+				return;
+			}
 			entries.push(newEntry);
 		}
 		const authors = entries.map(e => e.user);
@@ -163,13 +162,7 @@ export class KunaBot {
 			return;
 		}
 
-		const entries: ToaduaEntry[] = [];
-		while (entries.length < r + p) {
-			const newEntry = choose(candidates);
-			if (entries.includes(newEntry)) continue;
-			entries.push(newEntry);
-		}
-
+		const entries = _.sampleSize(candidates, r + p);
 		const questions =
 			`Quizzing **${
 				author ?? mode

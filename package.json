@@ -1,5 +1,6 @@
 {
 	"devDependencies": {
+		"@types/lodash": "^4.14.200",
 		"@types/react": "^18.2.21",
 		"@types/react-dom": "^18.2.7",
 		"@vitejs/plugin-react": "^4.0.4",
@@ -46,6 +47,7 @@
 		"@types/yargs": "^17.0.20",
 		"canvas": "^2.11.0",
 		"discord.js": "^14.13.0",
+		"lodash": "^4.17.21",
 		"nearley": "^2.20.1",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
