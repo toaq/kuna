@@ -125,8 +125,8 @@ export class KunaBot {
 			fetchReply: true,
 		});
 
-		message.awaitReactions({ max: 1 }).then(collected => {
-			interaction.followUp(
+		message.awaitReactions({ max: 1 }).then(() => {
+			message.channel.send(
 				'Answers:\n\n' +
 					entries
 						.map((e, i) => `${i + 1}. **${e.head}** ← ${e.user}`)
@@ -185,8 +185,8 @@ export class KunaBot {
 			fetchReply: true,
 		});
 
-		message.awaitReactions({ max: 1 }).then(collected => {
-			interaction.followUp(
+		message.awaitReactions({ max: 1 }).then(() => {
+			message.channel.send(
 				'Answers:\n\n' +
 					entries
 						.map((e, i) => `${i + 1}. ${i < r ? e.body : e.head}`)
