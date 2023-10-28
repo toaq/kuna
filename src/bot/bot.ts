@@ -1,5 +1,8 @@
 import {
+	ActionRowBuilder,
 	AttachmentBuilder,
+	ButtonBuilder,
+	ButtonStyle,
 	ChatInputCommandInteraction,
 	Client,
 	Interaction,
@@ -117,22 +120,31 @@ export class KunaBot {
 		const authors = entries.map(e => e.user);
 		authors.sort();
 
-		const message = await interaction.reply({
-			content:
-				`Who defined which word? (${authors.join(', ')})\n\n` +
-				entries.map((e, i) => `${i + 1}. **${e.head}**`).join('\n') +
-				`\n\n(React with an emoji to reveal the answers.)`,
-			fetchReply: true,
-		});
+		const questions =
+			`Who defined which word? (${authors.join(', ')})\n\n` +
+			entries.map((e, i) => `${i + 1}. **${e.head}**`).join('\n');
+		const answers =
+			'Answers:\n\n' +
+			entries.map((e, i) => `${i + 1}. **${e.head}** ← ${e.user}`).join('\n');
 
-		message.awaitReactions({ max: 1 }).then(() => {
-			message.channel.send(
-				'Answers:\n\n' +
-					entries
-						.map((e, i) => `${i + 1}. **${e.head}** ← ${e.user}`)
-						.join('\n'),
-			);
-		});
+		this.hostQuiz(interaction, questions, answers);
+	}
+
+	private quizFilter(
+		mode: string,
+		author: string | null,
+	): (entry: ToaduaEntry) => boolean {
+		if (author) {
+			return entry => entry.user === author;
+		} else if (mode === 'upvoted') {
+			return entry => entry.score > 0;
+		} else if (mode === 'official_and_upvoted') {
+			return entry => entry.user === 'official' || entry.score > 0;
+		} else if (mode === 'all') {
+			return () => true;
+		} else {
+			return entry => entry.user === 'official';
+		}
 	}
 
 	private async respondQuiz(interaction: ChatInputCommandInteraction) {
@@ -140,58 +152,58 @@ export class KunaBot {
 		let p = interaction.options.getInteger('production', false) ?? 0;
 		r = Math.max(0, Math.min(r, 10));
 		p = Math.max(0, Math.min(p, 10));
-		if (r + p === 0) {
-			r = p = 3;
-		}
-
-		const entries: ToaduaEntry[] = [];
+		if (r + p === 0) r = p = 3;
 
 		const mode = interaction.options.getString('mode', false) ?? 'official';
 		const author = interaction.options.getString('author', false);
-
-		let ok = (entry: ToaduaEntry) => entry.user === 'official';
-		if (author) {
-			ok = entry => entry.user === author;
-		} else if (mode === 'upvoted') {
-			ok = entry => entry.score > 0;
-		} else if (mode === 'official_and_upvoted') {
-			ok = entry => entry.user === 'official' || entry.score > 0;
-		} else if (mode === 'all') {
-			ok = entry => true;
-		}
-
-		const candidates = toadua.filter(
-			entry => entry.scope === 'en' && ok(entry),
-		);
+		const ok = this.quizFilter(mode, author);
+		const candidates = toadua.filter(e => e.scope === 'en' && ok(e));
 		if (candidates.length < r + p) {
 			await interaction.reply('Not enough words!');
 			return;
 		}
+
+		const entries: ToaduaEntry[] = [];
 		while (entries.length < r + p) {
 			const newEntry = choose(candidates);
 			if (entries.includes(newEntry)) continue;
 			entries.push(newEntry);
 		}
 
+		const questions =
+			`Quizzing **${
+				author ?? mode
+			}** words. Translate the following between Toaq and English:\n` +
+			entries.map((e, i) => `${i + 1}. ${i < r ? e.head : e.body}`).join('\n');
+
+		const answers =
+			'Answers:\n\n' +
+			entries.map((e, i) => `${i + 1}. ${i < r ? e.body : e.head}`).join('\n');
+
+		await this.hostQuiz(interaction, questions, answers);
+	}
+
+	private async hostQuiz(
+		interaction: ChatInputCommandInteraction,
+		questions: string,
+		answers: string,
+	) {
+		const reveal = new ButtonBuilder()
+			.setCustomId('reveal')
+			.setLabel('Reveal answers')
+			.setStyle(ButtonStyle.Primary);
+
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(reveal);
+
 		const message = await interaction.reply({
-			content:
-				`Quizzing **${
-					author ?? mode
-				}** words. Translate the following between Toaq and English:\n` +
-				entries
-					.map((e, i) => `${i + 1}. ${i < r ? e.head : e.body}`)
-					.join('\n') +
-				`\n\n(React with an emoji to reveal the answers.)`,
+			content: questions,
 			fetchReply: true,
+			components: [row],
 		});
 
-		message.awaitReactions({ max: 1 }).then(() => {
-			message.channel.send(
-				'Answers:\n\n' +
-					entries
-						.map((e, i) => `${i + 1}. ${i < r ? e.body : e.head}`)
-						.join('\n'),
-			);
+		message.awaitMessageComponent({ time: 10 * 60_000 }).then(result => {
+			message.channel.send(answers);
+			result.update({ components: [] });
 		});
 	}
 }
