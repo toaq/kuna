@@ -155,7 +155,7 @@ export class ToaqTokenizer {
 					});
 					this.tokens.push({
 						type: entry.type.replace(/ /g, '_'),
-						value: base,
+						value: inTone(tokenText, tone(base)),
 						index: m.index,
 					});
 					continue;
@@ -174,7 +174,7 @@ export class ToaqTokenizer {
 					});
 					this.tokens.push({
 						type: 'predicate',
-						value: base,
+						value: inTone(tokenText, tone(base)),
 						index: m.index,
 					});
 				}

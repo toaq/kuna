@@ -134,3 +134,13 @@ test('it tokenizes a sentence', () => {
 	expect(tokenizer.next()!.value).toEqual('Ꝡa');
 	expect(tokenizer.next()!.value).toEqual('buq-');
 });
+
+test('it keeps capitalization', () => {
+	const tokenizer = new ToaqTokenizer();
+	tokenizer.reset('Gı Tóaqzu');
+	expect(tokenizer.tokens).toEqual([
+		{ type: 'predicate', value: 'Gı', index: 0 },
+		{ type: 'determiner', value: '◌́', index: 3 },
+		{ type: 'predicate', value: 'Toaqzu', index: 3 },
+	]);
+});
