@@ -45,7 +45,7 @@
 	"dependencies": {
 		"@types/nearley": "^2.11.2",
 		"@types/yargs": "^17.0.20",
-		"canvas": "^2.11.0",
+		"canvas": "^2.11.2",
 		"discord.js": "^14.13.0",
 		"lodash": "^4.17.21",
 		"nearley": "^2.20.1",
