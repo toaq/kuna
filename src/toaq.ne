@@ -69,7 +69,9 @@ Clause -> term Bi Clause {% make3L('TopicP', "Topic'") %}
 # pu hao
 Clause -> MTP {% id %}
 # jí nä pu hao hóa
-Clause -> DP Na CPrelna {% make3L('𝘷P', "𝘷'") %}
+Clause -> DP1 Na CPrelna {% make3L('𝘷P', "𝘷'") %}
+# râo fíachaq nä pu hao hóa
+Clause -> AdjunctP1 Na CPrelna {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
 Clause -> ModalP Na MTP {% make3L('𝘷P', "𝘷'") %}
 ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
