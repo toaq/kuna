@@ -74,7 +74,7 @@ function ClauseInner(props: { clause: BoxClause }) {
 }
 
 function ClauseBox(props: { clause: BoxClause }) {
-	const { complementizer, topic } = props.clause;
+	const { complementizer, topic, subject } = props.clause;
 	return (
 		<Box color="red" label="Clause">
 			<Box color="orange" label="Comp.">
@@ -83,6 +83,11 @@ function ClauseBox(props: { clause: BoxClause }) {
 			{topic && (
 				<Box color="aqua" label="Topic">
 					<div className="boxes-toaq">{topic}</div>
+				</Box>
+			)}
+			{subject && (
+				<Box color="aqua" label="Subject">
+					<div className="boxes-toaq">{subject}</div>
 				</Box>
 			)}
 			<ClauseInner clause={props.clause} />

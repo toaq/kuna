@@ -20,6 +20,7 @@ export interface BoxClause {
 	/// If empty, means covert "ꝡa"
 	complementizer: string;
 	topic?: string;
+	subject?: string;
 	verbalComplex: string;
 	postField: PostField;
 	conjunction?: AndClause;
@@ -85,6 +86,7 @@ function boxifyPostField(trees: Tree[]): PostField {
 function boxifyClause(tree: Tree): BoxClause {
 	let complementizer = '';
 	let topic: string | undefined = undefined;
+	let subject: string | undefined = undefined;
 	let verbalComplexWords = [];
 	let postField: PostField | undefined = undefined;
 	let conjunction: AndClause | undefined = undefined;
@@ -112,11 +114,18 @@ function boxifyClause(tree: Tree): BoxClause {
 					topic += ' ' + words(node.left);
 					node = node.right;
 					break;
+				case '𝘷P':
+					if ('left' in node.right && words(node.right.left) === 'nä') {
+						subject = words(node.left);
+						node = node.right;
+						break;
+					}
+				// fall through
 				case 'ΣP':
 				case 'ModalP':
 				case 'TP':
 				case 'AspP':
-				case '𝘷P':
+				case 'CPrel':
 				case "𝘷'":
 					const w = words(node.left);
 					w && verbalComplexWords.push(w);
@@ -139,7 +148,14 @@ function boxifyClause(tree: Tree): BoxClause {
 		}
 	}
 	const verbalComplex = verbalComplexWords.join(' ').trim();
-	return { complementizer, topic, verbalComplex, postField, conjunction };
+	return {
+		complementizer,
+		topic,
+		subject,
+		verbalComplex,
+		postField,
+		conjunction,
+	};
 }
 
 export function boxify(tree: Tree): BoxSentence {
