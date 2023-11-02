@@ -13,6 +13,7 @@ import { dictionary } from '../dictionary';
 import { pngDrawTree } from '../draw-tree';
 import { parse } from '../parse';
 import { pngGlossSentence } from '../png-gloss';
+import { toEnglish } from '../english/tree';
 
 interface ToaduaEntry {
 	head: string;
@@ -32,6 +33,8 @@ export class KunaBot {
 		try {
 			if (interaction.commandName === 'gloss') {
 				this.respondGloss(interaction);
+			} else if (interaction.commandName === 'english') {
+				this.respondEnglish(interaction);
 			} else if (interaction.commandName === 'stree') {
 				this.respondStree(interaction);
 			} else if (interaction.commandName === 'nuotoa') {
@@ -58,6 +61,15 @@ export class KunaBot {
 		await interaction.reply({
 			files: [new AttachmentBuilder(png, { name: 'gloss.png' })],
 		});
+	}
+
+	private async respondEnglish(interaction: ChatInputCommandInteraction) {
+		const text = interaction.options.getString('text', true);
+		try {
+			await interaction.reply(toEnglish(text));
+		} catch (e) {
+			await interaction.reply(String(e));
+		}
 	}
 
 	private async respondStree(interaction: ChatInputCommandInteraction) {

@@ -15,6 +15,18 @@ export const commands = [
 		],
 	},
 	{
+		name: 'english',
+		description: 'Translate Toaq text into English… sorta',
+		options: [
+			{
+				name: 'text',
+				description: 'Toaq text to translate',
+				type: stringType,
+				required: true,
+			},
+		],
+	},
+	{
 		name: 'stree',
 		description: 'Surface Toaq tree',
 		options: [
