@@ -6,6 +6,7 @@
 		"@vitejs/plugin-react": "^4.0.4",
 		"classnames": "^2.3.2",
 		"esbuild-runner": "^2.2.2",
+		"husky": "^8.0.0",
 		"prettier": "^3.0.0",
 		"typescript": "^5.2.2",
 		"vite": "^4.4.9",
@@ -18,8 +19,9 @@
 	"description": "Tools for parsing Toaq Delta",
 	"main": "index.js",
 	"scripts": {
+		"prepare": "husky install && ./.husky/post-checkout",
 		"postinstall": "npm run codegen",
-		"prettier:check": "npx -p prettier prettier -c .",
+		"prettier:check": "npx -p prettier prettier -c --cache .",
 		"prettier:format": "npx -p prettier prettier -w .",
 		"cli": "npx esr src/index.ts",
 		"cli:debug": "node --inspect-brk -r esbuild-runner/register src/index.ts",
