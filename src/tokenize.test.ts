@@ -115,7 +115,7 @@ test('it splits prefixes off words', () => {
 	});
 });
 
-test('it tokenizes a sentence', () => {
+test('it tokenizes sentences', () => {
 	const tokenizer = new ToaqTokenizer();
 	tokenizer.reset('Ꝡa bụqgı é sho tı súq nírıaq da!');
 	expect(tokenizer.tokens).toEqual([
@@ -133,6 +133,9 @@ test('it tokenizes a sentence', () => {
 	]);
 	expect(tokenizer.next()!.value).toEqual('Ꝡa');
 	expect(tokenizer.next()!.value).toEqual('buq-');
+
+	tokenizer.reset('Âo ꝡä zudeq jí Tóaqzu, nä jaı jí.');
+	expect(tokenizer.next()!.type).toEqual('modality_with_complement');
 });
 
 test('it keeps capitalization', () => {

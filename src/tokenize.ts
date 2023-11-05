@@ -41,7 +41,7 @@ export function inTone(word: string, tone: Tone): string {
 	return word
 		.normalize('NFKD')
 		.replace(/\p{Diacritic}/gu, '')
-		.replace(/[aeiıou]/u, m => m.replace('ı', 'i') + diacriticForTone(tone))
+		.replace(/[aeiıou]/iu, m => m.replace('ı', 'i') + diacriticForTone(tone))
 		.normalize()
 		.replace(/i/gu, 'ı');
 }
