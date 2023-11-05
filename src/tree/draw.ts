@@ -43,6 +43,10 @@ class TreeDrawer {
 	private canvas: Canvas;
 	private ctx: CanvasRenderingContext2D;
 	private state: DrawState;
+	private rootX: number;
+	private rootY: number;
+	private margin = 40;
+	private layerHeight = 100;
 
 	constructor(private theme: Theme) {
 		const width = 8400;
@@ -51,11 +55,17 @@ class TreeDrawer {
 		this.ctx = this.canvas.getContext('2d');
 		this.ctx.fillStyle = theme.backgroundColor;
 		this.ctx.fillRect(0, 0, width, height);
-		this.ctx.font = '20pt Noto Sans Math, Noto Sans';
-		const x = this.canvas.width / 2;
-		const y = 50;
+		this.ctx.font = '27px Noto Sans Math, Noto Sans';
+		this.ctx.textAlign = 'center';
+		this.rootX = this.canvas.width / 2;
+		this.rootY = this.margin;
 		this.state = {
-			extent: { minX: x, maxX: x, minY: y, maxY: y },
+			extent: {
+				minX: this.rootX,
+				maxX: this.rootX,
+				minY: this.rootY,
+				maxY: this.rootY,
+			},
 			locations: new Map(),
 			arrows: [],
 		};
@@ -70,9 +80,13 @@ class TreeDrawer {
 		this.ctx.stroke();
 	}
 
-	private drawText(t: string, x: number, y: number): void {
-		this.ctx.fillText(t, x, y);
-		const m = this.ctx.measureText(t);
+	private drawText(text: string, x: number, y: number, color: string): void {
+		const m = this.ctx.measureText(text);
+		// Emulate "textBaseLine = 'top'", which isn't supported by the node canvas.
+		// This number is eyeballed for the text positions to look good on both.
+		y += 18;
+		this.ctx.fillStyle = color;
+		this.ctx.fillText(text, x, y);
 		const margin = 40;
 		const minX = x - m.width / 2 - margin;
 		if (minX < this.state.extent.minX) this.state.extent.minX = minX;
@@ -85,21 +99,18 @@ class TreeDrawer {
 	}
 
 	private drawLeaf(x: number, y: number, tree: PlacedLeaf): void {
-		this.ctx.textAlign = 'center';
-		this.ctx.textBaseline = 'top';
-		const { textColor, denotationColor, wordColor } = this.theme;
-
-		this.ctx.fillStyle = textColor;
-		this.drawText(tree.label, x, y);
-		this.ctx.fillStyle = denotationColor;
-		const denotation = tree.denotation ?? '';
-		this.drawText(denotation, x, y + 30);
+		this.drawText(tree.label, x, y, this.theme.textColor);
+		if (tree.denotation) {
+			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
+		}
 		if (tree.word !== undefined) {
-			this.drawLine(x, y + (denotation ? 75 : 45), x, y + 95);
-			this.ctx.fillStyle = wordColor;
-			this.drawText(tree.word, x, y + 100);
-			this.ctx.fillStyle = textColor;
-			this.drawText(tree.gloss ?? '', x, y + 130);
+			const dy = tree.denotation ? 60 : 30;
+			this.drawLine(x, y + dy, x, y + this.layerHeight - 15);
+			this.drawText(tree.word, x, y + this.layerHeight, this.theme.wordColor);
+			if (tree.gloss) {
+				const yg = y + this.layerHeight + 30;
+				this.drawText(tree.gloss, x, yg, this.theme.textColor);
+			}
 		}
 
 		if (tree.id) {
@@ -113,20 +124,16 @@ class TreeDrawer {
 	}
 
 	private drawBranch(x: number, y: number, tree: PlacedBranch): void {
-		this.ctx.textAlign = 'center';
-		this.ctx.textBaseline = 'top';
-		const { textColor, denotationColor } = this.theme;
-
-		this.ctx.fillStyle = textColor;
-		this.drawText(tree.label, x, y);
-		const denotation = tree.denotation ?? '';
-		this.ctx.fillStyle = denotationColor;
-		this.drawText(denotation, x, y + 30);
+		this.drawText(tree.label, x, y, this.theme.textColor);
+		if (tree.denotation) {
+			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
+		}
 		const n = tree.children.length;
 		for (let i = 0; i < n; i++) {
 			const dx = (i - (n - 1) / 2) * tree.distanceBetweenChildren;
-			this.drawTree(x + dx, y + 100, tree.children[i]);
-			this.drawLine(x, y + (denotation ? 75 : 45), x + dx, y + 95);
+			this.drawTree(x + dx, y + this.layerHeight, tree.children[i]);
+			const dy = tree.denotation ? 60 : 30;
+			this.drawLine(x, y + dy, x + dx, y + this.layerHeight - 15);
 		}
 	}
 
@@ -171,9 +178,7 @@ class TreeDrawer {
 
 	public pngDrawTree(tree: Tree | DTree): Canvas {
 		const placed = placeTree(this.ctx, tree);
-		const x = this.canvas.width / 2;
-		const y = 50;
-		this.drawTree(x, y, placed);
+		this.drawTree(this.rootX, this.rootY, placed);
 		this.drawArrows();
 		this.fitCanvasToContents();
 		return this.canvas;
