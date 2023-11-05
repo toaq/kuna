@@ -175,137 +175,169 @@ const themes = {
 };
 
 interface DrawState {
-	theme: 'dark' | 'light';
 	extent: { minX: number; maxX: number; minY: number; maxY: number };
 	locations: Map<string, Location>;
 	arrows: Array<[string, string]>;
 }
 
-function drawTree(
-	ctx: CanvasRenderingContext2D,
-	x: number,
-	y: number,
-	tree: PlacedTree,
-	state: DrawState,
-): void {
-	function text(t: string, x: number, y: number): void {
-		ctx.fillText(t, x, y);
-		const m = ctx.measureText(t);
+class TreeDrawer {
+	private canvas: Canvas;
+	private ctx: CanvasRenderingContext2D;
+	private state?: DrawState;
+
+	constructor(private theme: 'light' | 'dark') {
+		const width = 8400;
+		const height = 4400;
+		this.canvas = createCanvas(width, height);
+		this.ctx = this.canvas.getContext('2d');
+		this.ctx.fillStyle = themes[theme].backgroundColor;
+		this.ctx.fillRect(0, 0, width, height);
+		this.ctx.font = '20pt Noto Sans Math, Noto Sans';
+	}
+
+	private drawText(t: string, x: number, y: number): void {
+		if (!this.state) {
+			throw new Error('drawText() called in invalid state');
+		}
+
+		this.ctx.fillText(t, x, y);
+		const m = this.ctx.measureText(t);
 		const margin = 40;
 		const minX = x - m.width / 2 - margin;
-		if (minX < state.extent.minX) state.extent.minX = minX;
+		if (minX < this.state.extent.minX) this.state.extent.minX = minX;
 		const maxX = x + m.width / 2 + margin;
-		if (maxX > state.extent.maxX) state.extent.maxX = maxX;
+		if (maxX > this.state.extent.maxX) this.state.extent.maxX = maxX;
 		const minY = y - margin;
-		if (minY < state.extent.minY) state.extent.minY = minY;
+		if (minY < this.state.extent.minY) this.state.extent.minY = minY;
 		const maxY = y + 30 + margin;
-		if (maxY > state.extent.maxY) state.extent.maxY = maxY;
+		if (maxY > this.state.extent.maxY) this.state.extent.maxY = maxY;
 	}
-	ctx.textAlign = 'center';
-	ctx.textBaseline = 'top';
-	const { textColor, denotationColor, wordColor } = themes[state.theme];
-	if ('word' in tree) {
-		ctx.fillStyle = textColor;
-		text(tree.label, x, y);
-		ctx.fillStyle = denotationColor;
-		const denotation = tree.denotation ?? '';
-		text(denotation, x, y + 30);
-		ctx.strokeStyle = textColor;
-		ctx.lineWidth = 1;
-		if (tree.word !== undefined) {
-			ctx.beginPath();
-			ctx.moveTo(x, y + (denotation ? 75 : 45));
-			ctx.lineTo(x, y + 95);
-			ctx.stroke();
-			ctx.fillStyle = wordColor;
-			text(tree.word, x, y + 100);
-			ctx.fillStyle = textColor;
-			text(tree.gloss ?? '', x, y + 130);
+
+	private drawLeaf(x: number, y: number, tree: PlacedLeaf): void {
+		if (!this.state) {
+			throw new Error('drawTree() called in invalid state');
 		}
+
+		this.ctx.textAlign = 'center';
+		this.ctx.textBaseline = 'top';
+		const { textColor, denotationColor, wordColor } = themes[this.theme];
+
+		this.ctx.fillStyle = textColor;
+		this.drawText(tree.label, x, y);
+		this.ctx.fillStyle = denotationColor;
+		const denotation = tree.denotation ?? '';
+		this.drawText(denotation, x, y + 30);
+		this.ctx.strokeStyle = textColor;
+		this.ctx.lineWidth = 1;
+		if (tree.word !== undefined) {
+			this.ctx.beginPath();
+			this.ctx.moveTo(x, y + (denotation ? 75 : 45));
+			this.ctx.lineTo(x, y + 95);
+			this.ctx.stroke();
+			this.ctx.fillStyle = wordColor;
+			this.drawText(tree.word, x, y + 100);
+			this.ctx.fillStyle = textColor;
+			this.drawText(tree.gloss ?? '', x, y + 130);
+		}
+
 		if (tree.id) {
-			const width = ctx.measureText(tree.word ?? '').width;
+			const width = this.ctx.measureText(tree.word ?? '').width;
 			const location = { x, y: y + 120, width };
-			state.locations.set(tree.id, location);
+			this.state.locations.set(tree.id, location);
 			if (tree.movedTo) {
-				state.arrows.push([tree.id, tree.movedTo]);
+				this.state.arrows.push([tree.id, tree.movedTo]);
 			}
 		}
-	} else {
-		ctx.fillStyle = textColor;
-		text(tree.label, x, y);
+	}
+
+	private drawBranch(x: number, y: number, tree: PlacedBranch): void {
+		if (!this.state) {
+			throw new Error('drawBranch() called in invalid state');
+		}
+
+		this.ctx.textAlign = 'center';
+		this.ctx.textBaseline = 'top';
+		const { textColor, denotationColor, wordColor } = themes[this.theme];
+
+		this.ctx.fillStyle = textColor;
+		this.drawText(tree.label, x, y);
 		const denotation = tree.denotation ?? '';
-		ctx.fillStyle = denotationColor;
-		text(denotation, x, y + 30);
+		this.ctx.fillStyle = denotationColor;
+		this.drawText(denotation, x, y + 30);
 		const n = tree.children.length;
 		for (let i = 0; i < n; i++) {
 			const dx = (i - (n - 1) / 2) * tree.distanceBetweenChildren;
-			drawTree(ctx, x + dx, y + 100, tree.children[i], state);
-			ctx.strokeStyle = textColor;
-			ctx.lineWidth = 1;
-			ctx.beginPath();
-			ctx.moveTo(x, y + (denotation ? 75 : 45));
-			ctx.lineTo(x + dx, y + 95);
-			ctx.stroke();
+			this.drawTree(x + dx, y + 100, tree.children[i]);
+			this.ctx.strokeStyle = textColor;
+			this.ctx.lineWidth = 1;
+			this.ctx.beginPath();
+			this.ctx.moveTo(x, y + (denotation ? 75 : 45));
+			this.ctx.lineTo(x + dx, y + 95);
+			this.ctx.stroke();
 		}
 	}
-}
 
-function drawArrows(ctx: CanvasRenderingContext2D, state: DrawState) {
-	ctx.strokeStyle = themes[state.theme].textColor;
-	ctx.lineWidth = 1;
-	for (const [i, j] of state.arrows) {
-		ctx.beginPath();
-		const start = state.locations.get(i)!;
-		const end = state.locations.get(j)!;
-		const x0 = start.x - start.width / 2 - 15;
-		const y0 = start.y;
-		const x1 = end.x;
-		const y1 = end.y + 25;
-		ctx.moveTo(x0, y0);
-		ctx.quadraticCurveTo(x1, y0, x1, y1);
-		ctx.stroke();
-		for (const dx of [-8, 8]) {
-			ctx.beginPath();
-			ctx.moveTo(x1, y1);
-			ctx.lineTo(x1 + dx, y1 + 8);
-			ctx.stroke();
+	private drawTree(x: number, y: number, tree: PlacedTree): void {
+		if ('word' in tree) {
+			this.drawLeaf(x, y, tree);
+		} else {
+			this.drawBranch(x, y, tree);
 		}
+	}
+
+	private drawArrows() {
+		if (!this.state) {
+			throw new Error('drawArrows() called in invalid state');
+		}
+
+		this.ctx.strokeStyle = themes[this.theme].textColor;
+		this.ctx.lineWidth = 1;
+		for (const [i, j] of this.state.arrows) {
+			this.ctx.beginPath();
+			const start = this.state.locations.get(i)!;
+			const end = this.state.locations.get(j)!;
+			const x0 = start.x - start.width / 2 - 15;
+			const y0 = start.y;
+			const x1 = end.x;
+			const y1 = end.y + 25;
+			this.ctx.moveTo(x0, y0);
+			this.ctx.quadraticCurveTo(x1, y0, x1, y1);
+			this.ctx.stroke();
+			for (const dx of [-8, 8]) {
+				this.ctx.beginPath();
+				this.ctx.moveTo(x1, y1);
+				this.ctx.lineTo(x1 + dx, y1 + 8);
+				this.ctx.stroke();
+			}
+		}
+	}
+
+	public pngDrawTree(tree: Tree | DTree): Canvas {
+		const placed = placeTree(this.ctx, tree);
+		const x = this.canvas.width / 2;
+		const y = 50;
+		this.state = {
+			extent: { minX: x, maxX: x, minY: y, maxY: y },
+			locations: new Map(),
+			arrows: [],
+		};
+		this.drawTree(x, y, placed);
+		this.drawArrows();
+
+		const { minX, maxX, minY, maxY } = this.state.extent;
+		const cropWidth = maxX - minX;
+		const cropHeight = maxY - minY;
+		const temp = this.ctx.getImageData(minX, minY, cropWidth, cropHeight);
+		this.canvas.width = cropWidth;
+		this.canvas.height = cropHeight;
+		this.ctx.putImageData(temp, 0, 0);
+		return this.canvas;
 	}
 }
 
 export function pngDrawTree(
 	tree: Tree | DTree,
 	theme: 'light' | 'dark',
-	canvas?: Canvas,
 ): Canvas {
-	const width = 8400;
-	const height = 4400;
-	if (!canvas) {
-		canvas = createCanvas(width, height);
-	}
-	const ctx = canvas.getContext('2d');
-	ctx.fillStyle = themes[theme].backgroundColor;
-	ctx.fillRect(0, 0, width, height);
-	ctx.font = '20pt Noto Sans Math, Noto Sans';
-
-	const placed = placeTree(ctx, tree);
-	const x = width / 2;
-	const y = 50;
-	const state: DrawState = {
-		theme,
-		extent: { minX: x, maxX: x, minY: y, maxY: y },
-		locations: new Map(),
-		arrows: [],
-	};
-	drawTree(ctx, x, y, placed, state);
-	drawArrows(ctx, state);
-
-	const { minX, maxX, minY, maxY } = state.extent;
-	const cropWidth = maxX - minX;
-	const cropHeight = maxY - minY;
-	const temp = ctx.getImageData(minX, minY, cropWidth, cropHeight);
-	canvas.width = cropWidth;
-	canvas.height = cropHeight;
-	ctx.putImageData(temp, 0, 0);
-	return canvas;
+	return new TreeDrawer(theme).pngDrawTree(tree);
 }
