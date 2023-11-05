@@ -1,5 +1,6 @@
 import { Impossible, Ungrammatical, Unimplemented } from './error';
-import { Branch, Label, Tree, makeNull } from './tree';
+import { nextIndex } from './fix';
+import { Branch, Label, Leaf, Tree, makeNull } from './tree';
 
 /**
  * Toaq serials are too complicated to parse directly in the context-free
@@ -26,7 +27,9 @@ import { Branch, Label, Tree, makeNull } from './tree';
 
 const arityPreservingVerbPrefixes: Label[] = ['buP', 'muP', 'buqP', 'geP'];
 
-export const pro: Tree = { label: 'DP', word: { covert: true, value: 'PRO' } };
+export function pro(): Leaf {
+	return { label: 'DP', word: { covert: true, value: 'PRO' } };
+}
 
 /**
  * Get a frame string like "c" or "c c 1j" for this verbal subtree.
@@ -131,9 +134,22 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			throw new Ungrammatical("frame can't serialize: " + firstFrame);
 		}
 		const cCount = frame.length - 1;
-		const jaCount = Number(frame[frame.length - 1][0]);
-		// TODO pro coindexation
-		const pros: Tree[] = new Array(jaCount).fill(pro);
+		const lastSlot = frame[frame.length - 1];
+		const jaCount = Number(lastSlot[0]);
+		let pros: Leaf[] = new Array(jaCount).fill(undefined).map(pro);
+		for (let i = 0; i < jaCount; i++) {
+			switch (lastSlot[i + 1]) {
+				case 'i':
+					args[0].coindex ??= nextIndex();
+					pros[i].coindex = args[0].coindex;
+					console.log(args[0]);
+					break;
+				case 'j':
+					args[1].coindex ??= nextIndex();
+					pros[i].coindex = args[1].coindex;
+					break;
+			}
+		}
 		// if (args.length < cCount) {
 		// 	throw new Ungrammatical('not enough arguments');
 		// }
@@ -312,7 +328,7 @@ export function fixSerial(tree: Tree, terms: Tree[]): Tree {
 		ptr = ptr.right as Branch<Tree>;
 	}
 	for (let i = 1; i < segments.length; i++) {
-		ptr.right = attachAdjective(ptr.right, segmentToKivP(segments[i], [pro]));
+		ptr.right = attachAdjective(ptr.right, segmentToKivP(segments[i], [pro()]));
 	}
 
 	// Attach AdjunctPs to 𝘷P

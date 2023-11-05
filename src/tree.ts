@@ -145,21 +145,23 @@ export function isQuestion(tree: Tree): boolean {
 	);
 }
 
-export interface Leaf {
+interface TreeBase {
 	label: Label;
+	coindex?: string;
+}
+
+export interface Leaf extends TreeBase {
 	id?: string;
 	movedTo?: string;
 	word: Word | CovertWord;
 }
 
-export interface Branch<T> {
-	label: Label;
+export interface Branch<T> extends TreeBase {
 	left: T;
 	right: T;
 }
 
-export interface Rose<T> {
-	label: Label;
+export interface Rose<T> extends TreeBase {
 	children: T[];
 }
 

@@ -20,6 +20,7 @@ interface PlacedLeafBase {
 	denotation?: RenderedDenotation;
 	id?: string;
 	movedTo?: string;
+	coindex?: string;
 }
 
 interface HasWord {
@@ -40,6 +41,7 @@ export interface PlacedBranch {
 	denotation?: RenderedDenotation;
 	distanceBetweenChildren: number;
 	children: PlacedTree[];
+	coindex?: string;
 }
 
 export type PlacedTree = PlacedLeaf | PlacedBranch;
@@ -80,6 +82,7 @@ export function placeLeaf(
 		ctx.measureText(gloss ?? '').width,
 		denotation ? denotation.width(ctx) : 0,
 	);
+
 	return {
 		depth: 0,
 		width,
@@ -89,6 +92,7 @@ export function placeLeaf(
 		denotation,
 		id: leaf.id,
 		movedTo: leaf.movedTo,
+		coindex: leaf.coindex,
 	};
 }
 
@@ -125,6 +129,7 @@ export function makePlacedBranch(
 	label: string,
 	denotation: RenderedDenotation | undefined,
 	children: PlacedTree[],
+	coindex: string | undefined,
 ): PlacedBranch {
 	const depth = Math.max(...children.map(c => c.depth)) + 1;
 	const width = Math.max(
@@ -142,7 +147,15 @@ export function makePlacedBranch(
 			);
 		}
 	}
-	return { depth, width, label, denotation, distanceBetweenChildren, children };
+	return {
+		depth,
+		width,
+		label,
+		denotation,
+		distanceBetweenChildren,
+		children,
+		coindex,
+	};
 }
 
 export function placeBranch(
@@ -154,7 +167,13 @@ export function placeBranch(
 			? denotationRenderText(branch.denotation)
 			: undefined;
 	const children = [placeTree(ctx, branch.left), placeTree(ctx, branch.right)];
-	return makePlacedBranch(ctx, getLabel(branch), denotation, children);
+	return makePlacedBranch(
+		ctx,
+		getLabel(branch),
+		denotation,
+		children,
+		branch.coindex,
+	);
 }
 
 export function placeRose(
@@ -162,7 +181,7 @@ export function placeRose(
 	rose: Rose<Tree>,
 ): PlacedBranch {
 	const children = rose.children.map(c => placeTree(ctx, c));
-	return makePlacedBranch(ctx, rose.label, undefined, children);
+	return makePlacedBranch(ctx, rose.label, undefined, children, rose.coindex);
 }
 
 export function placeTree(

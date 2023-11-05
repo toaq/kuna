@@ -67,7 +67,14 @@ class Scope {
 	}
 }
 
+let indexCount = 0;
+
+export function nextIndex(): string {
+	return String.fromCodePoint('𝑖'.codePointAt(0)! + indexCount++);
+}
+
 export function fix(tree: Tree, scope?: Scope): StrictTree {
+	indexCount = 0;
 	if ('children' in tree) {
 		if (tree.label === '*𝘷P') {
 			const serial = tree.children[0];
@@ -83,7 +90,7 @@ export function fix(tree: Tree, scope?: Scope): StrictTree {
 	} else if ('left' in tree) {
 		if (tree.label === 'VP' && tree.left.label === '*Serial') {
 			// Tiny hack to extract a VP from fixSerial:
-			const vP = fixSerial(tree.left, [pro, tree.right]);
+			const vP = fixSerial(tree.left, [pro(), tree.right]);
 			assertBranch(vP);
 			assertBranch(vP.right);
 			return fix(vP.right.right);

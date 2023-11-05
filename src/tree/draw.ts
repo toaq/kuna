@@ -42,6 +42,7 @@ const themes: Record<ThemeName, Theme> = {
 class TreeDrawer {
 	private margin = 40;
 	private layerHeight = 100;
+	private font = '27px Noto Sans Math, Noto Sans';
 
 	private canvas: Canvas;
 	private ctx: CanvasRenderingContext2D;
@@ -58,7 +59,7 @@ class TreeDrawer {
 		this.ctx = this.canvas.getContext('2d');
 		this.ctx.fillStyle = theme.backgroundColor;
 		this.ctx.fillRect(0, 0, width, height);
-		this.ctx.font = '27px Noto Sans Math, Noto Sans';
+		this.ctx.font = this.font;
 		this.ctx.textAlign = 'center';
 		this.rootX = this.canvas.width / 2;
 		this.rootY = this.margin;
@@ -104,8 +105,19 @@ class TreeDrawer {
 		if (maxY > this.extent.maxY) this.extent.maxY = maxY;
 	}
 
+	private drawLabel(x: number, y: number, tree: PlacedTree): void {
+		if (tree.coindex) {
+			const w1 = this.ctx.measureText(tree.label).width;
+			const w2 = this.ctx.measureText(tree.coindex).width;
+			this.drawText(tree.label, x - w2 / 2, y, this.theme.textColor);
+			this.drawText(tree.coindex, x + w1 / 2, y + 8, this.theme.textColor);
+		} else {
+			this.drawText(tree.label, x, y, this.theme.textColor);
+		}
+	}
+
 	private drawLeaf(x: number, y: number, tree: PlacedLeaf): void {
-		this.drawText(tree.label, x, y, this.theme.textColor);
+		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
 			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
 		}
@@ -130,7 +142,7 @@ class TreeDrawer {
 	}
 
 	private drawBranch(x: number, y: number, tree: PlacedBranch): void {
-		this.drawText(tree.label, x, y, this.theme.textColor);
+		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
 			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
 		}
