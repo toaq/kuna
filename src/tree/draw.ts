@@ -1,7 +1,13 @@
 import { createCanvas, CanvasRenderingContext2D, Canvas } from 'canvas';
 import { DTree } from '../semantics/model';
 import { Tree } from '../tree';
-import { PlacedBranch, PlacedLeaf, PlacedTree, placeTree } from './place';
+import {
+	DenotationRender,
+	PlacedBranch,
+	PlacedLeaf,
+	PlacedTree,
+	placeTree,
+} from './place';
 
 interface Location {
 	x: number;
@@ -80,21 +86,30 @@ class TreeDrawer {
 		this.ctx.stroke();
 	}
 
-	private drawText(text: string, x: number, y: number, color: string): void {
-		const m = this.ctx.measureText(text);
-		// Emulate "textBaseLine = 'top'", which isn't supported by the node canvas.
-		// This number is eyeballed for the text positions to look good on both.
-		y += 18;
-		this.ctx.fillStyle = color;
-		this.ctx.fillText(text, x, y);
+	private drawText(
+		text: string | DenotationRender,
+		x: number,
+		y: number,
+		color: string,
+	): void {
+		let width: number;
+		if (typeof text !== 'string') {
+			text.draw(this.ctx, x, y, color);
+			width = text.width(this.ctx);
+		} else {
+			y += 18;
+			this.ctx.fillStyle = color;
+			this.ctx.fillText(text, x, y);
+			width = this.ctx.measureText(text).width;
+		}
 		const margin = 40;
-		const minX = x - m.width / 2 - margin;
+		const minX = x - width / 2 - margin;
 		if (minX < this.state.extent.minX) this.state.extent.minX = minX;
-		const maxX = x + m.width / 2 + margin;
+		const maxX = x + width / 2 + margin;
 		if (maxX > this.state.extent.maxX) this.state.extent.maxX = maxX;
 		const minY = y - margin;
 		if (minY < this.state.extent.minY) this.state.extent.minY = minY;
-		const maxY = y + 30 + margin;
+		const maxY = y + margin;
 		if (maxY > this.state.extent.maxY) this.state.extent.maxY = maxY;
 	}
 

@@ -3,11 +3,21 @@ import { DTree, Expr } from '../semantics/model';
 import { toPlainText, typeToPlainText } from '../semantics/render';
 import { Branch, Leaf, Rose, Tree } from '../tree';
 
+export interface DenotationRender {
+	draw: (
+		ctx: CanvasRenderingContext2D,
+		centerX: number,
+		bottomY: number,
+		color: string,
+	) => void;
+	width(ctx: CanvasRenderingContext2D): number;
+}
+
 interface PlacedLeafBase {
 	depth: 0;
 	width: number;
 	label: string;
-	denotation?: string;
+	denotation?: DenotationRender;
 	id?: string;
 	movedTo?: string;
 }
@@ -27,7 +37,7 @@ export interface PlacedBranch {
 	depth: number;
 	width: number;
 	label: string;
-	denotation?: string;
+	denotation?: DenotationRender;
 	distanceBetweenChildren: number;
 	children: PlacedTree[];
 }
@@ -40,6 +50,19 @@ function getLabel(tree: Tree | DTree): string {
 		: tree.label;
 }
 
+export function denotationRenderText(denotation: Expr): DenotationRender {
+	const text = toPlainText(denotation);
+	return {
+		draw(ctx, centerX, bottomY, color) {
+			ctx.fillStyle = color;
+			ctx.fillText(text, centerX, bottomY + 18);
+		},
+		width(ctx) {
+			return ctx.measureText(text).width;
+		},
+	};
+}
+
 export function placeLeaf(
 	ctx: CanvasRenderingContext2D,
 	leaf: Leaf | (Leaf & { denotation: Expr | null }),
@@ -49,13 +72,13 @@ export function placeLeaf(
 	const word = leaf.word.covert ? leaf.word.value : leaf.word.text;
 	const denotation =
 		'denotation' in leaf && leaf.denotation !== null
-			? toPlainText(leaf.denotation)
+			? denotationRenderText(leaf.denotation)
 			: undefined;
 	const width = Math.max(
 		ctx.measureText(label).width,
 		ctx.measureText(word ?? '').width,
 		ctx.measureText(gloss ?? '').width,
-		ctx.measureText(denotation ?? '').width,
+		denotation ? denotation.width(ctx) : 0,
 	);
 	return {
 		depth: 0,
@@ -100,13 +123,13 @@ function layerExtents(tree: PlacedTree): { left: number; right: number }[] {
 export function makePlacedBranch(
 	ctx: CanvasRenderingContext2D,
 	label: string,
-	denotation: string | undefined,
+	denotation: DenotationRender | undefined,
 	children: PlacedTree[],
 ): PlacedBranch {
 	const depth = Math.max(...children.map(c => c.depth)) + 1;
 	const width = Math.max(
 		ctx.measureText(label).width,
-		ctx.measureText(denotation ?? '').width,
+		denotation ? denotation.width(ctx) : 0,
 	);
 	let distanceBetweenChildren = 0;
 	for (let i = 0; i < children.length - 1; i++) {
@@ -128,7 +151,7 @@ export function placeBranch(
 ): PlacedBranch {
 	const denotation =
 		'denotation' in branch && branch.denotation !== null
-			? toPlainText(branch.denotation)
+			? denotationRenderText(branch.denotation)
 			: undefined;
 	const children = [placeTree(ctx, branch.left), placeTree(ctx, branch.right)];
 	return makePlacedBranch(ctx, getLabel(branch), denotation, children);
@@ -139,7 +162,7 @@ export function placeRose(
 	rose: Rose<Tree>,
 ): PlacedBranch {
 	const children = rose.children.map(c => placeTree(ctx, c));
-	return makePlacedBranch(ctx, rose.label, '', children);
+	return makePlacedBranch(ctx, rose.label, undefined, children);
 }
 
 export function placeTree(
