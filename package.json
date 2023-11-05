@@ -19,7 +19,7 @@
 	"description": "Tools for parsing Toaq Delta",
 	"main": "index.js",
 	"scripts": {
-		"prepare": "husky install && ./.husky/post-checkout",
+		"prepare": "husky install && bash ./.husky/post-checkout",
 		"postinstall": "npm run codegen",
 		"prettier:check": "npx -p prettier prettier -c --cache .",
 		"prettier:format": "npx -p prettier prettier -w .",
