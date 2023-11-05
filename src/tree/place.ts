@@ -3,7 +3,7 @@ import { DTree, Expr } from '../semantics/model';
 import { toPlainText, typeToPlainText } from '../semantics/render';
 import { Branch, Leaf, Rose, Tree } from '../tree';
 
-export interface DenotationRender {
+export interface RenderedDenotation {
 	draw: (
 		ctx: CanvasRenderingContext2D,
 		centerX: number,
@@ -17,7 +17,7 @@ interface PlacedLeafBase {
 	depth: 0;
 	width: number;
 	label: string;
-	denotation?: DenotationRender;
+	denotation?: RenderedDenotation;
 	id?: string;
 	movedTo?: string;
 }
@@ -37,7 +37,7 @@ export interface PlacedBranch {
 	depth: number;
 	width: number;
 	label: string;
-	denotation?: DenotationRender;
+	denotation?: RenderedDenotation;
 	distanceBetweenChildren: number;
 	children: PlacedTree[];
 }
@@ -50,7 +50,7 @@ function getLabel(tree: Tree | DTree): string {
 		: tree.label;
 }
 
-export function denotationRenderText(denotation: Expr): DenotationRender {
+export function denotationRenderText(denotation: Expr): RenderedDenotation {
 	const text = toPlainText(denotation);
 	return {
 		draw(ctx, centerX, bottomY, color) {
@@ -123,7 +123,7 @@ function layerExtents(tree: PlacedTree): { left: number; right: number }[] {
 export function makePlacedBranch(
 	ctx: CanvasRenderingContext2D,
 	label: string,
-	denotation: DenotationRender | undefined,
+	denotation: RenderedDenotation | undefined,
 	children: PlacedTree[],
 ): PlacedBranch {
 	const depth = Math.max(...children.map(c => c.depth)) + 1;

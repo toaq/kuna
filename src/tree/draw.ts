@@ -2,7 +2,7 @@ import { createCanvas, CanvasRenderingContext2D, Canvas } from 'canvas';
 import { DTree } from '../semantics/model';
 import { Tree } from '../tree';
 import {
-	DenotationRender,
+	RenderedDenotation,
 	PlacedBranch,
 	PlacedLeaf,
 	PlacedTree,
@@ -39,20 +39,17 @@ const themes: Record<ThemeName, Theme> = {
 	},
 };
 
-interface DrawState {
-	extent: { minX: number; maxX: number; minY: number; maxY: number };
-	locations: Map<string, Location>;
-	arrows: Array<[string, string]>;
-}
-
 class TreeDrawer {
-	private canvas: Canvas;
-	private ctx: CanvasRenderingContext2D;
-	private state: DrawState;
-	private rootX: number;
-	private rootY: number;
 	private margin = 40;
 	private layerHeight = 100;
+
+	private canvas: Canvas;
+	private ctx: CanvasRenderingContext2D;
+	private rootX: number;
+	private rootY: number;
+	private extent: { minX: number; maxX: number; minY: number; maxY: number };
+	private locations: Map<string, Location> = new Map();
+	private arrows: Array<[string, string]> = [];
 
 	constructor(private theme: Theme) {
 		const width = 8400;
@@ -65,15 +62,11 @@ class TreeDrawer {
 		this.ctx.textAlign = 'center';
 		this.rootX = this.canvas.width / 2;
 		this.rootY = this.margin;
-		this.state = {
-			extent: {
-				minX: this.rootX,
-				maxX: this.rootX,
-				minY: this.rootY,
-				maxY: this.rootY,
-			},
-			locations: new Map(),
-			arrows: [],
+		this.extent = {
+			minX: this.rootX,
+			maxX: this.rootX,
+			minY: this.rootY,
+			maxY: this.rootY,
 		};
 	}
 
@@ -87,7 +80,7 @@ class TreeDrawer {
 	}
 
 	private drawText(
-		text: string | DenotationRender,
+		text: string | RenderedDenotation,
 		x: number,
 		y: number,
 		color: string,
@@ -97,20 +90,18 @@ class TreeDrawer {
 			text.draw(this.ctx, x, y, color);
 			width = text.width(this.ctx);
 		} else {
-			y += 18;
 			this.ctx.fillStyle = color;
-			this.ctx.fillText(text, x, y);
+			this.ctx.fillText(text, x, y + 18);
 			width = this.ctx.measureText(text).width;
 		}
-		const margin = 40;
-		const minX = x - width / 2 - margin;
-		if (minX < this.state.extent.minX) this.state.extent.minX = minX;
-		const maxX = x + width / 2 + margin;
-		if (maxX > this.state.extent.maxX) this.state.extent.maxX = maxX;
-		const minY = y - margin;
-		if (minY < this.state.extent.minY) this.state.extent.minY = minY;
-		const maxY = y + margin;
-		if (maxY > this.state.extent.maxY) this.state.extent.maxY = maxY;
+		const minX = x - width / 2 - this.margin;
+		if (minX < this.extent.minX) this.extent.minX = minX;
+		const maxX = x + width / 2 + this.margin;
+		if (maxX > this.extent.maxX) this.extent.maxX = maxX;
+		const minY = y - this.margin;
+		if (minY < this.extent.minY) this.extent.minY = minY;
+		const maxY = y + this.margin;
+		if (maxY > this.extent.maxY) this.extent.maxY = maxY;
 	}
 
 	private drawLeaf(x: number, y: number, tree: PlacedLeaf): void {
@@ -131,9 +122,9 @@ class TreeDrawer {
 		if (tree.id) {
 			const width = this.ctx.measureText(tree.word ?? '').width;
 			const location = { x, y: y + 120, width };
-			this.state.locations.set(tree.id, location);
+			this.locations.set(tree.id, location);
 			if (tree.movedTo) {
-				this.state.arrows.push([tree.id, tree.movedTo]);
+				this.arrows.push([tree.id, tree.movedTo]);
 			}
 		}
 	}
@@ -163,10 +154,10 @@ class TreeDrawer {
 	private drawArrows() {
 		this.ctx.strokeStyle = this.theme.textColor;
 		this.ctx.lineWidth = 1;
-		for (const [i, j] of this.state.arrows) {
+		for (const [i, j] of this.arrows) {
 			this.ctx.beginPath();
-			const start = this.state.locations.get(i)!;
-			const end = this.state.locations.get(j)!;
+			const start = this.locations.get(i)!;
+			const end = this.locations.get(j)!;
 			const x0 = start.x - start.width / 2 - 15;
 			const y0 = start.y;
 			const x1 = end.x;
@@ -181,7 +172,7 @@ class TreeDrawer {
 	}
 
 	private fitCanvasToContents() {
-		const { minX, maxX, minY, maxY } = this.state.extent;
+		const { minX, maxX, minY, maxY } = this.extent;
 		const cropWidth = maxX - minX;
 		const cropHeight = maxY - minY;
 		const temp = this.ctx.getImageData(minX, minY, cropWidth, cropHeight);
