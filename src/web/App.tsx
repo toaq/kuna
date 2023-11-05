@@ -3,7 +3,7 @@ import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 import classNames from 'classnames';
 import { boxify } from '../boxes';
 import { compact } from '../compact';
-import { pngDrawTree } from '../draw-tree';
+import { pngDrawTree } from '../tree/draw';
 import { toEnglish } from '../english/tree';
 import { fix } from '../fix';
 import { Glosser } from '../gloss';

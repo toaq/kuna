@@ -10,7 +10,7 @@ import {
 import _ from 'lodash';
 import toaduaDump from '../../data/toadua/dump.json';
 import { dictionary } from '../dictionary';
-import { pngDrawTree } from '../draw-tree';
+import { pngDrawTree } from '../tree/draw';
 import { parse } from '../parse';
 import { pngGlossSentence } from '../png-gloss';
 import { toEnglish } from '../english/tree';

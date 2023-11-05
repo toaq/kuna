@@ -6,7 +6,7 @@ import { pngGlossSentence } from './png-gloss';
 import { Tree } from './tree';
 import { fix } from './fix';
 import { compact } from './compact';
-import { pngDrawTree } from './draw-tree';
+import { pngDrawTree } from './tree/draw';
 import { parse } from './parse';
 import { textual_tree_from_json } from './textual-tree';
 import { testSentences } from './test-sentences';
