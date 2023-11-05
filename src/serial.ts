@@ -97,12 +97,19 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 				right: { label: 'VP', left: verbs[0], right: args[0] },
 			};
 		} else if (arity === 2) {
+			const littleV =
+				'word' in verbs[0] &&
+				!verbs[0].word.covert &&
+				verbs[0].word.entry?.type === 'predicate' &&
+				verbs[0].word.entry.subject === 'agent'
+					? 'CAUSE'
+					: 'BE';
 			return {
 				label: '𝘷P',
 				left: args[0],
 				right: {
 					label: "𝘷'",
-					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
+					left: { label: '𝘷', word: { covert: true, value: littleV } },
 					right: { label: 'VP', left: verbs[0], right: args[1] },
 				},
 			};

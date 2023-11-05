@@ -43,20 +43,16 @@ import {
 
 function denoteVerb(toaq: string, arity: number): Expr {
 	switch (arity) {
+		case 0:
+			return λ('v', ['s'], c => verb(toaq, [], v(0, c), v(1, c)));
 		case 1:
-			const entry = dictionary.get(toaq);
-			if (entry?.type === 'predicate' && entry.subject === 'agent') {
-				return λ('v', ['s'], c => verb(toaq, [], v(0, c), v(1, c)));
-			}
-		// Otherwise fall through: unaccusative intransitives and transitives are denoted the same.
-		case 2:
 			return λ('e', ['s'], c =>
 				λ('v', c, c => verb(toaq, [v(1, c)], v(0, c), v(2, c))),
 			);
-		case 3:
+		case 2:
 			return λ('e', ['s'], c =>
 				λ('e', c, c =>
-					λ('v', c, c => verb(toaq, [v(2, c), v(1, c)], v(0, c), v(3, c))),
+					λ('v', c, c => verb(toaq, [v(1, c), v(2, c)], v(0, c), v(3, c))),
 				),
 			);
 		default:
@@ -97,7 +93,11 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (!entry) throw new Unrecognized('verb: ' + leaf.word.text);
 		if (entry.type !== 'predicate') throw new Impossible('non-predicate V');
 
-		denotation = denoteVerb(entry.toaq, entry.frame.split(' ').length);
+		denotation = denoteVerb(
+			entry.toaq,
+			// Agents are external to the verb, so not counted in the arity
+			entry.frame.split(' ').length - (entry.subject === 'agent' ? 1 : 0),
+		);
 	} else if (leaf.label === 'DP') {
 		if (leaf.word.covert) {
 			[denotation] = dps.hóa;
