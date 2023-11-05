@@ -5,8 +5,10 @@ export function testSentences(
 	onlyPrintFailures: boolean,
 	procedure?: (sentence: string) => string,
 ) {
-	// const files = ['data/refgram-sentences.txt', 'data/a-sentences.txt'];
-	const files = ['data/refgram-sentences.txt'];
+	const files = [
+		'data/sentences/refgram.txt',
+		// 'data/sentences/a.txt',
+	];
 	const sentences = files.flatMap(x =>
 		fs.readFileSync(x).toString('utf-8').trim().split('\n'),
 	);
