@@ -136,6 +136,16 @@ test('it tokenizes sentences', () => {
 
 	tokenizer.reset('Âo ꝡä zudeq jí Tóaqzu, nä jaı jí.');
 	expect(tokenizer.next()!.type).toEqual('modality_with_complement');
+
+	tokenizer.reset('Mụcho jí zạ́faq.');
+	expect(tokenizer.tokens).toEqual([
+		{ type: 'prefix', value: 'mu-', index: 0 },
+		{ type: 'predicate', value: 'cho', index: 0 },
+		{ type: 'pronoun', value: 'jí', index: 6 },
+		{ type: 'determiner', value: '◌́', index: 9 },
+		{ type: 'prefix_aspect', value: 'za-', index: 9 },
+		{ type: 'predicate', value: 'faq', index: 9 },
+	]);
 });
 
 test('it keeps capitalization', () => {

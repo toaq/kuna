@@ -128,6 +128,7 @@ export class ToaqTokenizer {
 		this.pos = 0;
 		for (const m of [...text.matchAll(/[\p{L}\p{N}\p{Diacritic}-]+/gu)]) {
 			const { prefixes, root } = splitPrefixes(m[0]);
+			const wordTokens: ToaqToken[] = [];
 			for (const tokenText of [...prefixes.map(p => p + '-'), root]) {
 				const lemmaForm = clean(tokenText);
 				if (!lemmaForm) {
@@ -136,7 +137,7 @@ export class ToaqTokenizer {
 				const exactEntry = dictionary.get(lemmaForm);
 
 				if (exactEntry) {
-					this.tokens.push({
+					wordTokens.push({
 						type: exactEntry.type.replace(/ /g, '_'),
 						value: tokenText,
 						index: m.index,
@@ -148,12 +149,12 @@ export class ToaqTokenizer {
 				const entry = dictionary.get(base);
 				const wordTone = tone(tokenText);
 				if (entry) {
-					this.tokens.push({
+					wordTokens.unshift({
 						type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
 						value: wordTone === Tone.T2 ? '◌́' : '◌̂',
 						index: m.index,
 					});
-					this.tokens.push({
+					wordTokens.push({
 						type: entry.type.replace(/ /g, '_'),
 						value: inTone(tokenText, tone(base)),
 						index: m.index,
@@ -161,24 +162,25 @@ export class ToaqTokenizer {
 					continue;
 				}
 				if (wordTone === Tone.T1) {
-					this.tokens.push({
+					wordTokens.push({
 						type: 'predicate',
 						value: tokenText,
 						index: m.index,
 					});
 				} else {
-					this.tokens.push({
+					wordTokens.unshift({
 						type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
 						value: wordTone === Tone.T2 ? '◌́' : '◌̂',
 						index: m.index,
 					});
-					this.tokens.push({
+					wordTokens.push({
 						type: 'predicate',
 						value: inTone(tokenText, tone(base)),
 						index: m.index,
 					});
 				}
 			}
+			this.tokens.push(...wordTokens);
 		}
 	}
 	next(): ToaqToken | undefined {
