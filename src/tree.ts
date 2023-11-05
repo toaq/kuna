@@ -196,7 +196,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 				distribution: 'd',
 				frame: '',
 				english: '',
-				agent_subject: false,
+				subject: 'free',
 			},
 	};
 }

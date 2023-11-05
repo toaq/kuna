@@ -76,7 +76,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			'word' in verbs[0] &&
 			!verbs[0].word.covert &&
 			verbs[0].word.entry?.type === 'predicate' &&
-			verbs[0].word.entry.agent_subject
+			verbs[0].word.entry.subject === 'agent'
 		) {
 			return {
 				label: '𝘷P',
@@ -148,7 +148,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			'word' in verbs[0] &&
 			!verbs[0].word.covert &&
 			verbs[0].word.entry?.type === 'predicate' &&
-			verbs[0].word.entry.agent_subject
+			verbs[0].word.entry.subject === 'agent'
 		) {
 			return {
 				label: '𝘷P',

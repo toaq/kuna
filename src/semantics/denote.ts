@@ -45,7 +45,7 @@ function denoteVerb(toaq: string, arity: number): Expr {
 	switch (arity) {
 		case 1:
 			const entry = dictionary.get(toaq);
-			if (entry?.type === 'predicate' && entry.agent_subject) {
+			if (entry?.type === 'predicate' && entry.subject === 'agent') {
 				return λ('v', ['s'], c => verb(toaq, [], v(0, c), v(1, c)));
 			}
 		// Otherwise fall through: unaccusative intransitives and transitives are denoted the same.

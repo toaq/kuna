@@ -69,6 +69,14 @@ export type PronominalClass =
 	| 'ta_strong'
 	| 'ze';
 
+export type SubjectType =
+	| 'event'
+	| 'proposition'
+	| 'individual'
+	| 'agent'
+	| 'free'
+	| 'shape';
+
 export interface BaseEntry {
 	toaq: string;
 	english: string;
@@ -81,7 +89,7 @@ export interface VerbEntry extends BaseEntry {
 	frame: string;
 	distribution: string;
 	pronominal_class: PronominalClass | '';
-	agent_subject: boolean;
+	subject: SubjectType;
 }
 
 export interface NonVerbEntry extends BaseEntry {
