@@ -2,6 +2,7 @@ import { ReactElement, useState, useEffect, ReactNode } from 'react';
 import { BoxClause, BoxSentence, PostField } from '../boxes';
 import './Boxes.css';
 import { useDarkMode } from 'usehooks-ts';
+import { Glosser } from '../gloss';
 
 interface BoxProps {
 	color: string;
@@ -26,23 +27,38 @@ function Box(props: BoxProps) {
 	);
 }
 
+function Toaq(props: { children: string }) {
+	const { children } = props;
+	return (
+		<div className="boxes-text">
+			<div className="boxes-toaq">{children}</div>
+			<div className="boxes-english">
+				{new Glosser(true)
+					.glossSentence(children)
+					.map(x => x.english)
+					.join(' ')}
+			</div>
+		</div>
+	);
+}
+
 function PostFieldBox(props: { postField: PostField }) {
 	const { earlyAdjuncts, arguments: args, lateAdjuncts } = props.postField;
 	return (
 		<Box color="#ffcc00" label="Post-field">
 			{earlyAdjuncts.map((a, i) => (
 				<Box key={i} color="purple" label="Adjunct">
-					<div className="boxes-toaq">{a}</div>
+					<Toaq>{a}</Toaq>
 				</Box>
 			))}
 			{args.map((a, i) => (
 				<Box key={i} color="teal" label="Argument">
-					<div className="boxes-toaq">{a}</div>
+					<Toaq>{a}</Toaq>
 				</Box>
 			))}
 			{lateAdjuncts.map((a, i) => (
 				<Box key={i} color="purple" label="Adjunct">
-					<div className="boxes-toaq">{a}</div>
+					<Toaq>{a}</Toaq>
 				</Box>
 			))}
 		</Box>
@@ -54,7 +70,7 @@ function ClauseInner(props: { clause: BoxClause }) {
 	return (
 		<>
 			<Box color="green" label="Verbal complex">
-				<div className="boxes-toaq">{verbalComplex}</div>
+				<Toaq>{verbalComplex}</Toaq>
 			</Box>
 			{postField.earlyAdjuncts.length +
 			postField.arguments.length +
@@ -64,7 +80,7 @@ function ClauseInner(props: { clause: BoxClause }) {
 			{conjunction && (
 				<>
 					<Box color="gray" label="Conjunction">
-						<div className="boxes-toaq">{conjunction.word}</div>
+						<Toaq>{conjunction.word}</Toaq>
 					</Box>
 					<ClauseInner clause={conjunction.clause} />
 				</>
@@ -78,16 +94,16 @@ function ClauseBox(props: { clause: BoxClause }) {
 	return (
 		<Box color="red" label="Clause">
 			<Box color="orange" label="Comp.">
-				<div className="boxes-toaq">{complementizer}</div>
+				<Toaq>{complementizer}</Toaq>
 			</Box>
 			{topic && (
 				<Box color="aqua" label="Topic">
-					<div className="boxes-toaq">{topic}</div>
+					<Toaq>{topic}</Toaq>
 				</Box>
 			)}
 			{subject && (
 				<Box color="aqua" label="Subject">
-					<div className="boxes-toaq">{subject}</div>
+					<Toaq>{subject}</Toaq>
 				</Box>
 			)}
 			<ClauseInner clause={props.clause} />
@@ -101,7 +117,7 @@ export function Boxes(props: { sentence: BoxSentence }) {
 		<Box color="blue" label="Sentence">
 			<ClauseBox clause={clause} />
 			<Box color="gray" label="Speech act">
-				<div className="boxes-toaq">{speechAct}</div>
+				<Toaq>{speechAct}</Toaq>
 			</Box>
 		</Box>
 	);

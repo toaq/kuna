@@ -16,11 +16,20 @@
 	margin: 2px 4px;
 }
 
-.boxes-toaq {
+.boxes-text {
 	flex: 1;
 	display: flex;
-	font-weight: bold;
-	justify-content: center;
-	align-items: end;
+	justify-content: end;
+	align-items: center;
 	margin: 2px 4px 8px 4px;
+	display: flex;
+	flex-direction: column;
+}
+
+.boxes-toaq {
+	font-weight: bold;
+}
+
+.boxes-english {
+	font-size: 12px;
 }
