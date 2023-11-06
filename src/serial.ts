@@ -62,6 +62,68 @@ export function getFrame(verb: Tree): string {
 	}
 }
 
+function makevP(verb: Tree, args: Tree[]): Tree {
+	const agent =
+		'word' in verb &&
+		!verb.word.covert &&
+		verb.word.entry?.type === 'predicate' &&
+		verb.word.entry.subject === 'agent';
+
+	if (args.length === 1) {
+		const [subject] = args;
+		if (agent) {
+			if (!('word' in verb))
+				throw new Impossible("Serial tails can't be agents");
+			return {
+				label: '𝘷P',
+				left: subject,
+				right: {
+					label: "𝘷'",
+					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
+					right: { label: 'VP', word: verb.word },
+				},
+			};
+		} else {
+			return {
+				label: '𝘷P',
+				left: { label: '𝘷', word: { covert: true, value: 'BE' } },
+				right: { label: 'VP', left: verb, right: subject },
+			};
+		}
+	} else if (args.length === 2) {
+		const [subject, directObject] = args;
+		return {
+			label: '𝘷P',
+			left: subject,
+			right: {
+				label: "𝘷'",
+				left: {
+					label: '𝘷',
+					word: { covert: true, value: agent ? 'CAUSE' : 'BE' },
+				},
+				right: { label: 'VP', left: verb, right: directObject },
+			},
+		};
+	} else if (args.length === 3) {
+		const [subject, indirectObject, directObject] = args;
+		return {
+			label: '𝘷P',
+			left: subject,
+			right: {
+				label: "𝘷'",
+				left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
+				right: {
+					label: 'VP',
+					left: indirectObject,
+					right: { label: "V'", left: verb, right: directObject },
+				},
+			},
+		};
+	} else {
+		throw new Impossible(`Bad arity ${args.length}`);
+	}
+}
+
 /**
  * Given a *Serial and the arguments from a *𝘷P, make a proper 𝘷P. If there
  * aren't enough arguments this will pad with PRO.
@@ -74,62 +136,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			args.push(makeNull('DP'));
 		}
 
-		if (
-			arity === 1 &&
-			'word' in verbs[0] &&
-			!verbs[0].word.covert &&
-			verbs[0].word.entry?.type === 'predicate' &&
-			verbs[0].word.entry.subject === 'agent'
-		) {
-			return {
-				label: '𝘷P',
-				left: args[0],
-				right: {
-					label: "𝘷'",
-					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
-					right: { label: 'VP', word: verbs[0].word },
-				},
-			};
-		} else if (arity === 1) {
-			return {
-				label: '𝘷P',
-				left: { label: '𝘷', word: { covert: true, value: 'BE' } },
-				right: { label: 'VP', left: verbs[0], right: args[0] },
-			};
-		} else if (arity === 2) {
-			const littleV =
-				'word' in verbs[0] &&
-				!verbs[0].word.covert &&
-				verbs[0].word.entry?.type === 'predicate' &&
-				verbs[0].word.entry.subject === 'agent'
-					? 'CAUSE'
-					: 'BE';
-			return {
-				label: '𝘷P',
-				left: args[0],
-				right: {
-					label: "𝘷'",
-					left: { label: '𝘷', word: { covert: true, value: littleV } },
-					right: { label: 'VP', left: verbs[0], right: args[1] },
-				},
-			};
-		} else if (arity === 3) {
-			return {
-				label: '𝘷P',
-				left: args[0],
-				right: {
-					label: "𝘷'",
-					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
-					right: {
-						label: 'VP',
-						left: args[1],
-						right: { label: "V'", left: verbs[0], right: args[2] },
-					},
-				},
-			};
-		} else {
-			throw new Impossible('bad arity');
-		}
+		return makevP(verbs[0], args);
 	} else {
 		const frame = firstFrame.replace(/a/g, 'c').split(' ');
 		for (let i = 0; i < frame.length - 1; i++) {
@@ -164,57 +171,8 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			args.push(makeNull('DP'));
 		}
 		const innerArgs: Tree[] = [...pros, ...args.slice(cCount)];
-		const inner = serialTovP(verbs.slice(1), innerArgs);
-		const arity = frame.length;
-		if (
-			arity === 1 &&
-			'word' in verbs[0] &&
-			!verbs[0].word.covert &&
-			verbs[0].word.entry?.type === 'predicate' &&
-			verbs[0].word.entry.subject === 'agent'
-		) {
-			return {
-				label: '𝘷P',
-				left: args[0],
-				right: {
-					label: "𝘷'",
-					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
-					right: inner,
-				},
-			};
-		} else if (arity === 1) {
-			return {
-				label: '𝘷P',
-				left: { label: '𝘷', word: { covert: true, value: 'BE' } },
-				right: { label: 'VP', left: verbs[0], right: inner },
-			};
-		} else if (arity === 2) {
-			return {
-				label: '𝘷P',
-				left: args[0],
-				right: {
-					label: "𝘷'",
-					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
-					right: { label: 'VP', left: verbs[0], right: inner },
-				},
-			};
-		} else if (arity === 3) {
-			return {
-				label: '𝘷P',
-				left: args[0],
-				right: {
-					label: "𝘷'",
-					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
-					right: {
-						label: 'VP',
-						left: args[1],
-						right: { label: "V'", left: verbs[0], right: inner },
-					},
-				},
-			};
-		} else {
-			throw new Impossible('bad arity ' + arity);
-		}
+		args.push(serialTovP(verbs.slice(1), innerArgs));
+		return makevP(verbs[0], args);
 	}
 }
 
