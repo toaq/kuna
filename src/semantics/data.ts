@@ -521,3 +521,8 @@ export const quantifiers: Partial<Record<CovertValue, Expr>> = {
 		),
 	),
 };
+
+// λ𝘗. λ𝘦. ∃𝘦'. 𝘗(𝘦)(𝘦')
+export const eventiveAdjunct = λ(['e', ['v', 't']], [], c =>
+	λ('v', c, c => some('v', c, c => app(app(v(2, c), v(1, c)), v(0, c)))),
+);

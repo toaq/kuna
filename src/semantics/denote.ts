@@ -1,4 +1,4 @@
-import { VerbEntry, dictionary } from '../dictionary';
+import { VerbEntry } from '../dictionary';
 import { Impossible, Unimplemented, Unrecognized } from '../error';
 import { Branch, Leaf, StrictTree, Word } from '../tree';
 import {
@@ -10,6 +10,7 @@ import {
 	covertLittleVs,
 	defaultTense,
 	dps,
+	eventiveAdjunct,
 	overtLittleVs,
 	polarities,
 	quantifiers,
@@ -27,7 +28,7 @@ import {
 	v,
 	verb,
 	λ,
-	typesEqual,
+	subtype,
 	AnimacyClass,
 } from './model';
 import {
@@ -151,6 +152,9 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			denotation = overtLittleVs[toaq];
 			if (denotation === undefined) throw new Unrecognized(`𝘷: ${toaq}`);
 		}
+	} else if (leaf.label === 'Adjunct') {
+		// TODO: Subject-sharing adjuncts
+		denotation = eventiveAdjunct;
 	} else if (leaf.label === 'Asp') {
 		let toaq: string;
 		if (leaf.word.covert) {
@@ -181,8 +185,6 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		const toaq = leaf.word.entry.toaq.replace(/-$/, '');
 		denotation = polarities[toaq];
 		if (denotation === undefined) throw new Unrecognized(`Σ: ${toaq}`);
-	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
-		denotation = null;
 	} else if (leaf.label === 'SA') {
 		let toaq: string;
 		if (leaf.word.covert) {
@@ -203,6 +205,8 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		const data = quantifiers[value];
 		if (data === undefined) throw new Unrecognized(`Q: ${value}`);
 		denotation = data;
+	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
+		denotation = null;
 	} else {
 		throw new Unimplemented(`TODO: ${leaf.label}`);
 	}
@@ -231,9 +235,9 @@ function functionalApplication_(
 	} else if (argument.denotation === null) {
 		({ denotation, bindings } = fn);
 	} else {
-		const compatibleArgument = typesEqual(
-			(fn.denotation.type as [ExprType, ExprType])[0],
+		const compatibleArgument = subtype(
 			argument.denotation.type,
+			(fn.denotation.type as [ExprType, ExprType])[0],
 		)
 			? argument
 			: makeWorldExplicit(argument);
@@ -299,10 +303,10 @@ const eventIdentification: CompositionRule = (branch, left, right) => {
 };
 
 // λ𝘗. λ𝘘. λ𝘢. 𝘗(𝘢) ∧ 𝘘(𝘢)
-const predicateModificationTemplate = (context: ExprType[]) =>
-	λ(['e', 't'], context, c =>
-		λ(['e', 't'], c, c =>
-			λ('e', c, c => and(app(v(2, c), v(0, c)), app(v(1, c), v(0, c)))),
+const predicateModificationTemplate = (type: ExprType, context: ExprType[]) =>
+	λ([type, 't'], context, c =>
+		λ([type, 't'], c, c =>
+			λ(type, c, c => and(app(v(2, c), v(0, c)), app(v(1, c), v(0, c)))),
 		),
 	);
 
@@ -317,7 +321,16 @@ const predicateModification: CompositionRule = (branch, left, right) => {
 	} else {
 		const [l, r, b] = unifyDenotations(left, right);
 		denotation = reduce(
-			app(app(predicateModificationTemplate(l.context), l), r),
+			app(
+				app(
+					predicateModificationTemplate(
+						(l.type as [ExprType, ExprType])[0],
+						l.context,
+					),
+					l,
+				),
+				r,
+			),
 		);
 		bindings = b;
 	}
@@ -537,6 +550,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'V':
 		case 'Asp':
 		case 'Σ':
+		case 'Adjunct':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -545,7 +559,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 				: reverseFunctionalApplication;
 		case '𝘷':
 			return left.denotation !== null &&
-				typesEqual(left.denotation.type, ['e', ['v', 't']])
+				subtype(left.denotation.type, ['e', ['v', 't']])
 				? eventIdentification
 				: functionalApplication;
 		case 'C':
@@ -560,6 +574,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 			return qComposition;
 		case 'QP':
 			return predicateAbstraction;
+		case 'AdjunctP':
+			return predicateModification;
 	}
 
 	switch (right.label) {
@@ -568,6 +584,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case "V'":
 			return reverseFunctionalApplication;
 		case 'CPrel':
+		case 'AdjunctP':
 			return predicateModification;
 	}
 

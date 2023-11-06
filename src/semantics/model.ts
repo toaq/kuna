@@ -202,23 +202,26 @@ export type DTree = (Leaf | Branch<DTree>) & {
 	bindings: Bindings;
 };
 
-export function typesEqual(t1: ExprType, t2: ExprType): boolean {
+/**
+ * Determines whether the first type is a subtype of the second.
+ */
+export function subtype(t1: ExprType, t2: ExprType): boolean {
 	if (typeof t1 === 'string' || typeof t2 === 'string') {
-		return t1 === t2;
+		return t1 === t2 || (t1 === 'v' && t2 === 'e');
 	} else {
-		return t1 === t2 || (typesEqual(t1[0], t2[0]) && typesEqual(t1[1], t2[1]));
+		return t1 === t2 || (subtype(t2[0], t1[0]) && subtype(t1[1], t2[1]));
 	}
 }
 
-export function assertTypesEqual(t1: ExprType, t2: ExprType): void {
-	if (!typesEqual(t1, t2))
-		throw new Impossible(`Types ${t1} and ${t2} are not equal`);
+export function assertSubtype(t1: ExprType, t2: ExprType): void {
+	if (!subtype(t1, t2))
+		throw new Impossible(`Type ${t1} is not assignable to type ${t2}`);
 }
 
 export function contextsEqual(c1: ExprType[], c2: ExprType[]): boolean {
 	return (
 		c1 === c2 ||
-		(c1.length === c2.length && c1.every((t, i) => typesEqual(t, c2[i])))
+		(c1.length === c2.length && c1.every((t, i) => subtype(t, c2[i])))
 	);
 }
 
@@ -253,7 +256,7 @@ export function λ(
 	let restrictionResult = undefined;
 	if (restriction !== undefined) {
 		restrictionResult = restriction(innerContext);
-		assertTypesEqual(restrictionResult.type, 't');
+		assertSubtype(restrictionResult.type, 't');
 		assertContextsEqual(restrictionResult.context, innerContext);
 	}
 
@@ -272,7 +275,7 @@ export function λ(
 export function app(fn: Expr, argument: Expr): Expr {
 	if (!Array.isArray(fn.type)) throw new Impossible(`${fn} is not a function`);
 	const [inputType, outputType] = fn.type;
-	assertTypesEqual(inputType, argument.type);
+	assertSubtype(argument.type, inputType);
 	assertContextsEqual(fn.context, argument.context);
 
 	return { head: 'apply', type: outputType, context: fn.context, fn, argument };
@@ -284,8 +287,8 @@ export function verb(
 	event: Expr,
 	world: Expr,
 ): Expr {
-	assertTypesEqual(event.type, 'v');
-	assertTypesEqual(world.type, 's');
+	assertSubtype(event.type, 'v');
+	assertSubtype(world.type, 's');
 	for (const arg of args) assertContextsEqual(arg.context, event.context);
 	assertContextsEqual(event.context, world.context);
 
@@ -301,7 +304,7 @@ export function verb(
 }
 
 export function presuppose(body: Expr, presupposition: Expr): Expr {
-	assertTypesEqual(presupposition.type, 't');
+	assertSubtype(presupposition.type, 't');
 	assertContextsEqual(body.context, presupposition.context);
 
 	return {
@@ -320,8 +323,8 @@ export function infix(
 	left: Expr,
 	right: Expr,
 ): Expr {
-	assertTypesEqual(left.type, inputType);
-	assertTypesEqual(right.type, inputType);
+	assertSubtype(left.type, inputType);
+	assertSubtype(right.type, inputType);
 	assertContextsEqual(left.context, right.context);
 
 	return {
@@ -350,7 +353,7 @@ export function polarizer(
 	name: (Expr & { head: 'polarizer' })['name'],
 	body: Expr,
 ): Expr {
-	assertTypesEqual(body.type, 't');
+	assertSubtype(body.type, 't');
 
 	return { head: 'polarizer', type: 't', context: body.context, name, body };
 }
@@ -372,13 +375,13 @@ export function quantifier(
 ): Expr {
 	const innerContext = [domain, ...context];
 	const bodyResult = body(innerContext);
-	assertTypesEqual(bodyResult.type, 't');
+	assertSubtype(bodyResult.type, 't');
 	assertContextsEqual(bodyResult.context, innerContext);
 
 	let restrictionResult = undefined;
 	if (restriction !== undefined) {
 		restrictionResult = restriction(innerContext);
-		assertTypesEqual(restrictionResult.type, 't');
+		assertSubtype(restrictionResult.type, 't');
 		assertContextsEqual(restrictionResult.context, innerContext);
 	}
 
@@ -438,7 +441,10 @@ export function gen(
 }
 
 export function equals(left: Expr, right: Expr): Expr {
-	assertTypesEqual(left.type, right.type);
+	if (!(subtype(left.type, right.type) || subtype(right.type, left.type)))
+		throw new Impossible(
+			`Types ${left.type} and ${right.type} are not compatible`,
+		);
 	assertContextsEqual(left.context, right.context);
 
 	return {

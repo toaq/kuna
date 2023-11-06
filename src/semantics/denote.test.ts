@@ -257,3 +257,14 @@ test('it denotes polarizers', () => {
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nue.w(λ𝘸. †∃𝘦'. τ(𝘦') ⊆ t ∧ choaq.𝘸(jí, súna)(𝘦'))(𝘦) | t > t0\"",
 	);
 });
+
+test('it denotes adjuncts', () => {
+	// Eventive adjuncts
+	expect(d('Za nuo tî ní kua jí')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') > t' ∧ (∃𝘦''. tı.𝘸(𝘦', a)(𝘦'')) ∧ nuo.𝘸(jí)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ kua.𝘸(a)(𝘦')))(𝘦) | abstract(a)\"",
+	);
+	expect(d('Za nuo jí tî ní kua')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') > t' ∧ nuo.𝘸(jí)(𝘦') ∧ ∃𝘦''. tı.𝘸(𝘦', a)(𝘦'') | ∃𝘦'. τ(𝘦') ⊆ t ∧ kua.𝘸(a)(𝘦')))(𝘦) | abstract(a)\"",
+	);
+	// TODO: Subject-sharing adjuncts
+});
