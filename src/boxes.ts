@@ -60,13 +60,20 @@ function words(tree: Tree): string {
 	}
 }
 
+function isArgument(tree: Tree): boolean {
+	while ('right' in tree && (tree.label === 'FocusP' || tree.label === '&P')) {
+		tree = tree.right;
+	}
+	return tree.label === 'DP' || tree.label === 'CP';
+}
+
 function boxifyPostField(trees: Tree[]): PostField {
 	let sawArgument = false;
 	let earlyAdjuncts: string[] = [];
 	let arguments_: string[] = [];
 	let lateAdjuncts: string[] = [];
 	for (const tree of trees) {
-		if (tree.label === 'DP' || tree.label === 'CP') {
+		if (isArgument(tree)) {
 			arguments_.push(words(tree));
 			sawArgument = true;
 		} else if (sawArgument) {
