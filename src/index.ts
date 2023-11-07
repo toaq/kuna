@@ -12,7 +12,6 @@ import { textual_tree_from_json } from './textual-tree';
 import { testSentences } from './test-sentences';
 import { denote } from './semantics/denote';
 import { ToaqTokenizer } from './tokenize';
-import { boxSentenceToMarkdown } from './boxes';
 import { toEnglish } from './english/tree';
 
 function getTrees(argv: {

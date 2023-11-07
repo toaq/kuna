@@ -1,8 +1,34 @@
-import { ReactElement, useState, useEffect, ReactNode } from 'react';
-import { BoxClause, BoxSentence, PostField, circled } from '../boxes';
+import {
+	ReactElement,
+	useState,
+	useEffect,
+	ReactNode,
+	createContext,
+	useContext,
+} from 'react';
+import {
+	BoxClause,
+	BoxSentence,
+	PostField,
+	circled,
+	repairTones,
+} from '../boxes';
 import './Boxes.css';
 import { useDarkMode } from 'usehooks-ts';
 import { Glosser } from '../gloss';
+import { Tree } from '../tree';
+
+interface BoxesContext {
+	cpIndices: Map<Tree, number>;
+	subclauses: BoxClause[];
+	cpStrategy: 'flat' | 'nest' | 'split';
+}
+
+const boxesContext = createContext<BoxesContext>({
+	cpIndices: new Map(),
+	subclauses: [],
+	cpStrategy: 'split',
+});
 
 interface BoxProps {
 	color: string;
@@ -27,21 +53,70 @@ function Box(props: BoxProps) {
 	);
 }
 
-function Toaq(props: { children: string }) {
-	const { children } = props;
-	return (
-		<div className="boxes-text">
-			<div className="boxes-toaq">{children}</div>
-			<div className="boxes-english">
-				{/[a-z]/.test(children)
-					? new Glosser(true)
-							.glossSentence(children)
-							.map(x => x.english)
-							.join(' ')
-					: '\u00a0'}
+function words(tree: Tree): (string | JSX.Element)[] {
+	const context = useContext(boxesContext);
+	if ('word' in tree) {
+		if (tree.word.covert) {
+			return [];
+		} else {
+			return [tree.word.text];
+		}
+	} else if ('left' in tree) {
+		const cpIndex = context.cpIndices.get(tree);
+		if (context.cpStrategy !== 'flat' && cpIndex !== undefined) {
+			return context.cpStrategy === 'nest'
+				? [<ClauseBox clause={context.subclauses[cpIndex - 1]} />]
+				: [circled(cpIndex)];
+		}
+		return [...words(tree.left), ...words(tree.right)];
+	} else {
+		return tree.children.flatMap(words);
+	}
+}
+
+function gluedWords(tree: Tree): (string | JSX.Element)[] {
+	const glued: (string | JSX.Element)[] = [];
+	for (const w of words(tree)) {
+		if (
+			typeof w === 'string' &&
+			glued.length &&
+			typeof glued[glued.length - 1] === 'string'
+		) {
+			glued[glued.length - 1] = repairTones(
+				glued[glued.length - 1] + ' ' + w,
+			).trim();
+		} else {
+			glued.push(w);
+		}
+	}
+	return glued;
+}
+
+function Segment(props: { segment: string | JSX.Element }) {
+	if (typeof props.segment === 'string') {
+		return (
+			<div className="boxes-text">
+				<div className="boxes-toaq">{props.segment}</div>
+				<div className="boxes-english">
+					{/[a-z]/.test(props.segment)
+						? new Glosser(true)
+								.glossSentence(props.segment)
+								.map(x => x.english)
+								.join(' ')
+						: '\u00a0'}
+				</div>
 			</div>
-		</div>
-	);
+		);
+	} else {
+		return props.segment;
+	}
+}
+
+function Subtree(props: { tree: Tree }) {
+	// const { children } = props;
+	// const ch = new Boxifier()
+	const children = gluedWords(props.tree);
+	return children.map((x, i) => <Segment key={i} segment={x} />);
 }
 
 function PostFieldBox(props: { postField: PostField }) {
@@ -50,17 +125,17 @@ function PostFieldBox(props: { postField: PostField }) {
 		<Box color="#ffcc00" label="Post-field">
 			{earlyAdjuncts.map((a, i) => (
 				<Box key={i} color="purple" label="Adjunct">
-					<Toaq>{a}</Toaq>
+					<Subtree tree={a} />
 				</Box>
 			))}
 			{args.map((a, i) => (
 				<Box key={i} color="teal" label="Argument">
-					<Toaq>{a}</Toaq>
+					<Subtree tree={a} />
 				</Box>
 			))}
 			{lateAdjuncts.map((a, i) => (
 				<Box key={i} color="purple" label="Adjunct">
-					<Toaq>{a}</Toaq>
+					<Subtree tree={a} />
 				</Box>
 			))}
 		</Box>
@@ -72,7 +147,7 @@ function ClauseInner(props: { clause: BoxClause }) {
 	return (
 		<>
 			<Box color="green" label="Verbal complex">
-				<Toaq>{verbalComplex}</Toaq>
+				<Subtree tree={verbalComplex} />
 			</Box>
 			{postField.earlyAdjuncts.length +
 			postField.arguments.length +
@@ -82,7 +157,7 @@ function ClauseInner(props: { clause: BoxClause }) {
 			{conjunction && (
 				<>
 					<Box color="gray" label="Conjunction">
-						<Toaq>{conjunction.word}</Toaq>
+						<Subtree tree={conjunction.word} />
 					</Box>
 					<ClauseInner clause={conjunction.clause} />
 				</>
@@ -96,16 +171,16 @@ function ClauseBox(props: { clause: BoxClause }) {
 	return (
 		<Box color="red" label="Clause">
 			<Box color="orange" label="Comp.">
-				<Toaq>{complementizer}</Toaq>
+				<Subtree tree={complementizer} />
 			</Box>
 			{topic && (
 				<Box color="aqua" label="Topic">
-					<Toaq>{topic}</Toaq>
+					<Subtree tree={topic} />
 				</Box>
 			)}
 			{subject && (
 				<Box color="aqua" label="Subject">
-					<Toaq>{subject}</Toaq>
+					<Subtree tree={subject} />
 				</Box>
 			)}
 			<ClauseInner clause={props.clause} />
@@ -114,24 +189,31 @@ function ClauseBox(props: { clause: BoxClause }) {
 }
 
 export function Boxes(props: {
-	sentence: BoxSentence;
+	main: BoxSentence;
 	subclauses: BoxClause[];
+	cpIndices: Map<Tree, number>;
+	cpStrategy: 'flat' | 'nest' | 'split';
 }) {
-	const { clause, speechAct } = props.sentence;
+	const { main, subclauses, cpIndices, cpStrategy } = props;
+	const { clause, speechAct } = main;
+	const context: BoxesContext = { cpIndices, subclauses, cpStrategy };
 	return (
-		<ol className="boxes-clause-list" start={1}>
-			<Box color="blue" label="Sentence">
-				<ClauseBox clause={clause} />
-				<Box color="gray" label="Speech act">
-					<Toaq>{speechAct}</Toaq>
-				</Box>
-			</Box>
-			{props.subclauses.map((clause, i) => (
-				<li key={i}>
-					<div className="boxes-clause-number">{circled(i + 1)}</div>
+		<boxesContext.Provider value={context}>
+			<ol className="boxes-clause-list" start={1}>
+				<Box color="blue" label="Sentence">
 					<ClauseBox clause={clause} />
-				</li>
-			))}
-		</ol>
+					<Box color="gray" label="Speech act">
+						<Subtree tree={speechAct} />
+					</Box>
+				</Box>
+				{cpStrategy === 'split' &&
+					props.subclauses.map((clause, i) => (
+						<li key={i}>
+							<div className="boxes-clause-number">{circled(i + 1)}</div>
+							<ClauseBox clause={clause} />
+						</li>
+					))}
+			</ol>
+		</boxesContext.Provider>
 	);
 }

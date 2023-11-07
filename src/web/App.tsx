@@ -18,7 +18,9 @@ import { Boxes } from './Boxes';
 
 type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
 type Mode =
-	| 'boxes'
+	| 'boxes-flat'
+	| 'boxes-nest'
+	| 'boxes-split'
 	| TreeMode
 	| 'gloss'
 	| 'technical-gloss'
@@ -66,10 +68,9 @@ export function App() {
 		return trees[0];
 	}
 
-	function getBoxes(): ReactElement {
+	function getBoxes(strategy: 'flat' | 'nest' | 'split'): ReactElement {
 		const tree = parseInput();
-		const { main, subclauses } = boxify(tree);
-		return <Boxes sentence={main} subclauses={subclauses} />;
+		return <Boxes {...boxify(tree)} cpStrategy={strategy} />;
 	}
 
 	function getTree(mode: TreeMode): ReactElement {
@@ -116,8 +117,12 @@ export function App() {
 
 	function getOutput(mode: Mode): ReactElement {
 		switch (mode) {
-			case 'boxes':
-				return getBoxes();
+			case 'boxes-flat':
+				return getBoxes('flat');
+			case 'boxes-nest':
+				return getBoxes('nest');
+			case 'boxes-split':
+				return getBoxes('split');
 			case 'syntax-tree':
 			case 'compact-tree':
 			case 'semantics-tree':
@@ -175,7 +180,10 @@ export function App() {
 					</button>
 					<button onClick={() => generate('raw-tree')}>Raw tree</button>
 					<br />
-					<button onClick={() => generate('boxes')}>Boxes</button>
+					<button onClick={() => generate('boxes-flat')}>Flat boxes</button>
+					<button onClick={() => generate('boxes-nest')}>Nested boxes</button>
+					<button onClick={() => generate('boxes-split')}>Split boxes</button>
+					<br />
 					<button onClick={() => generate('gloss')}>Gloss</button>
 					<button onClick={() => generate('technical-gloss')}>
 						Technical gloss

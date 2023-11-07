@@ -4,22 +4,22 @@ import { Tone } from './types';
 import { Impossible, Ungrammatical, Unimplemented } from './error';
 
 export interface PostField {
-	earlyAdjuncts: string[];
-	arguments: string[];
-	lateAdjuncts: string[];
+	earlyAdjuncts: Tree[];
+	arguments: Tree[];
+	lateAdjuncts: Tree[];
 }
 
 export interface AndClause {
-	word: string;
+	word: Tree;
 	clause: BoxClause;
 }
 
 export interface BoxClause {
 	/// If empty, means covert "ꝡa"
-	complementizer: string;
-	topic?: string;
-	subject?: string;
-	verbalComplex: string;
+	complementizer: Tree;
+	topic?: Tree;
+	subject?: Tree;
+	verbalComplex: Tree;
 	postField: PostField;
 	conjunction?: AndClause;
 }
@@ -27,10 +27,10 @@ export interface BoxClause {
 export interface BoxSentence {
 	clause: BoxClause;
 	/// If empty, means covert "da"
-	speechAct: string;
+	speechAct: Tree;
 }
 
-function repairTones(text: string): string {
+export function repairTones(text: string): string {
 	return text.replace(/◌(.) (\S+)/g, (m, diacritic, word) => {
 		const tone = diacritic.charCodeAt() === 0x301 ? Tone.T2 : Tone.T4;
 		return inTone(word, tone).normalize();
@@ -57,6 +57,7 @@ function isArgument(tree: Tree): boolean {
 interface SplitBoxes {
 	main: BoxSentence;
 	subclauses: BoxClause[];
+	cpIndices: Map<Tree, number>;
 }
 
 export function circled(i: number): string {
@@ -121,17 +122,17 @@ class Boxifier {
 
 	private boxifyPostField(trees: Tree[]): PostField {
 		let sawArgument = false;
-		let earlyAdjuncts: string[] = [];
-		let arguments_: string[] = [];
-		let lateAdjuncts: string[] = [];
+		let earlyAdjuncts: Tree[] = [];
+		let arguments_: Tree[] = [];
+		let lateAdjuncts: Tree[] = [];
 		for (const tree of trees) {
 			if (isArgument(tree)) {
-				arguments_.push(this.words(tree));
+				arguments_.push(tree);
 				sawArgument = true;
 			} else if (sawArgument) {
-				lateAdjuncts.push(this.words(tree));
+				lateAdjuncts.push(tree);
 			} else {
-				earlyAdjuncts.push(this.words(tree));
+				earlyAdjuncts.push(tree);
 			}
 		}
 
@@ -143,38 +144,36 @@ class Boxifier {
 	}
 
 	private boxifyClause(cp: Tree): BoxClause {
-		let complementizer = '';
-		let topic: string | undefined = undefined;
-		let subject: string | undefined = undefined;
+		let topic: Tree | undefined = undefined;
+		let subject: Tree | undefined = undefined;
 		let verbalComplexWords = [];
 		let postField: PostField | undefined = undefined;
 		let conjunction: AndClause | undefined = undefined;
 		if (!('left' in cp)) throw new Impossible('bad CP?');
 		const c = cp.left;
 		if (!('word' in c)) throw new Impossible('C without word?');
-		if (!c.word.covert) {
-			complementizer = c.word.text;
-		}
+		const complementizer = c;
 		for (let node = cp.right; ; ) {
 			if ('children' in node) {
 				if (node.label !== '*𝘷P') throw new Impossible('non-*𝘷P Rose');
 				const serial = node.children[0];
-				verbalComplexWords.push(this.words(serial));
+				verbalComplexWords.push(serial);
 				postField = this.boxifyPostField(node.children.slice(1));
 				break;
 			} else if ('left' in node) {
 				switch (node.label) {
 					case 'TopicP':
-						topic = this.words(node.left);
+						topic = node.left;
 						node = node.right;
 						break;
 					case "Topic'":
-						topic += ' ' + this.words(node.left);
+						// Not really a legit TopicP...
+						topic = { label: 'TopicP', left: topic!, right: node.left };
 						node = node.right;
 						break;
 					case '𝘷P':
 						if ('left' in node.right && this.words(node.right.left) === 'nä') {
-							subject = this.words(node.left);
+							subject = node.left;
 							node = node.right;
 							break;
 						}
@@ -185,14 +184,16 @@ class Boxifier {
 					case 'AspP':
 					case 'CPrel':
 					case "𝘷'":
-						const w = this.words(node.left);
-						w && verbalComplexWords.push(w);
+						const w = node.left;
+						if (this.words(w)) {
+							verbalComplexWords.push(w);
+						}
 						node = node.right;
 						break;
 					case '&P':
 						assertBranch(node.right);
 						conjunction = {
-							word: this.words(node.right.left),
+							word: node.right.left,
 							clause: this.boxifyClause(node.right.right),
 						};
 						node = node.left;
@@ -205,7 +206,10 @@ class Boxifier {
 				throw new Impossible('hit leaf in boxifyClause');
 			}
 		}
-		const verbalComplex = verbalComplexWords.join(' ').trim();
+		const verbalComplex: Tree = {
+			label: '*Serial',
+			children: verbalComplexWords,
+		};
 		return {
 			complementizer,
 			topic,
@@ -217,7 +221,6 @@ class Boxifier {
 	}
 
 	public boxify(tree: Tree): SplitBoxes {
-		let speechAct: string = '';
 		tree = skipFree(tree);
 		if (tree.label !== 'SAP')
 			throw new Ungrammatical('Cannot boxify non-sentence');
@@ -225,15 +228,14 @@ class Boxifier {
 		const sa = tree.right;
 		if (sa.label !== 'SA') throw new Impossible('SAP without SA?');
 		if (!('word' in sa)) throw new Impossible('SA without word?');
-		if (!sa.word.covert) {
-			speechAct = sa.word.text;
-		}
+		const speechAct = sa;
 		const cp = skipFree(tree.left);
 		this.harvestCps(cp);
 		const clause = this.boxifyClause(cp);
 		return {
 			main: { clause, speechAct },
 			subclauses: this.cps.slice(1).map(x => this.boxifyClause(x)),
+			cpIndices: this.cpIndices,
 		};
 	}
 }
