@@ -45,7 +45,10 @@ function skipFree(tree: Tree): Tree {
 }
 
 function isArgument(tree: Tree): boolean {
-	while ('right' in tree && (tree.label === 'FocusP' || tree.label === '&P')) {
+	while (
+		'right' in tree &&
+		(tree.label === 'FocusP' || tree.label === '&P' || tree.label === "&'")
+	) {
 		tree = tree.right;
 	}
 	return tree.label === 'DP' || tree.label === 'CP';
