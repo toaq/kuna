@@ -115,7 +115,7 @@ const grammar: Grammar = {
     {"name": "nP", "symbols": ["CPdet"], "postprocess": makeBranchCovertLeft('𝘯P', '𝘯')},
     {"name": "Clause", "symbols": ["term", "Bi", "Clause"], "postprocess": make3L('TopicP', "Topic'")},
     {"name": "Clause", "symbols": ["MTP"], "postprocess": id},
-    {"name": "Clause", "symbols": ["DP1", "Na", "CPrelna"], "postprocess": make3L('𝘷P', "𝘷'")},
+    {"name": "Clause", "symbols": ["term", "Na", "CPrelna"], "postprocess": make3L('𝘷P', "𝘷'")},
     {"name": "Clause", "symbols": ["AdjunctP1", "Na", "CPrelna"], "postprocess": make3L('𝘷P', "𝘷'")},
     {"name": "Clause", "symbols": ["ModalP", "Na", "MTP"], "postprocess": make3L('𝘷P', "𝘷'")},
     {"name": "ModalP", "symbols": ["ModalT4", "CPsub"], "postprocess": makeBranch('ModalP')},
