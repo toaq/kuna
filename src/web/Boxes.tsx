@@ -1,5 +1,5 @@
 import { ReactElement, useState, useEffect, ReactNode } from 'react';
-import { BoxClause, BoxSentence, PostField } from '../boxes';
+import { BoxClause, BoxSentence, PostField, circled } from '../boxes';
 import './Boxes.css';
 import { useDarkMode } from 'usehooks-ts';
 import { Glosser } from '../gloss';
@@ -33,10 +33,12 @@ function Toaq(props: { children: string }) {
 		<div className="boxes-text">
 			<div className="boxes-toaq">{children}</div>
 			<div className="boxes-english">
-				{new Glosser(true)
-					.glossSentence(children)
-					.map(x => x.english)
-					.join(' ')}
+				{/[a-z]/.test(children)
+					? new Glosser(true)
+							.glossSentence(children)
+							.map(x => x.english)
+							.join(' ')
+					: '\u00a0'}
 			</div>
 		</div>
 	);
@@ -111,14 +113,25 @@ function ClauseBox(props: { clause: BoxClause }) {
 	);
 }
 
-export function Boxes(props: { sentence: BoxSentence }) {
+export function Boxes(props: {
+	sentence: BoxSentence;
+	subclauses: BoxClause[];
+}) {
 	const { clause, speechAct } = props.sentence;
 	return (
-		<Box color="blue" label="Sentence">
-			<ClauseBox clause={clause} />
-			<Box color="gray" label="Speech act">
-				<Toaq>{speechAct}</Toaq>
+		<ol className="boxes-clause-list" start={1}>
+			<Box color="blue" label="Sentence">
+				<ClauseBox clause={clause} />
+				<Box color="gray" label="Speech act">
+					<Toaq>{speechAct}</Toaq>
+				</Box>
 			</Box>
-		</Box>
+			{props.subclauses.map((clause, i) => (
+				<li key={i}>
+					<div className="boxes-clause-number">{circled(i + 1)}</div>
+					<ClauseBox clause={clause} />
+				</li>
+			))}
+		</ol>
 	);
 }

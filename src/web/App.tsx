@@ -68,8 +68,8 @@ export function App() {
 
 	function getBoxes(): ReactElement {
 		const tree = parseInput();
-		const boxSentence = boxify(tree);
-		return <Boxes sentence={boxSentence} />;
+		const { main, subclauses } = boxify(tree);
+		return <Boxes sentence={main} subclauses={subclauses} />;
 	}
 
 	function getTree(mode: TreeMode): ReactElement {

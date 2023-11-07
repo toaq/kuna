@@ -33,3 +33,23 @@
 .boxes-english {
 	font-size: 12px;
 }
+
+.boxes-clause-list {
+	margin: 0;
+	padding: 0 0;
+	display: flex;
+	flex-direction: column;
+	align-items: start;
+	list-style-type: none;
+	counter-reset: clauses;
+}
+
+.boxes-clause-list li {
+	margin-top: 1em;
+	display: flex;
+}
+
+.boxes-clause-number {
+	font-weight: bold;
+	margin: 8px;
+}

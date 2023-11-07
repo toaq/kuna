@@ -191,22 +191,6 @@ yargs
 		},
 	)
 	.command(
-		'boxes-markdown',
-		'Simple sentence structure',
-		yargs => {
-			yargs.demandOption('sentence');
-		},
-		function (argv) {
-			console.log(
-				boxSentenceToMarkdown(argv.sentence!, {
-					gloss: true,
-					easy: argv.easy,
-					covert: true,
-				}),
-			);
-		},
-	)
-	.command(
 		'english',
 		'Machine-translate to English',
 		yargs => {
