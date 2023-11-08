@@ -355,7 +355,10 @@ export function makeAdjunctPI(
 	return {
 		label: 'AdjunctP',
 		left: adjunct,
-		right: serial,
+		right: {
+			label: '*𝘷P',
+			children: [serial, { label: 'DP', word: { covert: true, value: 'PRO' } }],
+		},
 	};
 }
 
@@ -372,7 +375,14 @@ export function makeAdjunctPT(
 	return {
 		label: 'AdjunctP',
 		left: adjunct,
-		right: { label: 'VP', left: serial, right: obj },
+		right: {
+			label: '*𝘷P',
+			children: [
+				serial,
+				{ label: 'DP', word: { covert: true, value: 'PRO' } },
+				obj,
+			],
+		},
 	};
 }
 

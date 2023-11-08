@@ -550,7 +550,6 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'V':
 		case 'Asp':
 		case 'Σ':
-		case 'Adjunct':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -573,6 +572,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'Q':
 			return qComposition;
 		case 'QP':
+		case 'Adjunct':
 			return predicateAbstraction;
 		case 'AdjunctP':
 			return predicateModification;
