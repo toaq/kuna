@@ -173,7 +173,8 @@ const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
 	after: 8,
 	before_near: 7,
 	after_near: 6,
-	roi: 11,
+	roi: 12,
+	coevent: 11,
 };
 
 const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
@@ -187,6 +188,7 @@ const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
 		before_near: false,
 		after_near: false,
 		roi: true,
+		coevent: false,
 	};
 
 /**
@@ -260,6 +262,7 @@ const plainText: Format = {
 		before_near: '<.near',
 		after_near: '>.near',
 		roi: '&',
+		coevent: 'o',
 	},
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
 	polarizerSymbols: {
@@ -278,6 +281,7 @@ const plainText: Format = {
 		suo: 'súo',
 		ama: 'áma',
 		agent: 'AGENT',
+		subject: 'SUBJ',
 		she: 'SHE',
 		ao: 'AO',
 		animate: 'animate',
@@ -325,6 +329,7 @@ const latex: Format = {
 		before_near: '<_{\\text{near}}',
 		after_near: '>_{\\text{near}}',
 		roi: '&',
+		coevent: '\\ o\\ ',
 	},
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
 	polarizerSymbols: {
@@ -343,6 +348,7 @@ const latex: Format = {
 		suo: '\\text{súo}',
 		ama: '\\text{áma}',
 		agent: '\\textsc{agent}',
+		subject: '\\textsc{subj}',
 		she: '\\textsc{she}',
 		ao: '\\textsc{ao}',
 		animate: '\\text{animate}',

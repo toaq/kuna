@@ -129,6 +129,7 @@ export type Expr =
 	| TimeRelation<'before_near'>
 	| TimeRelation<'after_near'>
 	| Infix<'roi', 'e'>
+	| Infix<'coevent', 't'>
 	| Pronoun<'ji'>
 	| Pronoun<'suq'>
 	| Pronoun<'nhao'>
@@ -139,6 +140,7 @@ export type Expr =
 	| Pronoun<'suo'>
 	| Pronoun<'ama'>
 	| Role<'agent'>
+	| Role<'subject'>
 	| Accessibility<'she'>
 	| Accessibility<'ao'>
 	| Animacy<'animate'>
@@ -489,6 +491,10 @@ export function roi(left: Expr, right: Expr): Expr {
 	return infix('roi', 'e', 'e', left, right);
 }
 
+export function coevent(left: Expr, right: Expr): Expr {
+	return infix('coevent', 'v', 't', left, right);
+}
+
 export function constant(
 	name: (Expr & { head: 'constant' })['name'],
 	type: (Expr & { head: 'constant' })['type'],
@@ -549,6 +555,10 @@ function role(
 
 export function agent(context: ExprType[]): Expr {
 	return role('agent', context);
+}
+
+export function subject(context: ExprType[]): Expr {
+	return role('subject', context);
 }
 
 function accessibility(

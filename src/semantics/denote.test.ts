@@ -266,5 +266,11 @@ test('it denotes adjuncts', () => {
 	expect(d('Za nuo jí tî ní kua')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') > t ∧ nuo.𝘸(jí)(𝘦') ∧ ∃𝘦''. tı.𝘸(𝘦', a)(𝘦'') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ kua.𝘸(a)(𝘦')))(𝘦) | abstract(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
 	);
-	// TODO: Subject-sharing adjuncts
+	// Subject-sharing adjuncts
+	expect(d('Saqsu kûq hú toa nháo')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ (∃𝘦''. 𝘦' o 𝘦'' ∧ AGENT(𝘦'')(𝘸) = SUBJ(𝘦')(𝘸) ∧ kuq.𝘸(a)(𝘦'')) ∧ AGENT(𝘦')(𝘸) = nháo ∧ saqsu.𝘸(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ toa.𝘸(a)(𝘦')))(𝘦) | abstract(a) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
+	);
+	expect(d('Saqsu nháo kûq hú toa')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = nháo ∧ saqsu.𝘸(𝘦') ∧ ∃𝘦''. 𝘦' o 𝘦'' ∧ AGENT(𝘦'')(𝘸) = SUBJ(𝘦')(𝘸) ∧ kuq.𝘸(a)(𝘦'') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ toa.𝘸(a)(𝘦')))(𝘦) | abstract(a) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
+	);
 });

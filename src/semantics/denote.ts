@@ -1,7 +1,13 @@
 import { VerbEntry } from '../dictionary';
-import { Impossible, Unimplemented, Unrecognized } from '../error';
+import {
+	Impossible,
+	Ungrammatical,
+	Unimplemented,
+	Unrecognized,
+} from '../error';
 import { Branch, Leaf, StrictTree, Word } from '../tree';
 import {
+	adjuncts,
 	animacies,
 	aspects,
 	boundThe,
@@ -10,7 +16,6 @@ import {
 	covertLittleVs,
 	defaultTense,
 	dps,
-	eventiveAdjunct,
 	overtLittleVs,
 	polarities,
 	quantifiers,
@@ -84,6 +89,30 @@ function findVp(tree: StrictTree): StrictTree | null {
 	}
 }
 
+function getVerbWord(vp: StrictTree): Word {
+	if ('word' in vp) {
+		if (vp.word.covert) throw new Impossible('Covert VP');
+		return vp.word;
+	} else {
+		const verb = vp.left;
+		switch (verb.label) {
+			case 'V':
+				if (!('word' in verb)) throw new Unrecognized('V shape');
+				if (verb.word.covert) throw new Impossible('Covert V');
+				return verb.word;
+			case 'shuP':
+			case 'mıP':
+				if ('word' in verb || !('word' in verb.left))
+					throw new Unrecognized(`${verb.label} shape`);
+				if (verb.left.word.covert)
+					throw new Impossible(`Covert ${verb.left.label}`);
+				return verb.left.word;
+			default:
+				throw new Unrecognized('VP shape');
+		}
+	}
+}
+
 function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	let denotation: Expr | null;
 	let bindings = noBindings;
@@ -119,16 +148,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			throw new Impossible("Can't denote an 𝘯 in isolation");
 		const vp = findVp(cCommand);
 		if (vp === null) throw new Impossible("Can't find the VP for this 𝘯");
-
-		let word: Word;
-		if ('word' in vp) {
-			word = vp.word as Word;
-		} else {
-			const v = vp.left;
-			if (v.label !== 'V' || !('word' in v))
-				throw new Impossible('Unrecognized VP shape');
-			word = v.word as Word;
-		}
+		const word = getVerbWord(vp);
 
 		const animacy = animacyClass(word.entry as VerbEntry);
 		denotation = animacies[animacy];
@@ -153,8 +173,20 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			if (denotation === undefined) throw new Unrecognized(`𝘷: ${toaq}`);
 		}
 	} else if (leaf.label === 'Adjunct') {
-		// TODO: Subject-sharing adjuncts
-		denotation = eventiveAdjunct;
+		if (cCommand === null)
+			throw new Impossible("Can't denote an Adjunct in isolation");
+		const vp = findVp(cCommand);
+		if (vp === null) throw new Impossible("Can't find the VP for this Adjunct");
+		const word = getVerbWord(vp);
+		if (word.entry === undefined || word.entry.type !== 'predicate')
+			throw new Unrecognized(`V in AdjunctP: ${word.text}`);
+
+		const data = adjuncts[word.entry.subject];
+		if (data === undefined)
+			throw new Ungrammatical(
+				`${word.entry.toaq} may not be used as an adverbial adjunct`,
+			);
+		denotation = data;
 	} else if (leaf.label === 'Asp') {
 		let toaq: string;
 		if (leaf.word.covert) {

@@ -1,3 +1,4 @@
+import { SubjectType } from '../dictionary';
 import { CovertValue } from '../tree';
 import {
 	after,
@@ -43,6 +44,8 @@ import {
 	ime,
 	suo,
 	ama,
+	coevent,
+	subject,
 } from './model';
 
 const hoa = v(0, ['e']);
@@ -523,6 +526,26 @@ export const quantifiers: Partial<Record<CovertValue, Expr>> = {
 };
 
 // λ𝘗. λ𝘦. ∃𝘦'. 𝘗(𝘦)(𝘦')
-export const eventiveAdjunct = λ(['e', ['v', 't']], [], c =>
+const eventiveAdverbial = λ(['e', ['v', 't']], [], c =>
 	λ('v', c, c => some('v', c, c => app(app(v(2, c), v(1, c)), v(0, c)))),
 );
+
+// λ𝘗. λ𝘦. ∃𝘦'. 𝘦 o 𝘦' ∧ 𝘗(SUBJ(𝘦)(𝘸))(𝘦')
+const subjectSharingAdverbial = λ(['e', ['v', 't']], ['s'], c =>
+	λ('v', c, c =>
+		some('v', c, c =>
+			and(
+				coevent(v(1, c), v(0, c)),
+				app(app(v(2, c), app(app(subject(c), v(1, c)), v(3, c))), v(0, c)),
+			),
+		),
+	),
+);
+
+export const adjuncts: Partial<Record<SubjectType, Expr>> = {
+	free: eventiveAdverbial,
+	event: eventiveAdverbial,
+	shape: eventiveAdverbial,
+	agent: subjectSharingAdverbial,
+	individual: subjectSharingAdverbial,
+};
