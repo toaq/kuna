@@ -12,6 +12,7 @@ import {
 	aspects,
 	boundThe,
 	boundTheBindings,
+	conjunctions,
 	covertHoaBindings,
 	covertLittleVs,
 	defaultTense,
@@ -236,6 +237,17 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		const value = leaf.word.value;
 		const data = quantifiers[value];
 		if (data === undefined) throw new Unrecognized(`Q: ${value}`);
+		denotation = data;
+	} else if (leaf.label === '&') {
+		if (cCommand === null)
+			throw new Impossible("Can't denote an & in isolation");
+		if (leaf.word.covert) throw new Impossible('Covert &');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`&: ${leaf.word.text}`);
+
+		const toaq = leaf.word.entry.toaq;
+		const data = conjunctions[cCommand.label]?.[toaq];
+		if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
 		denotation = data;
 	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
 		denotation = null;
@@ -582,6 +594,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'V':
 		case 'Asp':
 		case 'Σ':
+		case '&':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -606,19 +619,29 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'QP':
 		case 'Adjunct':
 			return predicateAbstraction;
-		case 'AdjunctP':
-			return predicateModification;
+		case '&P':
+			if ('word' in left) throw new Impossible('&P leaf');
+			// Check the children to find out what kind of &P this is
+			return getCompositionRule(left.left, right);
 	}
 
 	switch (right.label) {
 		case "𝘷'":
 		case 'SA':
 		case "V'":
+		case "&'":
 			return reverseFunctionalApplication;
 		case 'CPrel':
 		case 'AdjunctP':
 			return predicateModification;
+		case '&P':
+			if ('word' in right) throw new Impossible('&P leaf');
+			// Check the children to find out what kind of &P this is
+			return getCompositionRule(left, right.left);
 	}
+
+	// AdjunctP is placed here because &' should take precedence over it
+	if (left.label === 'AdjunctP') return predicateModification;
 
 	throw new Unimplemented(
 		`TODO: composition of ${left.label} and ${right.label}`,

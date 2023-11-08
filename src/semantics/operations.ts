@@ -1,5 +1,5 @@
 import { Impossible } from '../error';
-import { zip } from '../misc';
+import { reverse, zip } from '../misc';
 import {
 	app,
 	Binding,
@@ -13,11 +13,12 @@ import {
 	polarizer,
 	presuppose,
 	quantifier,
+	typesEqual,
 	v,
 	verb,
 	λ,
 } from './model';
-import { toPlainText } from './render';
+import { toPlainText, typeToPlainText } from './render';
 
 function mapVariables(
 	e: Expr,
@@ -617,4 +618,73 @@ export function someSubexpression(
 		case 'constant':
 			return sub();
 	}
+}
+
+class LiftError extends Error {
+	constructor(input: ExprType, output: ExprType) {
+		super(
+			`Can't lift type ${typeToPlainText(input)} to type ${typeToPlainText(
+				output,
+			)}`,
+		);
+	}
+}
+
+/**
+ * Lifts a first-order function to a higher-order function, for example turning
+ * a <t,<t,t>> into an <<e,t>,<<e,t>,<e,t>>.
+ * @param e The function.
+ * @param t The desired type.
+ */
+export function lift(e: Expr, t: ExprType): Expr {
+	if (typeof e.type === 'string' || typeof t === 'string')
+		throw new LiftError(e.type, t);
+
+	// The parameters present in the original function
+	const existingParams: ExprType[] = [];
+	for (let t_: ExprType = e.type; typeof t_ !== 'string'; t_ = t_[1])
+		existingParams.push(t_[0]);
+
+	// The new parameters over which everything will be lifted
+	const newParams: ExprType[] = [];
+	for (let t_ = t[0]; !typesEqual(t_, e.type[0]); t_ = t_[1]) {
+		if (typeof t_ === 'string') throw new LiftError(e.type, t);
+		newParams.push(t_[0]);
+	}
+
+	// The parameters present in the original function, but now lifted
+	const liftedParams = existingParams.map(p =>
+		newParams.reduceRight((acc, p_) => [p_, acc], p),
+	);
+
+	// The context of the innermost expression
+	const innerContext = [...e.context];
+	for (const p of liftedParams) innerContext.unshift(p);
+	for (const p of newParams) innerContext.unshift(p);
+
+	let result = rewriteContext(
+		e,
+		innerContext,
+		i => i + innerContext.length - e.context.length,
+	);
+
+	// Apply the expression to each lifted argument, in order
+	for (
+		let lp = newParams.length + liftedParams.length - 1;
+		lp >= newParams.length;
+		lp--
+	) {
+		let argument = v(lp, innerContext);
+		for (let np = newParams.length - 1; np >= 0; np--)
+			argument = app(argument, v(np, innerContext));
+		result = app(result, argument);
+	}
+
+	// Now wrap it in lambdas for the new and existing parameters
+	for (const np of reverse(newParams))
+		result = λ(np, result.context.slice(1), () => result);
+	for (const lp of reverse(liftedParams))
+		result = λ(lp, result.context.slice(1), () => result);
+
+	return result;
 }

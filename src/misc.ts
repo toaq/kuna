@@ -8,3 +8,7 @@ export function zip<A, B>(
 	for (let i = 0; i < result.length; i++) result[i] = [as[i], bs[i]];
 	return result;
 }
+
+export function* reverse<A>(as: A[]): Generator<A, void, unknown> {
+	for (let i = as.length - 1; i >= 0; i--) yield as[i];
+}

@@ -1,4 +1,3 @@
-import { Impossible } from '../error';
 import { Expr, ExprType } from './model';
 
 type NameType = 'e' | 'v' | 'i' | 's' | 'fn';
@@ -40,8 +39,7 @@ const noNames: Names = {
 };
 
 function getNameType(type: ExprType): NameType {
-	if (type === 't') throw new Impossible('There can be no variables of type t');
-	return typeof type === 'string' ? type : 'fn';
+	return typeof type === 'string' && type !== 't' ? type : 'fn';
 }
 
 type Alphabets = Record<NameType, string[]>;
@@ -566,4 +564,8 @@ export function typeToLatex(t: ExprType): string {
 	return typeof t === 'string'
 		? `\\text{${t}}`
 		: `\langle ${typeToLatex(t[0])}, ${typeToLatex(t[1])} \rangle`;
+}
+
+export function typesToPlainText(ts: ExprType[]): string {
+	return ts.map(typeToPlainText).join(', ');
 }

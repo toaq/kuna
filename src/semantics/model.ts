@@ -1,5 +1,6 @@
 import { Impossible } from '../error';
 import { Branch, Leaf } from '../tree';
+import { toPlainText, typesToPlainText, typeToPlainText } from './render';
 
 /**
  * The possible types of semantic expressions.
@@ -217,7 +218,38 @@ export function subtype(t1: ExprType, t2: ExprType): boolean {
 
 export function assertSubtype(t1: ExprType, t2: ExprType): void {
 	if (!subtype(t1, t2))
-		throw new Impossible(`Type ${t1} is not assignable to type ${t2}`);
+		throw new Impossible(
+			`Type ${typeToPlainText(t1)} is not assignable to type ${typeToPlainText(
+				t2,
+			)}`,
+		);
+}
+
+/**
+ * Determines whether two types are equal.
+ */
+export function typesEqual(t1: ExprType, t2: ExprType): boolean {
+	if (typeof t1 === 'string' || typeof t2 === 'string') {
+		return t1 === t2;
+	} else {
+		return t1 === t2 || (typesEqual(t1[0], t2[0]) && typesEqual(t1[1], t2[1]));
+	}
+}
+
+/**
+ * Determines whether two types are compatible (one is assignable to the other).
+ */
+export function typesCompatible(t1: ExprType, t2: ExprType): boolean {
+	return subtype(t1, t2) || subtype(t2, t1);
+}
+
+export function assertTypesCompatible(t1: ExprType, t2: ExprType): void {
+	if (!typesCompatible(t1, t2))
+		throw new Impossible(
+			`Types ${typeToPlainText(t1)} and ${typeToPlainText(
+				t2,
+			)} are not compatible`,
+		);
 }
 
 export function contextsEqual(c1: ExprType[], c2: ExprType[]): boolean {
@@ -229,7 +261,11 @@ export function contextsEqual(c1: ExprType[], c2: ExprType[]): boolean {
 
 export function assertContextsEqual(c1: ExprType[], c2: ExprType[]): void {
 	if (!contextsEqual(c1, c2))
-		throw new Impossible(`Contexts ${c1} and ${c2} are not equal`);
+		throw new Impossible(
+			`Contexts ${typesToPlainText(c1)} and ${typesToPlainText(
+				c2,
+			)} are not equal`,
+		);
 }
 
 /**
@@ -237,7 +273,9 @@ export function assertContextsEqual(c1: ExprType[], c2: ExprType[]): void {
  */
 export function v(index: number, context: ExprType[]): Expr {
 	if (index < 0 || index >= context.length)
-		throw new Impossible(`Index ${index} out of bounds for context ${context}`);
+		throw new Impossible(
+			`Index ${index} out of bounds for context ${typesToPlainText(context)}`,
+		);
 
 	return { head: 'variable', type: context[index], context, index };
 }
@@ -275,7 +313,8 @@ export function λ(
  * Constructor for function application expressions.
  */
 export function app(fn: Expr, argument: Expr): Expr {
-	if (!Array.isArray(fn.type)) throw new Impossible(`${fn} is not a function`);
+	if (!Array.isArray(fn.type))
+		throw new Impossible(`${toPlainText(fn)} is not a function`);
 	const [inputType, outputType] = fn.type;
 	assertSubtype(argument.type, inputType);
 	assertContextsEqual(fn.context, argument.context);
@@ -348,7 +387,7 @@ export function and(left: Expr, right: Expr): Expr {
 }
 
 export function or(left: Expr, right: Expr): Expr {
-	return conjunction('and', left, right);
+	return conjunction('or', left, right);
 }
 
 export function polarizer(
@@ -443,10 +482,7 @@ export function gen(
 }
 
 export function equals(left: Expr, right: Expr): Expr {
-	if (!(subtype(left.type, right.type) || subtype(right.type, left.type)))
-		throw new Impossible(
-			`Types ${left.type} and ${right.type} are not compatible`,
-		);
+	assertTypesCompatible(left.type, right.type);
 	assertContextsEqual(left.context, right.context);
 
 	return {

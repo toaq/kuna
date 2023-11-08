@@ -1,5 +1,5 @@
 import { SubjectType } from '../dictionary';
-import { CovertValue } from '../tree';
+import { CovertValue, Label } from '../tree';
 import {
 	after,
 	afterNear,
@@ -46,7 +46,9 @@ import {
 	ama,
 	coevent,
 	subject,
+	or,
 } from './model';
+import { lift, reduce } from './operations';
 
 const hoa = v(0, ['e']);
 
@@ -549,3 +551,32 @@ export const adjuncts: Partial<Record<SubjectType, Expr>> = {
 	agent: subjectSharingAdverbial,
 	individual: subjectSharingAdverbial,
 };
+
+const conjunctionWords: Record<string, (left: Expr, right: Expr) => Expr> = {
+	rú: and,
+	rá: or,
+};
+
+const conjunctionTypes: Partial<Record<Label, ExprType>> = {
+	AdjunctP: ['v', 't'],
+	CPrel: ['e', 't'],
+	TP: 't',
+};
+
+export const conjunctions: Partial<Record<Label, Record<string, Expr>>> =
+	Object.fromEntries(
+		Object.entries(conjunctionTypes).map(([label, t]) => [
+			label,
+			Object.fromEntries(
+				Object.entries(conjunctionWords).map(([toaq, conjoin]) => [
+					toaq,
+					reduce(
+						lift(
+							λ('t', [], c => λ('t', c, c => conjoin(v(0, c), v(1, c)))),
+							[t, [t, t]],
+						),
+					),
+				]),
+			),
+		]),
+	);
