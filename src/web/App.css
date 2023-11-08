@@ -52,6 +52,7 @@ h1 {
 
 .card {
 	padding: 8px;
+	margin-top: 8px;
 	border: 2px solid hsl(220deg, 50%, 85%);
 	border-radius: 4px;
 	background-color: white;
@@ -63,11 +64,6 @@ h1 {
 .dark-mode .card {
 	border: 2px solid rgba(0, 0, 0, 0.2);
 	background-color: rgba(0, 0, 0, 0.2);
-}
-
-.settings,
-.output {
-	margin-top: 8px;
 }
 
 .settings form {
@@ -132,4 +128,28 @@ h1 {
 
 .toggles label select {
 	margin-inline-start: 8px;
+}
+
+.parses {
+	margin-top: 8px;
+	display: flex;
+	justify-content: center;
+}
+
+.parses button {
+	font-size: 16px;
+	cursor: pointer;
+	padding: 2px 0;
+	width: 3em;
+	text-align: center;
+	margin: 2px;
+}
+
+.parses button.current {
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+.center {
+	text-align: center;
 }

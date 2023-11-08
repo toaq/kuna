@@ -15,6 +15,7 @@ import { textual_tree_from_json } from '../textual-tree';
 import { Tree } from '../tree';
 import './App.css';
 import { Boxes } from './Boxes';
+import _ from 'lodash';
 
 type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
 type Mode =
@@ -44,6 +45,8 @@ function errorString(e: any): string {
 
 export function App() {
 	const darkMode = useDarkMode();
+	const [parseCount, setParseCount] = useState(0);
+	const [parseIndex, setParseIndex] = useState(0);
 	const [inputText, setInputText] = useLocalStorage<string>(
 		'input',
 		'Poq jí da.',
@@ -58,14 +61,18 @@ export function App() {
 	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png');
 	useEffect(
 		() => latestMode && generate(latestMode),
-		[darkMode.isDarkMode, treeFormat],
+		[darkMode.isDarkMode, treeFormat, parseIndex],
 	);
 
 	function parseInput(): Tree {
 		const trees = parse(inputText);
 		if (trees.length === 0) throw new Error('No parse');
-		if (trees.length > 1) throw new Error('Ambiguous parse');
-		return trees[0];
+		setParseCount(trees.length);
+		if (parseIndex >= trees.length) {
+			setParseIndex(0);
+			return trees[0];
+		}
+		return trees[parseIndex];
 	}
 
 	function getBoxes(strategy: 'flat' | 'nest' | 'split'): ReactElement {
@@ -196,9 +203,29 @@ export function App() {
 					</button>
 				</div>
 			</div>
-			<div className={classNames('card', 'output', { math })}>
-				{latestOutput}
-			</div>
+			{parseCount > 1 ? (
+				<div className="card center">
+					<div className="error">
+						Kuna found multiple parses for this sentence.
+					</div>
+					<div className="parses">
+						{_.range(parseCount).map(i => (
+							<button
+								key={i}
+								className={parseIndex === i ? 'current' : ''}
+								onClick={() => setParseIndex(i)}
+							>
+								{i + 1}
+							</button>
+						))}
+					</div>
+					<div className={classNames('output', { math })}>{latestOutput}</div>
+				</div>
+			) : (
+				<div className={classNames('card', 'output', { math })}>
+					{latestOutput}
+				</div>
+			)}
 		</div>
 	);
 }
