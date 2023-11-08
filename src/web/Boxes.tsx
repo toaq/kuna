@@ -98,7 +98,7 @@ function Segment(props: { segment: string | JSX.Element }) {
 			<div className="boxes-text">
 				<div className="boxes-toaq">{props.segment}</div>
 				<div className="boxes-english">
-					{/[a-z]/.test(props.segment)
+					{/\p{Letter}/iu.test(props.segment)
 						? new Glosser(true)
 								.glossSentence(props.segment)
 								.map(x => x.english)
