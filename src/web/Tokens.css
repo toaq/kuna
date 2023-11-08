@@ -1,0 +1,21 @@
+.token-table td,
+.token-table th {
+	padding: 2px 8px;
+}
+
+.token-table th {
+	text-align: left;
+}
+
+.token-index {
+	opacity: 0.5;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.token-value {
+	flex: 1;
+	margin: 0 8px;
+	background: #8883;
+	border-radius: 2px;
+}

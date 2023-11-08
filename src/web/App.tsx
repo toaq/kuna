@@ -1,10 +1,11 @@
+import classNames from 'classnames';
+import _ from 'lodash';
 import { ReactElement, useEffect, useState } from 'react';
 import { useDarkMode, useLocalStorage } from 'usehooks-ts';
-import classNames from 'classnames';
+
 import { boxify } from '../boxes';
 import { compact } from '../compact';
-import { pngDrawTree } from '../tree/draw';
-import { toEnglish } from '../english/tree';
+import { treeToEnglish } from '../english/tree';
 import { fix } from '../fix';
 import { Glosser } from '../gloss';
 import { parse } from '../parse';
@@ -13,9 +14,12 @@ import { Expr } from '../semantics/model';
 import { toLatex, toPlainText } from '../semantics/render';
 import { textual_tree_from_json } from '../textual-tree';
 import { Tree } from '../tree';
+import { pngDrawTree } from '../tree/draw';
+
 import './App.css';
 import { Boxes } from './Boxes';
-import _ from 'lodash';
+import { Tokens } from './Tokens';
+import { ToaqTokenizer } from '../tokenize';
 
 type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
 type Mode =
@@ -27,7 +31,8 @@ type Mode =
 	| 'technical-gloss'
 	| 'logical-form'
 	| 'logical-form-latex'
-	| 'english';
+	| 'english'
+	| 'tokens';
 type TreeFormat = 'png' | 'textual' | 'json';
 
 function errorString(e: any): string {
@@ -101,6 +106,7 @@ export function App() {
 	}
 
 	function getGloss(easy: boolean): ReactElement {
+		setParseCount(1);
 		return (
 			<div className="gloss-output">
 				{new Glosser(easy).glossSentence(inputText).map((g, i) => (
@@ -119,7 +125,15 @@ export function App() {
 	}
 
 	function getEnglish(): ReactElement {
-		return <>{toEnglish(inputText)}</>;
+		const tree = parseInput();
+		return <>{treeToEnglish(tree).text}</>;
+	}
+
+	function getTokens(): ReactElement {
+		setParseCount(1);
+		const tokenizer = new ToaqTokenizer();
+		tokenizer.reset(inputText);
+		return <Tokens tokens={tokenizer.tokens} />;
 	}
 
 	function getOutput(mode: Mode): ReactElement {
@@ -145,6 +159,8 @@ export function App() {
 				return getLogicalForm(toLatex);
 			case 'english':
 				return getEnglish();
+			case 'tokens':
+				return getTokens();
 		}
 	}
 
@@ -180,6 +196,8 @@ export function App() {
 					</label>
 				</div>
 				<div className="buttons">
+					<button onClick={() => generate('tokens')}>Tokens</button>
+					<br />
 					<button onClick={() => generate('syntax-tree')}>Syntax tree</button>
 					<button onClick={() => generate('compact-tree')}>Compact tree</button>
 					<button onClick={() => generate('semantics-tree')}>

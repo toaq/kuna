@@ -165,6 +165,11 @@ export class Glosser {
 	}
 
 	public glossWord(word: string): string {
+		if (word === '◌́') {
+			return 'the';
+		} else if (word === '◌̂') {
+			return 'ADVERB';
+		}
 		word = clean(word.replace(/[\p{Pe}\p{Pf}\p{Pi}\p{Po}\p{Ps}]/gu, ''));
 
 		const { prefixes, root } = splitPrefixes(word);
