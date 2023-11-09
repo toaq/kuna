@@ -2,7 +2,7 @@ import { CanvasRenderingContext2D } from 'canvas';
 import { DTree, Expr } from '../semantics/model';
 import { toPlainText, toLatex, typeToPlainText } from '../semantics/render';
 import { Branch, Leaf, Rose, Tree } from '../tree';
-import { compact } from '../semantics/compact';
+import { CompactExpr, compact } from '../semantics/compact';
 
 import { mathjax } from 'mathjax-full/js/mathjax';
 import { TeX } from 'mathjax-full/js/input/tex';
@@ -16,18 +16,21 @@ RegisterHTMLHandler(adaptor);
 
 const mathjax_document = mathjax.document('', {
 	InputJax: new TeX({ packages: AllPackages }),
-	OutputJax: new SVG({ fontCache: 'local' }),
+	OutputJax: new SVG({ fontCache: 'local', scale: 1.5 }),
 });
 
-const mathjax_options = {
-	em: 16,
-	ex: 8,
-	containerWidth: 1280,
-};
-
-export function get_mathjax_svg(math: string): string {
-	const node = mathjax_document.convert(math, mathjax_options);
-	return adaptor.innerHTML(node);
+export function get_mathjax_svg(math: string): {
+	width: string;
+	height: string;
+	svg: string;
+} {
+	const node = mathjax_document.convert(math, {
+		em: 16,
+		ex: 8,
+		containerWidth: 1280,
+	});
+	const { width, height } = node.children[0].attributes;
+	return { width, height, svg: adaptor.innerHTML(node) };
 }
 
 export interface RenderedDenotation {
@@ -36,8 +39,9 @@ export interface RenderedDenotation {
 		centerX: number,
 		bottomY: number,
 		color: string,
-	) => void;
+	) => Promise<void>;
 	width(ctx: CanvasRenderingContext2D): number;
+	height(ctx: CanvasRenderingContext2D): number;
 }
 
 interface PlacedLeafBase {
@@ -79,46 +83,59 @@ function getLabel(tree: Tree | DTree): string {
 		: tree.label;
 }
 
-export function denotationRenderText(denotation: Expr): RenderedDenotation {
-	const text = toPlainText(compact(denotation));
+export function denotationRenderText(
+	denotation: CompactExpr,
+): RenderedDenotation {
+	const text = toPlainText(denotation);
 	return {
-		draw(ctx, centerX, bottomY, color) {
+		async draw(ctx, centerX, bottomY, color) {
 			ctx.fillStyle = color;
 			ctx.fillText(text, centerX, bottomY + 18);
 		},
 		width(ctx) {
 			return ctx.measureText(text).width;
 		},
+		height(ctx) {
+			return 30;
+		},
 	};
 }
 
-export function denotationRenderLatex(denotation: Expr): RenderedDenotation {
-	const latex = toLatex(compact(denotation));
-	const svg = get_mathjax_svg(latex);
-	// console.log(svg);
+export function denotationRenderLatex(
+	denotation: CompactExpr,
+): RenderedDenotation {
+	const latex = toLatex(denotation);
+	let { width, height, svg } = get_mathjax_svg('\\Large ' + latex);
+	svg = svg.replace(/currentColor/g, 'red');
+	const pxWidth = Number(width.replace(/ex$/, '')) * 8;
+	const pxHeight = Number(height.replace(/ex$/, '')) * 8;
 	return {
 		draw(ctx, centerX, bottomY, color) {
-			// ctx.fillStyle = color;
-			// ctx.fillText(latex, centerX, bottomY + 18);
-			var blob = new Blob([svg], {
-				type: 'image/svg+xml;charset=utf-8',
+			return new Promise(resolve => {
+				var blob = new Blob([svg], {
+					type: 'image/svg+xml;charset=utf-8',
+				});
+
+				var url = URL.createObjectURL(blob);
+				var img = new Image();
+
+				img.addEventListener('load', (e: any) => {
+					ctx.drawImage(
+						e.target as any,
+						centerX - e.target.naturalWidth / 2,
+						bottomY,
+					);
+					URL.revokeObjectURL(url);
+					resolve();
+				});
+				img.src = url;
 			});
-
-			var url = URL.createObjectURL(blob);
-			var img = new Image();
-
-			img.addEventListener('load', e => {
-				console.log(e.target);
-				console.log(ctx.canvas);
-				ctx.drawImage(e.target as any, centerX, bottomY);
-				URL.revokeObjectURL(url);
-			});
-
-			img.src = url;
-			document.body.appendChild(img);
 		},
 		width(ctx) {
-			return 50;
+			return pxWidth;
+		},
+		height(ctx) {
+			return pxHeight;
 		},
 	};
 }

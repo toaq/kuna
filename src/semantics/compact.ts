@@ -57,8 +57,6 @@ export type CompactExpr = Expr | EventCompound;
 function detectCompound(
 	expr: Expr & { head: 'quantifier' },
 ): EventCompound | undefined {
-	console.log(toPlainText(expr));
-	console.log(expr);
 	// We're only interested in "∃e. τ(e) ... t ∧ blah":
 	if (
 		expr.body.context[0] !== 'v' ||

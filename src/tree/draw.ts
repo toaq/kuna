@@ -1,14 +1,13 @@
-import { createCanvas, CanvasRenderingContext2D, Canvas } from 'canvas';
+import { Canvas, CanvasRenderingContext2D, createCanvas } from 'canvas';
+import { CompactExpr } from '../semantics/compact';
 import { DTree } from '../semantics/model';
 import { Tree } from '../tree';
 import {
-	RenderedDenotation,
 	PlacedBranch,
 	PlacedLeaf,
 	PlacedTree,
+	RenderedDenotation,
 	TreePlacer,
-	denotationRenderLatex,
-	denotationRenderText,
 } from './place';
 
 interface Location {
@@ -43,7 +42,6 @@ const themes: Record<ThemeName, Theme> = {
 
 class TreeDrawer {
 	private margin = 40;
-	private layerHeight = 100;
 	private font = '27px Noto Sans Math, Noto Sans';
 
 	private canvas: Canvas;
@@ -54,7 +52,10 @@ class TreeDrawer {
 	private locations: Map<string, Location> = new Map();
 	private arrows: Array<[string, string]> = [];
 
-	constructor(private theme: Theme) {
+	constructor(
+		private theme: Theme,
+		private layerHeight: number,
+	) {
 		const width = 8400;
 		const height = 4400;
 		this.canvas = createCanvas(width, height);
@@ -82,15 +83,15 @@ class TreeDrawer {
 		this.ctx.stroke();
 	}
 
-	private drawText(
+	private async drawText(
 		text: string | RenderedDenotation,
 		x: number,
 		y: number,
 		color: string,
-	): void {
+	): Promise<void> {
 		let width: number;
 		if (typeof text !== 'string') {
-			text.draw(this.ctx, x, y, color);
+			await text.draw(this.ctx, x, y, color);
 			width = text.width(this.ctx);
 		} else {
 			this.ctx.fillStyle = color;
@@ -107,29 +108,52 @@ class TreeDrawer {
 		if (maxY > this.extent.maxY) this.extent.maxY = maxY;
 	}
 
-	private drawLabel(x: number, y: number, tree: PlacedTree): void {
+	private async drawLabel(
+		x: number,
+		y: number,
+		tree: PlacedTree,
+	): Promise<void> {
 		if (tree.coindex) {
 			const w1 = this.ctx.measureText(tree.label).width;
 			const w2 = this.ctx.measureText(tree.coindex).width;
-			this.drawText(tree.label, x - w2 / 2, y, this.theme.textColor);
-			this.drawText(tree.coindex, x + w1 / 2, y + 8, this.theme.textColor);
+			await this.drawText(tree.label, x - w2 / 2, y, this.theme.textColor);
+			await this.drawText(
+				tree.coindex,
+				x + w1 / 2,
+				y + 8,
+				this.theme.textColor,
+			);
 		} else {
-			this.drawText(tree.label, x, y, this.theme.textColor);
+			await this.drawText(tree.label, x, y, this.theme.textColor);
 		}
 	}
 
-	private drawLeaf(x: number, y: number, tree: PlacedLeaf): void {
+	private async drawLeaf(
+		x: number,
+		y: number,
+		tree: PlacedLeaf,
+	): Promise<void> {
 		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
-			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
+			await this.drawText(
+				tree.denotation,
+				x,
+				y + 30,
+				this.theme.denotationColor,
+			);
 		}
 		if (tree.word !== undefined) {
-			const dy = tree.denotation ? 60 : 30;
+			const dy = 35 + (tree.denotation?.height(this.ctx) ?? 0);
 			this.drawLine(x, y + dy, x, y + this.layerHeight - 15);
-			this.drawText(tree.word, x, y + this.layerHeight, this.theme.wordColor);
+			await this.drawText(
+				tree.word,
+				x,
+				y + this.layerHeight,
+				this.theme.wordColor,
+			);
 			if (tree.gloss) {
 				const yg = y + this.layerHeight + 30;
-				this.drawText(tree.gloss, x, yg, this.theme.textColor);
+				await this.drawText(tree.gloss, x, yg, this.theme.textColor);
 			}
 		}
 
@@ -143,25 +167,34 @@ class TreeDrawer {
 		}
 	}
 
-	private drawBranch(x: number, y: number, tree: PlacedBranch): void {
+	private async drawBranch(
+		x: number,
+		y: number,
+		tree: PlacedBranch,
+	): Promise<void> {
 		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
-			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
+			await this.drawText(
+				tree.denotation,
+				x,
+				y + 30,
+				this.theme.denotationColor,
+			);
 		}
 		const n = tree.children.length;
 		for (let i = 0; i < n; i++) {
 			const dx = (i - (n - 1) / 2) * tree.distanceBetweenChildren;
-			this.drawTree(x + dx, y + this.layerHeight, tree.children[i]);
-			const dy = tree.denotation ? 60 : 30;
+			await this.drawTree(x + dx, y + this.layerHeight, tree.children[i]);
+			const dy = 35 + (tree.denotation?.height(this.ctx) ?? 0);
 			this.drawLine(x, y + dy, x + dx, y + this.layerHeight - 15);
 		}
 	}
 
-	private drawTree(x: number, y: number, tree: PlacedTree): void {
+	private drawTree(x: number, y: number, tree: PlacedTree): Promise<void> {
 		if ('word' in tree) {
-			this.drawLeaf(x, y, tree);
+			return this.drawLeaf(x, y, tree);
 		} else {
-			this.drawBranch(x, y, tree);
+			return this.drawBranch(x, y, tree);
 		}
 	}
 
@@ -196,16 +229,25 @@ class TreeDrawer {
 		return this.canvas;
 	}
 
-	public pngDrawTree(tree: Tree | DTree): Canvas {
-		const placer = new TreePlacer(this.ctx, denotationRenderLatex);
+	public async pngDrawTree(
+		tree: Tree | DTree,
+		renderer: (denotation: CompactExpr) => RenderedDenotation,
+	): Promise<Canvas> {
+		const placer = new TreePlacer(this.ctx, renderer);
 		const placed = placer.placeTree(tree);
-		this.drawTree(this.rootX, this.rootY, placed);
+		await this.drawTree(this.rootX, this.rootY, placed);
 		this.drawArrows();
 		this.fitCanvasToContents();
 		return this.canvas;
 	}
 }
 
-export function pngDrawTree(tree: Tree | DTree, theme: ThemeName): Canvas {
-	return new TreeDrawer(themes[theme]).pngDrawTree(tree);
+export function pngDrawTree(
+	theme: ThemeName,
+	layerHeight: number,
+	tree: Tree | DTree,
+	renderer: (denotation: CompactExpr) => RenderedDenotation,
+): Promise<Canvas> {
+	const drawer = new TreeDrawer(themes[theme], layerHeight);
+	return drawer.pngDrawTree(tree, renderer);
 }

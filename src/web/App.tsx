@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import _ from 'lodash';
-import { ReactElement, useEffect, useState } from 'react';
+import { ReactElement, useEffect, useRef, useState } from 'react';
 import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 
 import { boxify } from '../boxes';
@@ -10,22 +10,27 @@ import { fix } from '../fix';
 import { Glosser } from '../gloss';
 import { parse } from '../parse';
 import { denote } from '../semantics/denote';
-import { Expr } from '../semantics/model';
 import { toLatex, toPlainText } from '../semantics/render';
 import { textual_tree_from_json } from '../textual-tree';
 import { Tree } from '../tree';
 import { pngDrawTree } from '../tree/draw';
 
-import './App.css';
-import { Boxes } from './Boxes';
-import { Tokens } from './Tokens';
-import { ToaqTokenizer } from '../tokenize';
 import {
 	compact as compactDenotation,
 	CompactExpr,
 } from '../semantics/compact';
+import { ToaqTokenizer } from '../tokenize';
+import { denotationRenderLatex } from '../tree/place';
+import './App.css';
+import { Boxes } from './Boxes';
+import { Tokens } from './Tokens';
 
-type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
+type TreeMode =
+	| 'syntax-tree'
+	| 'compact-tree'
+	| 'semantics-tree'
+	| 'semantics-tree-compact'
+	| 'raw-tree';
 type Mode =
 	| 'boxes-flat'
 	| 'boxes-nest'
@@ -66,6 +71,7 @@ export function App() {
 		<>Output will appear here.</>,
 	);
 	const math = latestMode === 'logical-form';
+	const treeImg = useRef<HTMLImageElement>(null);
 
 	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png');
 	useEffect(
@@ -93,7 +99,7 @@ export function App() {
 		let tree = parseInput();
 		if (mode !== 'raw-tree') tree = fix(tree);
 		if (mode === 'compact-tree') tree = compactTree(tree);
-		if (mode === 'semantics-tree') tree = denote(tree as any);
+		if (mode.includes('semantics')) tree = denote(tree as any);
 		switch (treeFormat) {
 			case 'textual':
 				return (
@@ -101,9 +107,15 @@ export function App() {
 				);
 			case 'png':
 				const theme = darkMode.isDarkMode ? 'dark' : 'light';
-				const canvas = pngDrawTree(tree, theme);
-				const url = canvas.toDataURL();
-				return <img style={{ maxHeight: '500px' }} src={url} />;
+				const renderer =
+					mode === 'semantics-tree-compact'
+						? (e: CompactExpr) => denotationRenderLatex(compactDenotation(e))
+						: denotationRenderLatex;
+				const layerHeight = mode.includes('semantics') ? 140 : 100;
+				pngDrawTree(theme, layerHeight, tree, renderer).then(canvas => {
+					treeImg.current!.src = canvas.toDataURL();
+				});
+				return <img ref={treeImg} style={{ maxHeight: '500px' }} src={''} />;
 			case 'json':
 				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
 		}
@@ -123,9 +135,14 @@ export function App() {
 		);
 	}
 
-	function getLogicalForm(renderer: (e: CompactExpr) => string): ReactElement {
-		const expr = denote(fix(parseInput())).denotation;
-		return <>{expr ? renderer(compactDenotation(expr)) : 'No denotation'}</>;
+	function getLogicalForm(
+		renderer: (e: CompactExpr) => string,
+		compact: boolean,
+	): ReactElement {
+		let expr: any = denote(fix(parseInput())).denotation;
+		if (!expr) return <>No denotation</>;
+		if (compact) expr = compactDenotation(expr);
+		return <>{renderer(expr)}</>;
 	}
 
 	function getEnglish(): ReactElement {
@@ -151,6 +168,7 @@ export function App() {
 			case 'syntax-tree':
 			case 'compact-tree':
 			case 'semantics-tree':
+			case 'semantics-tree-compact':
 			case 'raw-tree':
 				return getTree(mode);
 			case 'gloss':
@@ -158,9 +176,9 @@ export function App() {
 			case 'technical-gloss':
 				return getGloss(false);
 			case 'logical-form':
-				return getLogicalForm(toPlainText);
+				return getLogicalForm(toPlainText, false);
 			case 'logical-form-latex':
-				return getLogicalForm(toLatex);
+				return getLogicalForm(toLatex, false);
 			case 'english':
 				return getEnglish();
 			case 'tokens':
@@ -200,29 +218,44 @@ export function App() {
 					</label>
 				</div>
 				<div className="buttons">
-					<button onClick={() => generate('tokens')}>Tokens</button>
-					<br />
-					<button onClick={() => generate('syntax-tree')}>Syntax tree</button>
-					<button onClick={() => generate('compact-tree')}>Compact tree</button>
-					<button onClick={() => generate('semantics-tree')}>
-						Semantics tree
-					</button>
-					<button onClick={() => generate('raw-tree')}>Raw tree</button>
-					<br />
-					<button onClick={() => generate('boxes-flat')}>Flat boxes</button>
-					<button onClick={() => generate('boxes-nest')}>Nested boxes</button>
-					<button onClick={() => generate('boxes-split')}>Split boxes</button>
-					<br />
-					<button onClick={() => generate('gloss')}>Gloss</button>
-					<button onClick={() => generate('technical-gloss')}>
-						Technical gloss
-					</button>
-					<button onClick={() => generate('english')}>English</button>
-					<br />
-					<button onClick={() => generate('logical-form')}>Logical form</button>
-					<button onClick={() => generate('logical-form-latex')}>
-						Logical form (LaTeX)
-					</button>
+					<div className="button-group">
+						<div className="button-group-name">Debug</div>
+						<button onClick={() => generate('tokens')}>Tokens</button>
+						<button onClick={() => generate('raw-tree')}>Raw tree</button>
+					</div>
+					<div className="button-group">
+						<div className="button-group-name">Tree</div>
+						<button onClick={() => generate('syntax-tree')}>Syntax</button>
+						<button onClick={() => generate('compact-tree')}>Simplified</button>
+						<button onClick={() => generate('semantics-tree')}>Denoted</button>
+						<button onClick={() => generate('semantics-tree-compact')}>
+							Compact
+						</button>
+					</div>
+					<div className="button-group">
+						<div className="button-group-name">Boxes</div>
+						<button onClick={() => generate('boxes-flat')}>Flat</button>
+						<button onClick={() => generate('boxes-nest')}>Nested</button>
+						<button onClick={() => generate('boxes-split')}>Split</button>
+					</div>
+					<div className="button-group">
+						<div className="button-group-name">Gloss</div>
+						<button onClick={() => generate('gloss')}>Friendly</button>
+						<button onClick={() => generate('technical-gloss')}>
+							Technical
+						</button>
+					</div>
+					<div className="button-group">
+						<div className="button-group-name">Translate</div>
+						<button onClick={() => generate('english')}>English</button>
+					</div>
+					<div className="button-group">
+						<div className="button-group-name">Meaning</div>
+						<button onClick={() => generate('logical-form')}>Text</button>
+						<button onClick={() => generate('logical-form-latex')}>
+							LaTeX
+						</button>
+					</div>
 				</div>
 			</div>
 			{parseCount > 1 ? (
