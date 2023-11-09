@@ -5,7 +5,7 @@ import {
 	Unimplemented,
 	Unrecognized,
 } from '../error';
-import { Branch, Leaf, StrictTree, Word } from '../tree';
+import { Branch, Label, Leaf, StrictTree, Word } from '../tree';
 import {
 	adjuncts,
 	animacies,
@@ -47,6 +47,16 @@ import {
 	someSubexpression,
 	unifyDenotations,
 } from './operations';
+
+function effectiveLabel(tree: StrictTree): Label {
+	if (tree.label === '&P') {
+		if ('word' in tree) throw new Impossible('Leaf &P');
+		// Check the children to find what kind of &P this is
+		return effectiveLabel(tree.left);
+	} else {
+		return tree.label;
+	}
+}
 
 function denoteVerb(toaq: string, arity: number): Expr {
 	switch (arity) {
@@ -246,7 +256,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			throw new Unrecognized(`&: ${leaf.word.text}`);
 
 		const toaq = leaf.word.entry.toaq;
-		const data = conjunctions[cCommand.label]?.[toaq];
+		const data = conjunctions[effectiveLabel(cCommand)]?.[toaq];
 		if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
 		denotation = data;
 	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
@@ -590,7 +600,8 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 };
 
 function getCompositionRule(left: DTree, right: DTree): CompositionRule {
-	switch (left.label) {
+	const leftLabel = effectiveLabel(left);
+	switch (leftLabel) {
 		case 'V':
 		case 'Asp':
 		case 'Σ':
@@ -619,13 +630,10 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'QP':
 		case 'Adjunct':
 			return predicateAbstraction;
-		case '&P':
-			if ('word' in left) throw new Impossible('&P leaf');
-			// Check the children to find out what kind of &P this is
-			return getCompositionRule(left.left, right);
 	}
 
-	switch (right.label) {
+	const rightLabel = effectiveLabel(right);
+	switch (rightLabel) {
 		case "𝘷'":
 		case 'SA':
 		case "V'":
@@ -634,17 +642,13 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'CPrel':
 		case 'AdjunctP':
 			return predicateModification;
-		case '&P':
-			if ('word' in right) throw new Impossible('&P leaf');
-			// Check the children to find out what kind of &P this is
-			return getCompositionRule(left, right.left);
 	}
 
 	// AdjunctP is placed here because &' should take precedence over it
-	if (left.label === 'AdjunctP') return predicateModification;
+	if (leftLabel === 'AdjunctP') return predicateModification;
 
 	throw new Unimplemented(
-		`TODO: composition of ${left.label} and ${right.label}`,
+		`TODO: composition of ${leftLabel} and ${rightLabel}`,
 	);
 }
 

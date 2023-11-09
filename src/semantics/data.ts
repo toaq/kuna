@@ -557,7 +557,7 @@ const conjunctionWords: Record<string, (left: Expr, right: Expr) => Expr> = {
 	rá: or,
 };
 
-const conjunctionTypes: Partial<Record<Label, ExprType>> = {
+const conjunctTypes: Partial<Record<Label, ExprType>> = {
 	AdjunctP: ['v', 't'],
 	CPrel: ['e', 't'],
 	TP: 't',
@@ -565,7 +565,7 @@ const conjunctionTypes: Partial<Record<Label, ExprType>> = {
 
 export const conjunctions: Partial<Record<Label, Record<string, Expr>>> =
 	Object.fromEntries(
-		Object.entries(conjunctionTypes).map(([label, t]) => [
+		Object.entries(conjunctTypes).map(([label, t]) => [
 			label,
 			Object.fromEntries(
 				Object.entries(conjunctionWords).map(([toaq, conjoin]) => [
