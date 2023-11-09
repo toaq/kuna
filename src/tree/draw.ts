@@ -6,7 +6,9 @@ import {
 	PlacedBranch,
 	PlacedLeaf,
 	PlacedTree,
-	placeTree,
+	TreePlacer,
+	denotationRenderLatex,
+	denotationRenderText,
 } from './place';
 
 interface Location {
@@ -195,7 +197,8 @@ class TreeDrawer {
 	}
 
 	public pngDrawTree(tree: Tree | DTree): Canvas {
-		const placed = placeTree(this.ctx, tree);
+		const placer = new TreePlacer(this.ctx, denotationRenderLatex);
+		const placed = placer.placeTree(tree);
 		this.drawTree(this.rootX, this.rootY, placed);
 		this.drawArrows();
 		this.fitCanvasToContents();
