@@ -105,7 +105,7 @@ export function denotationRenderLatex(
 	denotation: CompactExpr,
 ): RenderedDenotation {
 	const latex = toLatex(denotation);
-	let { width, height, svg } = get_mathjax_svg('\\Large ' + latex);
+	let { width, height, svg } = get_mathjax_svg('\\LARGE ' + latex);
 	svg = svg.replace(/currentColor/g, 'red');
 	const pxWidth = Number(width.replace(/ex$/, '')) * 8;
 	const pxHeight = Number(height.replace(/ex$/, '')) * 8;
