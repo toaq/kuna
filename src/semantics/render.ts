@@ -364,8 +364,8 @@ const latex: Format = {
 	apply: (fn, argument) => `${fn}(${argument})`,
 	presuppose: (body, presupposition) => `${body}\\ |\\ ${presupposition}`,
 	infixSymbols: {
-		and: '\\ \\land\\ ',
-		or: '\\ \\lor\\ ',
+		and: '\\land{}',
+		or: '\\lor{}',
 		equals: '=',
 		subinterval: '\\subseteq{}',
 		before: '<',
@@ -373,7 +373,7 @@ const latex: Format = {
 		before_near: '<_{\\text{near}}',
 		after_near: '>_{\\text{near}}',
 		roi: '&',
-		coevent: '\\ o\\ ',
+		coevent: '\\operatorname{o}',
 	},
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
 	polarizerSymbols: {
