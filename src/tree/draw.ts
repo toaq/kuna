@@ -51,6 +51,7 @@ class TreeDrawer {
 	private extent: { minX: number; maxX: number; minY: number; maxY: number };
 	private locations: Map<string, Location> = new Map();
 	private arrows: Array<[string, string]> = [];
+	private promises: Array<Promise<void>> = [];
 
 	constructor(
 		private theme: Theme,
@@ -83,15 +84,15 @@ class TreeDrawer {
 		this.ctx.stroke();
 	}
 
-	private async drawText(
+	private drawText(
 		text: string | RenderedDenotation,
 		x: number,
 		y: number,
 		color: string,
-	): Promise<void> {
+	): void {
 		let width: number;
 		if (typeof text !== 'string') {
-			await text.draw(this.ctx, x, y, color);
+			this.promises.push(text.draw(this.ctx, x, y, color));
 			width = text.width(this.ctx);
 		} else {
 			this.ctx.fillStyle = color;
@@ -108,52 +109,29 @@ class TreeDrawer {
 		if (maxY > this.extent.maxY) this.extent.maxY = maxY;
 	}
 
-	private async drawLabel(
-		x: number,
-		y: number,
-		tree: PlacedTree,
-	): Promise<void> {
+	private drawLabel(x: number, y: number, tree: PlacedTree): void {
 		if (tree.coindex) {
 			const w1 = this.ctx.measureText(tree.label).width;
 			const w2 = this.ctx.measureText(tree.coindex).width;
-			await this.drawText(tree.label, x - w2 / 2, y, this.theme.textColor);
-			await this.drawText(
-				tree.coindex,
-				x + w1 / 2,
-				y + 8,
-				this.theme.textColor,
-			);
+			this.drawText(tree.label, x - w2 / 2, y, this.theme.textColor);
+			this.drawText(tree.coindex, x + w1 / 2, y + 8, this.theme.textColor);
 		} else {
-			await this.drawText(tree.label, x, y, this.theme.textColor);
+			this.drawText(tree.label, x, y, this.theme.textColor);
 		}
 	}
 
-	private async drawLeaf(
-		x: number,
-		y: number,
-		tree: PlacedLeaf,
-	): Promise<void> {
+	private drawLeaf(x: number, y: number, tree: PlacedLeaf): void {
 		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
-			await this.drawText(
-				tree.denotation,
-				x,
-				y + 30,
-				this.theme.denotationColor,
-			);
+			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
 		}
 		if (tree.word !== undefined) {
 			const dy = 35 + (tree.denotation?.height(this.ctx) ?? 0);
 			this.drawLine(x, y + dy, x, y + this.layerHeight - 15);
-			await this.drawText(
-				tree.word,
-				x,
-				y + this.layerHeight,
-				this.theme.wordColor,
-			);
+			this.drawText(tree.word, x, y + this.layerHeight, this.theme.wordColor);
 			if (tree.gloss) {
 				const yg = y + this.layerHeight + 30;
-				await this.drawText(tree.gloss, x, yg, this.theme.textColor);
+				this.drawText(tree.gloss, x, yg, this.theme.textColor);
 			}
 		}
 
@@ -167,34 +145,25 @@ class TreeDrawer {
 		}
 	}
 
-	private async drawBranch(
-		x: number,
-		y: number,
-		tree: PlacedBranch,
-	): Promise<void> {
+	private drawBranch(x: number, y: number, tree: PlacedBranch): void {
 		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
-			await this.drawText(
-				tree.denotation,
-				x,
-				y + 30,
-				this.theme.denotationColor,
-			);
+			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
 		}
 		const n = tree.children.length;
 		for (let i = 0; i < n; i++) {
 			const dx = (i - (n - 1) / 2) * tree.distanceBetweenChildren;
-			await this.drawTree(x + dx, y + this.layerHeight, tree.children[i]);
+			this.drawTree(x + dx, y + this.layerHeight, tree.children[i]);
 			const dy = 35 + (tree.denotation?.height(this.ctx) ?? 0);
 			this.drawLine(x, y + dy, x + dx, y + this.layerHeight - 15);
 		}
 	}
 
-	private drawTree(x: number, y: number, tree: PlacedTree): Promise<void> {
+	private drawTree(x: number, y: number, tree: PlacedTree): void {
 		if ('word' in tree) {
-			return this.drawLeaf(x, y, tree);
+			this.drawLeaf(x, y, tree);
 		} else {
-			return this.drawBranch(x, y, tree);
+			this.drawBranch(x, y, tree);
 		}
 	}
 
@@ -235,7 +204,8 @@ class TreeDrawer {
 	): Promise<Canvas> {
 		const placer = new TreePlacer(this.ctx, renderer);
 		const placed = placer.placeTree(tree);
-		await this.drawTree(this.rootX, this.rootY, placed);
+		this.drawTree(this.rootX, this.rootY, placed);
+		await Promise.all(this.promises);
 		this.drawArrows();
 		this.fitCanvasToContents();
 		return this.canvas;
