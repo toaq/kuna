@@ -20,7 +20,7 @@ import {
 	CompactExpr,
 } from '../semantics/compact';
 import { ToaqTokenizer } from '../tokenize';
-import { denotationRenderLatex } from '../tree/place';
+import { denotationRenderLatex, denotationRenderText } from '../tree/place';
 import './App.css';
 import { Boxes } from './Boxes';
 import { Tokens } from './Tokens';
@@ -42,7 +42,7 @@ type Mode =
 	| 'logical-form-latex'
 	| 'english'
 	| 'tokens';
-type TreeFormat = 'png' | 'textual' | 'json';
+type TreeFormat = 'png-latex' | 'png-text' | 'textual' | 'json';
 
 function errorString(e: any): string {
 	const string = String(e);
@@ -73,7 +73,7 @@ export function App() {
 	const math = latestMode === 'logical-form';
 	const treeImg = useRef<HTMLImageElement>(null);
 
-	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png');
+	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png-latex');
 	useEffect(
 		() => latestMode && generate(latestMode),
 		[darkMode.isDarkMode, treeFormat, parseIndex],
@@ -105,14 +105,19 @@ export function App() {
 				return (
 					<pre>{textual_tree_from_json(tree).replace(/\x1b\[\d+m/g, '')}</pre>
 				);
-			case 'png':
+			case 'png-latex':
+			case 'png-text':
 				const theme = darkMode.isDarkMode ? 'dark' : 'light';
-				const renderer =
+				const render =
+					treeFormat === 'png-latex'
+						? denotationRenderLatex
+						: denotationRenderText;
+				const renderAndCompact =
 					mode === 'semantics-tree-compact'
-						? (e: CompactExpr) => denotationRenderLatex(compactDenotation(e))
-						: denotationRenderLatex;
+						? (e: CompactExpr) => render(compactDenotation(e))
+						: render;
 				const layerHeight = mode.includes('semantics') ? 140 : 100;
-				pngDrawTree(theme, layerHeight, tree, renderer).then(canvas => {
+				pngDrawTree(theme, layerHeight, tree, renderAndCompact).then(canvas => {
 					treeImg.current!.src = canvas.toDataURL();
 				});
 				return <img ref={treeImg} style={{ maxHeight: '500px' }} src={''} />;
@@ -211,7 +216,8 @@ export function App() {
 					<label>
 						Tree format:
 						<select onChange={e => setTreeFormat(e.target.value as TreeFormat)}>
-							<option value="png">Image</option>
+							<option value="png-latex">Image (LaTeX)</option>
+							<option value="png-text">Image (plain text)</option>
 							<option value="textual">Text art</option>
 							<option value="json">JSON</option>
 						</select>
