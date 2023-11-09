@@ -4,7 +4,7 @@ import { ReactElement, useEffect, useState } from 'react';
 import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 
 import { boxify } from '../boxes';
-import { compact } from '../compact';
+import { compact as compactTree } from '../compact';
 import { treeToEnglish } from '../english/tree';
 import { fix } from '../fix';
 import { Glosser } from '../gloss';
@@ -20,6 +20,10 @@ import './App.css';
 import { Boxes } from './Boxes';
 import { Tokens } from './Tokens';
 import { ToaqTokenizer } from '../tokenize';
+import {
+	compact as compactDenotation,
+	CompactExpr,
+} from '../semantics/compact';
 
 type TreeMode = 'syntax-tree' | 'compact-tree' | 'semantics-tree' | 'raw-tree';
 type Mode =
@@ -88,7 +92,7 @@ export function App() {
 	function getTree(mode: TreeMode): ReactElement {
 		let tree = parseInput();
 		if (mode !== 'raw-tree') tree = fix(tree);
-		if (mode === 'compact-tree') tree = compact(tree);
+		if (mode === 'compact-tree') tree = compactTree(tree);
 		if (mode === 'semantics-tree') tree = denote(tree as any);
 		switch (treeFormat) {
 			case 'textual':
@@ -119,9 +123,9 @@ export function App() {
 		);
 	}
 
-	function getLogicalForm(renderer: (e: Expr) => string): ReactElement {
+	function getLogicalForm(renderer: (e: CompactExpr) => string): ReactElement {
 		const expr = denote(fix(parseInput())).denotation;
-		return <>{expr ? renderer(expr) : 'No denotation'}</>;
+		return <>{expr ? renderer(compactDenotation(expr)) : 'No denotation'}</>;
 	}
 
 	function getEnglish(): ReactElement {

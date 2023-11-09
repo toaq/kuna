@@ -2,6 +2,7 @@ import { CanvasRenderingContext2D } from 'canvas';
 import { DTree, Expr } from '../semantics/model';
 import { toPlainText, typeToPlainText } from '../semantics/render';
 import { Branch, Leaf, Rose, Tree } from '../tree';
+import { compact } from '../semantics/compact';
 
 export interface RenderedDenotation {
 	draw: (
@@ -53,7 +54,7 @@ function getLabel(tree: Tree | DTree): string {
 }
 
 export function denotationRenderText(denotation: Expr): RenderedDenotation {
-	const text = toPlainText(denotation);
+	const text = toPlainText(compact(denotation));
 	return {
 		draw(ctx, centerX, bottomY, color) {
 			ctx.fillStyle = color;
