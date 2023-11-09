@@ -33,10 +33,15 @@ export function pro(): Leaf {
 
 /**
  * Get a frame string like "c" or "c c 1j" for this verbal subtree.
+ *
+ * Returns "kı" when passed kı- (this helps split serials).
  */
 export function getFrame(verb: Tree): string {
 	if ('word' in verb) {
-		if (verb.word.covert) throw new Impossible('covert verb in a serial?');
+		if (verb.word.covert) {
+			// Must be the covert "raı" after a "sá".
+			return 'c';
+		}
 		if (verb.word.entry?.type === 'predicate') {
 			return verb.word.entry.frame;
 		} else if (verb.word.entry?.type === 'adjective marker') {

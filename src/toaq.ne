@@ -11,7 +11,7 @@ const {
 	makeBranch,
 	makeBranchCovertLeft,
 	makeConn,
-    makeCovertLeaf,
+    makeEmptySerial,
 	makeLeaf,
 	makeOptLeaf,
 	makePrefixLeaf,
@@ -134,7 +134,7 @@ V1orKi -> Ki {% id %}
 # (sá) tua hao
 Serialdet -> Serial {% id %}
 # (sá) ∅
-Serialdet -> null {% makeCovertLeaf('V') %}
+Serialdet -> null {% makeEmptySerial() %}
 
 # hao sâ ...
 VPincorp -> V DPincorp {% makeBranch('VP') %}

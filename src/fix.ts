@@ -79,8 +79,9 @@ export function fix(tree: Tree, scope?: Scope): StrictTree {
 		if (tree.label === '*𝘷P') {
 			const serial = tree.children[0];
 			if (!serial) throw new Impossible('*𝘷P without children');
-			if (serial.label !== '*Serial')
-				throw new Impossible('*𝘷P without *Serial');
+			if (serial.label !== '*Serial') {
+				throw new Impossible('*𝘷P without *Serial, instead: ' + serial.label);
+			}
 			if (!('children' in serial)) throw new Impossible('strange *Serial');
 			const vP = fixSerial(serial, tree.children.slice(1));
 			return fix(vP, scope);
