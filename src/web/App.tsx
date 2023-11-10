@@ -72,11 +72,12 @@ export function App() {
 	);
 	const math = latestMode === 'logical-form';
 	const treeImg = useRef<HTMLImageElement>(null);
+	const [meaningCompact, setMeaningCompact] = useState(false);
 
 	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png-latex');
 	useEffect(
 		() => latestMode && generate(latestMode),
-		[darkMode.isDarkMode, treeFormat, parseIndex],
+		[darkMode.isDarkMode, treeFormat, parseIndex, meaningCompact],
 	);
 
 	function parseInput(): Tree {
@@ -181,9 +182,9 @@ export function App() {
 			case 'technical-gloss':
 				return getGloss(false);
 			case 'logical-form':
-				return getLogicalForm(toPlainText, false);
+				return getLogicalForm(toPlainText, meaningCompact);
 			case 'logical-form-latex':
-				return getLogicalForm(toLatex, false);
+				return getLogicalForm(toLatex, meaningCompact);
 			case 'english':
 				return getEnglish();
 			case 'tokens':
@@ -261,6 +262,14 @@ export function App() {
 						<button onClick={() => generate('logical-form-latex')}>
 							LaTeX
 						</button>
+						<label>
+							<input
+								type="checkbox"
+								checked={meaningCompact}
+								onChange={e => setMeaningCompact(e.target.checked)}
+							/>
+							Compact
+						</label>
 					</div>
 				</div>
 			</div>
