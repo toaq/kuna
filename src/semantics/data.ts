@@ -47,6 +47,7 @@ import {
 	coevent,
 	subject,
 	or,
+	she,
 } from './model';
 import { lift, reduce } from './operations';
 
@@ -322,9 +323,9 @@ export const covertLittleVs: Partial<Record<CovertValue, Expr | null>> = {
 	BE: null,
 };
 
-export const overtLittleVs: Record<string, Expr> = {
-	// λ𝘗. 𝘗
-	nä: λ(['e', 't'], [], c => v(0, c)),
+export const overtLittleVs: Record<string, Expr | null> = {
+	nä: null,
+	gö: null,
 };
 
 const animacyPredicates: Record<
@@ -580,3 +581,35 @@ export const conjunctions: Partial<Record<Label, Record<string, Expr>>> =
 			),
 		]),
 	);
+
+interface ModalWord {
+	counterfactual: boolean;
+	quantifier: typeof every;
+}
+
+const modalWords: Record<string, ModalWord> = {
+	shê: { counterfactual: false, quantifier: every },
+	dâı: { counterfactual: false, quantifier: some },
+	âo: { counterfactual: true, quantifier: every },
+	êa: { counterfactual: true, quantifier: some },
+};
+
+export const modals: Record<string, Expr> = Object.fromEntries(
+	Object.entries(modalWords).map(([toaq, { counterfactual, quantifier }]) => [
+		toaq,
+		λ(
+			['s', 't'],
+			['s'],
+			c =>
+				λ(['s', 't'], c, c =>
+					quantifier(
+						's',
+						c,
+						c => app(v(1, c), v(0, c)),
+						c => and(app(app(she(c), v(3, c)), v(0, c)), app(v(2, c), v(0, c))),
+					),
+				),
+			counterfactual ? c => not(app(v(0, c), v(1, c))) : undefined,
+		),
+	]),
+);

@@ -289,3 +289,18 @@ test('it denotes adjunct coordination', () => {
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ AGENT(𝘦')(𝘸) = jí ∧ kaı.𝘸(b, a)(𝘦') ∧ ((∃𝘦''. 𝘦'' o 𝘦' ∧ feı.𝘸(SUBJ(𝘦')(𝘸))(𝘦'')) ∨ ∃𝘦''. rao.𝘸(𝘦', c)(𝘦'')) | ∃𝘦'. τ(𝘦') ⊆ t ∧ nuaq.𝘸(c)(𝘦')))(𝘦) | abstract(c) | inanimate(b)\"",
 	);
 });
+
+test('it denotes modals', () => {
+	expect(d('Shê, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦'. τ(𝘦') ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦'). ∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦'))(𝘦) | inanimate(a)\"",
+	);
+	expect(d('Dâı, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦'. τ(𝘦') ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦'). ∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦'))(𝘦) | inanimate(a)\"",
+	);
+	expect(d('Âo, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦'. τ(𝘦') ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦'). ∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦') | ¬∃𝘦'. τ(𝘦') ⊆ t' ∧ tı.𝘸(súq, a)(𝘦')))(𝘦) | inanimate(a)\"",
+	);
+	expect(d('Êa, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦'. τ(𝘦') ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦'). ∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦') | ¬∃𝘦'. τ(𝘦') ⊆ t' ∧ tı.𝘸(súq, a)(𝘦')))(𝘦) | inanimate(a)\"",
+	);
+});

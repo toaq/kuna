@@ -17,6 +17,7 @@ import {
 	covertLittleVs,
 	defaultTense,
 	dps,
+	modals,
 	overtLittleVs,
 	polarities,
 	quantifiers,
@@ -259,6 +260,14 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		const data = conjunctions[effectiveLabel(cCommand)]?.[toaq];
 		if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
 		denotation = data;
+	} else if (leaf.label === 'Modal') {
+		if (leaf.word.covert) throw new Impossible('Covert Modal');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`Modal: ${leaf.word.text}`);
+
+		const toaq = leaf.word.entry.toaq;
+		denotation = modals[toaq];
+		if (denotation === undefined) throw new Unrecognized(`Modal: ${toaq}`);
 	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
 		denotation = null;
 	} else {
@@ -392,20 +401,19 @@ const predicateModification: CompositionRule = (branch, left, right) => {
 	return { ...branch, left, right, denotation, bindings };
 };
 
-const cComposition: CompositionRule = (branch, left, right) => {
+const propositionAbstraction: CompositionRule = (branch, left, right) => {
 	if (right.denotation === null) {
-		throw new Impossible(`C composition on a null ${right.label}`);
+		throw new Impossible(`Proposition abstraction on a null ${right.label}`);
 	} else {
 		const worldIndex = right.denotation.context.findIndex(t => t === 's');
 		if (worldIndex === -1)
 			throw new Impossible(
-				`C composition on something without a world variable`,
+				`Proposition abstraction on something without a world variable`,
 			);
 
 		const newContext = [...right.denotation.context];
 		newContext.splice(worldIndex, 1);
-		const indexMapping = (i: number) =>
-			i === worldIndex ? 0 : i < worldIndex ? i + 1 : i;
+		const indexMapping = (i: number) => (i < worldIndex ? i : i - 1);
 
 		return {
 			...branch,
@@ -413,7 +421,9 @@ const cComposition: CompositionRule = (branch, left, right) => {
 			right,
 			denotation: reduce(
 				λ('s', newContext, c =>
-					rewriteContext(right.denotation!, c, indexMapping),
+					rewriteContext(right.denotation!, c, i =>
+						i === worldIndex ? 0 : indexMapping(i) + 1,
+					),
 				),
 			),
 			bindings: mapBindings(right.bindings, b => ({
@@ -606,6 +616,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'Asp':
 		case 'Σ':
 		case '&':
+		case 'Modal':
+		case 'ModalP':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -613,12 +625,17 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 				? functionalApplication
 				: reverseFunctionalApplication;
 		case '𝘷':
-			return left.denotation !== null &&
-				subtype(left.denotation.type, ['e', ['v', 't']])
-				? eventIdentification
-				: functionalApplication;
+			if (left.denotation === null) {
+				return effectiveLabel(right) === 'TP'
+					? propositionAbstraction
+					: functionalApplication;
+			} else {
+				return subtype(left.denotation.type, ['e', ['v', 't']])
+					? eventIdentification
+					: functionalApplication;
+			}
 		case 'C':
-			return cComposition;
+			return propositionAbstraction;
 		case 'Crel':
 			return cRelComposition;
 		case '𝘯':
