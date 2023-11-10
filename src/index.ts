@@ -131,7 +131,7 @@ yargs
 			const theme = argv.light ? 'light' : 'dark';
 			const canvas = await pngDrawTree(
 				theme,
-				argv.semantics ? 140 : 100,
+				argv.semantics,
 				trees[0],
 				denotationRenderText,
 			);

@@ -214,10 +214,11 @@ class TreeDrawer {
 
 export function pngDrawTree(
 	theme: ThemeName,
-	layerHeight: number,
+	tall: boolean,
 	tree: Tree | DTree,
 	renderer: (denotation: CompactExpr) => RenderedDenotation,
 ): Promise<Canvas> {
+	const layerHeight = tall ? 150 : 100;
 	const drawer = new TreeDrawer(themes[theme], layerHeight);
 	return drawer.pngDrawTree(tree, renderer);
 }

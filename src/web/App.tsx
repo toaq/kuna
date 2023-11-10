@@ -117,8 +117,8 @@ export function App() {
 					mode === 'semantics-tree-compact'
 						? (e: CompactExpr) => render(compactDenotation(e))
 						: render;
-				const layerHeight = mode.includes('semantics') ? 140 : 100;
-				pngDrawTree(theme, layerHeight, tree, renderAndCompact).then(canvas => {
+				const tall = mode.includes('semantics');
+				pngDrawTree(theme, tall, tree, renderAndCompact).then(canvas => {
 					treeImg.current!.src = canvas.toDataURL();
 				});
 				return (
