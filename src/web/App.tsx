@@ -13,7 +13,7 @@ import { denote } from '../semantics/denote';
 import { toLatex, toPlainText } from '../semantics/render';
 import { textual_tree_from_json } from '../textual-tree';
 import { Tree } from '../tree';
-import { pngDrawTree } from '../tree/draw';
+import { pngDrawTree, Theme } from '../tree/draw';
 
 import {
 	compact as compactDenotation,
@@ -115,7 +115,7 @@ export function App() {
 						: denotationRenderText;
 				const renderAndCompact =
 					mode === 'semantics-tree-compact'
-						? (e: CompactExpr) => render(compactDenotation(e))
+						? (e: CompactExpr, t: Theme) => render(compactDenotation(e), t)
 						: render;
 				const tall = mode.includes('semantics');
 				pngDrawTree(theme, tall, tree, renderAndCompact).then(canvas => {

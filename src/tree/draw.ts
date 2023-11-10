@@ -18,7 +18,7 @@ interface Location {
 
 export type ThemeName = 'dark' | 'light';
 
-interface Theme {
+export interface Theme {
 	backgroundColor: string;
 	textColor: string;
 	denotationColor: string;
@@ -200,9 +200,9 @@ class TreeDrawer {
 
 	public async pngDrawTree(
 		tree: Tree | DTree,
-		renderer: (denotation: CompactExpr) => RenderedDenotation,
+		renderer: (denotation: CompactExpr, theme: Theme) => RenderedDenotation,
 	): Promise<Canvas> {
-		const placer = new TreePlacer(this.ctx, renderer);
+		const placer = new TreePlacer(this.ctx, this.theme, renderer);
 		const placed = placer.placeTree(tree);
 		this.drawTree(this.rootX, this.rootY, placed);
 		await Promise.all(this.promises);
@@ -216,7 +216,7 @@ export function pngDrawTree(
 	theme: ThemeName,
 	tall: boolean,
 	tree: Tree | DTree,
-	renderer: (denotation: CompactExpr) => RenderedDenotation,
+	renderer: (denotation: CompactExpr, theme: Theme) => RenderedDenotation,
 ): Promise<Canvas> {
 	const layerHeight = tall ? 150 : 100;
 	const drawer = new TreeDrawer(themes[theme], layerHeight);

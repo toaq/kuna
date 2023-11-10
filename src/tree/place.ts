@@ -10,6 +10,7 @@ import { SVG } from 'mathjax-full/js/output/svg';
 import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
+import { Theme } from './draw';
 
 const adaptor = liteAdaptor();
 RegisterHTMLHandler(adaptor);
@@ -85,6 +86,7 @@ function getLabel(tree: Tree | DTree): string {
 
 export function denotationRenderText(
 	denotation: CompactExpr,
+	theme: Theme,
 ): RenderedDenotation {
 	const text = toPlainText(denotation);
 	return {
@@ -103,10 +105,11 @@ export function denotationRenderText(
 
 export function denotationRenderLatex(
 	denotation: CompactExpr,
+	theme: Theme,
 ): RenderedDenotation {
 	const latex = toLatex(denotation);
 	let { width, height, svg } = get_mathjax_svg('\\LARGE ' + latex);
-	svg = svg.replace(/currentColor/g, 'red');
+	svg = svg.replace(/currentColor/g, theme.denotationColor);
 	const pxWidth = Number(width.replace(/ex$/, '')) * 7;
 	const pxHeight = Number(height.replace(/ex$/, '')) * 7;
 	return {
@@ -171,7 +174,11 @@ function layerExtents(tree: PlacedTree): { left: number; right: number }[] {
 export class TreePlacer {
 	constructor(
 		private ctx: CanvasRenderingContext2D,
-		private denotationRenderer: (denotation: Expr) => RenderedDenotation,
+		private theme: Theme,
+		private denotationRenderer: (
+			denotation: Expr,
+			theme: Theme,
+		) => RenderedDenotation,
 	) {}
 
 	private placeLeaf(
@@ -182,7 +189,7 @@ export class TreePlacer {
 		const word = leaf.word.covert ? leaf.word.value : leaf.word.text;
 		const denotation =
 			'denotation' in leaf && leaf.denotation !== null
-				? this.denotationRenderer(leaf.denotation)
+				? this.denotationRenderer(leaf.denotation, this.theme)
 				: undefined;
 		const width = Math.max(
 			this.ctx.measureText(label).width,
@@ -238,7 +245,7 @@ export class TreePlacer {
 	): PlacedBranch {
 		const denotation =
 			'denotation' in branch && branch.denotation !== null
-				? this.denotationRenderer(branch.denotation)
+				? this.denotationRenderer(branch.denotation, this.theme)
 				: undefined;
 		const children = [
 			this.placeTree(branch.left),
