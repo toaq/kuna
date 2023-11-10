@@ -156,11 +156,6 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			[denotation, bindings] = data;
 		}
 	} else if (leaf.label === 'D') {
-		if (leaf.word.covert) throw new Impossible(`Covert D`);
-		if (leaf.word.entry === undefined)
-			throw new Unrecognized(`D: ${leaf.word.text}`);
-		const toaq = leaf.word.entry.toaq;
-
 		denotation = boundThe;
 		bindings = boundTheBindings;
 	} else if (leaf.label === '𝘯') {
