@@ -5,7 +5,7 @@ import {
 	Unimplemented,
 	Unrecognized,
 } from '../error';
-import { Branch, Label, Leaf, StrictTree, Word } from '../tree';
+import { Branch, CovertWord, Label, Leaf, StrictTree, Word } from '../tree';
 import {
 	adjuncts,
 	animacies,
@@ -15,6 +15,7 @@ import {
 	conjunctions,
 	covertHoaBindings,
 	covertLittleVs,
+	covertV,
 	defaultTense,
 	dps,
 	modals,
@@ -101,7 +102,7 @@ function findVp(tree: StrictTree): StrictTree | null {
 	}
 }
 
-function getVerbWord(vp: StrictTree): Word {
+function getVerbWord(vp: StrictTree): Word | CovertWord {
 	if ('word' in vp) {
 		if (vp.word.covert) throw new Impossible('Covert VP');
 		return vp.word;
@@ -110,7 +111,6 @@ function getVerbWord(vp: StrictTree): Word {
 		switch (verb.label) {
 			case 'V':
 				if (!('word' in verb)) throw new Unrecognized('V shape');
-				if (verb.word.covert) throw new Impossible('Covert V');
 				return verb.word;
 			case 'shuP':
 			case 'mıP':
@@ -130,16 +130,19 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	let bindings = noBindings;
 
 	if (leaf.label === 'V' || leaf.label === 'VP') {
-		if (leaf.word.covert) throw new Impossible('covert V');
-		const entry = leaf.word.entry;
-		if (!entry) throw new Unrecognized('verb: ' + leaf.word.text);
-		if (entry.type !== 'predicate') throw new Impossible('non-predicate V');
+		if (leaf.word.covert) {
+			denotation = covertV;
+		} else {
+			const entry = leaf.word.entry;
+			if (!entry) throw new Unrecognized('verb: ' + leaf.word.text);
+			if (entry.type !== 'predicate') throw new Impossible('non-predicate V');
 
-		denotation = denoteVerb(
-			entry.toaq,
-			// Agents are external to the verb, so not counted in the arity
-			entry.frame.split(' ').length - (entry.subject === 'agent' ? 1 : 0),
-		);
+			denotation = denoteVerb(
+				entry.toaq,
+				// Agents are external to the verb, so not counted in the arity
+				entry.frame.split(' ').length - (entry.subject === 'agent' ? 1 : 0),
+			);
+		}
 	} else if (leaf.label === 'DP') {
 		if (leaf.word.covert) {
 			[denotation] = dps.hóa;
@@ -153,6 +156,11 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			[denotation, bindings] = data;
 		}
 	} else if (leaf.label === 'D') {
+		if (leaf.word.covert) throw new Impossible(`Covert D`);
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`D: ${leaf.word.text}`);
+		const toaq = leaf.word.entry.toaq;
+
 		denotation = boundThe;
 		bindings = boundTheBindings;
 	} else if (leaf.label === '𝘯') {
@@ -162,15 +170,25 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (vp === null) throw new Impossible("Can't find the VP for this 𝘯");
 		const word = getVerbWord(vp);
 
-		const animacy = animacyClass(word.entry as VerbEntry);
-		denotation = animacies[animacy];
 		const binding = { index: 0, subordinate: false, timeIntervals: [] };
-		bindings = {
-			variable: { [(word.entry as VerbEntry).toaq]: binding },
-			animacy: { [animacy]: binding },
-			head: {},
-			covertResumptive: binding,
-		};
+		if (word.covert) {
+			denotation = animacies.descriptive;
+			bindings = {
+				variable: {},
+				animacy: {},
+				head: {},
+				covertResumptive: binding,
+			};
+		} else {
+			const animacy = animacyClass(word.entry as VerbEntry);
+			denotation = animacies[animacy];
+			bindings = {
+				variable: { [(word.entry as VerbEntry).toaq]: binding },
+				animacy: { [animacy]: binding },
+				head: {},
+				covertResumptive: binding,
+			};
+		}
 	} else if (leaf.label === '𝘷') {
 		if (leaf.word.covert) {
 			const value = leaf.word.value;
@@ -190,6 +208,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		const vp = findVp(cCommand);
 		if (vp === null) throw new Impossible("Can't find the VP for this Adjunct");
 		const word = getVerbWord(vp);
+		if (word.covert) throw new Impossible('Covert Adjunct verb');
 		if (word.entry === undefined || word.entry.type !== 'predicate')
 			throw new Unrecognized(`V in AdjunctP: ${word.text}`);
 

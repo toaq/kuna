@@ -60,6 +60,11 @@ export const covertHoaBindings: Bindings = {
 	covertResumptive: { index: 0, subordinate: false, timeIntervals: [] },
 };
 
+// λ𝘢. λ𝘦. raı.𝘸(𝘢)(𝘦)
+export const covertV = λ('e', ['s'], c =>
+	λ('v', c, c => verb('raı', [v(1, c)], v(0, c), v(2, c))),
+);
+
 export const dps: Record<string, [Expr, Bindings]> = {
 	jí: [ji([]), noBindings],
 	súq: [suq([]), noBindings],
