@@ -1,7 +1,37 @@
 import { CanvasRenderingContext2D } from 'canvas';
 import { DTree, Expr } from '../semantics/model';
-import { toPlainText, typeToPlainText } from '../semantics/render';
+import { toPlainText, toLatex, typeToPlainText } from '../semantics/render';
 import { Branch, Leaf, Rose, Tree } from '../tree';
+import { CompactExpr, compact } from '../semantics/compact';
+
+import { mathjax } from 'mathjax-full/js/mathjax';
+import { TeX } from 'mathjax-full/js/input/tex';
+import { SVG } from 'mathjax-full/js/output/svg';
+import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
+import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor';
+import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
+
+const adaptor = liteAdaptor();
+RegisterHTMLHandler(adaptor);
+
+const mathjax_document = mathjax.document('', {
+	InputJax: new TeX({ packages: AllPackages }),
+	OutputJax: new SVG({ fontCache: 'local', scale: 1.5 }),
+});
+
+export function get_mathjax_svg(math: string): {
+	width: string;
+	height: string;
+	svg: string;
+} {
+	const node = mathjax_document.convert(math, {
+		em: 16,
+		ex: 8,
+		containerWidth: 1280,
+	});
+	const { width, height } = node.children[0].attributes;
+	return { width, height, svg: adaptor.innerHTML(node) };
+}
 
 export interface RenderedDenotation {
 	draw: (
@@ -9,8 +39,9 @@ export interface RenderedDenotation {
 		centerX: number,
 		bottomY: number,
 		color: string,
-	) => void;
+	) => Promise<void>;
 	width(ctx: CanvasRenderingContext2D): number;
+	height(ctx: CanvasRenderingContext2D): number;
 }
 
 interface PlacedLeafBase {
@@ -52,47 +83,60 @@ function getLabel(tree: Tree | DTree): string {
 		: tree.label;
 }
 
-export function denotationRenderText(denotation: Expr): RenderedDenotation {
+export function denotationRenderText(
+	denotation: CompactExpr,
+): RenderedDenotation {
 	const text = toPlainText(denotation);
 	return {
-		draw(ctx, centerX, bottomY, color) {
+		async draw(ctx, centerX, bottomY, color) {
 			ctx.fillStyle = color;
 			ctx.fillText(text, centerX, bottomY + 18);
 		},
 		width(ctx) {
 			return ctx.measureText(text).width;
 		},
+		height(ctx) {
+			return 30;
+		},
 	};
 }
 
-export function placeLeaf(
-	ctx: CanvasRenderingContext2D,
-	leaf: Leaf | (Leaf & { denotation: Expr | null }),
-): PlacedLeaf {
-	const gloss = leaf.word.covert ? undefined : leaf.word.entry?.gloss;
-	const label = getLabel(leaf);
-	const word = leaf.word.covert ? leaf.word.value : leaf.word.text;
-	const denotation =
-		'denotation' in leaf && leaf.denotation !== null
-			? denotationRenderText(leaf.denotation)
-			: undefined;
-	const width = Math.max(
-		ctx.measureText(label).width,
-		ctx.measureText(word ?? '').width,
-		ctx.measureText(gloss ?? '').width,
-		denotation ? denotation.width(ctx) : 0,
-	);
-
+export function denotationRenderLatex(
+	denotation: CompactExpr,
+): RenderedDenotation {
+	const latex = toLatex(denotation);
+	let { width, height, svg } = get_mathjax_svg('\\LARGE ' + latex);
+	svg = svg.replace(/currentColor/g, 'red');
+	const pxWidth = Number(width.replace(/ex$/, '')) * 8;
+	const pxHeight = Number(height.replace(/ex$/, '')) * 8;
 	return {
-		depth: 0,
-		width,
-		label,
-		word,
-		gloss,
-		denotation,
-		id: leaf.id,
-		movedTo: leaf.movedTo,
-		coindex: leaf.coindex,
+		draw(ctx, centerX, bottomY, color) {
+			return new Promise(resolve => {
+				var blob = new Blob([svg], {
+					type: 'image/svg+xml;charset=utf-8',
+				});
+
+				var url = URL.createObjectURL(blob);
+				var img = new Image();
+
+				img.addEventListener('load', (e: any) => {
+					ctx.drawImage(
+						e.target as any,
+						centerX - e.target.naturalWidth / 2,
+						bottomY,
+					);
+					URL.revokeObjectURL(url);
+					resolve();
+				});
+				img.src = url;
+			});
+		},
+		width(ctx) {
+			return pxWidth;
+		},
+		height(ctx) {
+			return pxHeight;
+		},
 	};
 }
 
@@ -124,73 +168,95 @@ function layerExtents(tree: PlacedTree): { left: number; right: number }[] {
 	return extents;
 }
 
-export function makePlacedBranch(
-	ctx: CanvasRenderingContext2D,
-	label: string,
-	denotation: RenderedDenotation | undefined,
-	children: PlacedTree[],
-	coindex: string | undefined,
-): PlacedBranch {
-	const depth = Math.max(...children.map(c => c.depth)) + 1;
-	const width = Math.max(
-		ctx.measureText(label).width,
-		denotation ? denotation.width(ctx) : 0,
-	);
-	let distanceBetweenChildren = 0;
-	for (let i = 0; i < children.length - 1; i++) {
-		const l = layerExtents(children[i]);
-		const r = layerExtents(children[i + 1]);
-		for (let j = 0; j < Math.min(r.length, l.length); j++) {
-			distanceBetweenChildren = Math.max(
-				distanceBetweenChildren,
-				l[j].right - r[j].left + 30,
-			);
-		}
+export class TreePlacer {
+	constructor(
+		private ctx: CanvasRenderingContext2D,
+		private denotationRenderer: (denotation: Expr) => RenderedDenotation,
+	) {}
+
+	private placeLeaf(
+		leaf: Leaf | (Leaf & { denotation: Expr | null }),
+	): PlacedLeaf {
+		const gloss = leaf.word.covert ? undefined : leaf.word.entry?.gloss;
+		const label = getLabel(leaf);
+		const word = leaf.word.covert ? leaf.word.value : leaf.word.text;
+		const denotation =
+			'denotation' in leaf && leaf.denotation !== null
+				? this.denotationRenderer(leaf.denotation)
+				: undefined;
+		const width = Math.max(
+			this.ctx.measureText(label).width,
+			this.ctx.measureText(word ?? '').width,
+			this.ctx.measureText(gloss ?? '').width,
+			denotation ? denotation.width(this.ctx) : 0,
+		);
+		return {
+			depth: 0,
+			width,
+			label,
+			word,
+			gloss,
+			denotation,
+			id: leaf.id,
+			movedTo: leaf.movedTo,
+		};
 	}
-	return {
-		depth,
-		width,
-		label,
-		denotation,
-		distanceBetweenChildren,
-		children,
-		coindex,
-	};
-}
 
-export function placeBranch(
-	ctx: CanvasRenderingContext2D,
-	branch: Branch<Tree> | (Branch<DTree> & { denotation: Expr | null }),
-): PlacedBranch {
-	const denotation =
-		'denotation' in branch && branch.denotation !== null
-			? denotationRenderText(branch.denotation)
-			: undefined;
-	const children = [placeTree(ctx, branch.left), placeTree(ctx, branch.right)];
-	return makePlacedBranch(
-		ctx,
-		getLabel(branch),
-		denotation,
-		children,
-		branch.coindex,
-	);
-}
+	private makePlacedBranch(
+		label: string,
+		denotation: RenderedDenotation | undefined,
+		children: PlacedTree[],
+	): PlacedBranch {
+		const depth = Math.max(...children.map(c => c.depth)) + 1;
+		const width = Math.max(
+			this.ctx.measureText(label).width,
+			denotation ? denotation.width(this.ctx) : 0,
+		);
+		let distanceBetweenChildren = 0;
+		for (let i = 0; i < children.length - 1; i++) {
+			const l = layerExtents(children[i]);
+			const r = layerExtents(children[i + 1]);
+			for (let j = 0; j < Math.min(r.length, l.length); j++) {
+				distanceBetweenChildren = Math.max(
+					distanceBetweenChildren,
+					l[j].right - r[j].left + 30,
+				);
+			}
+		}
+		return {
+			depth,
+			width,
+			label,
+			denotation,
+			distanceBetweenChildren,
+			children,
+		};
+	}
 
-export function placeRose(
-	ctx: CanvasRenderingContext2D,
-	rose: Rose<Tree>,
-): PlacedBranch {
-	const children = rose.children.map(c => placeTree(ctx, c));
-	return makePlacedBranch(ctx, rose.label, undefined, children, rose.coindex);
-}
+	private placeBranch(
+		branch: Branch<Tree> | (Branch<DTree> & { denotation: Expr | null }),
+	): PlacedBranch {
+		const denotation =
+			'denotation' in branch && branch.denotation !== null
+				? this.denotationRenderer(branch.denotation)
+				: undefined;
+		const children = [
+			this.placeTree(branch.left),
+			this.placeTree(branch.right),
+		];
+		return this.makePlacedBranch(getLabel(branch), denotation, children);
+	}
 
-export function placeTree(
-	ctx: CanvasRenderingContext2D,
-	tree: Tree | DTree,
-): PlacedTree {
-	return 'word' in tree
-		? placeLeaf(ctx, tree)
-		: 'children' in tree
-		? placeRose(ctx, tree)
-		: placeBranch(ctx, tree);
+	private placeRose(rose: Rose<Tree>): PlacedBranch {
+		const children = rose.children.map(c => this.placeTree(c));
+		return this.makePlacedBranch(rose.label, undefined, children);
+	}
+
+	public placeTree(tree: Tree | DTree): PlacedTree {
+		return 'word' in tree
+			? this.placeLeaf(tree)
+			: 'children' in tree
+			? this.placeRose(tree)
+			: this.placeBranch(tree);
+	}
 }

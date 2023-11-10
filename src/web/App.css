@@ -23,10 +23,22 @@ h1 {
 	margin-top: 8px;
 }
 
+.settings .button-group {
+	display: flex;
+	align-items: center;
+}
+
+.settings .button-group-name {
+	text-align: center;
+	width: 5em;
+	padding: 3px 0px;
+}
+
 .settings button {
 	cursor: pointer;
-	padding: 4px 12px;
-	margin: 2px;
+	padding: 1px 8px;
+	margin: 0 2px;
+	cursor: pointer;
 }
 
 .kuna {

@@ -1,3 +1,5 @@
+import { Impossible } from '../error';
+import { CompactExpr } from './compact';
 import { Expr, ExprType } from './model';
 
 type NameType = 'e' | 'v' | 'i' | 's' | 'fn';
@@ -207,6 +209,16 @@ interface Format {
 		restriction: string,
 		body: string,
 	) => string;
+	eventCompound: (
+		symbol: string,
+		verbName: string,
+		event: string,
+		world: string,
+		aspect: string,
+		agent: string | undefined,
+		args: string[],
+		body: string | undefined,
+	) => string;
 	apply: (fn: string, argument: string) => string;
 	presuppose: (body: string, presupposition: string) => string;
 	infixSymbols: Record<(Expr & { head: 'infix' })['name'], string>;
@@ -248,6 +260,23 @@ const plainText: Format = {
 	quantifier: (symbol, name, body) => `${symbol}${name}. ${body}`,
 	restrictedQuantifier: (symbol, name, restriction, body) =>
 		`${symbol}${name} : ${restriction}. ${body}`,
+	eventCompound: (
+		symbol,
+		verbName,
+		event,
+		world,
+		aspect,
+		agent,
+		args,
+		body,
+	) => {
+		const argList =
+			args.length > 0 || agent !== undefined
+				? `(${agent ? agent + '; ' : ''}${args.join(', ')})`
+				: '';
+		const bod = body ? '. ' + body : '';
+		return `${symbol}${verbName}[${aspect},${event},${world}]${argList}${bod}`;
+	},
 	apply: (fn, argument) => `${fn}(${argument})`,
 	presuppose: (body, presupposition) => `${body} | ${presupposition}`,
 	infixSymbols: {
@@ -295,7 +324,7 @@ const plainText: Format = {
 };
 
 const latex: Format = {
-	bracket: e => `(${e})`,
+	bracket: e => `\\left(${e}\\right)`,
 	name: name => {
 		const base = formatName(name.type, name.id);
 		return name.constant ? `\\text{${base}}` : base;
@@ -315,19 +344,36 @@ const latex: Format = {
 	quantifier: (symbol, name, body) => `${symbol} ${name}.\\ ${body}`,
 	restrictedQuantifier: (symbol, name, restriction, body) =>
 		`${symbol} ${name} : ${restriction}.\\ ${body}`,
+	eventCompound: (
+		symbol,
+		verbName,
+		event,
+		world,
+		aspect,
+		agent,
+		args,
+		body,
+	) => {
+		const argList =
+			args.length > 0 || agent !== undefined
+				? `\\left(${agent ? agent + '; ' : ''}${args.join(', ')}\\right)`
+				: '';
+		const bod = body ? '. ' + body : '';
+		return `${symbol} \\mathop{\\text{${verbName}}}\\limits_{${aspect}}{}^{${event}}_{${world}}${argList}${bod}`;
+	},
 	apply: (fn, argument) => `${fn}(${argument})`,
 	presuppose: (body, presupposition) => `${body}\\ |\\ ${presupposition}`,
 	infixSymbols: {
-		and: '\\ \\land\\ ',
-		or: '\\ \\lor\\ ',
+		and: '\\land{}',
+		or: '\\lor{}',
 		equals: '=',
-		subinterval: '\\subseteq',
+		subinterval: '\\subseteq{}',
 		before: '<',
 		after: '>',
 		before_near: '<_{\\text{near}}',
 		after_near: '>_{\\text{near}}',
 		roi: '&',
-		coevent: '\\ o\\ ',
+		coevent: '\\operatorname{o}',
 	},
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
 	polarizerSymbols: {
@@ -345,15 +391,15 @@ const latex: Format = {
 		ime: '\\text{íme}',
 		suo: '\\text{súo}',
 		ama: '\\text{áma}',
-		agent: '\\textsc{agent}',
-		subject: '\\textsc{subj}',
-		she: '\\textsc{she}',
-		ao: '\\textsc{ao}',
+		agent: '\\text{Agent}',
+		subject: '\\text{Subj}',
+		she: '\\text{She}',
+		ao: '\\text{Ao}',
 		animate: '\\text{animate}',
 		inanimate: '\\text{inanimate}',
 		abstract: '\\text{abstract}',
 		real_world: '\\text{w}',
-		inertia_worlds: '\\textsc{iw}',
+		inertia_worlds: '\\text{IW}',
 		temporal_trace: '\\tau',
 		expected_start: '\\text{ExpStart}',
 		expected_end: '\\text{ExpEnd}',
@@ -402,7 +448,7 @@ function getName(index: number, names: Names, fmt: Format): string {
  *   this subexpression that could affect its bracketing.
  */
 function render(
-	e: Expr,
+	e: CompactExpr,
 	names: Names,
 	fmt: Format,
 	leftPrecedence: number,
@@ -530,10 +576,48 @@ function render(
 		case 'constant': {
 			return fmt.constantSymbols[e.name];
 		}
+		case 'event_compound': {
+			const symbol = fmt.quantifierSymbols['some'];
+			const p = 2;
+			const bracket = rightPrecedence > p;
+			let body: string | undefined;
+			const innerNames = addName('v', names);
+			const eventName = getName(0, innerNames, fmt);
+			if (e.body) {
+				body = render(
+					e.body as Expr,
+					innerNames,
+					fmt,
+					p,
+					bracket ? 0 : rightPrecedence,
+				);
+			}
+			const world = render(e.world, innerNames, fmt, 0, 0);
+			if (e.aspect.head !== 'infix') throw new Impossible('Non-infix aspect');
+			const aspect =
+				fmt.infixSymbols[e.aspect.name] +
+				render(e.aspect.right, innerNames, fmt, 0, 0);
+			const agent = e.agent
+				? render(e.agent, innerNames, fmt, 0, 0)
+				: undefined;
+			const args = e.args.map(arg => render(arg, innerNames, fmt, 0, 0));
+			const content = fmt.eventCompound(
+				symbol,
+				e.verbName,
+				eventName,
+				world,
+				aspect,
+				agent,
+				args,
+				body,
+			);
+
+			return bracket ? fmt.bracket(content) : content;
+		}
 	}
 }
 
-function renderFull(e: Expr, fmt: Format): string {
+function renderFull(e: CompactExpr, fmt: Format): string {
 	let names = noNames;
 	// Create ad hoc constants for all free variables
 	for (let i = e.context.length - 1; i >= 0; i--) {
@@ -546,11 +630,11 @@ function renderFull(e: Expr, fmt: Format): string {
 	return render(e, names, fmt, 0, 0);
 }
 
-export function toPlainText(e: Expr): string {
+export function toPlainText(e: CompactExpr): string {
 	return renderFull(e, plainText);
 }
 
-export function toLatex(e: Expr): string {
+export function toLatex(e: CompactExpr): string {
 	return renderFull(e, latex);
 }
 

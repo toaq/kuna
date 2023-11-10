@@ -13,6 +13,7 @@ import { testSentences } from './test-sentences';
 import { denote } from './semantics/denote';
 import { ToaqTokenizer } from './tokenize';
 import { toEnglish } from './english/tree';
+import { denotationRenderLatex, denotationRenderText } from './tree/place';
 
 function getTrees(argv: {
 	sentence: string | undefined;
@@ -116,7 +117,7 @@ yargs
 			});
 		},
 
-		function (argv) {
+		async function (argv) {
 			const trees = getTrees(argv);
 			if (trees.length === 0) {
 				console.error('No parse.');
@@ -128,7 +129,12 @@ yargs
 				);
 			}
 			const theme = argv.light ? 'light' : 'dark';
-			const canvas = pngDrawTree(trees[0], theme);
+			const canvas = await pngDrawTree(
+				theme,
+				argv.semantics,
+				trees[0],
+				denotationRenderText,
+			);
 			const png = canvas.toBuffer('image/png');
 			fs.writeFileSync(argv.output as string, png);
 		},
