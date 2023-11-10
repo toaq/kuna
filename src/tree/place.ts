@@ -26,7 +26,7 @@ export function get_mathjax_svg(math: string): {
 } {
 	const node = mathjax_document.convert(math, {
 		em: 16,
-		ex: 8,
+		ex: 7,
 		containerWidth: 1280,
 	});
 	const { width, height } = node.children[0].attributes;
@@ -107,8 +107,8 @@ export function denotationRenderLatex(
 	const latex = toLatex(denotation);
 	let { width, height, svg } = get_mathjax_svg('\\LARGE ' + latex);
 	svg = svg.replace(/currentColor/g, 'red');
-	const pxWidth = Number(width.replace(/ex$/, '')) * 8;
-	const pxHeight = Number(height.replace(/ex$/, '')) * 8;
+	const pxWidth = Number(width.replace(/ex$/, '')) * 7;
+	const pxHeight = Number(height.replace(/ex$/, '')) * 7;
 	return {
 		draw(ctx, centerX, bottomY, color) {
 			return new Promise(resolve => {

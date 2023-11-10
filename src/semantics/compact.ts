@@ -172,11 +172,21 @@ export function compact(expr: CompactExpr): CompactExpr {
 		case 'constant':
 			return expr;
 		case 'presuppose':
-			return { ...expr, body: compact(expr.body) as Expr };
+			return {
+				...expr,
+				presupposition: compact(expr.presupposition) as Expr,
+				body: compact(expr.body) as Expr,
+			};
 		case 'quantifier':
 			const compound = detectCompound(expr);
 			if (compound) return compact(compound) as Expr;
-			return { ...expr, body: compact(expr.body) as Expr };
+			return {
+				...expr,
+				restriction: expr.restriction
+					? (compact(expr.restriction) as Expr)
+					: undefined,
+				body: compact(expr.body) as Expr,
+			};
 		case 'event_compound':
 			return {
 				...expr,
