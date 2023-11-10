@@ -19,6 +19,7 @@ import {
 	defaultTense,
 	dps,
 	modals,
+	nameVerbs,
 	overtLittleVs,
 	polarities,
 	quantifiers,
@@ -38,6 +39,7 @@ import {
 	λ,
 	subtype,
 	AnimacyClass,
+	quote,
 } from './model';
 import {
 	bindTimeIntervals,
@@ -282,6 +284,17 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		const toaq = leaf.word.entry.toaq;
 		denotation = modals[toaq];
 		if (denotation === undefined) throw new Unrecognized(`Modal: ${toaq}`);
+	} else if (leaf.label === 'mı') {
+		if (leaf.word.covert) throw new Impossible('Covert mı');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`mı: ${leaf.word.text}`);
+
+		const toaq = leaf.word.entry.toaq;
+		denotation = nameVerbs[toaq];
+		if (denotation === undefined) throw new Unrecognized(`mı: ${toaq}`);
+	} else if (leaf.label === 'word') {
+		if (leaf.word.covert) throw new Impossible('Covert word');
+		denotation = quote(leaf.word.text, []);
 	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
 		denotation = null;
 	} else {
@@ -632,6 +645,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case '&':
 		case 'Modal':
 		case 'ModalP':
+		case 'mı':
+		case 'mıP':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA

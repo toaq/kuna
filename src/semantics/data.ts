@@ -50,6 +50,7 @@ import {
 	she,
 } from './model';
 import { lift, reduce } from './operations';
+import { toPlainText } from './render';
 
 const hoa = v(0, ['e']);
 
@@ -290,6 +291,7 @@ export const speechActs: Record<string, Expr> = Object.fromEntries(
 		([toaq, verb_]) =>
 			[
 				toaq,
+				// λ𝘗. ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(𝘗)(𝘦)
 				λ(['s', 't'], [], c =>
 					some('v', c, c =>
 						and(
@@ -349,8 +351,10 @@ export const animacies = Object.fromEntries(
 			[
 				a,
 				pred === null
-					? λ(['e', 't'], ['e'], c => v(0, c))
-					: λ(
+					? // λ𝘗. 𝘗
+					  λ(['e', 't'], ['e'], c => v(0, c))
+					: // λ𝘗 : animate(a). 𝘗
+					  λ(
 							['e', 't'],
 							['e'],
 							c => v(0, c),
@@ -576,8 +580,10 @@ export const conjunctions: Partial<Record<Label, Record<string, Expr>>> =
 			Object.fromEntries(
 				Object.entries(conjunctionWords).map(([toaq, conjoin]) => [
 					toaq,
+					// λ𝘗. λ𝘘. λ𝘦. 𝘘(𝘦) ∧ 𝘗(𝘦)
 					reduce(
 						lift(
+							// λ𝘗. λ𝘘. 𝘘 ∧ 𝘗
 							λ('t', [], c => λ('t', c, c => conjoin(v(0, c), v(1, c)))),
 							[t, [t, t]],
 						),
@@ -602,6 +608,7 @@ const modalWords: Record<string, ModalWord> = {
 export const modals: Record<string, Expr> = Object.fromEntries(
 	Object.entries(modalWords).map(([toaq, { counterfactual, quantifier }]) => [
 		toaq,
+		// λ𝘗 : ¬𝘗(𝘸). λ𝘘. ∀𝘸' : SHE(𝘸)(𝘸') ∧ 𝘗(𝘸'). 𝘘(𝘸')
 		λ(
 			['s', 't'],
 			['s'],
@@ -615,6 +622,20 @@ export const modals: Record<string, Expr> = Object.fromEntries(
 					),
 				),
 			counterfactual ? c => not(app(v(0, c), v(1, c))) : undefined,
+		),
+	]),
+);
+
+const nameVerbWords = ['mı', 'mıru'];
+
+export const nameVerbs: Record<string, Expr> = Object.fromEntries(
+	nameVerbWords.map(w => [
+		w,
+		// λ𝘢. λ𝘣. λ𝘦. mı.𝘸(𝘣, 𝘢)(𝘦)
+		λ('e', ['s'], c =>
+			λ('e', c, c =>
+				λ('v', c, c => verb(w, [v(1, c), v(2, c)], v(0, c), v(3, c))),
+			),
 		),
 	]),
 );

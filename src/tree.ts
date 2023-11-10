@@ -101,6 +101,7 @@ export type Label =
 	| "V'"
 	| '𝘷P'
 	| 'VP'
+	| 'word'
 	| 'Σ'
 	| 'ΣP';
 
