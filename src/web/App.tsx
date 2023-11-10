@@ -13,7 +13,7 @@ import { denote } from '../semantics/denote';
 import { toLatex, toPlainText } from '../semantics/render';
 import { textual_tree_from_json } from '../textual-tree';
 import { Tree } from '../tree';
-import { pngDrawTree, Theme } from '../tree/draw';
+import { drawTreeToCanvas, Theme } from '../tree/draw';
 
 import {
 	compact as compactDenotation,
@@ -109,17 +109,18 @@ export function App() {
 			case 'png-latex':
 			case 'png-text':
 				const theme = darkMode.isDarkMode ? 'dark' : 'light';
-				const render =
+				const baseRenderer =
 					treeFormat === 'png-latex'
 						? denotationRenderLatex
 						: denotationRenderText;
-				const renderAndCompact =
+				const renderer =
 					mode === 'semantics-tree-compact'
-						? (e: CompactExpr, t: Theme) => render(compactDenotation(e), t)
-						: render;
+						? (e: CompactExpr, t: Theme) =>
+								baseRenderer(compactDenotation(e), t)
+						: baseRenderer;
 				const tall = mode.includes('semantics');
-				pngDrawTree(theme, tall, tree, renderAndCompact).then(canvas => {
-					treeImg.current!.src = canvas.toDataURL();
+				drawTreeToCanvas({ theme, tall, tree, renderer }).then(canvas => {
+					if (treeImg.current) treeImg.current.src = canvas.toDataURL();
 				});
 				return (
 					<img

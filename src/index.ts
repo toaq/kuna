@@ -6,7 +6,7 @@ import { pngGlossSentence } from './png-gloss';
 import { Tree } from './tree';
 import { fix } from './fix';
 import { compact } from './compact';
-import { pngDrawTree } from './tree/draw';
+import { drawTreeToCanvas } from './tree/draw';
 import { parse } from './parse';
 import { textual_tree_from_json } from './textual-tree';
 import { testSentences } from './test-sentences';
@@ -129,12 +129,12 @@ yargs
 				);
 			}
 			const theme = argv.light ? 'light' : 'dark';
-			const canvas = await pngDrawTree(
+			const canvas = await drawTreeToCanvas({
 				theme,
-				argv.semantics,
-				trees[0],
-				denotationRenderText,
-			);
+				tall: argv.semantics,
+				tree: trees[0],
+				renderer: denotationRenderText,
+			});
 			const png = canvas.toBuffer('image/png');
 			fs.writeFileSync(argv.output as string, png);
 		},

@@ -10,7 +10,7 @@ import {
 import _ from 'lodash';
 import toaduaDump from '../../data/toadua/dump.json';
 import { dictionary } from '../dictionary';
-import { pngDrawTree } from '../tree/draw';
+import { drawTreeToCanvas } from '../tree/draw';
 import { parse } from '../parse';
 import { pngGlossSentence } from '../png-gloss';
 import { toEnglish } from '../english/tree';
@@ -77,7 +77,14 @@ export class KunaBot {
 		const text = interaction.options.getString('text', true);
 		const trees = parse(text);
 		const canvases = await Promise.all(
-			trees.map(tree => pngDrawTree('dark', false, tree, denotationRenderText)),
+			trees.map(tree =>
+				drawTreeToCanvas({
+					theme: 'dark',
+					tall: false,
+					tree,
+					renderer: denotationRenderText,
+				}),
+			),
 		);
 
 		await interaction.reply({

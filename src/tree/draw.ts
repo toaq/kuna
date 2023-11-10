@@ -198,7 +198,7 @@ class TreeDrawer {
 		return this.canvas;
 	}
 
-	public async pngDrawTree(
+	public async drawToCanvas(
 		tree: Tree | DTree,
 		renderer: (denotation: CompactExpr, theme: Theme) => RenderedDenotation,
 	): Promise<Canvas> {
@@ -212,13 +212,14 @@ class TreeDrawer {
 	}
 }
 
-export function pngDrawTree(
-	theme: ThemeName,
-	tall: boolean,
-	tree: Tree | DTree,
-	renderer: (denotation: CompactExpr, theme: Theme) => RenderedDenotation,
-): Promise<Canvas> {
+export function drawTreeToCanvas(options: {
+	theme: ThemeName;
+	tall: boolean;
+	tree: Tree | DTree;
+	renderer: (denotation: CompactExpr, theme: Theme) => RenderedDenotation;
+}): Promise<Canvas> {
+	const { theme, tall, tree, renderer } = options;
 	const layerHeight = tall ? 150 : 100;
 	const drawer = new TreeDrawer(themes[theme], layerHeight);
-	return drawer.pngDrawTree(tree, renderer);
+	return drawer.drawToCanvas(tree, renderer);
 }
