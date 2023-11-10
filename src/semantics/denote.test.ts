@@ -45,8 +45,11 @@ function forEachFreeVariableUsage(e: Expr, fn: (index: number) => void) {
 			break;
 		}
 		case 'constant':
+		case 'quote':
 			sub();
 			break;
+		default:
+			throw new Impossible('This switch statement should be exhaustive');
 	}
 }
 

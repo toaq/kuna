@@ -103,6 +103,13 @@ type Pronoun<Name extends string> = Constant<Name, 'e'>;
 
 type Animacy<Name extends string> = Constant<Name, ['e', 't']>;
 
+interface Quote {
+	head: 'quote';
+	type: 'e';
+	context: ExprType[];
+	text: string;
+}
+
 /**
  * A semantic expression. The field 'type' represents the expression's type,
  * while the field 'context' represents the types of variables in scope, ordered
@@ -152,7 +159,8 @@ export type Expr =
 	| Constant<'temporal_trace', ['v', 'i']>
 	| Constant<'expected_start', ['v', 'i']>
 	| Constant<'expected_end', ['v', 'i']>
-	| Constant<'speech_time', 'i'>;
+	| Constant<'speech_time', 'i'>
+	| Quote;
 
 export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 
@@ -648,4 +656,8 @@ export function expectedEnd(context: ExprType[]): Expr {
 
 export function speechTime(context: ExprType[]): Expr {
 	return constant('speech_time', 'i', context);
+}
+
+export function quote(text: string, context: ExprType[]): Expr {
+	return { head: 'quote', type: 'e', context, text };
 }

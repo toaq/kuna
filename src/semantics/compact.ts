@@ -1,5 +1,4 @@
 import { Expr, ExprType, assertContextsEqual, assertSubtype } from './model';
-import { toPlainText } from './render';
 
 /**
  * Compact notation for saying events exist.
@@ -147,6 +146,8 @@ function detectCompound(
 export function compact(expr: CompactExpr): CompactExpr {
 	switch (expr.head) {
 		case 'variable':
+		case 'constant':
+		case 'quote':
 			return expr;
 		case 'verb':
 			return {
@@ -169,8 +170,6 @@ export function compact(expr: CompactExpr): CompactExpr {
 			};
 		case 'polarizer':
 			return { ...expr, body: compact(expr.body) as Expr };
-		case 'constant':
-			return expr;
 		case 'presuppose':
 			return {
 				...expr,

@@ -13,6 +13,7 @@ import {
 	polarizer,
 	presuppose,
 	quantifier,
+	quote,
 	typesEqual,
 	v,
 	verb,
@@ -76,6 +77,9 @@ function mapVariables(
 		}
 		case 'constant': {
 			return constant(e.name, e.type, newContext);
+		}
+		case 'quote': {
+			return quote(e.text, newContext);
 		}
 	}
 }
@@ -199,7 +203,9 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 	const isPremise = (p: Expr) => premises.has(toPlainText(p));
 
 	switch (e.head) {
-		case 'variable': {
+		case 'variable':
+		case 'constant':
+		case 'quote': {
 			body = e;
 			break;
 		}
@@ -274,10 +280,6 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 					withPremise(restriction, () => quantifierReduceAndIsolate(e.body)),
 				restriction === undefined ? undefined : () => restriction,
 			);
-			break;
-		}
-		case 'constant': {
-			body = e;
 			break;
 		}
 	}
@@ -594,6 +596,8 @@ export function someSubexpression(
 
 	switch (e.head) {
 		case 'variable':
+		case 'constant':
+		case 'quote':
 			return sub();
 		case 'verb':
 			return sub(...e.args, e.event, e.world);
@@ -615,8 +619,6 @@ export function someSubexpression(
 				e.body,
 				...(e.restriction === undefined ? [] : [e.restriction]),
 			);
-		case 'constant':
-			return sub();
 	}
 }
 

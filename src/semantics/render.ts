@@ -226,6 +226,7 @@ interface Format {
 	polarizerSymbols: Record<(Expr & { head: 'polarizer' })['name'], string>;
 	polarizer: (symbol: string, body: string) => string;
 	constantSymbols: Record<(Expr & { head: 'constant' })['name'], string>;
+	quote: (text: string) => string;
 }
 
 const formatName = (
@@ -320,6 +321,7 @@ const plainText: Format = {
 		expected_end: 'ExpEnd',
 		speech_time: 't0',
 	},
+	quote: text => `“${text}”`,
 };
 
 const latex: Format = {
@@ -403,6 +405,7 @@ const latex: Format = {
 		expected_end: '\\text{ExpEnd}',
 		speech_time: '\\text{t}_0',
 	},
+	quote: text => `“${text}”`,
 };
 
 /**
@@ -573,6 +576,9 @@ function render(
 		}
 		case 'constant': {
 			return fmt.constantSymbols[e.name];
+		}
+		case 'quote': {
+			return fmt.quote(e.text);
 		}
 		case 'event_compound': {
 			const symbol = fmt.quantifierSymbols['some'];
