@@ -14,6 +14,7 @@ import { pngDrawTree } from '../tree/draw';
 import { parse } from '../parse';
 import { pngGlossSentence } from '../png-gloss';
 import { toEnglish } from '../english/tree';
+import { denotationRenderText } from '../tree/place';
 
 interface ToaduaEntry {
 	head: string;
@@ -75,17 +76,17 @@ export class KunaBot {
 	private async respondStree(interaction: ChatInputCommandInteraction) {
 		const text = interaction.options.getString('text', true);
 		const trees = parse(text);
+		const canvases = await Promise.all(
+			trees.map(tree => pngDrawTree('dark', false, tree, denotationRenderText)),
+		);
 
 		await interaction.reply({
 			content: `Found ${trees.length} parses.`,
-			files: trees.map(
-				(tree, i) =>
-					new AttachmentBuilder(
-						pngDrawTree(tree, 'dark').toBuffer('image/png'),
-						{
-							name: `tree${i}.png`,
-						},
-					),
+			files: canvases.map(
+				(canvas, i) =>
+					new AttachmentBuilder(canvas.toBuffer('image/png'), {
+						name: `tree${i}.png`,
+					}),
 			),
 		});
 	}
