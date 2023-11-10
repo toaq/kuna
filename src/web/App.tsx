@@ -121,7 +121,13 @@ export function App() {
 				pngDrawTree(theme, layerHeight, tree, renderAndCompact).then(canvas => {
 					treeImg.current!.src = canvas.toDataURL();
 				});
-				return <img ref={treeImg} style={{ maxHeight: '500px' }} src={''} />;
+				return (
+					<img
+						ref={treeImg}
+						style={{ maxWidth: '90vw', maxHeight: '90vh' }}
+						src={''}
+					/>
+				);
 			case 'json':
 				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
 		}
