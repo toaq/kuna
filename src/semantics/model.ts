@@ -143,7 +143,6 @@ export type Expr =
 	| Role<'agent'>
 	| Role<'subject'>
 	| Accessibility<'she'>
-	| Accessibility<'ao'>
 	| Animacy<'animate'>
 	| Animacy<'inanimate'>
 	| Animacy<'abstract'>
@@ -606,10 +605,6 @@ function accessibility(
 
 export function she(context: ExprType[]): Expr {
 	return accessibility('she', context);
-}
-
-export function ao(context: ExprType[]): Expr {
-	return accessibility('ao', context);
 }
 
 function animacy(
