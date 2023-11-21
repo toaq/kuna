@@ -18,6 +18,7 @@ import {
 	covertV,
 	defaultTense,
 	dps,
+	eventAccessor,
 	modals,
 	nameVerbs,
 	overtLittleVs,
@@ -295,6 +296,8 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	} else if (leaf.label === 'word') {
 		if (leaf.word.covert) throw new Impossible('Covert word');
 		denotation = quote(leaf.word.text, []);
+	} else if (leaf.label === 'EvA') {
+		denotation = eventAccessor;
 	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
 		denotation = null;
 	} else {
@@ -647,6 +650,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'ModalP':
 		case 'mı':
 		case 'mıP':
+		case 'EvA':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -684,6 +688,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'SA':
 		case "V'":
 		case "&'":
+		case "EvA'":
 			return reverseFunctionalApplication;
 		case 'CPrel':
 		case 'AdjunctP':

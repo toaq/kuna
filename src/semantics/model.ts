@@ -366,18 +366,15 @@ export function presuppose(body: Expr, presupposition: Expr): Expr {
 
 export function infix(
 	name: (Expr & { head: 'infix' })['name'],
-	inputType: ExprType,
-	outputType: (Expr & { head: 'infix' })['type'],
+	type: (Expr & { head: 'infix' })['type'],
 	left: Expr,
 	right: Expr,
 ): Expr {
-	assertSubtype(left.type, inputType);
-	assertSubtype(right.type, inputType);
 	assertContextsEqual(left.context, right.context);
 
 	return {
 		head: 'infix',
-		type: outputType,
+		type,
 		context: left.context,
 		name,
 		left,
@@ -386,7 +383,9 @@ export function infix(
 }
 
 function conjunction(name: 'and' | 'or', left: Expr, right: Expr): Expr {
-	return infix(name, 't', 't', left, right);
+	assertSubtype(left.type, 't');
+	assertSubtype(right.type, 't');
+	return infix(name, 't', left, right);
 }
 
 export function and(left: Expr, right: Expr): Expr {
@@ -507,7 +506,9 @@ function timeRelation(
 	left: Expr,
 	right: Expr,
 ): Expr {
-	return infix(name, 'i', 't', left, right);
+	assertSubtype(left.type, 'i');
+	assertSubtype(right.type, 'i');
+	return infix(name, 't', left, right);
 }
 
 export function subinterval(left: Expr, right: Expr): Expr {
@@ -531,11 +532,15 @@ export function afterNear(left: Expr, right: Expr): Expr {
 }
 
 export function roi(left: Expr, right: Expr): Expr {
-	return infix('roi', 'e', 'e', left, right);
+	assertSubtype(left.type, 'e');
+	assertSubtype(right.type, 'e');
+	return infix('roi', 'e', left, right);
 }
 
 export function coevent(left: Expr, right: Expr): Expr {
-	return infix('coevent', 'v', 't', left, right);
+	assertSubtype(left.type, 'v');
+	assertSubtype(right.type, 'v');
+	return infix('coevent', 't', left, right);
 }
 
 export function constant(

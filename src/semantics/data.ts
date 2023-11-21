@@ -639,3 +639,15 @@ export const nameVerbs: Record<string, Expr> = Object.fromEntries(
 		),
 	]),
 );
+
+// λ𝘗. λ𝘢. ∃𝘦 : 𝘦 = 𝘢. 𝘗(𝘦)
+export const eventAccessor = λ(['v', 't'], [], c =>
+	λ('e', c, c =>
+		some(
+			'v',
+			c,
+			c => app(v(2, c), v(0, c)),
+			c => equals(v(0, c), v(1, c)),
+		),
+	),
+);

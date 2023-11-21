@@ -59,7 +59,7 @@ function mapVariables(
 			return presuppose(sub(e.body), sub(e.presupposition));
 		}
 		case 'infix': {
-			return infix(e.name, e.left.type, e.type, sub(e.left), sub(e.right));
+			return infix(e.name, e.type, sub(e.left), sub(e.right));
 		}
 		case 'polarizer': {
 			return polarizer(e.name, sub(e.body));
@@ -256,7 +256,6 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 		case 'infix': {
 			body = infix(
 				e.name,
-				e.left.type,
 				e.type,
 				reduceAndIsolate(e.left),
 				reduceAndIsolate(e.right),

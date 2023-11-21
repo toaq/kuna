@@ -316,3 +316,12 @@ test('it denotes name verbs', () => {
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘦'. τ(𝘦') ⊆ t ∧ mıru.𝘸(jí, “Kenhaq”)(𝘦'))(𝘦)\"",
 	);
 });
+
+test('it denotes the event accessor', () => {
+	expect(d('Kaqgaı jí, é marao súq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ kaqgaı.𝘸(jí, a)(𝘦') | ∃𝘦' : 𝘦' = a. AGENT(𝘦')(𝘸) = súq ∧ marao.𝘸(𝘦')))(𝘦) | animate(a)\"",
+	);
+	expect(d('Ë marao óguı ráı')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦' : 𝘦' = b. AGENT(𝘦')(𝘸) = a ∧ marao.𝘸(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ raı.𝘸(b)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ oguı.𝘸(a)(𝘦')))(𝘦) | animate(a)\"",
+	);
+});
