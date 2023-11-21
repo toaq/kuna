@@ -640,6 +640,13 @@ export const nameVerbs: Record<string, Expr> = Object.fromEntries(
 	]),
 );
 
+// λ𝘢. λ𝘣. λ𝘦. eq.𝘸(𝘣, 𝘢)(𝘦)
+export const quoteVerb = λ('e', ['s'], c =>
+	λ('e', c, c =>
+		λ('v', c, c => verb('eq', [v(1, c), v(2, c)], v(0, c), v(3, c))),
+	),
+);
+
 // λ𝘗. λ𝘢. ∃𝘦 : 𝘦 = 𝘢. 𝘗(𝘦)
 export const eventAccessor = λ(['v', 't'], [], c =>
 	λ('e', c, c =>

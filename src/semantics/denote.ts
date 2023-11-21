@@ -24,6 +24,7 @@ import {
 	overtLittleVs,
 	polarities,
 	quantifiers,
+	quoteVerb,
 	speechActs,
 	tenses,
 } from './data';
@@ -293,6 +294,8 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		const toaq = leaf.word.entry.toaq;
 		denotation = nameVerbs[toaq];
 		if (denotation === undefined) throw new Unrecognized(`mı: ${toaq}`);
+	} else if (leaf.label === 'shu') {
+		denotation = quoteVerb;
 	} else if (leaf.label === 'word') {
 		if (leaf.word.covert) throw new Impossible('Covert word');
 		denotation = quote(leaf.word.text, []);
@@ -650,6 +653,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'ModalP':
 		case 'mı':
 		case 'mıP':
+		case 'shu':
+		case 'shuP':
 		case 'EvA':
 			return functionalApplication;
 		case 'T':

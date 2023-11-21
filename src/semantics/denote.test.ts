@@ -317,6 +317,13 @@ test('it denotes name verbs', () => {
 	);
 });
 
+test('it denotes quotes', () => {
+	expect(d('Cho jí shú ‹arane›')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ cho.𝘸(jí, a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ eq.𝘸(a, “arane”)(𝘦')))(𝘦) | abstract(a)\"",
+	);
+	// TODO: Full-text quotes
+});
+
 test('it denotes the event accessor', () => {
 	expect(d('Kaqgaı jí, é marao súq')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ kaqgaı.𝘸(jí, a)(𝘦') | ∃𝘦' : 𝘦' = a. AGENT(𝘦')(𝘸) = súq ∧ marao.𝘸(𝘦')))(𝘦) | animate(a)\"",
