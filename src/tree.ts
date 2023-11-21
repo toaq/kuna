@@ -81,6 +81,8 @@ export type Label =
 	| 'mıP'
 	| 'Modal'
 	| 'ModalP'
+	| 'mo'
+	| 'moP'
 	| 'mu'
 	| 'muP'
 	| '𝘯'
@@ -93,6 +95,8 @@ export type Label =
 	| 'shuP'
 	| 'T'
 	| 'TP'
+	| 'teo'
+	| 'teoP'
 	| 'Topic'
 	| "Topic'"
 	| 'TopicP'

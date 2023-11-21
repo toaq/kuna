@@ -51,7 +51,11 @@ export function getFrame(verb: Tree): string {
 		}
 	} else if (verb.label === '&P' && 'left' in verb) {
 		return getFrame(verb.left);
-	} else if (verb.label === 'shuP' || verb.label === 'mıP') {
+	} else if (
+		verb.label === 'shuP' ||
+		verb.label === 'mıP' ||
+		verb.label === 'teoP'
+	) {
 		return 'c';
 	} else if (verb.label === 'VP') {
 		// object incorporation... check that the verb is transitive?
