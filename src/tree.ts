@@ -68,6 +68,7 @@ export type Label =
 	| 'D'
 	| 'DP'
 	| 'EvA'
+	| "EvA'"
 	| 'EvAP'
 	| 'Focus'
 	| 'FocusP'
@@ -335,6 +336,22 @@ export function makevPdet([serial]: [Tree], location: number, reject: Object) {
 	return {
 		label: '*𝘷P',
 		children: [serial, { label: 'DP', word: { covert: true, value: 'PRO' } }],
+	};
+}
+
+export function makeEvAP([rl, rr, left]: [Tree, Tree, Tree]) {
+	return {
+		label: 'EvAP',
+		left,
+		right: { label: "EvA'", left: rl, right: rr },
+	};
+}
+
+export function makeEvAPdet([rl, rr]: [Tree, Tree]) {
+	return {
+		label: 'EvAP',
+		left: { label: 'DP', word: { covert: true, value: 'PRO' } },
+		right: { label: "EvA'", left: rl, right: rr },
 	};
 }
 

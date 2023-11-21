@@ -12,6 +12,8 @@ const {
 	makeBranchCovertLeft,
 	makeConn,
     makeEmptySerial,
+	makeEvAP,
+	makeEvAPdet,
 	makeLeaf,
 	makeOptLeaf,
 	makePrefixLeaf,
@@ -96,11 +98,15 @@ TP1 -> TP Conjunction TP1 {% makeConn %}
 TP -> AspP {% makeBranchCovertLeft('TP', 'T') %}
 TP -> T1 AspP {% makeBranch('TP') %}
 TP -> Sigma T1 AspP {% make3L('ΣP', 'TP') %}
+# ë marao óguı ráı
+TP -> EvA vP DP1 {% makeEvAP %}
 
 # (sá) pu chum hao
 TPdet -> AspPdet {% makeBranchCovertLeft('TP', 'T') %}
 TPdet -> T1 AspPdet {% makeBranch('TP') %}
 TPdet -> Sigma T1 AspPdet {% make3L('ΣP', 'TP') %}
+# (sá) ë marao óguı
+TPdet -> EvA vP {% makeEvAPdet %}
 
 # chum hao jí
 AspP -> vP {% makeBranchCovertLeft('AspP', 'Asp') %}
@@ -162,7 +168,6 @@ Asp1 -> Asp_prefix {% id %}
 Asp1 -> Asp Conjunction Asp1 {% makeConn %}
 AdjunctP1 -> AdjunctP {% id %}
 AdjunctP1 -> AdjunctP Conjunction AdjunctP1 {% makeConn %}
-Vlast -> EvA vP {% makeBranch ('EvAP') %}
 Vlast -> VPincorp {% id %}
 Vlast -> VPoiv {% id %}
 Vlast -> Verblike ConjunctionT1 Vlast {% makeConn %}
