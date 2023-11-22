@@ -123,6 +123,16 @@ function getVerbWord(vp: StrictTree): Word | CovertWord {
 				if (verb.left.word.covert)
 					throw new Impossible(`Covert ${verb.left.label}`);
 				return verb.left.word;
+			case 'teoP':
+				if (
+					'word' in verb ||
+					'word' in verb.left ||
+					!('word' in verb.left.left)
+				)
+					throw new Unrecognized('teoP shape');
+				if (verb.left.left.word.covert)
+					throw new Impossible(`Covert ${verb.left.left.label}`);
+				return verb.left.left.word;
 			default:
 				throw new Unrecognized('VP shape');
 		}
@@ -294,14 +304,18 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		const toaq = leaf.word.entry.toaq;
 		denotation = nameVerbs[toaq];
 		if (denotation === undefined) throw new Unrecognized(`mı: ${toaq}`);
-	} else if (leaf.label === 'shu') {
+	} else if (leaf.label === 'shu' || leaf.label === 'mo') {
 		denotation = quoteVerb;
-	} else if (leaf.label === 'word') {
-		if (leaf.word.covert) throw new Impossible('Covert word');
+	} else if (leaf.label === 'word' || leaf.label === 'text') {
+		if (leaf.word.covert) throw new Impossible(`Covert ${leaf.label}`);
 		denotation = quote(leaf.word.text, []);
 	} else if (leaf.label === 'EvA') {
 		denotation = eventAccessor;
-	} else if (leaf.label === 'C' || leaf.label === 'Crel') {
+	} else if (
+		leaf.label === 'C' ||
+		leaf.label === 'Crel' ||
+		leaf.label === 'teo'
+	) {
 		denotation = null;
 	} else {
 		throw new Unimplemented(`TODO: ${leaf.label}`);
@@ -655,6 +669,9 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'mıP':
 		case 'shu':
 		case 'shuP':
+		case 'mo':
+		case 'moP':
+		case 'teoP':
 		case 'EvA':
 			return functionalApplication;
 		case 'T':

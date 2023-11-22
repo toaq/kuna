@@ -11,6 +11,7 @@ declare var aspect: any;
 declare var determiner: any;
 declare var word_quote: any;
 declare var text_quote: any;
+declare var end_quote: any;
 declare var name_verb: any;
 declare var preposition: any;
 declare var conjunction: any;
@@ -36,7 +37,6 @@ declare var plural_coordinator: any;
 declare var illocution: any;
 declare var polarity: any;
 declare var prefix_tense: any;
-declare var end_quote: any;
 declare var object_incorporating_verb: any;
 
 import { ToaqTokenizer } from "./tokenize";
@@ -214,6 +214,7 @@ const grammar: Grammar = {
     {"name": "Word", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun)], "postprocess": makeLeaf('word')},
     {"name": "Word", "symbols": [(lexer.has("word_quote") ? {type: "word_quote"} : word_quote)], "postprocess": makeLeaf('word')},
     {"name": "Word", "symbols": [(lexer.has("text_quote") ? {type: "text_quote"} : text_quote)], "postprocess": makeLeaf('word')},
+    {"name": "Word", "symbols": [(lexer.has("end_quote") ? {type: "end_quote"} : end_quote)], "postprocess": makeLeaf('word')},
     {"name": "Word", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('word')},
     {"name": "Text$ebnf$1", "symbols": ["TextUnit"]},
     {"name": "Text$ebnf$1", "symbols": ["Text$ebnf$1", "TextUnit"], "postprocess": (d) => d[0].concat([d[1]])},

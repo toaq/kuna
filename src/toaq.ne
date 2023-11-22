@@ -200,6 +200,7 @@ Word -> %aspect {% makeLeaf('word') %}
 Word -> %pronoun {% makeLeaf('word') %}
 Word -> %word_quote {% makeLeaf('word') %}
 Word -> %text_quote {% makeLeaf('word') %}
+Word -> %end_quote {% makeLeaf('word') %}
 Word -> %name_verb {% makeLeaf('word') %}
 
 Text -> TextUnit:+ {% makeText %}

@@ -321,7 +321,11 @@ test('it denotes quotes', () => {
 	expect(d('Cho jí shú ‹arane›')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ cho.𝘸(jí, a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ eq.𝘸(a, “arane”)(𝘦')))(𝘦) | abstract(a)\"",
 	);
-	// TODO: Full-text quotes
+	expect(
+		d('Kuq nháo mó «Shu teo hú mo «azazo» teo» teo'),
+	).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ AGENT(𝘦')(𝘸) = nháo ∧ kuq.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ eq.𝘸(a, “Shu teo hú mo azazo teo”)(𝘦')))(𝘦) | abstract(a)\"",
+	);
 });
 
 test('it denotes the event accessor', () => {
