@@ -5,30 +5,26 @@
 function id(d: any[]): any { return d[0]; }
 declare var pronoun: any;
 declare var incorporated_pronoun: any;
-declare var predicate: any;
-declare var tense: any;
-declare var aspect: any;
-declare var determiner: any;
-declare var word_quote: any;
-declare var text_quote: any;
-declare var end_quote: any;
-declare var name_verb: any;
 declare var preposition: any;
 declare var conjunction: any;
 declare var conjunction_in_t1: any;
 declare var conjunction_in_t4: any;
+declare var aspect: any;
 declare var prefix_aspect: any;
 declare var topic_marker: any;
 declare var complementizer: any;
 declare var subordinating_complementizer: any;
 declare var incorporated_complementizer: any;
 declare var relative_clause_complementizer: any;
+declare var determiner: any;
 declare var incorporated_determiner: any;
 declare var event_accessor: any;
 declare var focus_particle: any;
 declare var retroactive_cleft: any;
 declare var interjection: any;
 declare var adjective_marker: any;
+declare var name_verb: any;
+declare var text_quote: any;
 declare var modality: any;
 declare var modality_with_complement: any;
 declare var cleft_verb: any;
@@ -36,8 +32,14 @@ declare var prefix: any;
 declare var plural_coordinator: any;
 declare var illocution: any;
 declare var polarity: any;
+declare var word_quote: any;
+declare var tense: any;
 declare var prefix_tense: any;
+declare var text: any;
+declare var end_quote: any;
+declare var predicate: any;
 declare var object_incorporating_verb: any;
+declare var word: any;
 
 import { ToaqTokenizer } from "./tokenize";
 import * as TreeModule from "./tree";
@@ -203,26 +205,6 @@ const grammar: Grammar = {
     {"name": "MoP", "symbols": ["Mo", "Text"], "postprocess": makeBranch('moP')},
     {"name": "Verblike", "symbols": ["MiP"], "postprocess": id},
     {"name": "MiP", "symbols": ["Mi", "Word"], "postprocess": makeBranch('mıP')},
-    {"name": "NonQuoteToken", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('word')},
-    {"name": "NonQuoteToken", "symbols": [(lexer.has("tense") ? {type: "tense"} : tense)], "postprocess": makeLeaf('word')},
-    {"name": "NonQuoteToken", "symbols": [(lexer.has("aspect") ? {type: "aspect"} : aspect)], "postprocess": makeLeaf('word')},
-    {"name": "NonQuoteToken", "symbols": [(lexer.has("determiner") ? {type: "determiner"} : determiner)], "postprocess": makeLeaf('word')},
-    {"name": "NonQuoteToken", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun)], "postprocess": makeLeaf('word')},
-    {"name": "Word", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('word')},
-    {"name": "Word", "symbols": [(lexer.has("tense") ? {type: "tense"} : tense)], "postprocess": makeLeaf('word')},
-    {"name": "Word", "symbols": [(lexer.has("aspect") ? {type: "aspect"} : aspect)], "postprocess": makeLeaf('word')},
-    {"name": "Word", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun)], "postprocess": makeLeaf('word')},
-    {"name": "Word", "symbols": [(lexer.has("word_quote") ? {type: "word_quote"} : word_quote)], "postprocess": makeLeaf('word')},
-    {"name": "Word", "symbols": [(lexer.has("text_quote") ? {type: "text_quote"} : text_quote)], "postprocess": makeLeaf('word')},
-    {"name": "Word", "symbols": [(lexer.has("end_quote") ? {type: "end_quote"} : end_quote)], "postprocess": makeLeaf('word')},
-    {"name": "Word", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('word')},
-    {"name": "Text$ebnf$1", "symbols": ["TextUnit"]},
-    {"name": "Text$ebnf$1", "symbols": ["Text$ebnf$1", "TextUnit"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "Text", "symbols": ["Text$ebnf$1"], "postprocess": makeText},
-    {"name": "TextUnit", "symbols": ["NonQuoteToken"], "postprocess": makeTextUnit},
-    {"name": "TextUnit", "symbols": ["Mo", "Text", "Teo"], "postprocess": makeTextUnit},
-    {"name": "TextUnit", "symbols": ["Shu", "Word"], "postprocess": makeTextUnit},
-    {"name": "TextUnit", "symbols": ["Mi", "Word"], "postprocess": makeTextUnit},
     {"name": "Adjunct", "symbols": [(lexer.has("preposition") ? {type: "preposition"} : preposition)], "postprocess": makeLeaf('Adjunct')},
     {"name": "Conjunction", "symbols": [(lexer.has("conjunction") ? {type: "conjunction"} : conjunction)], "postprocess": makeLeaf('&')},
     {"name": "ConjunctionT1", "symbols": [(lexer.has("conjunction_in_t1") ? {type: "conjunction_in_t1"} : conjunction_in_t1)], "postprocess": makeLeaf('&')},
@@ -262,9 +244,11 @@ const grammar: Grammar = {
     {"name": "Shu", "symbols": [(lexer.has("word_quote") ? {type: "word_quote"} : word_quote)], "postprocess": makeLeaf('shu')},
     {"name": "T", "symbols": [(lexer.has("tense") ? {type: "tense"} : tense)], "postprocess": makeLeaf('T')},
     {"name": "T_prefix", "symbols": [(lexer.has("prefix_tense") ? {type: "prefix_tense"} : prefix_tense)], "postprocess": makeLeaf('T')},
+    {"name": "Text", "symbols": [(lexer.has("text") ? {type: "text"} : text)], "postprocess": makeLeaf('text')},
     {"name": "Teo", "symbols": [(lexer.has("end_quote") ? {type: "end_quote"} : end_quote)], "postprocess": makeLeaf('teo')},
     {"name": "V", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('V')},
-    {"name": "Voiv", "symbols": [(lexer.has("object_incorporating_verb") ? {type: "object_incorporating_verb"} : object_incorporating_verb)], "postprocess": makeLeaf('V')}
+    {"name": "Voiv", "symbols": [(lexer.has("object_incorporating_verb") ? {type: "object_incorporating_verb"} : object_incorporating_verb)], "postprocess": makeLeaf('V')},
+    {"name": "Word", "symbols": [(lexer.has("word") ? {type: "word"} : word)], "postprocess": makeLeaf('word')}
   ],
   ParserStart: "Fragment",
 };

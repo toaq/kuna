@@ -186,29 +186,6 @@ MoP -> Mo Text {% makeBranch('moP') %}
 Verblike -> MiP {% id %}
 MiP -> Mi Word {% makeBranch('mıP') %}
 
-# TODO: match all token types
-NonQuoteToken -> %predicate {% makeLeaf('word') %}
-NonQuoteToken -> %tense {% makeLeaf('word') %}
-NonQuoteToken -> %aspect {% makeLeaf('word') %}
-NonQuoteToken -> %determiner {% makeLeaf('word') %}
-NonQuoteToken -> %pronoun {% makeLeaf('word') %}
-
-# TODO: match all word types
-Word -> %predicate {% makeLeaf('word') %}
-Word -> %tense {% makeLeaf('word') %}
-Word -> %aspect {% makeLeaf('word') %}
-Word -> %pronoun {% makeLeaf('word') %}
-Word -> %word_quote {% makeLeaf('word') %}
-Word -> %text_quote {% makeLeaf('word') %}
-Word -> %end_quote {% makeLeaf('word') %}
-Word -> %name_verb {% makeLeaf('word') %}
-
-Text -> TextUnit:+ {% makeText %}
-TextUnit -> NonQuoteToken {% makeTextUnit %}
-TextUnit -> Mo Text Teo {% makeTextUnit %}
-TextUnit -> Shu Word {% makeTextUnit %}
-TextUnit -> Mi Word {% makeTextUnit %}
-
 Adjunct -> %preposition {% makeLeaf('Adjunct') %}
 Conjunction -> %conjunction {% makeLeaf('&') %}
 ConjunctionT1 -> %conjunction_in_t1 {% makeLeaf('&') %}
@@ -242,6 +219,8 @@ Sigma -> %polarity {% makeLeaf('Σ') %}
 Shu -> %word_quote {% makeLeaf('shu') %}
 T -> %tense {% makeLeaf('T') %}
 T_prefix -> %prefix_tense {% makeLeaf('T') %}
+Text -> %text {% makeLeaf('text') %}
 Teo -> %end_quote {% makeLeaf('teo') %}
 V -> %predicate {% makeLeaf('V') %}
 Voiv -> %object_incorporating_verb {% makeLeaf('V') %}
+Word -> %word {% makeLeaf('word') %}

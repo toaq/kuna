@@ -1,4 +1,4 @@
-import { dictionary, underscoredWordTypes, WordType } from './dictionary';
+import { dictionary, underscoredWordTypes } from './dictionary';
 import { Impossible } from './error';
 import { Tone } from './types';
 
@@ -122,19 +122,53 @@ export interface ToaqToken {
 export class ToaqTokenizer {
 	tokens: ToaqToken[] = [];
 	pos: number = 0;
-	constructor() {}
+
 	reset(text: string, _info?: {}): void {
 		this.tokens = [];
 		this.pos = 0;
-		for (const m of [...text.matchAll(/[\p{L}\p{N}\p{Diacritic}-]+/gu)]) {
+		let textQuote: ToaqToken | null = null;
+		let textQuoteDepth = 0;
+		let wordQuote = false;
+
+		for (const m of text.matchAll(/[\p{L}\p{N}\p{Diacritic}-]+/gu)) {
+			if (wordQuote && textQuoteDepth === 0) {
+				// We are inside a word quote; emit this word as a token
+				this.tokens.push({ type: 'word', value: m[0], index: m.index });
+				wordQuote = false;
+				continue;
+			}
+
 			const { prefixes, root } = splitPrefixes(m[0]);
+			const lastTextQuoteDepth = textQuoteDepth;
 			const wordTokens: ToaqToken[] = [];
+
 			for (const tokenText of [...prefixes.map(p => p + '-'), root]) {
 				const lemmaForm = clean(tokenText);
-				if (!lemmaForm) {
-					throw new Impossible('empty token at ' + m.index);
-				}
+				if (!lemmaForm) throw new Impossible('empty token at ' + m.index);
 				const exactEntry = dictionary.get(lemmaForm);
+				const base = baseForm(tokenText);
+				const entry = dictionary.get(base);
+
+				if (entry) {
+					// Deal with words that open and close quotes (except those that are
+					// themselves quoted by a word quote!)
+					if (wordQuote) {
+						wordQuote = false;
+					} else {
+						wordQuote =
+							entry.type === 'word quote' || entry.type === 'name verb';
+						if (entry.type === 'text quote' || entry.type === 'name quote') {
+							textQuoteDepth++;
+						} else if (entry.type === 'end quote') {
+							textQuoteDepth--;
+							if (textQuoteDepth === 0) {
+								// Close out the quote
+								this.tokens.push(textQuote!);
+								textQuote = null;
+							}
+						}
+					}
+				}
 
 				if (exactEntry) {
 					wordTokens.push({
@@ -145,8 +179,6 @@ export class ToaqTokenizer {
 					continue;
 				}
 
-				const base = baseForm(tokenText);
-				const entry = dictionary.get(base);
 				const wordTone = tone(tokenText);
 				if (entry) {
 					wordTokens.unshift({
@@ -180,7 +212,19 @@ export class ToaqTokenizer {
 					});
 				}
 			}
-			this.tokens.push(...wordTokens);
+
+			if (lastTextQuoteDepth > 0 && textQuoteDepth > 0) {
+				// We are inside a text quote; don't emit any tokens until closed
+				if (textQuote === null) {
+					// Open the quote (we're on the first quoted word, not the delimiter)
+					textQuote = { type: 'text', value: m[0], index: m.index };
+				} else {
+					// Continue the quote
+					textQuote.value += ` ${m[0]}`;
+				}
+			} else {
+				this.tokens.push(...wordTokens);
+			}
 		}
 	}
 	next(): ToaqToken | undefined {
@@ -193,7 +237,11 @@ export class ToaqTokenizer {
 		return `${token.value} at column ${token.index}`;
 	}
 	has(tokenType: string): boolean {
-		return underscoredWordTypes.includes(tokenType);
+		return (
+			underscoredWordTypes.includes(tokenType) ||
+			tokenType === 'word' ||
+			tokenType === 'text'
+		);
 	}
 }
 

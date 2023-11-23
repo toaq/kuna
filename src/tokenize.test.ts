@@ -146,6 +146,18 @@ test('it tokenizes sentences', () => {
 		{ type: 'prefix_aspect', value: 'za-', index: 9 },
 		{ type: 'predicate', value: 'faq', index: 9 },
 	]);
+
+	tokenizer.reset('Kuq mí Mô mó «Shu teo hú mo «azazo» teo» teo');
+	expect(tokenizer.tokens).toEqual([
+		{ type: 'predicate', value: 'Kuq', index: 0 },
+		{ type: 'determiner', value: '◌́', index: 4 },
+		{ type: 'name_verb', value: 'mı', index: 4 },
+		{ type: 'word', value: 'Mô', index: 7 },
+		{ type: 'determiner', value: '◌́', index: 10 },
+		{ type: 'text_quote', value: 'mo', index: 10 },
+		{ type: 'text', value: 'Shu teo hú mo azazo teo', index: 14 },
+		{ type: 'end_quote', value: 'teo', index: 41 },
+	]);
 });
 
 test('it keeps capitalization', () => {
