@@ -473,24 +473,3 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 		},
 	};
 }
-
-export function makeTextUnit(trees: Tree[]) {
-	// Detokenize the text
-	// TODO: Correctly handle tonal morphemes and prefixes
-	const text = trees.map(t => ((t as Leaf).word as Word).text).join(' ');
-	return {
-		label: 'text',
-		word: {
-			covert: false,
-			index: ((trees[0] as Leaf).word as Word).index,
-			text,
-			bare: text,
-			tone: Tone.T1, // uhm yeah this is clearly an abuse of Word
-			entry: undefined,
-		},
-	};
-}
-
-export function makeText([trees]: [Tree[]]) {
-	return makeTextUnit(trees);
-}

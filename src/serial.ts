@@ -165,7 +165,6 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 				case 'i':
 					args[0].coindex ??= nextIndex();
 					pros[i].coindex = args[0].coindex;
-					console.log(args[0]);
 					break;
 				case 'j':
 					args[1].coindex ??= nextIndex();

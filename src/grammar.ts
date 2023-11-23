@@ -65,8 +65,6 @@ const {
 	makeSigmaT1ModalvP,
     makeSingleChild,
 	makeT1ModalvP,
-	makeText,
-	makeTextUnit,
 	makeWord,
 	makevP,
 	makevPdet,
