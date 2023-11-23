@@ -155,7 +155,7 @@ test('it tokenizes sentences', () => {
 		{ type: 'word', value: 'Mô', index: 7 },
 		{ type: 'determiner', value: '◌́', index: 10 },
 		{ type: 'text_quote', value: 'mo', index: 10 },
-		{ type: 'text', value: 'Shu teo hú mo azazo teo', index: 14 },
+		{ type: 'text', value: 'Shu teo hú mo «azazo» teo', index: 14 },
 		{ type: 'end_quote', value: 'teo', index: 41 },
 	]);
 });

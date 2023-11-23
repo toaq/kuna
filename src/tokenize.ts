@@ -119,6 +119,11 @@ export interface ToaqToken {
 	index: number | undefined;
 }
 
+interface Range {
+	start: number;
+	end: number;
+}
+
 export class ToaqTokenizer {
 	tokens: ToaqToken[] = [];
 	pos: number = 0;
@@ -126,7 +131,7 @@ export class ToaqTokenizer {
 	reset(text: string, _info?: {}): void {
 		this.tokens = [];
 		this.pos = 0;
-		let textQuote: ToaqToken | null = null;
+		let textQuoteRange: Range | null = null;
 		let textQuoteDepth = 0;
 		let wordQuote = false;
 
@@ -163,8 +168,12 @@ export class ToaqTokenizer {
 							textQuoteDepth--;
 							if (textQuoteDepth === 0) {
 								// Close out the quote
-								this.tokens.push(textQuote!);
-								textQuote = null;
+								this.tokens.push({
+									type: 'text',
+									value: text.slice(textQuoteRange!.start, textQuoteRange!.end),
+									index: textQuoteRange!.start,
+								});
+								textQuoteRange = null;
 							}
 						}
 					}
@@ -215,13 +224,8 @@ export class ToaqTokenizer {
 
 			if (lastTextQuoteDepth > 0 && textQuoteDepth > 0) {
 				// We are inside a text quote; don't emit any tokens until closed
-				if (textQuote === null) {
-					// Open the quote (we're on the first quoted word, not the delimiter)
-					textQuote = { type: 'text', value: m[0], index: m.index };
-				} else {
-					// Continue the quote
-					textQuote.value += ` ${m[0]}`;
-				}
+				textQuoteRange ??= { start: m.index!, end: 0 };
+				textQuoteRange.end = m.index! + m[0].length;
 			} else {
 				this.tokens.push(...wordTokens);
 			}
