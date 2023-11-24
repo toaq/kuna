@@ -13,6 +13,9 @@ import {
 import { serialToEnglish, treeToEnglish } from './tree';
 import { leafText } from './leaf';
 
+// @ts-ignore
+import { Tagger } from 'pos';
+
 /**
  * Just some English text tagged with the verb form it conjugates with.
  * By default this is VerbForm.ThirdPerson.
@@ -30,6 +33,8 @@ export interface Constituent {
  * an English sentence from this information.
  */
 export class ClauseTranslator {
+	static tagger = new Tagger();
+
 	toaqTense: string = 'naı';
 	toaqComplementizer?: string;
 	toaqSpeechAct?: string;
@@ -46,6 +51,26 @@ export class ClauseTranslator {
 	conjunct?: string = undefined;
 	constructor(toaqSpeechAct?: string) {
 		this.toaqSpeechAct = toaqSpeechAct;
+	}
+
+	public pos(word: string): 'adjective' | 'noun' | 'verb' {
+		switch (ClauseTranslator.tagger.tag([word])[0][1]) {
+			case 'JJ':
+			case 'JJR':
+			case 'JJS':
+			case 'RB':
+			case 'RBR':
+			case 'RBS':
+			case 'CD':
+				return 'adjective';
+			case 'NN':
+			case 'NNP':
+			case 'NNPS':
+			case 'NNS':
+				return 'noun';
+			default:
+				return 'verb';
+		}
 	}
 
 	public processCP(tree: Tree): void {
@@ -164,16 +189,39 @@ export class ClauseTranslator {
 		if (merged.auxiliary) auxiliary = merged.auxiliary;
 		const auxiliary2 = merged.auxiliary2 ?? '';
 		const preVerb = merged.preVerb ?? '';
+		if (merged.verbForm) verbForm = merged.verbForm;
 
 		if (auxiliary) {
 			auxiliary = conjugate(auxiliary, subjectVerbForm, past);
 			if (this.negative) auxiliary = negateAuxiliary(auxiliary);
 		}
-		const verb = this.verb
-			? mode === 'DP'
-				? this.verb
-				: conjugate(this.verb, verbForm, auxiliary ? false : past)
-			: '';
+
+		let verb: string = '';
+		if (this.verb) {
+			const pos = this.pos(this.verb);
+			if (mode === 'DP') {
+				verb = this.verb;
+				if (pos === 'verb') {
+					verb += 'er';
+				}
+				if (pos === 'adjective') {
+					verb += ' thing';
+				}
+			} else {
+				if (pos === 'verb') {
+					verb = conjugate(this.verb, verbForm, auxiliary ? false : past);
+				} else {
+					const be = conjugate('be', verbForm, auxiliary ? false : past);
+					const article =
+						pos === 'noun'
+							? /^[aeiou]/.test(this.verb)
+								? ' an '
+								: ' a '
+							: ' ';
+					verb = be + article + this.verb;
+				}
+			}
+		}
 
 		const earlyAdjuncts = this.earlyAdjuncts.map(x => x + ',');
 		const text = (constituent?: Constituent) =>
