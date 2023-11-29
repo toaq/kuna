@@ -72,7 +72,7 @@ export function Sentences() {
 			</div>
 			{selected && (
 				<div className="sentences-output">
-					<Main input={selected} mode="syntax-tree" />
+					<Main input={selected} mode="boxes-nest" />
 				</div>
 			)}
 		</div>
