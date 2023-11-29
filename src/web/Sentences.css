@@ -1,0 +1,61 @@
+.sentences {
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
+	position: absolute;
+	top: 109px;
+	bottom: 20px;
+	left: 20px;
+	right: 20px;
+	overflow: hidden;
+}
+
+.sentences-output .card {
+	position: absolute;
+	margin: 0;
+	margin-left: 10px;
+	overflow-y: scroll;
+	max-height: calc(100vh - 130px);
+	justify-content: start;
+}
+
+.sentence-table td.sentence-text {
+	max-width: 20em;
+}
+
+.card.sentence-table-container {
+	margin: 0;
+	max-height: 100%;
+	overflow-y: scroll;
+	display: block;
+}
+
+.sentence-table {
+	border-collapse: collapse;
+}
+
+.sentence-table tbody tr {
+	background-color: #ff002233;
+	cursor: pointer;
+}
+
+.sentence-table tbody tr:hover {
+	outline: 2px solid #0088ff88;
+}
+
+.sentence-table tbody tr.parses-1 {
+	background-color: inherit;
+}
+
+.sentence-table tbody tr.selected {
+	outline: 2px solid #0088ff88;
+}
+
+.sentence-number {
+	width: 5ch;
+	text-align: center;
+}
+
+.parse-count {
+	text-align: center;
+}
