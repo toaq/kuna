@@ -15,21 +15,31 @@ const allSentences: string[] = _.uniq([
 	...aSentencesTxt.split('\n'),
 ]);
 
-function tryParse(sentence: string): Tree[] {
+function countParses(sentence: string): number {
 	try {
-		return parse(sentence);
+		return parse(sentence).length;
 	} catch {
-		return [];
+		return 0;
 	}
 }
 
-const parses = allSentences.map(tryParse);
+const parses = allSentences.map(countParses);
 
 export function Sentences() {
 	const [selected, setSelected] = useState<string>();
+	const [onlyFailures, setOnlyFailures] = useState(false);
 	return (
 		<div className="sentences">
 			<div className="card sentence-table-container">
+				<label htmlFor="only-failures">
+					<input
+						id="only-failures"
+						type="checkbox"
+						checked={onlyFailures}
+						onChange={e => setOnlyFailures(e.target.checked)}
+					/>{' '}
+					Only show failures
+				</label>
 				<table className="sentence-table">
 					<thead>
 						<tr>
@@ -39,21 +49,24 @@ export function Sentences() {
 						</tr>
 					</thead>
 					<tbody>
-						{allSentences.map((s, i) => (
-							<tr
-								key={s}
-								className={
-									'parses-' +
-									parses[i].length +
-									(s === selected ? ' selected' : '')
-								}
-								onClick={() => setSelected(s)}
-							>
-								<td className="sentence-number">{i + 1}</td>
-								<td className="parse-count">{parses[i].length}</td>
-								<td className="sentence-text">{s}</td>
-							</tr>
-						))}
+						{allSentences.map(
+							(s, i) =>
+								(!onlyFailures || parses[i] !== 1) && (
+									<tr
+										key={s}
+										className={
+											'parses-' +
+											parses[i] +
+											(s === selected ? ' selected' : '')
+										}
+										onClick={() => setSelected(s)}
+									>
+										<td className="sentence-number">{i + 1}</td>
+										<td className="parse-count">{parses[i]}</td>
+										<td className="sentence-text">{s}</td>
+									</tr>
+								),
+						)}
 					</tbody>
 				</table>
 			</div>

@@ -3,7 +3,7 @@
 	flex-direction: row;
 	align-items: flex-start;
 	position: absolute;
-	top: 109px;
+	top: 120px;
 	bottom: 20px;
 	left: 20px;
 	right: 20px;
@@ -35,16 +35,20 @@
 }
 
 .sentence-table tbody tr {
-	background-color: #ff002233;
+	background-color: #ffee2233;
 	cursor: pointer;
-}
-
-.sentence-table tbody tr:hover {
-	outline: 2px solid #0088ff88;
 }
 
 .sentence-table tbody tr.parses-1 {
 	background-color: inherit;
+}
+
+.sentence-table tbody tr.parses-0 {
+	background-color: #ff002233;
+}
+
+.sentence-table tbody tr:hover {
+	outline: 2px solid #0088ff88;
 }
 
 .sentence-table tbody tr.selected {

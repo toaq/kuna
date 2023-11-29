@@ -83,7 +83,6 @@ export function Main(props: MainProps) {
 		() => latestMode && generate(latestMode),
 		[darkMode.isDarkMode, props, treeFormat, parseIndex, meaningCompact],
 	);
-	const [counter, setCounter] = useState(0);
 
 	function getInput(): string {
 		return props.input ?? inputText;
@@ -133,11 +132,11 @@ export function Main(props: MainProps) {
 						: baseRenderer;
 				const tall = mode.includes('semantics');
 				drawTreeToCanvas({ theme, tall, tree, renderer }).then(canvas => {
-					if (treeImg.current) {
-						treeImg.current.src = canvas.toDataURL();
-					} else {
-						console.log('nothing to update');
-					}
+					setTimeout(() => {
+						if (treeImg.current) {
+							treeImg.current.src = canvas.toDataURL();
+						}
+					}, 0);
 				});
 				return (
 					<img
