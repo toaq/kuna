@@ -135,6 +135,11 @@ function focuspToEnglish(tree: Branch<Tree>): Constituent {
 
 function branchToEnglish(tree: Branch<Tree>): Constituent {
 	switch (tree.label) {
+		case 'Discourse': {
+			const left = treeToEnglish(tree.left);
+			const right = treeToEnglish(tree.right);
+			return { text: left.text + ' ' + right.text };
+		}
 		case 'SAP':
 			return sapToEnglish(tree);
 		case 'CP':
@@ -148,13 +153,14 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 		case 'ModalP':
 			return modalpToEnglish(tree);
 		case '&P':
-		case "&'":
+		case "&'": {
 			const left = treeToEnglish(tree.left);
 			const right = treeToEnglish(tree.right);
 			return {
 				text: left.text + ' ' + right.text,
 				person: VerbForm.Plural,
 			};
+		}
 		case 'FocusP':
 			return focuspToEnglish(tree);
 		default:

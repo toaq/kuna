@@ -67,6 +67,7 @@ export type Label =
 	| 'CPrel'
 	| 'D'
 	| 'DP'
+	| 'Discourse'
 	| 'EvA'
 	| "EvA'"
 	| 'EvAP'

@@ -93,7 +93,11 @@ export function App() {
 
 	function getBoxes(strategy: 'flat' | 'nest' | 'split'): ReactElement {
 		const tree = parseInput();
-		return <Boxes {...boxify(tree)} cpStrategy={strategy} />;
+		const outputs = boxify(tree);
+		const divs = outputs.map((b, i) => (
+			<Boxes key={i} {...b} cpStrategy={strategy} />
+		));
+		return <>{divs}</>;
 	}
 
 	function getTree(mode: TreeMode): ReactElement {

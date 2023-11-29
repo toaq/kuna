@@ -609,6 +609,17 @@ const qComposition: CompositionRule = (branch, left, right) => {
 	}
 };
 
+const andComposition: CompositionRule = (branch, left, right) => {
+	if (left.denotation === null) {
+		throw new Impossible(`and-composition on a null ${left.label}`);
+	} else if (right.denotation === null) {
+		throw new Impossible(`and-composition on a null ${right.label}`);
+	} else {
+		const [l, r, bindings] = unifyDenotations(left, right);
+		return { ...branch, left, right, denotation: and(l, r), bindings };
+	}
+};
+
 const predicateAbstraction: CompositionRule = (branch, left, right) => {
 	if (left.denotation === null) {
 		throw new Impossible(`Predicate abstraction on a null ${left.label}`);
@@ -702,6 +713,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'QP':
 		case 'Adjunct':
 			return predicateAbstraction;
+		case 'SAP':
+			return andComposition;
 	}
 
 	const rightLabel = effectiveLabel(right);

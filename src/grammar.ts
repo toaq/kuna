@@ -101,9 +101,11 @@ interface Grammar {
 const grammar: Grammar = {
   Lexer: lexer,
   ParserRules: [
-    {"name": "Fragment", "symbols": ["SAP"], "postprocess": id},
+    {"name": "Fragment", "symbols": ["Discourse"], "postprocess": id},
     {"name": "Fragment", "symbols": ["term"], "postprocess": id},
     {"name": "Fragment", "symbols": ["AdjunctP"], "postprocess": id},
+    {"name": "Discourse", "symbols": ["SAP", "Discourse"], "postprocess": makeBranch('Discourse')},
+    {"name": "Discourse", "symbols": ["SAP"], "postprocess": id},
     {"name": "SAP", "symbols": ["Interjection", "SAP"], "postprocess": makeBranch('InterjectionP')},
     {"name": "SAP", "symbols": ["CP", "SAopt"], "postprocess": makeBranch('SAP')},
     {"name": "CP", "symbols": ["Copt", "Clause"], "postprocess": makeBranch('CP')},

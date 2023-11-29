@@ -44,8 +44,12 @@
 	counter-reset: clauses;
 }
 
+.boxes-clause-list + .boxes-clause-list {
+	margin-top: 2em;
+}
+
 .boxes-clause-list li {
-	margin-top: 1em;
+	margin-top: 0.5em;
 	display: flex;
 }
 

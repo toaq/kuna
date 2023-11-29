@@ -220,10 +220,10 @@ class Boxifier {
 		};
 	}
 
-	public boxify(tree: Tree): SplitBoxes {
+	public boxifySentence(tree: Tree): SplitBoxes {
 		tree = skipFree(tree);
 		if (tree.label !== 'SAP')
-			throw new Ungrammatical('Cannot boxify non-sentence');
+			throw new Impossible('boxifySentence of non-sentence');
 		if (!('left' in tree)) throw new Impossible('bad SAP?');
 		const sa = tree.right;
 		if (sa.label !== 'SA') throw new Impossible('SAP without SA?');
@@ -238,8 +238,26 @@ class Boxifier {
 			cpIndices: this.cpIndices,
 		};
 	}
+
+	public boxify(tree: Tree): SplitBoxes[] {
+		tree = skipFree(tree);
+		if (tree.label === 'SAP') {
+			return [this.boxifySentence(tree)];
+		} else if ('left' in tree && tree.label === 'Discourse') {
+			return [this.boxifySentence(tree.left), ...this.boxify(tree.right)];
+		} else {
+			throw new Ungrammatical("Can't boxify " + tree.label);
+		}
+	}
 }
 
-export function boxify(tree: Tree): SplitBoxes {
-	return new Boxifier().boxify(tree);
+export function boxify(tree: Tree): SplitBoxes[] {
+	tree = skipFree(tree);
+	if (tree.label === 'SAP') {
+		return [new Boxifier().boxifySentence(tree)];
+	} else if ('left' in tree && tree.label === 'Discourse') {
+		return [new Boxifier().boxifySentence(tree.left), ...boxify(tree.right)];
+	} else {
+		throw new Ungrammatical("Can't boxify " + tree.label);
+	}
 }

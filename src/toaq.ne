@@ -35,7 +35,11 @@ const lexer = new ToaqTokenizer();
 # Pass your lexer object using the @lexer option:
 @lexer lexer
 
-Fragment -> SAP {% id %} | term {% id %} | AdjunctP {% id %}
+Fragment -> Discourse {% id %} | term {% id %} | AdjunctP {% id %}
+
+# ꝡa hao da. ꝡa hao da
+Discourse -> SAP Discourse {% makeBranch('Discourse') %}
+Discourse -> SAP {% id %}
 
 # ua, ꝡa hao da
 SAP -> Interjection SAP {% makeBranch('InterjectionP') %}
