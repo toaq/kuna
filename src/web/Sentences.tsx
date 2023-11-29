@@ -59,7 +59,10 @@ export function Sentences() {
 											parses[i] +
 											(s === selected ? ' selected' : '')
 										}
-										onClick={() => setSelected(s)}
+										onClick={() => {
+											navigator.clipboard.writeText(s);
+											setSelected(s);
+										}}
 									>
 										<td className="sentence-number">{i + 1}</td>
 										<td className="parse-count">{parses[i]}</td>
