@@ -474,3 +474,42 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 		},
 	};
 }
+
+export function skipFree(tree: Tree): Tree {
+	if (tree.label === 'InterjectionP' && 'left' in tree) {
+		return tree.left.label === 'Interjection' ? tree.right : tree.left;
+	}
+	return tree;
+}
+
+export function makeDiscourse(
+	[left, right]: [Tree, Tree],
+	location: number,
+	reject: Object,
+) {
+	const l = skipFree(left);
+	if (!('left' in right)) return reject;
+	let r = right.label === 'Discourse' ? right.left : right;
+	r = skipFree(r);
+
+	if (l.label !== 'SAP') return reject;
+	if (!('right' in l)) return reject;
+	const leftSA = l.right;
+	if (leftSA.label !== 'SA') return reject;
+	if (!('word' in leftSA)) return reject;
+
+	if (r.label !== 'SAP') return reject;
+	if (!('left' in r)) return reject;
+	if (r.left.label !== 'CP') return reject;
+	if (!('left' in r.left)) return reject;
+	const rightC = r.left.left;
+	if (rightC.label !== 'C') return reject;
+	if (!('word' in rightC)) return reject;
+
+	// The left sentence must have an overt SA,
+	// or the right sentence must have an overt C.
+	// If both are covert, the sentence fence is invalid.
+	if (leftSA.word.covert && rightC.word.covert) return reject;
+
+	return { label: 'Discourse', left, right };
+}

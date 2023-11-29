@@ -11,6 +11,7 @@ const {
 	makeBranch,
 	makeBranchCovertLeft,
 	makeConn,
+	makeDiscourse,
     makeEmptySerial,
 	makeEvAP,
 	makeEvAPdet,
@@ -38,7 +39,7 @@ const lexer = new ToaqTokenizer();
 Fragment -> Discourse {% id %} | term {% id %} | AdjunctP {% id %}
 
 # ꝡa hao da. ꝡa hao da
-Discourse -> SAP Discourse {% makeBranch('Discourse') %}
+Discourse -> SAP Discourse {% makeDiscourse %}
 Discourse -> SAP {% id %}
 
 # ua, ꝡa hao da

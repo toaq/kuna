@@ -1,5 +1,5 @@
 import { inTone } from './tokenize';
-import { Tree, assertBranch } from './tree';
+import { Tree, assertBranch, skipFree } from './tree';
 import { Tone } from './types';
 import { Impossible, Ungrammatical, Unimplemented } from './error';
 
@@ -35,13 +35,6 @@ export function repairTones(text: string): string {
 		const tone = diacritic.charCodeAt() === 0x301 ? Tone.T2 : Tone.T4;
 		return inTone(word, tone).normalize();
 	});
-}
-
-function skipFree(tree: Tree): Tree {
-	if (tree.label === 'InterjectionP' && 'left' in tree) {
-		return tree.left.label === 'Interjection' ? tree.right : tree.left;
-	}
-	return tree;
 }
 
 function isArgument(tree: Tree): boolean {
