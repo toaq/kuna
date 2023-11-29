@@ -75,7 +75,7 @@ export function negateAuxiliary(auxiliary: string) {
 	}
 }
 
-interface VerbConstruction {
+export interface VerbConstruction {
 	past?: boolean;
 	auxiliary?: string;
 	auxiliary2?: string;

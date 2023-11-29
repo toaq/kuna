@@ -53,8 +53,9 @@ export class ClauseTranslator {
 		this.toaqSpeechAct = toaqSpeechAct;
 	}
 
-	public pos(word: string): 'adjective' | 'noun' | 'verb' {
-		switch (ClauseTranslator.tagger.tag([word])[0][1]) {
+	private pos(word: string): 'adjective' | 'noun' | 'verb' {
+		const w = word.split('.')[0];
+		switch (ClauseTranslator.tagger.tag([w])[0][1]) {
 			case 'JJ':
 			case 'JJR':
 			case 'JJS':
@@ -158,6 +159,34 @@ export class ClauseTranslator {
 		}
 	}
 
+	private mainVerb(
+		mode: 'DP' | undefined,
+		verbForm: VerbForm,
+		auxiliary: boolean,
+		past: boolean,
+	): string {
+		if (!this.verb) return '';
+		const pos = this.pos(this.verb);
+		if (mode === 'DP') {
+			if (pos === 'verb') {
+				return this.verb + 'er';
+			} else if (pos === 'adjective') {
+				return this.verb + ' thing';
+			} else {
+				return this.verb;
+			}
+		} else {
+			if (pos === 'verb') {
+				return conjugate(this.verb, verbForm, auxiliary ? false : past);
+			} else {
+				const be = conjugate('be', verbForm, auxiliary ? false : past);
+				const article =
+					pos === 'noun' ? (/^[aeiou]/.test(this.verb) ? ' an ' : ' a ') : ' ';
+				return be + article + this.verb;
+			}
+		}
+	}
+
 	public emit(mode?: 'DP'): string {
 		if (mode !== 'DP') {
 			this.subject ||= { text: 'it' };
@@ -196,33 +225,7 @@ export class ClauseTranslator {
 			if (this.negative) auxiliary = negateAuxiliary(auxiliary);
 		}
 
-		let verb: string = '';
-		if (this.verb) {
-			const pos = this.pos(this.verb);
-			if (mode === 'DP') {
-				verb = this.verb;
-				if (pos === 'verb') {
-					verb += 'er';
-				}
-				if (pos === 'adjective') {
-					verb += ' thing';
-				}
-			} else {
-				if (pos === 'verb') {
-					verb = conjugate(this.verb, verbForm, auxiliary ? false : past);
-				} else {
-					const be = conjugate('be', verbForm, auxiliary ? false : past);
-					const article =
-						pos === 'noun'
-							? /^[aeiou]/.test(this.verb)
-								? ' an '
-								: ' a '
-							: ' ';
-					verb = be + article + this.verb;
-				}
-			}
-		}
-
+		const mainVerb = this.mainVerb(mode, verbForm, !!auxiliary, past);
 		const earlyAdjuncts = this.earlyAdjuncts.map(x => x + ',');
 		const text = (constituent?: Constituent) =>
 			constituent
@@ -241,7 +244,7 @@ export class ClauseTranslator {
 				subject,
 				auxiliary2,
 				preVerb,
-				verb,
+				mainVerb,
 				...objects,
 				...this.lateAdjuncts,
 				this.conjunct ?? '',
@@ -254,7 +257,7 @@ export class ClauseTranslator {
 				auxiliary ?? '',
 				auxiliary2,
 				preVerb,
-				verb,
+				mainVerb,
 				...objects,
 				...this.lateAdjuncts,
 				this.conjunct ?? '',
