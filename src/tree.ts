@@ -57,6 +57,8 @@ export type Label =
 	| 'AspP'
 	| 'be'
 	| 'beP'
+	| 'bo'
+	| 'boP'
 	| 'bu'
 	| 'buP'
 	| 'buq'
@@ -75,6 +77,8 @@ export type Label =
 	| 'FocusP'
 	| 'ge'
 	| 'geP'
+	| 'ha'
+	| 'haP'
 	| 'Interjection'
 	| 'InterjectionP'
 	| 'kı'
@@ -94,8 +98,14 @@ export type Label =
 	| 'SAP'
 	| 'shu'
 	| 'shuP'
+	| 'su'
+	| 'suP'
 	| 'T'
 	| 'TP'
+	| 'te'
+	| 'teP'
+	| 'Telicity'
+	| 'TelicityP'
 	| 'teo'
 	| 'teoP'
 	| 'text'
@@ -440,9 +450,21 @@ export function makeSigmaT1ModalvP([sigma, modal, tp]: [Tree, Tree, Tree]) {
 	};
 }
 
+function prefixLabel(word: string): Label {
+	const p = bare(word).replace(/-$/, '');
+	switch (p) {
+		case 'fa':
+		case 'ruı':
+			return 'Telicity';
+		default:
+			return p as Label;
+	}
+}
+
 export function makePrefixLeaf([token]: [ToaqToken]) {
+	const label = prefixLabel(token.value);
 	return {
-		label: bare(token.value).replace(/-$/, ''),
+		label,
 		word: makeWord([token]),
 	};
 }

@@ -25,7 +25,14 @@ import { Branch, Label, Leaf, Tree, makeNull } from './tree';
  * each sub-serial.
  */
 
-const arityPreservingVerbPrefixes: Label[] = ['buP', 'muP', 'buqP', 'geP'];
+const intransitiveVerbPrefixes: Label[] = ['beP', 'suP', 'teP'];
+const arityPreservingVerbPrefixes: Label[] = [
+	'buP',
+	'muP',
+	'buqP',
+	'geP',
+	'TelicityP',
+];
 
 export function pro(): Leaf {
 	return { label: 'DP', word: { covert: true, value: 'PRO' } };
@@ -62,7 +69,11 @@ export function getFrame(verb: Tree): string {
 		return 'c';
 	} else if (verb.label === 'EvAP') {
 		return 'c';
-	} else if (verb.label === 'beP') {
+	} else if (verb.label === 'haP') {
+		return 'c c';
+	} else if (verb.label === 'boP') {
+		return 'c c';
+	} else if (intransitiveVerbPrefixes.includes(verb.label)) {
 		return 'c';
 	} else if (arityPreservingVerbPrefixes.includes(verb.label)) {
 		return getFrame((verb as Branch<Tree>).right);
