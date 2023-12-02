@@ -231,5 +231,5 @@ T_prefix -> %prefix_tense {% makeLeaf('T') %}
 Text -> %text {% makeLeaf('text') %}
 Teo -> %end_quote {% makeLeaf('teo') %}
 V -> %predicate {% makeLeaf('V') %}
-Voiv -> %object_incorporating_verb {% makeLeaf('V') %}
+Voiv -> %predicatizer {% makeLeaf('V') %}
 Word -> %word {% makeLeaf('word') %}

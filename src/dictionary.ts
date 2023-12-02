@@ -6,7 +6,7 @@ import unofficialJson from '../data/unofficial.json';
 export const verbTypes = [
 	'name quote',
 	'name verb',
-	'object incorporating verb',
+	'predicatizer',
 	'predicate',
 	'text quote',
 	'word quote',

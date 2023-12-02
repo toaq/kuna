@@ -40,7 +40,7 @@ declare var prefix_tense: any;
 declare var text: any;
 declare var end_quote: any;
 declare var predicate: any;
-declare var object_incorporating_verb: any;
+declare var predicatizer: any;
 declare var word: any;
 
 import { ToaqTokenizer } from "./tokenize";
@@ -254,7 +254,7 @@ const grammar: Grammar = {
     {"name": "Text", "symbols": [(lexer.has("text") ? {type: "text"} : text)], "postprocess": makeLeaf('text')},
     {"name": "Teo", "symbols": [(lexer.has("end_quote") ? {type: "end_quote"} : end_quote)], "postprocess": makeLeaf('teo')},
     {"name": "V", "symbols": [(lexer.has("predicate") ? {type: "predicate"} : predicate)], "postprocess": makeLeaf('V')},
-    {"name": "Voiv", "symbols": [(lexer.has("object_incorporating_verb") ? {type: "object_incorporating_verb"} : object_incorporating_verb)], "postprocess": makeLeaf('V')},
+    {"name": "Voiv", "symbols": [(lexer.has("predicatizer") ? {type: "predicatizer"} : predicatizer)], "postprocess": makeLeaf('V')},
     {"name": "Word", "symbols": [(lexer.has("word") ? {type: "word"} : word)], "postprocess": makeLeaf('word')}
   ],
   ParserStart: "Fragment",
