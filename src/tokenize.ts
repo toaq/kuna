@@ -1,5 +1,5 @@
 import { dictionary, underscoredWordTypes } from './dictionary';
-import { Impossible } from './error';
+import { Impossible, Ungrammatical } from './error';
 import { Tone } from './types';
 
 // Vyái → ꝡáı
@@ -146,6 +146,7 @@ export class ToaqTokenizer {
 			const { prefixes, root } = splitPrefixes(m[0]);
 			const lastTextQuoteDepth = textQuoteDepth;
 			const wordTokens: ToaqToken[] = [];
+			let tokenQuote = false;
 
 			for (const tokenText of [...prefixes.map(p => p + '-'), root]) {
 				const lemmaForm = clean(tokenText);
@@ -153,6 +154,25 @@ export class ToaqTokenizer {
 				const exactEntry = dictionary.get(lemmaForm);
 				const base = baseForm(tokenText);
 				const entry = dictionary.get(base);
+
+				if (tokenQuote) {
+					if (tokenText.endsWith('-'))
+						throw new Ungrammatical('hu- must be followed by a root');
+
+					const hu = wordTokens.at(-1)!;
+					hu.value = inTone(hu.value, tone(tokenText));
+					if (tone(tokenText) === Tone.T4) {
+						hu.type = 'incorporated_prefix_pronoun';
+					}
+					wordTokens.push({
+						type: 'word',
+						value: bare(tokenText),
+						index: m.index,
+					});
+
+					tokenQuote = false;
+					continue;
+				}
 
 				if (entry) {
 					// Deal with words that open and close quotes (except those that are
@@ -180,6 +200,9 @@ export class ToaqTokenizer {
 				}
 
 				if (exactEntry) {
+					if (exactEntry.type === 'prefix pronoun') {
+						tokenQuote = true;
+					}
 					wordTokens.push({
 						type: exactEntry.type.replace(/ /g, '_'),
 						value: tokenText,
@@ -189,6 +212,7 @@ export class ToaqTokenizer {
 				}
 
 				const wordTone = tone(tokenText);
+
 				if (entry) {
 					wordTokens.unshift({
 						type: wordTone === Tone.T2 ? 'determiner' : 'preposition',

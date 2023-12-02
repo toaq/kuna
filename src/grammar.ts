@@ -21,6 +21,8 @@ declare var incorporated_determiner: any;
 declare var event_accessor: any;
 declare var focus_particle: any;
 declare var retroactive_cleft: any;
+declare var prefix_pronoun: any;
+declare var incorporated_prefix_pronoun: any;
 declare var interjection: any;
 declare var adjective_marker: any;
 declare var name_verb: any;
@@ -116,6 +118,7 @@ const grammar: Grammar = {
     {"name": "CPrelna", "symbols": ["Clause"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
     {"name": "CPdet", "symbols": ["MTPdet"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
     {"name": "DP", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun)], "postprocess": makeLeaf('DP')},
+    {"name": "DP", "symbols": ["Hu", "Word"], "postprocess": makeBranch('DP')},
     {"name": "DP", "symbols": ["D", "nP"], "postprocess": makeBranch('DP')},
     {"name": "DP", "symbols": ["Focus", "DP"], "postprocess": makeBranch('FocusP')},
     {"name": "nP", "symbols": ["nP", "CPrel"], "postprocess": makeBranch('𝘯P')},
@@ -174,6 +177,7 @@ const grammar: Grammar = {
     {"name": "VPincorp", "symbols": ["V", "DPincorp"], "postprocess": makeBranch('VP')},
     {"name": "VPincorp", "symbols": ["V", "CPincorp"], "postprocess": makeBranch('VP')},
     {"name": "DPincorp", "symbols": [(lexer.has("incorporated_pronoun") ? {type: "incorporated_pronoun"} : incorporated_pronoun)], "postprocess": makeLeaf('DP')},
+    {"name": "DPincorp", "symbols": ["Huincorp", "Word"], "postprocess": makeBranch('DP')},
     {"name": "DPincorp", "symbols": ["Dincorp", "nP"], "postprocess": makeBranch('DP')},
     {"name": "VPoiv", "symbols": ["Voiv", "DP"], "postprocess": makeBranch('VP')},
     {"name": "term", "symbols": ["DP1"], "postprocess": id},
@@ -228,6 +232,8 @@ const grammar: Grammar = {
     {"name": "EvA", "symbols": [(lexer.has("event_accessor") ? {type: "event_accessor"} : event_accessor)], "postprocess": makeLeaf('EvA')},
     {"name": "Focus", "symbols": [(lexer.has("focus_particle") ? {type: "focus_particle"} : focus_particle)], "postprocess": makeLeaf('Focus')},
     {"name": "Go", "symbols": [(lexer.has("retroactive_cleft") ? {type: "retroactive_cleft"} : retroactive_cleft)], "postprocess": makeLeaf('𝘷')},
+    {"name": "Hu", "symbols": [(lexer.has("prefix_pronoun") ? {type: "prefix_pronoun"} : prefix_pronoun)], "postprocess": makeLeaf('D')},
+    {"name": "Huincorp", "symbols": [(lexer.has("incorporated_prefix_pronoun") ? {type: "incorporated_prefix_pronoun"} : incorporated_prefix_pronoun)], "postprocess": makeLeaf('D')},
     {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Ki", "symbols": [(lexer.has("adjective_marker") ? {type: "adjective_marker"} : adjective_marker)], "postprocess": makeLeaf('𝘢')},
     {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb)], "postprocess": makeLeaf('mı')},

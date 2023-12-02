@@ -30,6 +30,7 @@ export const nonVerbTypes = [
 	'illocution',
 	'incorporated complementizer',
 	'incorporated determiner',
+	'incorporated prefix pronoun', // hû-
 	'incorporated pronoun',
 	'interjection',
 	'modality',
@@ -39,7 +40,7 @@ export const nonVerbTypes = [
 	'prefix', // verb-to-verb
 	'prefix aspect',
 	'prefix conjunctionizer', // na-
-	'prefix pronoun', // hu-
+	'prefix pronoun', // hú-
 	'prefix tense',
 	'preposition',
 	'pronoun',

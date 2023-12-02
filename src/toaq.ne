@@ -62,6 +62,8 @@ CPdet -> MTPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 
 # jí
 DP -> %pronoun {% makeLeaf('DP') %}
+# hụ́ꝡa
+DP -> Hu Word {% makeBranch('DP') %}
 # sá ...
 DP -> D nP {% makeBranch('DP') %}
 # kú jí
@@ -153,6 +155,8 @@ VPincorp -> V DPincorp {% makeBranch('VP') %}
 VPincorp -> V CPincorp {% makeBranch('VP') %}
 # jî
 DPincorp -> %incorporated_pronoun {% makeLeaf('DP') %}
+# hụ̂ꝡa
+DPincorp -> Huincorp Word {% makeBranch('DP') %}
 # sâ ...
 DPincorp -> Dincorp nP {% makeBranch('DP') %}
 # po sá ...
@@ -207,6 +211,8 @@ Dincorp -> %incorporated_determiner {% makeLeaf('D') %}
 EvA -> %event_accessor {% makeLeaf('EvA') %}
 Focus -> %focus_particle {% makeLeaf('Focus') %}
 Go -> %retroactive_cleft {% makeLeaf('𝘷') %}
+Hu -> %prefix_pronoun {% makeLeaf('D') %}
+Huincorp -> %incorporated_prefix_pronoun {% makeLeaf('D') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
 Ki -> %adjective_marker {% makeLeaf('𝘢') %}
 Mi -> %name_verb {% makeLeaf('mı') %}
