@@ -25,7 +25,7 @@ import { Branch, Label, Leaf, Tree, makeNull } from './tree';
  * each sub-serial.
  */
 
-const intransitiveVerbPrefixes: Label[] = ['beP', 'suP', 'teP'];
+const intransitiveVerbPrefixes: Label[] = ['beP', 'suP', 'teP', 'nhaP'];
 const arityPreservingVerbPrefixes: Label[] = [
 	'buP',
 	'muP',
