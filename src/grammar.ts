@@ -179,7 +179,7 @@ const grammar: Grammar = {
     {"name": "DPincorp", "symbols": [(lexer.has("incorporated_pronoun") ? {type: "incorporated_pronoun"} : incorporated_pronoun)], "postprocess": makeLeaf('DP')},
     {"name": "DPincorp", "symbols": ["Huincorp", "Word"], "postprocess": makeBranch('DP')},
     {"name": "DPincorp", "symbols": ["Dincorp", "nP"], "postprocess": makeBranch('DP')},
-    {"name": "VPoiv", "symbols": ["Voiv", "DP"], "postprocess": makeBranch('VP')},
+    {"name": "VPoiv", "symbols": ["Voiv", "DP1"], "postprocess": makeBranch('VP')},
     {"name": "term", "symbols": ["DP1"], "postprocess": id},
     {"name": "term", "symbols": ["CPsub1"], "postprocess": id},
     {"name": "DP1", "symbols": ["DP"], "postprocess": id},
