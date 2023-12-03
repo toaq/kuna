@@ -1,9 +1,9 @@
 import _ from 'lodash';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { parse } from '../parse';
-import { Tree } from '../tree';
 import { Main } from './Main';
 import './Sentences.css';
+import { useInView } from 'react-intersection-observer';
 
 // @ts-ignore
 import refgramSentencesTxt from '../../data/sentences/refgram.txt?raw';
@@ -23,11 +23,46 @@ function countParses(sentence: string): number {
 	}
 }
 
-const parses = allSentences.map(countParses);
+function SentenceRow(props: {
+	sentence: string;
+	selected: string | undefined;
+	setSelected: (sentence: string) => void;
+	index: number;
+	onlyFailures: boolean;
+}) {
+	const [ref, inView] = useInView({ triggerOnce: true });
+	const [parseCount, setParseCount] = useState<number>();
+	useMemo(() => {
+		if (inView) {
+			setParseCount(countParses(props.sentence));
+		}
+	}, [inView]);
+
+	if (props.onlyFailures && parseCount === 1) return <></>;
+	return (
+		<tr
+			ref={ref}
+			className={
+				'parses-' +
+				parseCount +
+				(props.sentence === props.selected ? ' selected' : '')
+			}
+			onClick={() => {
+				navigator.clipboard.writeText(props.sentence);
+				props.setSelected(props.sentence);
+			}}
+		>
+			<td className="sentence-number">{props.index + 1}</td>
+			<td className="parse-count">{parseCount}</td>
+			<td className="sentence-text">{props.sentence}</td>
+		</tr>
+	);
+}
 
 export function Sentences() {
 	const [selected, setSelected] = useState<string>();
 	const [onlyFailures, setOnlyFailures] = useState(false);
+
 	return (
 		<div className="sentences">
 			<div className="card sentence-table-container">
@@ -49,27 +84,16 @@ export function Sentences() {
 						</tr>
 					</thead>
 					<tbody>
-						{allSentences.map(
-							(s, i) =>
-								(!onlyFailures || parses[i] !== 1) && (
-									<tr
-										key={s}
-										className={
-											'parses-' +
-											parses[i] +
-											(s === selected ? ' selected' : '')
-										}
-										onClick={() => {
-											navigator.clipboard.writeText(s);
-											setSelected(s);
-										}}
-									>
-										<td className="sentence-number">{i + 1}</td>
-										<td className="parse-count">{parses[i]}</td>
-										<td className="sentence-text">{s}</td>
-									</tr>
-								),
-						)}
+						{allSentences.map((s, i) => (
+							<SentenceRow
+								key={s}
+								sentence={s}
+								index={i}
+								selected={selected}
+								setSelected={setSelected}
+								onlyFailures={onlyFailures}
+							/>
+						))}
 					</tbody>
 				</table>
 			</div>
