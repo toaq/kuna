@@ -160,7 +160,7 @@ DPincorp -> Huincorp Word {% makeBranch('DP') %}
 # sâ ...
 DPincorp -> Dincorp nP {% makeBranch('DP') %}
 # po sá ...
-VPoiv -> Voiv DP {% makeBranch('VP') %}
+VPoiv -> Voiv DP1 {% makeBranch('VP') %}
 
 term -> DP1 {% id %} | CPsub1 {% id %}
 
