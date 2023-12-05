@@ -240,6 +240,12 @@ test('it denotes determiners', () => {
 	);
 });
 
+test('it denotes multiple determiners binding the same variable', () => {
+	expect(d('Maı sá poq tú poq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘢 : ∃𝘦'. τ(𝘦') ⊆ t'' ∧ poq.𝘸(𝘢)(𝘦'). (∀.SING 𝘣 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ poq.𝘸(𝘣)(𝘦'). (∃𝘦'. τ(𝘦') ⊆ t ∧ maı.𝘸(𝘢, 𝘣)(𝘦') | animate(𝘣)) | animate(𝘢)))(𝘦)\"",
+	);
+});
+
 test('it denotes imperfective aspect + quantification', () => {
 	expect(d('Chụmjoaı jí sá deo')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘢 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ deo.𝘸(𝘢)(𝘦'). (∀𝘸' : IW(𝘸')(𝘸)(t). (∃𝘦'. t ⊆ τ(𝘦') ∧ AGENT(𝘦')(𝘸') = jí ∧ joaı.𝘸'(𝘢)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ deo.𝘸'(𝘢)(𝘦')) | animate(𝘢)))(𝘦)\"",
