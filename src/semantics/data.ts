@@ -298,6 +298,9 @@ export const speechActs: Record<string, Expr> = Object.fromEntries(
 	),
 );
 
+// λ𝘗. a
+export const headAnaphor = λ('e', ['e'], c => v(1, c));
+
 // λ𝘗 : 𝘗(a). a
 export const boundThe = λ(
 	['e', 't'],

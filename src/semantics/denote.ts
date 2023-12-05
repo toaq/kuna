@@ -26,6 +26,7 @@ import {
 	quoteVerb,
 	speechActs,
 	tenses,
+	headAnaphor,
 } from './data';
 import {
 	and,
@@ -173,21 +174,33 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (leaf.word.covert) throw new Impossible('Covert D');
 		if (cCommand === null)
 			throw new Impossible("Can't denote a D in isolation");
-		const vp = findVp(cCommand);
-		if (vp === null) throw new Impossible("Can't find the VP for this D");
-		const verb = getVerbWord(vp);
 
-		denotation = boundThe;
 		const binding = { index: 0, subordinate: false, timeIntervals: [] };
-		bindings = cloneBindings(noBindings);
-		bindings.covertResumptive = binding;
-		if (leaf.word.text !== '◌́') {
-			bindings.head[leaf.word.bare] = binding;
-			bindings.origin.set(cCommand, binding);
-		}
-		if (!verb.covert) {
-			bindings.variable[(verb.entry as VerbEntry).toaq] = binding;
-			bindings.animacy[animacyClass(verb.entry as VerbEntry)] = binding;
+		if (leaf.word.text === 'hú-') {
+			if (
+				cCommand.label !== 'word' ||
+				!('word' in cCommand) ||
+				cCommand.word.covert
+			)
+				throw new Unrecognized('hú- DP shape');
+			denotation = headAnaphor;
+			bindings = { ...noBindings, head: { [cCommand.word.bare]: binding } };
+		} else {
+			const vp = findVp(cCommand);
+			if (vp === null) throw new Impossible("Can't find the VP for this D");
+			const verb = getVerbWord(vp);
+
+			denotation = boundThe;
+			bindings = cloneBindings(noBindings);
+			bindings.covertResumptive = binding;
+			if (leaf.word.text !== '◌́') {
+				bindings.head[leaf.word.bare] = binding;
+				bindings.origin.set(cCommand, binding);
+			}
+			if (!verb.covert) {
+				bindings.variable[(verb.entry as VerbEntry).toaq] = binding;
+				bindings.animacy[animacyClass(verb.entry as VerbEntry)] = binding;
+			}
 		}
 	} else if (leaf.label === '𝘯') {
 		if (cCommand === null)
@@ -693,7 +706,9 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'Crel':
 			return cRelComposition;
 		case 'D':
-			return dComposition;
+			return effectiveLabel(right) === '𝘯P'
+				? dComposition
+				: functionalApplication;
 		case 'Q':
 			return qComposition;
 		case 'QP':
