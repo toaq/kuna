@@ -11,9 +11,8 @@ import {
 	animacies,
 	aspects,
 	boundThe,
-	boundTheBindings,
-	conjunctions,
 	covertHoaBindings,
+	conjunctions,
 	covertLittleVs,
 	covertV,
 	defaultTense,
@@ -42,6 +41,7 @@ import {
 	subtype,
 	AnimacyClass,
 	quote,
+	cloneBindings,
 } from './model';
 import {
 	bindTimeIntervals,
@@ -170,34 +170,36 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			[denotation, bindings] = data;
 		}
 	} else if (leaf.label === 'D') {
+		if (leaf.word.covert) throw new Impossible('Covert D');
+		if (cCommand === null)
+			throw new Impossible("Can't denote a D in isolation");
+		const vp = findVp(cCommand);
+		if (vp === null) throw new Impossible("Can't find the VP for this D");
+		const verb = getVerbWord(vp);
+
 		denotation = boundThe;
-		bindings = boundTheBindings;
+		const binding = { index: 0, subordinate: false, timeIntervals: [] };
+		bindings = cloneBindings(noBindings);
+		bindings.covertResumptive = binding;
+		if (leaf.word.text !== '◌́') {
+			bindings.head[leaf.word.bare] = binding;
+			bindings.origin.set(cCommand, binding);
+		}
+		if (!verb.covert) {
+			bindings.variable[(verb.entry as VerbEntry).toaq] = binding;
+			bindings.animacy[animacyClass(verb.entry as VerbEntry)] = binding;
+		}
 	} else if (leaf.label === '𝘯') {
 		if (cCommand === null)
 			throw new Impossible("Can't denote an 𝘯 in isolation");
 		const vp = findVp(cCommand);
 		if (vp === null) throw new Impossible("Can't find the VP for this 𝘯");
-		const word = getVerbWord(vp);
+		const verb = getVerbWord(vp);
 
-		const binding = { index: 0, subordinate: false, timeIntervals: [] };
-		if (word.covert) {
-			denotation = animacies.descriptive;
-			bindings = {
-				variable: {},
-				animacy: {},
-				head: {},
-				covertResumptive: binding,
-			};
-		} else {
-			const animacy = animacyClass(word.entry as VerbEntry);
-			denotation = animacies[animacy];
-			bindings = {
-				variable: { [(word.entry as VerbEntry).toaq]: binding },
-				animacy: { [animacy]: binding },
-				head: {},
-				covertResumptive: binding,
-			};
-		}
+		denotation = verb.covert
+			? animacies.descriptive
+			: animacies[animacyClass(verb.entry as VerbEntry)];
+		bindings = covertHoaBindings;
 	} else if (leaf.label === '𝘷') {
 		if (leaf.word.covert) {
 			const value = leaf.word.value;
@@ -532,37 +534,13 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 	}
 };
 
-const nComposition: CompositionRule = (branch, left, right) => {
-	if (left.denotation === null) {
-		throw new Impossible(`𝘯 composition on a null ${left.label}`);
-	} else if (right.denotation === null) {
-		throw new Impossible(`𝘯 composition on a null ${right.label}`);
-	} else {
-		const [n, cpRel, bindings] = unifyDenotations(left, right);
-		if (bindings.covertResumptive === undefined)
-			throw new Impossible("𝘯 doesn't create a binding");
-		const index = bindings.covertResumptive.index;
-
-		return {
-			...branch,
-			left,
-			right,
-			denotation: reduce(app(n, cpRel)),
-			// Associate all new time interval variables with this binding
-			bindings: bindTimeIntervals(cpRel, bindings, index),
-		};
-	}
-};
-
 const dComposition: CompositionRule = (branch, left, right) => {
 	if (left.denotation === null) {
 		throw new Impossible(`D composition on a null ${left.label}`);
 	} else if (right.denotation === null) {
 		throw new Impossible(`D composition on a null ${right.label}`);
 	} else {
-		// Because unifyDenotations is heuristic and asymmetric, and 𝘯P will have more
-		// binding information than D, we need to pretend that nP is on the left here
-		const [np, d, bindings] = unifyDenotations(right, left);
+		const [d, np, bindings] = unifyDenotations(left, right);
 		if (bindings.covertResumptive === undefined)
 			throw new Impossible("𝘯P doesn't create a binding");
 		const index = bindings.covertResumptive.index;
@@ -588,15 +566,20 @@ const qComposition: CompositionRule = (branch, left, right) => {
 		throw new Impossible(`Q composition on a null ${right.label}`);
 	} else {
 		const [l, r, bindings] = unifyDenotations(left, right);
-		// Drop all references to the bindings originating in 𝘯
 		if (bindings.covertResumptive === undefined)
 			throw new Impossible("Can't identify the references to be dropped");
 		const index = bindings.covertResumptive.index;
+		// Create an origin binding
+		bindings.origin.set(branch.right, bindings.covertResumptive);
+		// Drop all references to the bindings originating in 𝘯
 		const rPruned = filterPresuppositions(
 			r,
 			p =>
 				!someSubexpression(p, e => e.head === 'variable' && e.index === index),
 		);
+		// Delete the covert resumptive binding as it was only needed to perform this
+		// composition and should not leak outside the QP
+		bindings.covertResumptive = undefined;
 
 		return {
 			...branch,
@@ -627,9 +610,13 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 		throw new Impossible(`Predicate abstraction on a null ${right.label}`);
 	} else {
 		const [l, r, bindings] = unifyDenotations(left, right);
-		if (bindings.covertResumptive === undefined)
+		const index = (
+			'word' in branch.left
+				? bindings.covertResumptive
+				: bindings.origin.get(branch.left.right)
+		)?.index;
+		if (index === undefined)
 			throw new Impossible("Can't identify the variable to be abstracted");
-		const index = bindings.covertResumptive.index;
 
 		// Remove the abstracted binding from the final denotation
 		const newContext = [...r.context];
@@ -672,6 +659,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (leftLabel) {
 		case 'V':
 		case 'Asp':
+		case '𝘯':
 		case 'Σ':
 		case '&':
 		case 'Modal':
@@ -704,8 +692,6 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 			return propositionAbstraction;
 		case 'Crel':
 			return cRelComposition;
-		case '𝘯':
-			return nComposition;
 		case 'D':
 			return dComposition;
 		case 'Q':

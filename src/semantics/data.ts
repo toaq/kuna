@@ -50,14 +50,11 @@ import {
 	she,
 } from './model';
 import { lift, reduce } from './operations';
-import { toPlainText } from './render';
 
 const hoa = v(0, ['e']);
 
 export const covertHoaBindings: Bindings = {
-	variable: {},
-	animacy: {},
-	head: {},
+	...noBindings,
 	covertResumptive: { index: 0, subordinate: false, timeIntervals: [] },
 };
 
@@ -80,9 +77,7 @@ export const dps: Record<string, [Expr, Bindings]> = {
 	hóa: [
 		hoa,
 		{
-			variable: {},
-			animacy: {},
-			head: {},
+			...noBindings,
 			resumptive: { index: 0, subordinate: false, timeIntervals: [] },
 		},
 	],
@@ -90,42 +85,38 @@ export const dps: Record<string, [Expr, Bindings]> = {
 	hó: [
 		presuppose(v(0, ['e']), app(animate(['e']), v(0, ['e']))),
 		{
-			variable: {},
+			...noBindings,
 			animacy: { animate: { index: 0, subordinate: false, timeIntervals: [] } },
-			head: {},
 		},
 	],
 	// 𝘢 | inanimate(𝘢)
 	máq: [
 		presuppose(v(0, ['e']), app(inanimate(['e']), v(0, ['e']))),
 		{
-			variable: {},
+			...noBindings,
 			animacy: {
 				inanimate: { index: 0, subordinate: false, timeIntervals: [] },
 			},
-			head: {},
 		},
 	],
 	// 𝘢 | abstract(𝘢)
 	hóq: [
 		presuppose(v(0, ['e']), app(abstract(['e']), v(0, ['e']))),
 		{
-			variable: {},
+			...noBindings,
 			animacy: {
 				abstract: { index: 0, subordinate: false, timeIntervals: [] },
 			},
-			head: {},
 		},
 	],
 	// 𝘢
 	tá: [
 		hoa,
 		{
-			variable: {},
+			...noBindings,
 			animacy: {
 				descriptive: { index: 0, subordinate: false, timeIntervals: [] },
 			},
-			head: {},
 		},
 	],
 };
@@ -314,13 +305,6 @@ export const boundThe = λ(
 	c => v(1, c),
 	c => app(v(0, c), v(1, c)),
 );
-
-export const boundTheBindings: Bindings = {
-	variable: {},
-	animacy: {},
-	head: {},
-	covertResumptive: { index: 0, subordinate: false, timeIntervals: [] },
-};
 
 export const covertLittleVs: Partial<Record<CovertValue, Expr | null>> = {
 	// λ𝘢. λ𝘦. ᴀɢᴇɴᴛ(𝘦)(𝘸) = 𝘢

@@ -302,6 +302,15 @@ function forEachBinding(
 		setter: (bs: Bindings, b: Binding | undefined) => void,
 	) => void,
 ) {
+	for (const [origin, b] of bs.origin) {
+		fn(
+			b,
+			bs => bs.origin.get(origin),
+			(bs, b) =>
+				b === undefined ? bs.origin.delete(origin) : bs.origin.set(origin, b),
+		);
+	}
+
 	for (const kind_ of ['variable', 'animacy', 'head']) {
 		const kind = kind_ as 'variable' | 'animacy' | 'head';
 		const map = bs[kind];
