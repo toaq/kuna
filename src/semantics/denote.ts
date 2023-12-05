@@ -746,13 +746,23 @@ function denoteBranch(
 	return getCompositionRule(left, right)(branch, left, right);
 }
 
+const branchCache = new WeakMap<Branch<StrictTree>, DTree>();
+
 export function denote_(tree: StrictTree, cCommand: StrictTree | null): DTree {
 	if ('word' in tree) {
 		return denoteLeaf(tree, cCommand);
 	} else {
+		// Because the denotation of a branch is a pure function of the branch, and
+		// some structures like quantified nPs and focused DPs tend to appear at
+		// multiple points in the tree, we can cache their denotations
+		const cached = branchCache.get(tree);
+		if (cached !== undefined) return cached;
+
 		const left = denote_(tree.left, tree.right);
 		const right = denote_(tree.right, tree.left);
-		return denoteBranch(tree, left, right);
+		const denoted = denoteBranch(tree, left, right);
+		branchCache.set(tree, denoted);
+		return denoted;
 	}
 }
 
