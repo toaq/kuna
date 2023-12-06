@@ -291,7 +291,7 @@ export function fixSerial(tree: Tree, terms: Tree[]): Tree {
 	let args = [];
 	let lateAdjuncts = [];
 	for (const term of terms) {
-		if (term.label === 'DP' || term.label === 'CP') {
+		if (term.label === 'DP' || term.label === 'CP' || term.label === 'FocusP') {
 			args.push(term);
 		} else if (args.length) {
 			lateAdjuncts.push(term);

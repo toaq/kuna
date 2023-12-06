@@ -28,7 +28,10 @@ export type CovertValue =
 	| 'ENDO'
 	| 'DEM'
 	| 'PROX'
-	| 'DIST';
+	| 'DIST'
+	| '[only]'
+	| '[also]'
+	| '[even]';
 
 export interface CovertWord {
 	covert: true;
@@ -73,6 +76,8 @@ export type Label =
 	| 'EvA'
 	| "EvA'"
 	| 'EvAP'
+	| 'FocAdv'
+	| 'FocAdvP'
 	| 'Focus'
 	| 'FocusP'
 	| 'ge'

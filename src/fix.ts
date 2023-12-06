@@ -7,6 +7,7 @@ import {
 	assertLeaf,
 } from './tree';
 import { Impossible } from './error';
+import { reverse } from './misc';
 
 interface Quantification {
 	quantifier: CovertValue;
@@ -27,14 +28,23 @@ const quantifiers: Record<string, CovertValue> = {
 	níjao: 'DIST',
 };
 
+interface Focus {
+	focusAdverb: CovertValue;
+	dp: StrictTree;
+}
+
+const foci: Record<string, CovertValue> = {
+	tó: '[only]',
+	máo: '[also]',
+	júaq: '[even]',
+};
+
 /**
- * Tracks quantifiers encountered in a CP.
+ * Tracks quantification and focus within a CP.
  */
 class Scope {
-	private quantifications: Quantification[];
-	constructor() {
-		this.quantifications = [];
-	}
+	private readonly quantifications: Quantification[] = [];
+	private readonly foci: Focus[] = [];
 
 	/**
 	 * Add a quantification to this scope. The first quantification added will
@@ -45,11 +55,32 @@ class Scope {
 	}
 
 	/**
+	 * Add a focus to this scope. The first focus added will have the highest
+	 * scope.
+	 */
+	focus(focusAdverb: CovertValue, dp: StrictTree) {
+		this.foci.push({ focusAdverb, dp });
+	}
+
+	/**
 	 * Wrap the given CompCP (i.e. probably TP) in the QPs found in this scope.
 	 */
 	wrap(tree: StrictTree): StrictTree {
-		for (let i = this.quantifications.length - 1; i >= 0; i--) {
-			const { quantifier, nP } = this.quantifications[i];
+		for (const { focusAdverb, dp } of reverse(this.foci)) {
+			tree = {
+				label: tree.label,
+				left: {
+					label: 'FocAdvP',
+					left: {
+						label: 'FocAdv',
+						word: { covert: true, value: focusAdverb },
+					},
+					right: dp,
+				},
+				right: tree,
+			};
+		}
+		for (const { quantifier, nP } of reverse(this.quantifications)) {
 			tree = {
 				label: tree.label,
 				left: {
@@ -107,13 +138,19 @@ export function fix(tree: Tree, scope?: Scope): StrictTree {
 		}
 		const left = fix(tree.left, scope);
 		const right = fix(tree.right, scope);
-		if (scope && tree.label === 'DP') {
-			const d = tree.left;
-			assertLeaf(d);
-			if (d.word.covert) throw new Impossible('covert D');
-			const q = quantifiers[d.word.entry?.toaq ?? ''];
-			if (q) {
-				scope.quantify(q, right);
+		if (scope !== undefined) {
+			if (tree.label === 'FocusP') {
+				const focus = tree.left;
+				assertLeaf(focus);
+				if (focus.word.covert) throw new Impossible('covert Focus');
+				const focusAdverb = foci[focus.word.entry?.toaq ?? ''];
+				if (focusAdverb) scope.focus(focusAdverb, right);
+			} else if (tree.label === 'DP') {
+				const d = tree.left;
+				assertLeaf(d);
+				if (d.word.covert) throw new Impossible('covert D');
+				const q = quantifiers[d.word.entry?.toaq ?? ''];
+				if (q) scope.quantify(q, right);
 			}
 		}
 		return { label: tree.label, left, right };
