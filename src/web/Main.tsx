@@ -67,7 +67,7 @@ export function Main(props: MainProps) {
 	const [parseIndex, setParseIndex] = useState(0);
 	const [inputText, setInputText] = useLocalStorage<string>(
 		'input',
-		'Poq jí da.',
+		'De cháq da.',
 	);
 
 	const [latestMode, setLatestMode] = useState<Mode | undefined>(props.mode);
@@ -230,6 +230,19 @@ export function Main(props: MainProps) {
 
 	return (
 		<>
+			{!props.input && (
+				<div className="card explanation">
+					<p>
+						This is a parser for the constructed language{' '}
+						<a href="https://toaq.net/">Toaq</a>. It can interpret Toaq
+						sentences and convert them to a variety of output formats.
+					</p>
+					<p>
+						Write some Toaq in the textbox below, then click one of the buttons
+						to see the output.
+					</p>
+				</div>
+			)}
 			{!props.input && (
 				<div className="card settings">
 					<textarea

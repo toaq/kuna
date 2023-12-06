@@ -6,27 +6,29 @@ import './App.css';
 
 export function App() {
 	const darkMode = useDarkMode();
-	const tools = ['Interactive', 'Browse sentences'];
+	const tools = ['Interactive', 'Sentences'];
 	const [tool, setTool] = useState('Interactive');
 
 	return (
 		<div className={darkMode.isDarkMode ? 'kuna dark-mode' : 'kuna'}>
-			<h1>mí Kuna</h1>
-			<button onClick={darkMode.toggle}>Toggle theme</button>
-			<div>
-				{tools.map(t => (
-					<label key={t} htmlFor={t}>
-						<input
+			<header>
+				<h1>mí Kuna</h1>
+				<div style={{ marginLeft: 10 }}>
+					{tools.map(t => (
+						<button
+							className={tool === t ? 'current' : ''}
 							id={t}
-							type="radio"
-							checked={tool === t}
-							onChange={() => setTool(t)}
-						/>{' '}
-						{t}
-					</label>
-				))}
-			</div>
-			{tool === 'Browse sentences' ? <Sentences /> : <Main />}
+							onClick={() => setTool(t)}
+						>
+							{t}
+						</button>
+					))}
+				</div>
+				<button style={{ marginLeft: 'auto' }} onClick={darkMode.toggle}>
+					Toggle theme
+				</button>
+			</header>
+			{tool === 'Sentences' ? <Sentences /> : <Main />}
 		</div>
 	);
 }
