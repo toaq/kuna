@@ -25,15 +25,13 @@ type ParseStatus =
 	| { status: 'ok' };
 
 function parseStatusScore(status: ParseStatus): number {
-	return status.status === 'no parse'
-		? 0
-		: status.status === 'ambiguous'
-		? 1
-		: status.status === 'fix failed'
-		? 2
-		: status.status === 'denote failed'
-		? 3
-		: 4;
+	return {
+		'no parse': 0,
+		ambiguous: 1,
+		'fix failed': 2,
+		'denote failed': 3,
+		ok: 4,
+	}[status.status];
 }
 
 function checkParse(sentence: string): ParseStatus {
@@ -58,38 +56,32 @@ function checkParse(sentence: string): ParseStatus {
 	}
 }
 
-function ShowParseStatus(props: { status: ParseStatus }) {
-	const b = '•';
-	switch (props.status.status) {
-		case 'ok':
-			return (
-				<span className="bullets">
-					<span style={{ color: '#55aa00' }}>{b + b + b}</span>
-				</span>
-			);
-		case 'denote failed':
-			return (
-				<span className="bullets">
-					<span style={{ color: '#ccaa00' }}>{b + b}</span>
-					<span style={{ color: '#88888840' }}>{b}</span>
-				</span>
-			);
-		case 'fix failed':
-			return (
-				<span className="bullets">
-					<span style={{ color: '#cc4400' }}>{b}</span>
-					<span style={{ color: '#88888840' }}>{b + b}</span>
-				</span>
-			);
-		case 'ambiguous':
-			return <span style={{ color: '#cc4400' }}>{props.status.count}?</span>;
-		case 'no parse':
-			return (
-				<span className="bullets">
-					<span style={{ color: '#88888840' }}>{b + b + b}</span>
-				</span>
-			);
-	}
+const BULLET = '•';
+const GREEN = '#55aa00';
+const ORANGE = '#ccaa00';
+const RED = '#cc4400';
+const BLANK = '#88888840';
+
+function ShowParseStatus({ status }: { status: ParseStatus }) {
+	const errorText = status.status === 'ambiguous' ? `${status.count}?` : '';
+	const bullets = {
+		ok: [GREEN, GREEN, GREEN],
+		'denote failed': [ORANGE, ORANGE, BLANK],
+		'fix failed': [RED, BLANK, BLANK],
+		ambiguous: [],
+		'no parse': [BLANK, BLANK, BLANK],
+	}[status.status];
+
+	return (
+		<>
+			<span style={{ color: RED }}>{errorText}</span>
+			<span className="bullets">
+				{bullets.map(color => (
+					<span style={{ color }}>{BULLET}</span>
+				))}
+			</span>
+		</>
+	);
 }
 
 function SentenceRow(props: {
