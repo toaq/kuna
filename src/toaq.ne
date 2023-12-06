@@ -166,6 +166,7 @@ term -> DP1 {% id %} | CPsub1 {% id %}
 
 DP1 -> DP {% id %}
 DP1 -> DP Conjunction DP1 {% makeConn %}
+DP1 -> DP ConjunctionT1 CPsub1 {% makeConn %}
 DP1 -> DP Roi DP1 {% makeConn %}
 CPsub1 -> CPsub {% id %}
 CPsub1 -> CPsub Conjunction CPsub1 {% makeConn %}
