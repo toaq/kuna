@@ -33,7 +33,7 @@ interface Focus {
 	dp: StrictTree;
 }
 
-const foci: Record<string, CovertValue> = {
+const focusAdverbs: Record<string, CovertValue> = {
 	tó: '[only]',
 	máo: '[also]',
 	júaq: '[even]',
@@ -44,7 +44,7 @@ const foci: Record<string, CovertValue> = {
  */
 class Scope {
 	private readonly quantifications: Quantification[] = [];
-	private readonly foci: Focus[] = [];
+	private readonly focusSites: Focus[] = [];
 
 	/**
 	 * Add a quantification to this scope. The first quantification added will
@@ -59,14 +59,14 @@ class Scope {
 	 * scope.
 	 */
 	focus(focusAdverb: CovertValue, dp: StrictTree) {
-		this.foci.push({ focusAdverb, dp });
+		this.focusSites.push({ focusAdverb, dp });
 	}
 
 	/**
 	 * Wrap the given CompCP (i.e. probably TP) in the QPs found in this scope.
 	 */
 	wrap(tree: StrictTree): StrictTree {
-		for (const { focusAdverb, dp } of reverse(this.foci)) {
+		for (const { focusAdverb, dp } of reverse(this.focusSites)) {
 			tree = {
 				label: tree.label,
 				left: {
@@ -143,7 +143,7 @@ export function fix(tree: Tree, scope?: Scope): StrictTree {
 				const focus = tree.left;
 				assertLeaf(focus);
 				if (focus.word.covert) throw new Impossible('covert Focus');
-				const focusAdverb = foci[focus.word.entry?.toaq ?? ''];
+				const focusAdverb = focusAdverbs[focus.word.entry?.toaq ?? ''];
 				if (focusAdverb) scope.focus(focusAdverb, right);
 			} else if (tree.label === 'DP') {
 				const d = tree.left;
