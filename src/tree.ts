@@ -84,6 +84,7 @@ export type Label =
 	| 'geP'
 	| 'ha'
 	| 'haP'
+	| 'haoP'
 	| 'Interjection'
 	| 'InterjectionP'
 	| 'kı'
