@@ -179,18 +179,18 @@ AdjunctP1 -> AdjunctP {% id %}
 AdjunctP1 -> AdjunctP Conjunction AdjunctP1 {% makeConn %}
 Vlast -> VPincorp {% id %}
 Vlast -> VPoiv {% id %}
-Vlast -> Verblike ConjunctionT1 Vlast {% makeConn %}
-Vlast -> Verblike {% id %}
-V1 -> Verblike {% id %}
-V1 -> Verblike ConjunctionT1 V1 {% makeConn %}
-Verblike -> Prefix Verblike {% makePrefixP %}
-Verblike -> V {% id %}
-Verblike -> ShuP {% id %}
+Vlast -> Verb ConjunctionT1 Vlast {% makeConn %}
+Vlast -> Verb {% id %}
+V1 -> Verb {% id %}
+V1 -> Verb ConjunctionT1 V1 {% makeConn %}
+Verb -> Prefix Verb {% makePrefixP %}
+Verb -> V {% id %}
+Verb -> ShuP {% id %}
 ShuP -> Shu Word {% makeBranch('shuP') %}
-Verblike -> TeoP {% id %}
+Verb -> TeoP {% id %}
 TeoP -> MoP Teo {% makeBranch('teoP') %}
 MoP -> Mo Text {% makeBranch('moP') %}
-Verblike -> MiP {% id %}
+Verb -> MiP {% id %}
 MiP -> Mi Word {% makeBranch('mıP') %}
 
 Adjunct -> %preposition {% makeLeaf('Adjunct') %}
