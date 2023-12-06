@@ -27,6 +27,8 @@ import {
 	speechActs,
 	tenses,
 	headAnaphor,
+	focus,
+	focusAdverbs,
 } from './data';
 import {
 	and,
@@ -285,9 +287,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		denotation = speechActs[toaq];
 		if (denotation === undefined) throw new Unrecognized(`SA: ${toaq}`);
 	} else if (leaf.label === 'Q') {
-		if (!leaf.word.covert) {
-			throw new Impossible(`Overt Q: ${leaf.word.text}`);
-		}
+		if (!leaf.word.covert) throw new Impossible(`Overt Q: ${leaf.word.text}`);
 		const value = leaf.word.value;
 		const data = quantifiers[value];
 		if (data === undefined) throw new Unrecognized(`Q: ${value}`);
@@ -326,6 +326,31 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		denotation = quote(leaf.word.text, []);
 	} else if (leaf.label === 'EvA') {
 		denotation = eventAccessor;
+	} else if (leaf.label === 'Focus') {
+		if (cCommand === null)
+			throw new Impossible("Can't denote a Focus in isolation");
+		denotation = focus;
+		bindings = {
+			...noBindings,
+			origin: new Map([
+				[cCommand, { index: 0, subordinate: false, timeIntervals: [] }],
+			]),
+		};
+	} else if (leaf.label === 'FocAdv') {
+		if (cCommand === null)
+			throw new Impossible("Can't denote a FocAdv in isolation");
+		if (!leaf.word.covert)
+			throw new Impossible(`Overt FocAdv: ${leaf.word.text}`);
+		const value = leaf.word.value;
+		const data = focusAdverbs[value];
+		if (data === undefined) throw new Unrecognized(`FocAdv: ${value}`);
+		denotation = data;
+		bindings = {
+			...noBindings,
+			origin: new Map([
+				[cCommand, { index: 0, subordinate: false, timeIntervals: [] }],
+			]),
+		};
 	} else if (
 		leaf.label === 'C' ||
 		leaf.label === 'Crel' ||
@@ -685,6 +710,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'moP':
 		case 'teoP':
 		case 'EvA':
+		case 'Focus':
+		case 'FocAdv':
 			return functionalApplication;
 		case 'T':
 			// Existential tenses use FA, while pronomial tenses use reverse FA
@@ -712,6 +739,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'Q':
 			return qComposition;
 		case 'QP':
+		case 'FocAdvP':
 		case 'Adjunct':
 			return predicateAbstraction;
 		case 'SAP':

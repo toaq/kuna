@@ -155,6 +155,7 @@ export type Expr =
 	| Animacy<'abstract'>
 	| Constant<'real_world', 's'>
 	| Constant<'inertia_worlds', ['s', ['s', ['i', 't']]]>
+	| Constant<'alternative', ['e', ['e', ['s', 't']]]>
 	// TODO: all temporal features of events should have world parameters
 	| Constant<'temporal_trace', ['v', 'i']>
 	| Constant<'expected_start', ['v', 'i']>
@@ -652,6 +653,10 @@ export function realWorld(context: ExprType[]): Expr {
 
 export function inertiaWorlds(context: ExprType[]): Expr {
 	return constant('inertia_worlds', ['s', ['s', ['i', 't']]], context);
+}
+
+export function alternative(context: ExprType[]): Expr {
+	return constant('alternative', ['e', ['e', ['s', 't']]], context);
 }
 
 export function temporalTrace(context: ExprType[]): Expr {

@@ -48,6 +48,7 @@ import {
 	subject,
 	or,
 	she,
+	alternative,
 } from './model';
 import { lift, reduce } from './operations';
 
@@ -645,3 +646,39 @@ export const eventAccessor = λ(['v', 't'], [], c =>
 		),
 	),
 );
+
+// λ𝘗. a
+export const focus = λ('e', ['e'], c => v(1, c));
+
+export const focusAdverbs: Partial<Record<CovertValue, Expr>> = {
+	// λ𝘢. λ𝘗 : 𝘗(𝘢). ∀𝘣 : A(𝘣)(𝘢)(𝘸). ¬𝘗(𝘣)
+	'[only]': λ('e', ['e', 's'], c =>
+		λ(
+			['e', 't'],
+			c,
+			c =>
+				every(
+					'e',
+					c,
+					c => not(app(v(1, c), v(0, c))),
+					c => app(app(app(alternative(c), v(0, c)), v(2, c)), v(4, c)),
+				),
+			c => app(v(0, c), v(1, c)),
+		),
+	),
+	// λ𝘢. λ𝘗 : ∃𝘣 : A(𝘣)(𝘢)(𝘸). 𝘗(𝘣). 𝘗(𝘢)
+	'[also]': λ('e', ['e', 's'], c =>
+		λ(
+			['e', 't'],
+			c,
+			c => app(v(0, c), v(1, c)),
+			c =>
+				some(
+					'e',
+					c,
+					c => app(v(1, c), v(0, c)),
+					c => app(app(app(alternative(c), v(0, c)), v(2, c)), v(4, c)),
+				),
+		),
+	),
+};

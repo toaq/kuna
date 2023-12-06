@@ -343,3 +343,12 @@ test('it denotes the event accessor', () => {
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦' : 𝘦' = b. AGENT(𝘦')(𝘸) = a ∧ marao.𝘸(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ raı.𝘸(b)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ oguı.𝘸(a)(𝘦')))(𝘦) | animate(a)\"",
 	);
 });
+
+test('it denotes focus adverbs', () => {
+	expect(d('Shıe tó jí')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∀𝘢 : A(𝘢)(jí)(𝘸). ¬∃𝘦'. τ(𝘦') ⊆ t ∧ shıe.𝘸(𝘢)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ shıe.𝘸(jí)(𝘦')))(𝘦)\"",
+	);
+	expect(d('Shıe máo jí')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ shıe.𝘸(jí)(𝘦') | ∃𝘢 : A(𝘢)(jí)(𝘸). ∃𝘦'. τ(𝘦') ⊆ t ∧ shıe.𝘸(𝘢)(𝘦')))(𝘦)\"",
+	);
+});
