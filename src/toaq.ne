@@ -132,8 +132,11 @@ vP -> vPinner {% id %}
 
 # tua hao tî kúe jí súq râo níchaq
 vPinner -> Serial AdjunctP1:* (term:+ AdjunctP1:*):? {% makevP %}
+
 # (sá) tua hao
-vPdet -> Serialdet {% makevPdet %}
+vPdet -> Sigma vPdet_inner {% makeBranch('ΣP') %}
+vPdet -> vPdet_inner {% id %}
+vPdet_inner -> Serial {% makevPdet %}
 
 # ^ tı kúe
 AdjunctP -> Adjunct Serial term {% makeAdjunctPT %}
