@@ -40,7 +40,9 @@ export const nonVerbTypes = [
 	'polarity',
 	'prefix', // verb-to-verb
 	'prefix aspect',
-	'prefix conjunctionizer', // na-
+	'prefix conjunctionizer', // ná-
+	'prefix conjunctionizer in t1', // na-
+	'prefix conjunctionizer in t4', // nâ-
 	'prefix pronoun', // hú-
 	'prefix tense',
 	'preposition',

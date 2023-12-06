@@ -16,6 +16,7 @@ export function App() {
 				<div style={{ marginLeft: 10 }}>
 					{tools.map(t => (
 						<button
+							key={t}
 							className={tool === t ? 'current' : ''}
 							id={t}
 							onClick={() => setTool(t)}

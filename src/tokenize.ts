@@ -147,6 +147,7 @@ export class ToaqTokenizer {
 			const lastTextQuoteDepth = textQuoteDepth;
 			const wordTokens: ToaqToken[] = [];
 			let tokenQuote = false;
+			let toneInPrefix = false;
 
 			for (const tokenText of [...prefixes.map(p => p + '-'), root]) {
 				const lemmaForm = clean(tokenText);
@@ -200,25 +201,45 @@ export class ToaqTokenizer {
 				}
 
 				if (exactEntry) {
-					if (exactEntry.type === 'prefix pronoun') {
-						tokenQuote = true;
+					if (exactEntry.type === 'prefix conjunctionizer') {
+						console.log(wordTokens, prefixes);
+						const wordTone = tone(m[0]);
+						if (wordTone === Tone.T3) {
+							throw new Ungrammatical('na- in t3 word');
+						}
+						wordTokens.push({
+							type:
+								wordTone === Tone.T1
+									? 'prefix_conjunctionizer_in_t1'
+									: wordTone === Tone.T4
+									? 'prefix_conjunctionizer_in_t4'
+									: 'prefix_conjunctionizer',
+							value: inTone(tokenText, wordTone),
+							index: m.index,
+						});
+						toneInPrefix = true;
+					} else {
+						if (exactEntry.type === 'prefix pronoun') {
+							tokenQuote = true;
+						}
+						wordTokens.push({
+							type: exactEntry.type.replace(/ /g, '_'),
+							value: tokenText,
+							index: m.index,
+						});
 					}
-					wordTokens.push({
-						type: exactEntry.type.replace(/ /g, '_'),
-						value: tokenText,
-						index: m.index,
-					});
 					continue;
 				}
 
 				const wordTone = tone(tokenText);
 
 				if (entry) {
-					wordTokens.unshift({
-						type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
-						value: wordTone === Tone.T2 ? '◌́' : '◌̂',
-						index: m.index,
-					});
+					if (!toneInPrefix)
+						wordTokens.unshift({
+							type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
+							value: wordTone === Tone.T2 ? '◌́' : '◌̂',
+							index: m.index,
+						});
 					wordTokens.push({
 						type: entry.type.replace(/ /g, '_'),
 						value: inTone(tokenText, tone(base)),
@@ -232,7 +253,7 @@ export class ToaqTokenizer {
 						value: tokenText,
 						index: m.index,
 					});
-				} else {
+				} else if (!toneInPrefix) {
 					wordTokens.unshift({
 						type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
 						value: wordTone === Tone.T2 ? '◌́' : '◌̂',

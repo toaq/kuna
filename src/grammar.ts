@@ -31,6 +31,10 @@ declare var modality: any;
 declare var modality_with_complement: any;
 declare var cleft_verb: any;
 declare var prefix: any;
+declare var focus_particle_prefix_form: any;
+declare var prefix_conjunctionizer: any;
+declare var prefix_conjunctionizer_in_t1: any;
+declare var prefix_conjunctionizer_in_t4: any;
 declare var plural_coordinator: any;
 declare var illocution: any;
 declare var polarity: any;
@@ -164,7 +168,9 @@ const grammar: Grammar = {
     {"name": "vPinner$ebnf$2", "symbols": ["vPinner$ebnf$2$subexpression$1"], "postprocess": id},
     {"name": "vPinner$ebnf$2", "symbols": [], "postprocess": () => null},
     {"name": "vPinner", "symbols": ["Serial", "vPinner$ebnf$1", "vPinner$ebnf$2"], "postprocess": makevP},
-    {"name": "vPdet", "symbols": ["Serialdet"], "postprocess": makevPdet},
+    {"name": "vPdet", "symbols": ["Sigma", "vPdet_inner"], "postprocess": makeBranch('ΣP')},
+    {"name": "vPdet", "symbols": ["vPdet_inner"], "postprocess": id},
+    {"name": "vPdet_inner", "symbols": ["Serial"], "postprocess": makevPdet},
     {"name": "AdjunctP", "symbols": ["Adjunct", "Serial", "term"], "postprocess": makeAdjunctPT},
     {"name": "AdjunctP", "symbols": ["Adjunct", "Serial"], "postprocess": makeAdjunctPI},
     {"name": "Serial$ebnf$1", "symbols": []},
@@ -184,6 +190,7 @@ const grammar: Grammar = {
     {"name": "term", "symbols": ["CPsub1"], "postprocess": id},
     {"name": "DP1", "symbols": ["DP"], "postprocess": id},
     {"name": "DP1", "symbols": ["DP", "Conjunction", "DP1"], "postprocess": makeConn},
+    {"name": "DP1", "symbols": ["DP", "ConjunctionT1", "CPsub1"], "postprocess": makeConn},
     {"name": "DP1", "symbols": ["DP", "Roi", "DP1"], "postprocess": makeConn},
     {"name": "CPsub1", "symbols": ["CPsub"], "postprocess": id},
     {"name": "CPsub1", "symbols": ["CPsub", "Conjunction", "CPsub1"], "postprocess": makeConn},
@@ -197,23 +204,26 @@ const grammar: Grammar = {
     {"name": "AdjunctP1", "symbols": ["AdjunctP", "Conjunction", "AdjunctP1"], "postprocess": makeConn},
     {"name": "Vlast", "symbols": ["VPincorp"], "postprocess": id},
     {"name": "Vlast", "symbols": ["VPoiv"], "postprocess": id},
-    {"name": "Vlast", "symbols": ["Verblike", "ConjunctionT1", "Vlast"], "postprocess": makeConn},
-    {"name": "Vlast", "symbols": ["Verblike"], "postprocess": id},
-    {"name": "V1", "symbols": ["Verblike"], "postprocess": id},
-    {"name": "V1", "symbols": ["Verblike", "ConjunctionT1", "V1"], "postprocess": makeConn},
-    {"name": "Verblike", "symbols": ["Prefix", "Verblike"], "postprocess": makePrefixP},
-    {"name": "Verblike", "symbols": ["V"], "postprocess": id},
-    {"name": "Verblike", "symbols": ["ShuP"], "postprocess": id},
+    {"name": "Vlast", "symbols": ["Verb", "ConjunctionT1", "Vlast"], "postprocess": makeConn},
+    {"name": "Vlast", "symbols": ["Verb"], "postprocess": id},
+    {"name": "V1", "symbols": ["Verb"], "postprocess": id},
+    {"name": "V1", "symbols": ["Verb", "ConjunctionT1", "V1"], "postprocess": makeConn},
+    {"name": "Verb", "symbols": ["Prefix", "Verb"], "postprocess": makePrefixP},
+    {"name": "Verb", "symbols": ["V"], "postprocess": id},
+    {"name": "Verb", "symbols": ["ShuP"], "postprocess": id},
     {"name": "ShuP", "symbols": ["Shu", "Word"], "postprocess": makeBranch('shuP')},
-    {"name": "Verblike", "symbols": ["TeoP"], "postprocess": id},
+    {"name": "Verb", "symbols": ["TeoP"], "postprocess": id},
     {"name": "TeoP", "symbols": ["MoP", "Teo"], "postprocess": makeBranch('teoP')},
     {"name": "MoP", "symbols": ["Mo", "Text"], "postprocess": makeBranch('moP')},
-    {"name": "Verblike", "symbols": ["MiP"], "postprocess": id},
+    {"name": "Verb", "symbols": ["MiP"], "postprocess": id},
     {"name": "MiP", "symbols": ["Mi", "Word"], "postprocess": makeBranch('mıP')},
     {"name": "Adjunct", "symbols": [(lexer.has("preposition") ? {type: "preposition"} : preposition)], "postprocess": makeLeaf('Adjunct')},
     {"name": "Conjunction", "symbols": [(lexer.has("conjunction") ? {type: "conjunction"} : conjunction)], "postprocess": makeLeaf('&')},
+    {"name": "Conjunction", "symbols": ["PrefixNa", "V"], "postprocess": makeBranch('&(naP)')},
     {"name": "ConjunctionT1", "symbols": [(lexer.has("conjunction_in_t1") ? {type: "conjunction_in_t1"} : conjunction_in_t1)], "postprocess": makeLeaf('&')},
+    {"name": "ConjunctionT1", "symbols": ["PrefixNaT1", "V"], "postprocess": makeBranch('&(naP)')},
     {"name": "ConjunctionT4", "symbols": [(lexer.has("conjunction_in_t4") ? {type: "conjunction_in_t4"} : conjunction_in_t4)], "postprocess": makeLeaf('&')},
+    {"name": "ConjunctionT4", "symbols": ["PrefixNaT4", "V"], "postprocess": makeBranch('&(naP)')},
     {"name": "Asp", "symbols": [(lexer.has("aspect") ? {type: "aspect"} : aspect)], "postprocess": makeLeaf('Asp')},
     {"name": "Asp_prefix", "symbols": [(lexer.has("prefix_aspect") ? {type: "prefix_aspect"} : prefix_aspect)], "postprocess": makeLeaf('Asp')},
     {"name": "Bi", "symbols": [(lexer.has("topic_marker") ? {type: "topic_marker"} : topic_marker)], "postprocess": makeLeaf('Topic')},
@@ -242,6 +252,10 @@ const grammar: Grammar = {
     {"name": "ModalT4", "symbols": [(lexer.has("modality_with_complement") ? {type: "modality_with_complement"} : modality_with_complement)], "postprocess": makeLeaf('Modal')},
     {"name": "Na", "symbols": [(lexer.has("cleft_verb") ? {type: "cleft_verb"} : cleft_verb)], "postprocess": makeLeaf('𝘷')},
     {"name": "Prefix", "symbols": [(lexer.has("prefix") ? {type: "prefix"} : prefix)], "postprocess": makePrefixLeaf},
+    {"name": "Prefix", "symbols": [(lexer.has("focus_particle_prefix_form") ? {type: "focus_particle_prefix_form"} : focus_particle_prefix_form)], "postprocess": makePrefixLeaf},
+    {"name": "PrefixNa", "symbols": [(lexer.has("prefix_conjunctionizer") ? {type: "prefix_conjunctionizer"} : prefix_conjunctionizer)], "postprocess": makePrefixLeaf},
+    {"name": "PrefixNaT1", "symbols": [(lexer.has("prefix_conjunctionizer_in_t1") ? {type: "prefix_conjunctionizer_in_t1"} : prefix_conjunctionizer_in_t1)], "postprocess": makePrefixLeaf},
+    {"name": "PrefixNaT4", "symbols": [(lexer.has("prefix_conjunctionizer_in_t4") ? {type: "prefix_conjunctionizer_in_t4"} : prefix_conjunctionizer_in_t4)], "postprocess": makePrefixLeaf},
     {"name": "Roi", "symbols": [(lexer.has("plural_coordinator") ? {type: "plural_coordinator"} : plural_coordinator)], "postprocess": makeLeaf('&')},
     {"name": "SA", "symbols": [(lexer.has("illocution") ? {type: "illocution"} : illocution)], "postprocess": makeLeaf('SA')},
     {"name": "SAopt$ebnf$1", "symbols": ["SA"], "postprocess": id},

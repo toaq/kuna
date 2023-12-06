@@ -199,8 +199,11 @@ MiP -> Mi Word {% makeBranch('mıP') %}
 
 Adjunct -> %preposition {% makeLeaf('Adjunct') %}
 Conjunction -> %conjunction {% makeLeaf('&') %}
+Conjunction -> PrefixNa V {% makeBranch('&(naP)') %}
 ConjunctionT1 -> %conjunction_in_t1 {% makeLeaf('&') %}
+ConjunctionT1 -> PrefixNaT1 V {% makeBranch('&(naP)') %}
 ConjunctionT4 -> %conjunction_in_t4 {% makeLeaf('&') %}
+ConjunctionT4 -> PrefixNaT4 V {% makeBranch('&(naP)') %}
 Asp -> %aspect {% makeLeaf('Asp') %}
 Asp_prefix -> %prefix_aspect {% makeLeaf('Asp') %}
 Bi -> %topic_marker {% makeLeaf('Topic') %}
@@ -225,6 +228,10 @@ Modal -> %modality {% makeLeaf('Modal') %}
 ModalT4 -> %modality_with_complement {% makeLeaf('Modal') %}
 Na -> %cleft_verb {% makeLeaf('𝘷') %}
 Prefix -> %prefix {% makePrefixLeaf %}
+Prefix -> %focus_particle_prefix_form {% makePrefixLeaf %}
+PrefixNa -> %prefix_conjunctionizer {% makePrefixLeaf %}
+PrefixNaT1 -> %prefix_conjunctionizer_in_t1 {% makePrefixLeaf %}
+PrefixNaT4 -> %prefix_conjunctionizer_in_t4 {% makePrefixLeaf %}
 Roi -> %plural_coordinator {% makeLeaf('&') %}
 SA -> %illocution {% makeLeaf('SA') %}
 SAopt -> SA:? {% makeOptLeaf('SA') %}
