@@ -26,7 +26,8 @@ export const nonVerbTypes = [
 	'end parenthetical',
 	'end quote',
 	'event accessor',
-	'focus particle',
+	'focus particle', // kú
+	'focus particle prefix form', // ku-
 	'illocution',
 	'incorporated complementizer',
 	'incorporated determiner',
