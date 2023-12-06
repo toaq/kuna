@@ -170,7 +170,7 @@ const grammar: Grammar = {
     {"name": "vPinner", "symbols": ["Serial", "vPinner$ebnf$1", "vPinner$ebnf$2"], "postprocess": makevP},
     {"name": "vPdet", "symbols": ["Sigma", "vPdet_inner"], "postprocess": makeBranch('ΣP')},
     {"name": "vPdet", "symbols": ["vPdet_inner"], "postprocess": id},
-    {"name": "vPdet_inner", "symbols": ["Serial"], "postprocess": makevPdet},
+    {"name": "vPdet_inner", "symbols": ["Serialdet"], "postprocess": makevPdet},
     {"name": "AdjunctP", "symbols": ["Adjunct", "Serial", "term"], "postprocess": makeAdjunctPT},
     {"name": "AdjunctP", "symbols": ["Adjunct", "Serial"], "postprocess": makeAdjunctPI},
     {"name": "Serial$ebnf$1", "symbols": []},

@@ -28,6 +28,7 @@ import { Branch, Label, Leaf, Tree, makeNull } from './tree';
 const intransitiveVerbPrefixes: Label[] = ['beP', 'suP', 'teP', 'nhaP', 'haoP'];
 const arityPreservingVerbPrefixes: Label[] = [
 	'buP',
+	'FocusP',
 	'muP',
 	'buqP',
 	'geP',
@@ -174,12 +175,16 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 		for (let i = 0; i < jaCount; i++) {
 			switch (lastSlot[i + 1]) {
 				case 'i':
-					args[0].coindex ??= nextIndex();
-					pros[i].coindex = args[0].coindex;
+					if (args.length > 0) {
+						args[0].coindex ??= nextIndex();
+						pros[i].coindex = args[0].coindex;
+					}
 					break;
 				case 'j':
-					args[1].coindex ??= nextIndex();
-					pros[i].coindex = args[1].coindex;
+					if (args.length > 1) {
+						args[1].coindex ??= nextIndex();
+						pros[i].coindex = args[1].coindex;
+					}
 					break;
 			}
 		}

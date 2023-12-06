@@ -36,7 +36,7 @@ const lexer = new ToaqTokenizer();
 # Pass your lexer object using the @lexer option:
 @lexer lexer
 
-Fragment -> Discourse {% id %} | term {% id %} | AdjunctP {% id %}
+Fragment -> Discourse {% id %} | Argument {% id %} | AdjunctP {% id %}
 
 # ꝡa hao da. ꝡa hao da
 Discourse -> SAP Discourse {% makeDiscourse %}
@@ -66,19 +66,17 @@ DP -> %pronoun {% makeLeaf('DP') %}
 DP -> Hu Word {% makeBranch('DP') %}
 # sá ...
 DP -> D nP {% makeBranch('DP') %}
-# kú jí
-DP -> Focus DP {% makeBranch('FocusP') %}
 # (sá) ꝡë hao
 nP -> nP CPrel {% makeBranch('𝘯P') %}
 # (sá) ∅ hao
 nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 
 # ní bï pu hao
-Clause -> term Bi Clause {% make3L('TopicP', "Topic'") %}
+Clause -> Argument Bi Clause {% make3L('TopicP', "Topic'") %}
 # pu hao
 Clause -> MTP {% id %}
 # jí nä pu hao hóa
-Clause -> term Na CPrelna {% make3L('𝘷P', "𝘷'") %}
+Clause -> Argument Na CPrelna {% make3L('𝘷P', "𝘷'") %}
 # râo fíachaq nä pu hao hóa
 Clause -> AdjunctP1 Na CPrelna {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
@@ -131,15 +129,15 @@ vP -> Sigma vPinner {% makeBranch('ΣP') %}
 vP -> vPinner {% id %}
 
 # tua hao tî kúe jí súq râo níchaq
-vPinner -> Serial AdjunctP1:* (term:+ AdjunctP1:*):? {% makevP %}
+vPinner -> Serial AdjunctP1:* (Argument:+ AdjunctP1:*):? {% makevP %}
 
 # (sá) tua hao
 vPdet -> Sigma vPdet_inner {% makeBranch('ΣP') %}
 vPdet -> vPdet_inner {% id %}
-vPdet_inner -> Serial {% makevPdet %}
+vPdet_inner -> Serialdet {% makevPdet %}
 
 # ^ tı kúe
-AdjunctP -> Adjunct Serial term {% makeAdjunctPT %}
+AdjunctP -> Adjunct Serial Argument {% makeAdjunctPT %}
 # ^ jaq suaı
 AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
 
@@ -165,7 +163,8 @@ DPincorp -> Dincorp nP {% makeBranch('DP') %}
 # po sá ...
 VPoiv -> Voiv DP1 {% makeBranch('VP') %}
 
-term -> DP1 {% id %} | CPsub1 {% id %}
+Argument -> DP1 {% id %} | CPsub1 {% id %}
+Argument -> Focus Argument {% makeBranch('FocusP') %}
 
 DP1 -> DP {% id %}
 DP1 -> DP Conjunction DP1 {% makeConn %}

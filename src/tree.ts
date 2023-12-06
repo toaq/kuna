@@ -462,6 +462,12 @@ export function makeSigmaT1ModalvP([sigma, modal, tp]: [Tree, Tree, Tree]) {
 function prefixLabel(word: string): Label {
 	const p = bare(word).replace(/-$/, '');
 	switch (p) {
+		case 'beı':
+		case 'juaq':
+		case 'ku':
+		case 'mao':
+		case 'to':
+			return 'Focus';
 		case 'fa':
 		case 'ruı':
 			return 'Telicity';
