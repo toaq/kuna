@@ -69,6 +69,10 @@ export function Main(props: MainProps) {
 		'input',
 		'De cháq da.',
 	);
+	const [explanationDismissed, setExplanationDismissed] = useLocalStorage(
+		'explanationDismissed',
+		false,
+	);
 
 	const [latestMode, setLatestMode] = useState<Mode | undefined>(props.mode);
 	const [latestOutput, setLatestOutput] = useState<ReactElement>(
@@ -237,7 +241,7 @@ export function Main(props: MainProps) {
 
 	return (
 		<>
-			{!props.input && (
+			{!explanationDismissed && (
 				<div className="card explanation">
 					<p>
 						This is a parser for the constructed language{' '}
@@ -248,6 +252,12 @@ export function Main(props: MainProps) {
 						Write some Toaq in the textbox below, then click one of the buttons
 						to see the output.
 					</p>
+					<button
+						className="dismiss"
+						onClick={() => setExplanationDismissed(true)}
+					>
+						Dismiss
+					</button>
 				</div>
 			)}
 			{!props.input && (
@@ -255,7 +265,10 @@ export function Main(props: MainProps) {
 					<textarea
 						rows={3}
 						value={inputText}
-						onChange={e => setInputText(e.target.value)}
+						onChange={e => {
+							setInputText(e.target.value);
+							setExplanationDismissed(true);
+						}}
 					/>
 					<div className="toggles">
 						<label>

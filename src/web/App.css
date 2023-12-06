@@ -96,10 +96,16 @@ h1 {
 
 .kuna .explanation p {
 	margin: 0;
+	margin-bottom: 1em;
 }
 
-.kuna .explanation p + p {
-	margin-top: 1em;
+.kuna .explanation p:last-child {
+	margin-bottom: 0;
+}
+
+.kuna .explanation button.dismiss {
+	display: block;
+	margin-left: auto;
 }
 
 .kuna textarea,
