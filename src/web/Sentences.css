@@ -1,13 +1,17 @@
 .sentences {
-	display: flex;
-	flex-direction: row;
-	align-items: flex-start;
 	position: absolute;
 	top: 50px;
 	bottom: 20px;
 	left: 20px;
 	right: 20px;
 	overflow: hidden;
+}
+
+.sentences main {
+	height: calc(100% - 25px);
+	display: flex;
+	flex-direction: row;
+	align-items: flex-start;
 }
 
 .sentences-output .card {
@@ -35,16 +39,11 @@
 }
 
 .sentence-table tbody tr {
-	background-color: #ffee2233;
 	cursor: pointer;
 }
 
-.sentence-table tbody tr.parses-1 {
-	background-color: inherit;
-}
-
-.sentence-table tbody tr.parses-0 {
-	background-color: #ff002233;
+.sentence-table tbody tr:nth-child(even) {
+	background: #0000000a;
 }
 
 .sentence-table tbody tr:hover {
@@ -60,6 +59,11 @@
 	text-align: center;
 }
 
-.parse-count {
+.parse-status {
 	text-align: center;
+}
+
+.bullets {
+	font-size: 20px;
+	line-height: 0px;
 }

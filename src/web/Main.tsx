@@ -30,7 +30,7 @@ type TreeMode =
 	| 'semantics-tree'
 	| 'semantics-tree-compact'
 	| 'raw-tree';
-type Mode =
+export type Mode =
 	| 'boxes-flat'
 	| 'boxes-nest'
 	| 'boxes-split'
@@ -79,10 +79,17 @@ export function Main(props: MainProps) {
 	const [meaningCompact, setMeaningCompact] = useState(false);
 
 	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png-latex');
-	useEffect(
-		() => latestMode && generate(latestMode),
-		[darkMode.isDarkMode, props, treeFormat, parseIndex, meaningCompact],
-	);
+	useEffect(() => {
+		if (props.mode) generate(props.mode);
+		else if (latestMode) generate(latestMode);
+	}, [
+		darkMode.isDarkMode,
+		props.input,
+		props.mode,
+		treeFormat,
+		parseIndex,
+		meaningCompact,
+	]);
 
 	function getInput(): string {
 		return props.input ?? inputText;
