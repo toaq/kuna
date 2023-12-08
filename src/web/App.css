@@ -68,7 +68,15 @@ h1 {
 	color: #333;
 }
 
+.kuna a {
+	color: var(--blue);
+	text-decoration: none;
+}
+
+.kuna header a,
 .kuna header button {
+	display: inline-block;
+	padding: 0px 4px;
 	background: none;
 	cursor: pointer;
 	border: none;
@@ -76,12 +84,7 @@ h1 {
 	color: white;
 }
 
-.kuna a {
-	color: var(--blue);
-	text-decoration: none;
-}
-
-.kuna header button.current {
+.kuna header a.active {
 	background: #00000020;
 }
 
