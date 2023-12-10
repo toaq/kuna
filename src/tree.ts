@@ -31,7 +31,12 @@ export type CovertValue =
 	| 'DIST'
 	| '[only]'
 	| '[also]'
-	| '[even]';
+	| '[even]'
+	| '[and]'
+	| '[or]'
+	| '[xor]'
+	| '[or?]'
+	| '[but]';
 
 export interface CovertWord {
 	covert: true;
@@ -53,6 +58,9 @@ export type Label =
 	| '&(naP)'
 	| "&'"
 	| '&P'
+	| '&Q'
+	| "&Q'"
+	| '&QP'
 	| '𝘢'
 	| '𝘢P'
 	| 'Adjunct'
