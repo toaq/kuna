@@ -1,6 +1,6 @@
 import { Impossible, Ungrammatical, Unimplemented } from './error';
 import { nextIndex } from './fix';
-import { Branch, Label, Leaf, Tree, makeNull } from './tree';
+import { Branch, Label, Leaf, Tree, effectiveLabel, makeNull } from './tree';
 
 /**
  * Toaq serials are too complicated to parse directly in the context-free
@@ -296,7 +296,8 @@ export function fixSerial(tree: Tree, terms: Tree[]): Tree {
 	let args = [];
 	let lateAdjuncts = [];
 	for (const term of terms) {
-		if (term.label === 'DP' || term.label === 'CP' || term.label === 'FocusP') {
+		const label = effectiveLabel(term);
+		if (label === 'DP' || label === 'CP') {
 			args.push(term);
 		} else if (args.length) {
 			lateAdjuncts.push(term);

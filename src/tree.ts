@@ -141,6 +141,18 @@ export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
 	}
 }
 
+export function effectiveLabel(tree: Tree): Label {
+	if (tree.label === '&P') {
+		assertBranch(tree);
+		return effectiveLabel(tree.left);
+	} else if (tree.label === 'FocusP') {
+		assertBranch(tree);
+		return effectiveLabel(tree.right);
+	} else {
+		return tree.label;
+	}
+}
+
 export function containsWords(
 	tree: Tree,
 	words: string[],

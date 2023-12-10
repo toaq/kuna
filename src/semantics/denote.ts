@@ -5,7 +5,15 @@ import {
 	Unimplemented,
 	Unrecognized,
 } from '../error';
-import { Branch, CovertWord, Label, Leaf, StrictTree, Word } from '../tree';
+import {
+	Branch,
+	CovertWord,
+	Label,
+	Leaf,
+	StrictTree,
+	Word,
+	effectiveLabel,
+} from '../tree';
 import {
 	adjuncts,
 	animacies,
@@ -56,16 +64,6 @@ import {
 	someSubexpression,
 	unifyDenotations,
 } from './operations';
-
-function effectiveLabel(tree: StrictTree): Label {
-	if (tree.label === '&P') {
-		if ('word' in tree) throw new Impossible('Leaf &P');
-		// Check the children to find what kind of &P this is
-		return effectiveLabel(tree.left);
-	} else {
-		return tree.label;
-	}
-}
 
 function denoteVerb(toaq: string, arity: number): Expr {
 	switch (arity) {
