@@ -582,6 +582,31 @@ export const clausalConjunctions: Partial<Record<Label, Record<string, Expr>>> =
 		]),
 	);
 
+const conjunctionValues: Partial<
+	Record<CovertValue, (left: Expr, right: Expr) => Expr>
+> = {
+	'[and]': and,
+	'[or]': or,
+};
+
+export const argumentConjunctions: Partial<Record<CovertValue, Expr>> =
+	Object.fromEntries(
+		Object.entries(conjunctionValues).map(([toaq, conjoin]) => [
+			toaq,
+			// λ𝘢. λ𝘣. λ𝘗. 𝘗(𝘣) ∧ 𝘗(𝘢)
+			λ('e', ['e'], c =>
+				λ('e', c, c =>
+					λ(['e', 't'], c, c =>
+						conjoin(app(v(0, c), v(1, c)), app(v(0, c), v(2, c))),
+					),
+				),
+			),
+		]),
+	);
+
+// λ𝘢. λ𝘣. a
+export const argumentCoordinator = λ('e', ['e'], c => λ('e', c, c => v(2, c)));
+
 // λ𝘢. λ𝘣. 𝘣 & 𝘢
 export const pluralCoordinator = λ('e', [], c =>
 	λ('e', c, c => roi(v(0, c), v(1, c))),

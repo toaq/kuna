@@ -302,6 +302,15 @@ test('it denotes adjunct coordination', () => {
 	);
 });
 
+test('it denotes argument coordination', () => {
+	expect(d('Nuo súq rú jí')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ nuo.𝘸(súq)(𝘦')) ∧ ∃𝘦'. τ(𝘦') ⊆ t ∧ nuo.𝘸(jí)(𝘦'))(𝘦)\"",
+	);
+	expect(d('Nuo súq rá jí')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ nuo.𝘸(súq)(𝘦')) ∨ ∃𝘦'. τ(𝘦') ⊆ t ∧ nuo.𝘸(jí)(𝘦'))(𝘦)\"",
+	);
+});
+
 test('it denotes plural coordination', () => {
 	expect(d('Nuo súq róı jí')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘦'. τ(𝘦') ⊆ t ∧ nuo.𝘸(súq & jí)(𝘦'))(𝘦)\"",

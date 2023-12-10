@@ -8,7 +8,6 @@ import {
 import {
 	Branch,
 	CovertWord,
-	Label,
 	Leaf,
 	StrictTree,
 	Word,
@@ -38,6 +37,8 @@ import {
 	focus,
 	focusAdverbs,
 	pluralCoordinator,
+	argumentCoordinator,
+	argumentConjunctions,
 } from './data';
 import {
 	and,
@@ -302,10 +303,35 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (toaq === 'róı') {
 			denotation = pluralCoordinator;
 		} else {
-			const data = clausalConjunctions[effectiveLabel(cCommand)]?.[toaq];
-			if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
-			denotation = data;
+			const conjunct = effectiveLabel(cCommand);
+			if (conjunct === 'DP') {
+				denotation = argumentCoordinator;
+				bindings = {
+					...noBindings,
+					origin: new Map([
+						[cCommand, { index: 0, subordinate: false, timeIntervals: [] }],
+					]),
+				};
+			} else {
+				const data = clausalConjunctions[effectiveLabel(cCommand)]?.[toaq];
+				if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
+				denotation = data;
+			}
 		}
+	} else if (leaf.label === '&Q') {
+		if (cCommand === null)
+			throw new Impossible("Can't denote an &Q in isolation");
+		if (!leaf.word.covert) throw new Impossible(`Overt &Q: ${leaf.word.text}`);
+		const value = leaf.word.value;
+		const data = argumentConjunctions[value];
+		if (data === undefined) throw new Unrecognized(`&Q: ${value}`);
+		denotation = data;
+		bindings = {
+			...noBindings,
+			origin: new Map([
+				[cCommand, { index: 0, subordinate: false, timeIntervals: [] }],
+			]),
+		};
 	} else if (leaf.label === 'Modal') {
 		if (leaf.word.covert) throw new Impossible('Covert Modal');
 		if (leaf.word.entry === undefined)
@@ -651,10 +677,16 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 		throw new Impossible(`Predicate abstraction on a null ${right.label}`);
 	} else {
 		const [l, r, bindings] = unifyDenotations(left, right);
+		// XXX This is a big hack, we should just put IDs in the root nodes of binding
+		// sites or something as a way of matching them up
 		const index = (
 			'word' in branch.left
 				? bindings.covertResumptive
-				: bindings.origin.get(branch.left.right)
+				: bindings.origin.get(
+						branch.left.label === '&QP' && !('word' in branch.left.right)
+							? branch.left.right.right
+							: branch.left.right,
+				  )
 		)?.index;
 		if (index === undefined)
 			throw new Impossible("Can't identify the variable to be abstracted");
@@ -703,6 +735,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case '𝘯':
 		case 'Σ':
 		case '&':
+		case '&Q':
 		case 'Modal':
 		case 'ModalP':
 		case 'mı':
@@ -744,6 +777,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'QP':
 		case 'FocAdvP':
 		case 'Adjunct':
+		case '&QP':
 			return predicateAbstraction;
 		case 'SAP':
 			return andComposition;
@@ -755,6 +789,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'SA':
 		case "V'":
 		case "&'":
+		case "&Q'":
 		case "EvA'":
 			return reverseFunctionalApplication;
 		case 'CPrel':
