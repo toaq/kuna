@@ -13,7 +13,7 @@ import { testSentences } from './test-sentences';
 import { denote } from './semantics/denote';
 import { ToaqTokenizer } from './tokenize';
 import { toEnglish } from './english/tree';
-import { denotationRenderLatex, denotationRenderText } from './tree/place';
+import { denotationRenderText } from './tree/place';
 
 function getTrees(argv: {
 	sentence: string | undefined;

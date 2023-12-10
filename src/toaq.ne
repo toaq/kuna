@@ -104,7 +104,7 @@ TP -> AspP {% makeBranchCovertLeft('TP', 'T') %}
 TP -> T1 AspP {% makeBranch('TP') %}
 TP -> Sigma T1 AspP {% make3L('ΣP', 'TP') %}
 # ë marao óguı ráı
-TP -> EvA vP DP1 {% makeEvAP %}
+TP -> EvA vP DP3 {% makeEvAP %}
 
 # (sá) pu chum hao
 TPdet -> AspPdet {% makeBranchCovertLeft('TP', 'T') %}
@@ -161,17 +161,21 @@ DPincorp -> Huincorp Word {% makeBranch('DP') %}
 # sâ ...
 DPincorp -> Dincorp nP {% makeBranch('DP') %}
 # po sá ...
-VPoiv -> Voiv DP1 {% makeBranch('VP') %}
+VPoiv -> Voiv DP3 {% makeBranch('VP') %}
 
-Argument -> DP1 {% id %} | CPsub1 {% id %}
-Argument -> Focus Argument {% makeBranch('FocusP') %}
+Argument -> DP3 {% id %} | CPsub2 {% id %}
 
 DP1 -> DP {% id %}
-DP1 -> DP Conjunction DP1 {% makeConn %}
-DP1 -> DP ConjunctionT1 CPsub1 {% makeConn %}
 DP1 -> DP Roi DP1 {% makeConn %}
+DP2 -> DP1 {% id %}
+DP2 -> Focus DP1 {% makeBranch('FocusP') %}
+DP3 -> DP2 {% id %}
+DP3 -> DP2 Conjunction DP3 {% makeConn %}
+DP3 -> DP2 ConjunctionT1 CPsub2 {% makeConn %}
 CPsub1 -> CPsub {% id %}
 CPsub1 -> CPsub Conjunction CPsub1 {% makeConn %}
+CPsub2 -> CPsub1 {% id %}
+CPsub2 -> Focus CPsub2 {% makeBranch('FocusP') %}
 T1 -> T {% id %}
 T1 -> T_prefix {% id %}
 T1 -> T Conjunction T1 {% makeConn %}
