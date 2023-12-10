@@ -1,5 +1,5 @@
 import { Impossible } from '../error';
-import { reverse, zip } from '../misc';
+import { enumerate, reverse, zip } from '../misc';
 import {
 	app,
 	Binding,
@@ -302,17 +302,16 @@ function forEachBinding(
 		setter: (bs: Bindings, b: Binding | undefined) => void,
 	) => void,
 ) {
-	for (const [origin, b] of bs.origin) {
+	for (const [b, index] of enumerate(bs.index)) {
 		fn(
 			b,
-			bs => bs.origin.get(origin),
+			bs => bs.index[index],
 			(bs, b) =>
-				b === undefined ? bs.origin.delete(origin) : bs.origin.set(origin, b),
+				b === undefined ? delete bs.index[index] : (bs.index[index] = b),
 		);
 	}
 
-	for (const kind_ of ['variable', 'animacy', 'head']) {
-		const kind = kind_ as 'variable' | 'animacy' | 'head';
+	for (const kind of ['variable', 'animacy', 'head'] as const) {
 		const map = bs[kind];
 		for (const [slot_, b] of Object.entries(map)) {
 			if (b !== undefined) {

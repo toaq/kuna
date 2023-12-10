@@ -1,5 +1,6 @@
 import { fixSerial, pro } from './serial';
 import {
+	Branch,
 	CovertValue,
 	StrictTree,
 	Tree,
@@ -19,7 +20,7 @@ interface Quantification {
 interface Focus {
 	type: 'focus';
 	focusAdverb: CovertValue;
-	dp: StrictTree;
+	focus: StrictTree;
 }
 
 interface Conjunction {
@@ -60,24 +61,60 @@ const conjunctions: Record<string, CovertValue> = {
 };
 
 /**
- * Tracks quantification and focus within a CP.
+ * Tracks bound structures and their binding sites within a CP.
  */
 class Scope {
-	private readonly bindingSites: BindingSite[] = [];
+	private readonly bindings: [BindingSite, number][] = [];
+
+	constructor(private newBinding: () => number) {}
 
 	/**
 	 * Add a binding site to this scope. The first site added will have the highest
 	 * scope.
+	 * @param origin The structure from which the binding originates.
+	 * @param b The binding site.
 	 */
-	bind(b: BindingSite) {
-		this.bindingSites.push(b);
+	private bind(origin: StrictTree, b: BindingSite) {
+		origin.binding = this.newBinding();
+		this.bindings.push([b, origin.binding]);
+	}
+
+	quantify(dp: Branch<StrictTree>) {
+		const { left: d, right: nP } = dp;
+		assertLeaf(d);
+		if (d.word.covert) throw new Impossible('Covert D');
+		const quantifier = quantifiers[d.word.entry?.toaq ?? ''];
+		if (quantifier !== undefined)
+			this.bind(d, { type: 'quantification', quantifier, nP });
+	}
+
+	focus(focusP: Branch<StrictTree>) {
+		const { left: focusParticle, right: focus } = focusP;
+		assertLeaf(focusParticle);
+		if (focusParticle.word.covert) throw new Impossible('Covert Focus');
+		const focusAdverb = focusAdverbs[focusParticle.word.entry?.toaq ?? ''];
+		if (focusAdverb !== undefined)
+			this.bind(focusParticle, { type: 'focus', focusAdverb, focus });
+	}
+
+	conjoin(andP: Branch<StrictTree>) {
+		assertBranch(andP.right);
+		const {
+			left,
+			right: { left: and, right },
+		} = andP;
+		assertLeaf(and);
+		if (and.word.covert) throw new Impossible('Covert &');
+		const conjunction = conjunctions[and.word.entry?.toaq ?? ''];
+		if (conjunction !== undefined)
+			this.bind(and, { type: 'conjunction', left, conjunction, right });
 	}
 
 	/**
-	 * Wrap the given CompCP (i.e. probably TP) in the QPs found in this scope.
+	 * Wrap the given CompCP (probably TP) in the binding sites for this scope.
 	 */
 	wrap(tree: StrictTree): StrictTree {
-		for (const b of reverse(this.bindingSites)) {
+		for (const [b, index] of reverse(this.bindings)) {
 			let left: StrictTree;
 			switch (b.type) {
 				case 'quantification':
@@ -86,6 +123,7 @@ class Scope {
 						left: {
 							label: 'Q',
 							word: { covert: true, value: b.quantifier },
+							binding: index,
 						},
 						right: b.nP,
 					};
@@ -96,8 +134,9 @@ class Scope {
 						left: {
 							label: 'FocAdv',
 							word: { covert: true, value: b.focusAdverb },
+							binding: index,
 						},
-						right: b.dp,
+						right: b.focus,
 					};
 					break;
 				case 'conjunction':
@@ -109,11 +148,14 @@ class Scope {
 							left: {
 								label: '&Q',
 								word: { covert: true, value: b.conjunction },
+								binding: index,
 							},
 							right: b.right,
 						},
 					};
 			}
+
+			left.binding = index;
 			tree = { label: tree.label, left, right: tree };
 		}
 
@@ -121,14 +163,19 @@ class Scope {
 	}
 }
 
-let indexCount = 0;
+let coindexCount = 0;
 
-export function nextIndex(): string {
-	return String.fromCodePoint('𝑖'.codePointAt(0)! + indexCount++);
+export function nextCoindex(): string {
+	return String.fromCodePoint('𝑖'.codePointAt(0)! + coindexCount++);
 }
 
-export function fix(tree: Tree, scope?: Scope): StrictTree {
-	indexCount = 0;
+function fix_(
+	tree: Tree,
+	newBinding: () => number,
+	scope: Scope | undefined,
+): StrictTree {
+	coindexCount = 0;
+
 	if ('children' in tree) {
 		if (tree.label === '*𝘷P') {
 			const serial = tree.children[0];
@@ -137,8 +184,9 @@ export function fix(tree: Tree, scope?: Scope): StrictTree {
 				throw new Impossible('*𝘷P without *Serial, instead: ' + serial.label);
 			}
 			if (!('children' in serial)) throw new Impossible('strange *Serial');
+
 			const vP = fixSerial(serial, tree.children.slice(1));
-			return fix(vP, scope);
+			return fix_(vP, newBinding, scope);
 		} else {
 			throw new Impossible('unexpected non-binary tree: ' + tree.label);
 		}
@@ -148,49 +196,40 @@ export function fix(tree: Tree, scope?: Scope): StrictTree {
 			const vP = fixSerial(tree.left, [pro(), tree.right]);
 			assertBranch(vP);
 			assertBranch(vP.right);
-			return fix(vP.right.right);
+			return fix_(vP.right.right, newBinding, undefined);
 		}
+
 		if (tree.label === 'CP') {
-			const newScope = new Scope();
-			const right = fix(tree.right, newScope);
+			const newScope = new Scope(newBinding);
+			const right = fix_(tree.right, newBinding, newScope);
 			return {
 				label: tree.label,
-				left: fix(tree.left, scope),
+				left: fix_(tree.left, newBinding, scope),
 				right: newScope.wrap(right),
 			};
 		}
-		const left = fix(tree.left, scope);
-		const right = fix(tree.right, scope);
+
+		const left = fix_(tree.left, newBinding, scope);
+		const right = fix_(tree.right, newBinding, scope);
+		const fixed = { label: tree.label, left, right };
+
 		if (scope !== undefined && effectiveLabel(tree) === 'DP') {
 			if (tree.label === 'DP') {
-				const d = tree.left;
-				assertLeaf(d);
-				if (d.word.covert) throw new Impossible('covert D');
-				const q = quantifiers[d.word.entry?.toaq ?? ''];
-				if (q) scope.bind({ type: 'quantification', quantifier: q, nP: right });
+				scope.quantify(fixed);
 			} else if (tree.label === 'FocusP') {
-				const focus = tree.left;
-				assertLeaf(focus);
-				if (focus.word.covert) throw new Impossible('covert Focus');
-				const focusAdverb = focusAdverbs[focus.word.entry?.toaq ?? ''];
-				if (focusAdverb) scope.bind({ type: 'focus', focusAdverb, dp: right });
+				scope.focus(fixed);
 			} else if (tree.label === '&P') {
-				assertBranch(right);
-				const and = right.left;
-				assertLeaf(and);
-				if (and.word.covert) throw new Impossible('covert &');
-				const conjunction = conjunctions[and.word.entry?.toaq ?? ''];
-				if (conjunction)
-					scope.bind({
-						type: 'conjunction',
-						left,
-						conjunction,
-						right: right.right,
-					});
+				scope.conjoin(fixed);
 			}
 		}
-		return { label: tree.label, left, right };
+
+		return fixed;
 	} else {
 		return tree;
 	}
+}
+
+export function fix(tree: Tree): StrictTree {
+	let nextBinding = 0;
+	return fix_(tree, () => nextBinding++, undefined);
 }

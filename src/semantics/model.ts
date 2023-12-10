@@ -1,5 +1,6 @@
 import { Impossible } from '../error';
-import { Branch, Leaf, StrictTree } from '../tree';
+import { enumerate } from '../misc';
+import { Branch, Leaf } from '../tree';
 import { toPlainText, typesToPlainText, typeToPlainText } from './render';
 
 /**
@@ -183,7 +184,7 @@ export interface Binding {
 }
 
 export interface Bindings {
-	origin: Map<StrictTree, Binding>;
+	index: Binding[];
 	variable: { [V in string]?: Binding };
 	animacy: { [A in AnimacyClass]?: Binding };
 	head: { [H in string]?: Binding };
@@ -192,20 +193,22 @@ export interface Bindings {
 }
 
 export const noBindings: Bindings = {
-	origin: new Map(),
+	index: [],
 	variable: {},
 	animacy: {},
 	head: {},
 };
 
-export function cloneBindings(b: Bindings): Bindings {
+export function cloneBindings(bs: Bindings): Bindings {
+	const indexBindings: Binding[] = [];
+	for (const [b, i] of enumerate(bs.index)) indexBindings[i] = b;
 	return {
-		origin: new Map(b.origin),
-		variable: { ...b.variable },
-		animacy: { ...b.animacy },
-		head: { ...b.head },
-		resumptive: b.resumptive,
-		covertResumptive: b.covertResumptive,
+		index: indexBindings,
+		variable: { ...bs.variable },
+		animacy: { ...bs.animacy },
+		head: { ...bs.head },
+		resumptive: bs.resumptive,
+		covertResumptive: bs.covertResumptive,
 	};
 }
 

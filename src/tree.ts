@@ -193,7 +193,18 @@ export function isQuestion(tree: Tree): boolean {
 }
 
 interface TreeBase {
+	/**
+	 * The syntactic label of this node.
+	 */
 	label: Label;
+	/**
+	 * An index correlating a binding site with the structure it binds.
+	 */
+	binding?: number;
+	/**
+	 * A letter correlating an overt verbal argument with the PROs in a serial
+	 * verb.
+	 */
 	coindex?: string;
 }
 

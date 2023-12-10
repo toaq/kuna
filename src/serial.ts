@@ -1,5 +1,5 @@
 import { Impossible, Ungrammatical, Unimplemented } from './error';
-import { nextIndex } from './fix';
+import { nextCoindex } from './fix';
 import { Branch, Label, Leaf, Tree, effectiveLabel, makeNull } from './tree';
 
 /**
@@ -176,13 +176,13 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			switch (lastSlot[i + 1]) {
 				case 'i':
 					if (args.length > 0) {
-						args[0].coindex ??= nextIndex();
+						args[0].coindex ??= nextCoindex();
 						pros[i].coindex = args[0].coindex;
 					}
 					break;
 				case 'j':
 					if (args.length > 1) {
-						args[1].coindex ??= nextIndex();
+						args[1].coindex ??= nextCoindex();
 						pros[i].coindex = args[1].coindex;
 					}
 					break;

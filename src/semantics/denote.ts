@@ -55,6 +55,7 @@ import {
 	AnimacyClass,
 	quote,
 	cloneBindings,
+	Binding,
 } from './model';
 import {
 	bindTimeIntervals,
@@ -197,7 +198,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			bindings.covertResumptive = binding;
 			if (leaf.word.text !== '◌́') {
 				bindings.head[leaf.word.bare] = binding;
-				bindings.origin.set(cCommand, binding);
+				if (leaf.binding !== undefined) bindings.index[leaf.binding] = binding;
 			}
 			if (!verb.covert) {
 				bindings.variable[(verb.entry as VerbEntry).toaq] = binding;
@@ -306,12 +307,18 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			const conjunct = effectiveLabel(cCommand);
 			if (conjunct === 'DP') {
 				denotation = argumentCoordinator;
-				bindings = {
-					...noBindings,
-					origin: new Map([
-						[cCommand, { index: 0, subordinate: false, timeIntervals: [] }],
-					]),
-				};
+				if (leaf.binding !== undefined) {
+					const indexBindings: Binding[] = [];
+					indexBindings[leaf.binding] = {
+						index: 0,
+						subordinate: false,
+						timeIntervals: [],
+					};
+					bindings = {
+						...noBindings,
+						index: indexBindings,
+					};
+				}
 			} else {
 				const data = clausalConjunctions[effectiveLabel(cCommand)]?.[toaq];
 				if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
@@ -322,15 +329,21 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (cCommand === null)
 			throw new Impossible("Can't denote an &Q in isolation");
 		if (!leaf.word.covert) throw new Impossible(`Overt &Q: ${leaf.word.text}`);
+		if (leaf.binding === undefined) throw new Impossible('&Q without binding');
+
 		const value = leaf.word.value;
 		const data = argumentConjunctions[value];
 		if (data === undefined) throw new Unrecognized(`&Q: ${value}`);
 		denotation = data;
+		const indexBindings: Binding[] = [];
+		indexBindings[leaf.binding] = {
+			index: 0,
+			subordinate: false,
+			timeIntervals: [],
+		};
 		bindings = {
 			...noBindings,
-			origin: new Map([
-				[cCommand, { index: 0, subordinate: false, timeIntervals: [] }],
-			]),
+			index: indexBindings,
 		};
 	} else if (leaf.label === 'Modal') {
 		if (leaf.word.covert) throw new Impossible('Covert Modal');
@@ -359,26 +372,39 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (cCommand === null)
 			throw new Impossible("Can't denote a Focus in isolation");
 		denotation = focus;
-		bindings = {
-			...noBindings,
-			origin: new Map([
-				[cCommand, { index: 0, subordinate: false, timeIntervals: [] }],
-			]),
-		};
+		if (leaf.binding !== undefined) {
+			const indexBindings: Binding[] = [];
+			indexBindings[leaf.binding] = {
+				index: 0,
+				subordinate: false,
+				timeIntervals: [],
+			};
+			bindings = {
+				...noBindings,
+				index: indexBindings,
+			};
+		}
 	} else if (leaf.label === 'FocAdv') {
 		if (cCommand === null)
 			throw new Impossible("Can't denote a FocAdv in isolation");
 		if (!leaf.word.covert)
 			throw new Impossible(`Overt FocAdv: ${leaf.word.text}`);
+		if (leaf.binding === undefined)
+			throw new Impossible('FocAdv without binding');
+
 		const value = leaf.word.value;
 		const data = focusAdverbs[value];
 		if (data === undefined) throw new Unrecognized(`FocAdv: ${value}`);
 		denotation = data;
+		const indexBindings: Binding[] = [];
+		indexBindings[leaf.binding] = {
+			index: 0,
+			subordinate: false,
+			timeIntervals: [],
+		};
 		bindings = {
 			...noBindings,
-			origin: new Map([
-				[cCommand, { index: 0, subordinate: false, timeIntervals: [] }],
-			]),
+			index: indexBindings,
 		};
 	} else if (
 		leaf.label === 'C' ||
@@ -632,12 +658,14 @@ const qComposition: CompositionRule = (branch, left, right) => {
 	} else if (right.denotation === null) {
 		throw new Impossible(`Q composition on a null ${right.label}`);
 	} else {
+		if (branch.binding === undefined)
+			throw new Impossible('QP without binding');
 		const [l, r, bindings] = unifyDenotations(left, right);
 		if (bindings.covertResumptive === undefined)
 			throw new Impossible("Can't identify the references to be dropped");
 		const index = bindings.covertResumptive.index;
-		// Create an origin binding
-		bindings.origin.set(branch.right, bindings.covertResumptive);
+		// Create an index binding
+		bindings.index[branch.binding] = bindings.covertResumptive;
 		// Drop all references to the bindings originating in 𝘯
 		const rPruned = filterPresuppositions(
 			r,
@@ -677,16 +705,10 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 		throw new Impossible(`Predicate abstraction on a null ${right.label}`);
 	} else {
 		const [l, r, bindings] = unifyDenotations(left, right);
-		// XXX This is a big hack, we should just put IDs in the root nodes of binding
-		// sites or something as a way of matching them up
 		const index = (
-			'word' in branch.left
+			left.binding === undefined
 				? bindings.covertResumptive
-				: bindings.origin.get(
-						branch.left.label === '&QP' && !('word' in branch.left.right)
-							? branch.left.right.right
-							: branch.left.right,
-				  )
+				: bindings.index[left.binding]
 		)?.index;
 		if (index === undefined)
 			throw new Impossible("Can't identify the variable to be abstracted");
