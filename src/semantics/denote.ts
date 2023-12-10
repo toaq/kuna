@@ -20,7 +20,7 @@ import {
 	aspects,
 	boundThe,
 	covertHoaBindings,
-	conjunctions,
+	clausalConjunctions,
 	covertLittleVs,
 	covertV,
 	defaultTense,
@@ -37,6 +37,7 @@ import {
 	headAnaphor,
 	focus,
 	focusAdverbs,
+	pluralCoordinator,
 } from './data';
 import {
 	and,
@@ -298,9 +299,13 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			throw new Unrecognized(`&: ${leaf.word.text}`);
 
 		const toaq = leaf.word.entry.toaq;
-		const data = conjunctions[effectiveLabel(cCommand)]?.[toaq];
-		if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
-		denotation = data;
+		if (toaq === 'róı') {
+			denotation = pluralCoordinator;
+		} else {
+			const data = clausalConjunctions[effectiveLabel(cCommand)]?.[toaq];
+			if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
+			denotation = data;
+		}
 	} else if (leaf.label === 'Modal') {
 		if (leaf.word.covert) throw new Impossible('Covert Modal');
 		if (leaf.word.entry === undefined)

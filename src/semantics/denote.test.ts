@@ -302,6 +302,12 @@ test('it denotes adjunct coordination', () => {
 	);
 });
 
+test('it denotes plural coordination', () => {
+	expect(d('Nuo súq róı jí')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘦'. τ(𝘦') ⊆ t ∧ nuo.𝘸(súq & jí)(𝘦'))(𝘦)\"",
+	);
+});
+
 test('it denotes modals', () => {
 	expect(d('Shê, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦'. τ(𝘦') ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦'). ∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦'))(𝘦) | inanimate(a)\"",

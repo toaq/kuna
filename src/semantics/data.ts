@@ -49,6 +49,7 @@ import {
 	or,
 	she,
 	alternative,
+	roi,
 } from './model';
 import { lift, reduce } from './operations';
 
@@ -561,7 +562,7 @@ const conjunctTypes: Partial<Record<Label, ExprType>> = {
 	TP: 't',
 };
 
-export const conjunctions: Partial<Record<Label, Record<string, Expr>>> =
+export const clausalConjunctions: Partial<Record<Label, Record<string, Expr>>> =
 	Object.fromEntries(
 		Object.entries(conjunctTypes).map(([label, t]) => [
 			label,
@@ -580,6 +581,11 @@ export const conjunctions: Partial<Record<Label, Record<string, Expr>>> =
 			),
 		]),
 	);
+
+// λ𝘢. λ𝘣. 𝘣 & 𝘢
+export const pluralCoordinator = λ('e', [], c =>
+	λ('e', c, c => roi(v(0, c), v(1, c))),
+);
 
 interface ModalWord {
 	counterfactual: boolean;
