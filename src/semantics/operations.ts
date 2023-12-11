@@ -145,13 +145,15 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 	let body: Expr;
 	// Presuppositions will be lifted out of subexpressions and appended to the
 	// body at the very end
-	const presuppositions: Expr[] = [];
+	const presuppositions = new Map<string, Expr>();
+	const addPresupposition = (e: Expr) =>
+		void presuppositions.set(toPlainText(e), e);
 
 	// Reduces a subexpression and isolates it from any presuppositions
 	const reduceAndIsolate = (e: Expr) => {
 		let reduced = reduce_(e, premises);
 		while (reduced.head === 'presuppose') {
-			presuppositions.push(reduced.presupposition);
+			addPresupposition(reduced.presupposition);
 			reduced = reduced.body;
 		}
 		return reduced;
@@ -164,7 +166,7 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 		const innerPresuppositions: Expr[] = [];
 		while (reduced.head === 'presuppose') {
 			try {
-				presuppositions.push(
+				addPresupposition(
 					rewriteContext(
 						reduced.presupposition,
 						reduced.presupposition.context.slice(1),
@@ -249,7 +251,7 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 		}
 		case 'presuppose': {
 			const presupposition = reduceAndIsolate(e.presupposition);
-			if (!isPremise(presupposition)) presuppositions.push(presupposition);
+			if (!isPremise(presupposition)) addPresupposition(presupposition);
 			body = withPremise(presupposition, () => reduceAndIsolate(e.body));
 			break;
 		}
@@ -283,7 +285,10 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 		}
 	}
 
-	return presuppositions.reduceRight((acc, p) => presuppose(acc, p), body);
+	return [...presuppositions.values()].reduceRight(
+		(acc, p) => presuppose(acc, p),
+		body,
+	);
 }
 
 /**

@@ -367,3 +367,14 @@ test('it denotes focus adverbs', () => {
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t ∧ shıe.𝘸(jí)(𝘦') | ∃𝘢 : A(𝘢)(jí)(𝘸). ∃𝘦'. τ(𝘦') ⊆ t ∧ shıe.𝘸(𝘢)(𝘦')))(𝘦)\"",
 	);
 });
+
+test('it removes redundant presuppositions from binding sites', () => {
+	// There should be only one set of presuppositions for the focused DP
+	expect(d('Shıe tó gúobe')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∀𝘢 : A(𝘢)(a)(𝘸). ¬∃𝘦'. τ(𝘦') ⊆ t ∧ shıe.𝘸(𝘢)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ shıe.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ guobe.𝘸(a)(𝘦')))(𝘦) | animate(a)\"",
+	);
+	// Likewise, there should be only one set of presuppositions for each conjunct
+	expect(d('Shıe gúobe rú óguı')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ((∃𝘦'. τ(𝘦') ⊆ t ∧ shıe.𝘸(b)(𝘦')) ∧ ∃𝘦'. τ(𝘦') ⊆ t ∧ shıe.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t'' ∧ guobe.𝘸(b)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ oguı.𝘸(a)(𝘦')))(𝘦) | animate(b) | animate(a)\"",
+	);
+});
