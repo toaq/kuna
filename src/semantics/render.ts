@@ -623,7 +623,17 @@ function render(
 	}
 }
 
+const renderCache = new Map<Format, WeakMap<CompactExpr, string>>();
+
 function renderFull(e: CompactExpr, fmt: Format): string {
+	let cache = renderCache.get(fmt);
+	if (cache === undefined) {
+		cache = new WeakMap();
+		renderCache.set(fmt, cache);
+	}
+	const cachedResult = cache.get(e);
+	if (cachedResult !== undefined) return cachedResult;
+
 	let names = noNames;
 	// Create ad hoc constants for all free variables
 	for (let i = e.context.length - 1; i >= 0; i--) {
@@ -633,7 +643,9 @@ function renderFull(e: CompactExpr, fmt: Format): string {
 		names = addName(e.context[i], names, type !== 's');
 	}
 
-	return render(e, names, fmt, 0, 0);
+	const result = render(e, names, fmt, 0, 0);
+	cache.set(e, result);
+	return result;
 }
 
 export function toPlainText(e: CompactExpr): string {
