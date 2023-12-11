@@ -293,7 +293,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`&: ${leaf.word.text}`);
 
-		const toaq = leaf.word.entry.toaq;
+		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
 		if (toaq === 'róı') {
 			denotation = pluralCoordinator;
 		} else {
