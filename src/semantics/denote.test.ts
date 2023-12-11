@@ -268,11 +268,12 @@ test('it denotes a relative clause', () => {
 });
 
 test('it denotes polarizers', () => {
-	expect(d('Bu mala geq jí nháo')).toMatchInlineSnapshot(
-		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ¬∃𝘵 : 𝘵 < t0. ∃𝘦'. τ(𝘦') ⊆ 𝘵 ∧ geq.𝘸(jí, nháo)(𝘦'))(𝘦)\"",
+	// Note the covert T in this example (this used to parse wrong)
+	expect(d('Bu geq jí nháo')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ¬∃𝘦'. τ(𝘦') ⊆ t ∧ geq.𝘸(jí, nháo)(𝘦'))(𝘦)\"",
 	);
-	expect(d('Jeo jıa choaq jí súna nha')).toMatchInlineSnapshot(
-		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nue.w(λ𝘸. †∃𝘦'. τ(𝘦') ⊆ t ∧ choaq.𝘸(jí, súna)(𝘦'))(𝘦) | t > t0\"",
+	expect(d('Jeo jela choaq jí súna nha')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nue.w(λ𝘸. †∃𝘵 : 𝘵 > t0. ∃𝘦'. τ(𝘦') ⊆ 𝘵 ∧ choaq.𝘸(jí, súna)(𝘦'))(𝘦)\"",
 	);
 });
 

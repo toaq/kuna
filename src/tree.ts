@@ -268,6 +268,10 @@ export function makeLeaf(label: Label) {
 	});
 }
 
+export function makeCovertLeaf(label: Label) {
+	return () => makeNull(label);
+}
+
 export function makeEmptySerial() {
 	return () => ({
 		label: '*Serial',

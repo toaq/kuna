@@ -11,6 +11,7 @@ const {
 	makeBranch,
 	makeBranchCovertLeft,
 	makeConn,
+	makeCovertLeaf,
 	makeDiscourse,
     makeEmptySerial,
 	makeEvAP,
@@ -100,41 +101,28 @@ MTPdet -> Sigma Modal TPdet {% makeSigmaT1ModalvP %}
 # pu chum hao jí
 TP1 -> TP {% id %}
 TP1 -> TP Conjunction TP1 {% makeConn %}
-TP -> AspP {% makeBranchCovertLeft('TP', 'T') %}
 TP -> T1 AspP {% makeBranch('TP') %}
 TP -> Sigma T1 AspP {% make3L('ΣP', 'TP') %}
 # ë marao óguı ráı
 TP -> EvA vP DP3 {% makeEvAP %}
 
 # (sá) pu chum hao
-TPdet -> AspPdet {% makeBranchCovertLeft('TP', 'T') %}
 TPdet -> T1 AspPdet {% makeBranch('TP') %}
 TPdet -> Sigma T1 AspPdet {% make3L('ΣP', 'TP') %}
 # (sá) ë marao óguı
 TPdet -> EvA vP {% makeEvAPdet %}
 
 # chum hao jí
-AspP -> vP {% makeBranchCovertLeft('AspP', 'Asp') %}
 AspP -> Asp1 vP {% makeBranch('AspP') %}
-AspP -> Sigma Asp1 vP {% make3L('ΣP', 'AspP') %}
 
 # (sá) chum hao
-AspPdet -> vPdet {% makeBranchCovertLeft('AspP', 'Asp') %}
 AspPdet -> Asp1 vPdet {% makeBranch('AspP') %}
-AspPdet -> Sigma Asp1 vPdet {% make3L('ΣP', 'AspP') %}
-
-# bu hao jí
-vP -> Sigma vPinner {% makeBranch('ΣP') %}
-# hao jí
-vP -> vPinner {% id %}
 
 # tua hao tî kúe jí súq râo níchaq
-vPinner -> Serial AdjunctP1:* (Argument:+ AdjunctP1:*):? {% makevP %}
+vP -> Serial AdjunctP1:* (Argument:+ AdjunctP1:*):? {% makevP %}
 
 # (sá) tua hao
-vPdet -> Sigma vPdet_inner {% makeBranch('ΣP') %}
-vPdet -> vPdet_inner {% id %}
-vPdet_inner -> Serialdet {% makevPdet %}
+vPdet -> Serialdet {% makevPdet %}
 
 # ^ tı kúe
 AdjunctP -> Adjunct Serial Argument {% makeAdjunctPT %}
@@ -176,9 +164,11 @@ CPsub1 -> CPsub {% id %}
 CPsub1 -> CPsub Conjunction CPsub1 {% makeConn %}
 CPsub2 -> CPsub1 {% id %}
 CPsub2 -> Focus CPsub2 {% makeBranch('FocusP') %}
+T1 -> null {% makeCovertLeaf('T') %}
 T1 -> T {% id %}
 T1 -> T_prefix {% id %}
 T1 -> T Conjunction T1 {% makeConn %}
+Asp1 -> null {% makeCovertLeaf('Asp') %}
 Asp1 -> Asp {% id %}
 Asp1 -> Asp_prefix {% id %}
 Asp1 -> Asp Conjunction Asp1 {% makeConn %}
