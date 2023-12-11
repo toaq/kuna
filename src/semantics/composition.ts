@@ -356,6 +356,7 @@ export function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	const leftLabel = effectiveLabel(left);
 	switch (leftLabel) {
 		case 'V':
+		case 'VP':
 		case 'Asp':
 		case '𝘯':
 		case 'Σ':

@@ -5,6 +5,7 @@ import {
 	Unimplemented,
 	Unrecognized,
 } from '../error';
+import { inTone } from '../tokenize';
 import {
 	Branch,
 	CovertWord,
@@ -13,6 +14,7 @@ import {
 	Word,
 	effectiveLabel,
 } from '../tree';
+import { Tone } from '../types';
 import { getCompositionRule } from './composition';
 import {
 	adjuncts,
@@ -105,6 +107,8 @@ function getVerbWord(vp: StrictTree): Word | CovertWord {
 			case 'V':
 				if (!('word' in verb)) throw new Unrecognized('V shape');
 				return verb.word;
+			case 'VP':
+				return getVerbWord(verb);
 			case 'shuP':
 			case 'mıP':
 				if ('word' in verb || !('word' in verb.left))
@@ -153,7 +157,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		} else if (leaf.word.entry === undefined) {
 			throw new Unrecognized(`DP: ${leaf.word.text}`);
 		} else {
-			const toaq = leaf.word.entry.toaq;
+			const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
 			const data = dps[toaq];
 			if (data === undefined) throw new Unrecognized(`DP: ${toaq}`);
 			[denotation, bindings] = data;

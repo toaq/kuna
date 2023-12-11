@@ -10,6 +10,8 @@ import {
 } from './tree';
 import { Impossible } from './error';
 import { reverse } from './misc';
+import { inTone } from './tokenize';
+import { Tone } from './types';
 
 interface Quantification {
 	type: 'quantification';
@@ -83,9 +85,11 @@ class Scope {
 		const { left: d, right: nP } = dp;
 		assertLeaf(d);
 		if (d.word.covert) throw new Impossible('Covert D');
-		const quantifier = quantifiers[d.word.entry?.toaq ?? ''];
-		if (quantifier !== undefined)
-			this.bind(d, { type: 'quantification', quantifier, nP });
+		if (d.word.entry !== undefined) {
+			const quantifier = quantifiers[inTone(d.word.entry.toaq, Tone.T2)];
+			if (quantifier !== undefined)
+				this.bind(d, { type: 'quantification', quantifier, nP });
+		}
 	}
 
 	focus(focusP: Branch<StrictTree>) {

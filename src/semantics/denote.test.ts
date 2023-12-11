@@ -180,6 +180,12 @@ test('it denotes tense and aspect prefixes', () => {
 	);
 });
 
+test('it denotes object incorporation', () => {
+	expect(d('Maı tû paı jî jí')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∀.SING 𝘢 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ paı.𝘸(𝘢, jí)(𝘦'). (∃𝘦'. τ(𝘦') ⊆ t ∧ maı.𝘸(jí, 𝘢)(𝘦') | animate(𝘢)))(𝘦)\"",
+	);
+});
+
 test('it denotes exophoric references', () => {
 	expect(d('Sao jío')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ sao.𝘸(a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t ∧ jıo.𝘸(a)(𝘦')))(𝘦) | inanimate(a)\"",
