@@ -12,10 +12,12 @@ import aSentencesTxt from '../../sentences/a.txt?raw';
 import { fix } from '../fix';
 import { denote } from '../semantics/denote';
 
-const allSentences: string[] = _.uniq([
-	...refgramSentencesTxt.split('\n'),
-	...aSentencesTxt.split('\n'),
-]);
+const rSentences: string[] = refgramSentencesTxt.split('\n');
+const aSentences: string[] = aSentencesTxt.split('\n');
+const allSentences: { id: string; sentence: string }[] = [
+	...rSentences.map((sentence, i) => ({ id: 'R' + (i + 1), sentence })),
+	...aSentences.map((sentence, i) => ({ id: 'A' + (i + 1), sentence })),
+];
 
 type ParseStatus =
 	| { status: 'no parse' }
@@ -88,7 +90,7 @@ function SentenceRow(props: {
 	sentence: string;
 	selected: string | undefined;
 	setSelected: (sentence: string) => void;
-	index: number;
+	id: string;
 	showScores: string;
 }) {
 	const [ref, inView] = useInView({ triggerOnce: true });
@@ -113,7 +115,7 @@ function SentenceRow(props: {
 				props.setSelected(props.sentence);
 			}}
 		>
-			<td className="sentence-number">{props.index + 1}</td>
+			<td className="sentence-number">{props.id}</td>
 			<td className="parse-status">
 				{parseStatus && <ShowParseStatus status={parseStatus} />}
 			</td>
@@ -166,11 +168,11 @@ export function Sentences() {
 							</tr>
 						</thead>
 						<tbody>
-							{allSentences.map((s, i) => (
+							{allSentences.map(s => (
 								<SentenceRow
-									key={s}
-									sentence={s}
-									index={i}
+									key={s.id}
+									sentence={s.sentence}
+									id={s.id}
 									selected={selected}
 									setSelected={setSelected}
 									showScores={showScores}
