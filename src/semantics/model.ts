@@ -1,5 +1,4 @@
 import { Impossible } from '../error';
-import { enumerate } from '../misc';
 import { Branch, Leaf } from '../tree';
 import { toPlainText, typesToPlainText, typeToPlainText } from './render';
 
