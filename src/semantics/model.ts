@@ -184,31 +184,34 @@ export interface Binding {
 }
 
 export interface Bindings {
-	index: Binding[];
-	variable: { [V in string]?: Binding };
-	animacy: { [A in AnimacyClass]?: Binding };
-	head: { [H in string]?: Binding };
+	index: Map<number, Binding>;
+	variable: Map<string, Binding>;
+	animacy: Map<AnimacyClass, Binding>;
+	head: Map<string, Binding>;
 	resumptive?: Binding;
 	covertResumptive?: Binding;
 }
 
 export const noBindings: Bindings = {
-	index: [],
-	variable: {},
-	animacy: {},
-	head: {},
+	index: new Map(),
+	variable: new Map(),
+	animacy: new Map(),
+	head: new Map(),
 };
 
-export function cloneBindings(bs: Bindings): Bindings {
-	const indexBindings: Binding[] = [];
-	for (const [b, i] of enumerate(bs.index)) indexBindings[i] = b;
+export function cloneBindings({
+	index,
+	variable,
+	animacy,
+	head,
+	...rest
+}: Bindings): Bindings {
 	return {
-		index: indexBindings,
-		variable: { ...bs.variable },
-		animacy: { ...bs.animacy },
-		head: { ...bs.head },
-		resumptive: bs.resumptive,
-		covertResumptive: bs.covertResumptive,
+		index: new Map(index),
+		variable: new Map(variable),
+		animacy: new Map(animacy),
+		head: new Map(head),
+		...rest,
 	};
 }
 

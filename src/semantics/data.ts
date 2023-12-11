@@ -88,7 +88,9 @@ export const dps: Record<string, [Expr, Bindings]> = {
 		presuppose(v(0, ['e']), app(animate(['e']), v(0, ['e']))),
 		{
 			...noBindings,
-			animacy: { animate: { index: 0, subordinate: false, timeIntervals: [] } },
+			animacy: new Map([
+				['animate', { index: 0, subordinate: false, timeIntervals: [] }],
+			]),
 		},
 	],
 	// 𝘢 | inanimate(𝘢)
@@ -96,9 +98,9 @@ export const dps: Record<string, [Expr, Bindings]> = {
 		presuppose(v(0, ['e']), app(inanimate(['e']), v(0, ['e']))),
 		{
 			...noBindings,
-			animacy: {
-				inanimate: { index: 0, subordinate: false, timeIntervals: [] },
-			},
+			animacy: new Map([
+				['inanimate', { index: 0, subordinate: false, timeIntervals: [] }],
+			]),
 		},
 	],
 	// 𝘢 | abstract(𝘢)
@@ -106,9 +108,9 @@ export const dps: Record<string, [Expr, Bindings]> = {
 		presuppose(v(0, ['e']), app(abstract(['e']), v(0, ['e']))),
 		{
 			...noBindings,
-			animacy: {
-				abstract: { index: 0, subordinate: false, timeIntervals: [] },
-			},
+			animacy: new Map([
+				['abstract', { index: 0, subordinate: false, timeIntervals: [] }],
+			]),
 		},
 	],
 	// 𝘢
@@ -116,9 +118,9 @@ export const dps: Record<string, [Expr, Bindings]> = {
 		hoa,
 		{
 			...noBindings,
-			animacy: {
-				descriptive: { index: 0, subordinate: false, timeIntervals: [] },
-			},
+			animacy: new Map([
+				['descriptive', { index: 0, subordinate: false, timeIntervals: [] }],
+			]),
 		},
 	],
 };

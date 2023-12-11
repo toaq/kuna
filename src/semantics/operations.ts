@@ -1,5 +1,5 @@
 import { Impossible } from '../error';
-import { enumerate, reverse, zip } from '../misc';
+import { reverse, zip } from '../misc';
 import {
 	app,
 	Binding,
@@ -302,26 +302,16 @@ function forEachBinding(
 		setter: (bs: Bindings, b: Binding | undefined) => void,
 	) => void,
 ) {
-	for (const [b, index] of enumerate(bs.index)) {
-		fn(
-			b,
-			bs => bs.index[index],
-			(bs, b) =>
-				b === undefined ? delete bs.index[index] : (bs.index[index] = b),
-		);
-	}
-
-	for (const kind of ['variable', 'animacy', 'head'] as const) {
-		const map = bs[kind];
-		for (const [slot_, b] of Object.entries(map)) {
-			if (b !== undefined) {
-				const slot = slot_ as keyof Bindings[typeof kind];
-				fn(
-					b,
-					bs => bs[kind][slot],
-					(bs, b) => (bs[kind][slot] = b),
-				);
-			}
+	for (const kind of ['index', 'variable', 'animacy', 'head'] as const) {
+		for (const [slot, b] of bs[kind]) {
+			fn(
+				b,
+				bs => bs[kind].get(slot as never),
+				(bs, b) =>
+					b === undefined
+						? bs[kind].delete(slot as never)
+						: bs[kind].set(slot as never, b),
+			);
 		}
 	}
 
@@ -329,13 +319,16 @@ function forEachBinding(
 		fn(
 			bs.resumptive,
 			bs => bs.resumptive,
-			(bs, b) => (bs.resumptive = b),
+			(bs, b) => (b === undefined ? delete bs.resumptive : (bs.resumptive = b)),
 		);
 	if (bs.covertResumptive !== undefined)
 		fn(
 			bs.covertResumptive,
 			bs => bs.covertResumptive,
-			(bs, b) => (bs.covertResumptive = b),
+			(bs, b) =>
+				b === undefined
+					? delete bs.covertResumptive
+					: (bs.covertResumptive = b),
 		);
 }
 

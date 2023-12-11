@@ -187,7 +187,10 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			)
 				throw new Unrecognized('hú- DP shape');
 			denotation = headAnaphor;
-			bindings = { ...noBindings, head: { [cCommand.word.bare]: binding } };
+			bindings = {
+				...noBindings,
+				head: new Map([[cCommand.word.bare, binding]]),
+			};
 		} else {
 			const vp = findVp(cCommand);
 			if (vp === null) throw new Impossible("Can't find the VP for this D");
@@ -197,12 +200,13 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			bindings = cloneBindings(noBindings);
 			bindings.covertResumptive = binding;
 			if (leaf.word.text !== '◌́') {
-				bindings.head[leaf.word.bare] = binding;
-				if (leaf.binding !== undefined) bindings.index[leaf.binding] = binding;
+				bindings.head.set(leaf.word.bare, binding);
+				if (leaf.binding !== undefined)
+					bindings.index.set(leaf.binding, binding);
 			}
 			if (!verb.covert) {
-				bindings.variable[(verb.entry as VerbEntry).toaq] = binding;
-				bindings.animacy[animacyClass(verb.entry as VerbEntry)] = binding;
+				bindings.variable.set((verb.entry as VerbEntry).toaq, binding);
+				bindings.animacy.set(animacyClass(verb.entry as VerbEntry), binding);
 			}
 		}
 	} else if (leaf.label === '𝘯') {
@@ -307,18 +311,16 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			const conjunct = effectiveLabel(cCommand);
 			if (conjunct === 'DP') {
 				denotation = argumentCoordinator;
-				if (leaf.binding !== undefined) {
-					const indexBindings: Binding[] = [];
-					indexBindings[leaf.binding] = {
-						index: 0,
-						subordinate: false,
-						timeIntervals: [],
-					};
+				if (leaf.binding !== undefined)
 					bindings = {
 						...noBindings,
-						index: indexBindings,
+						index: new Map([
+							[
+								leaf.binding,
+								{ index: 0, subordinate: false, timeIntervals: [] },
+							],
+						]),
 					};
-				}
 			} else {
 				const data = clausalConjunctions[effectiveLabel(cCommand)]?.[toaq];
 				if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
@@ -335,15 +337,11 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		const data = argumentConjunctions[value];
 		if (data === undefined) throw new Unrecognized(`&Q: ${value}`);
 		denotation = data;
-		const indexBindings: Binding[] = [];
-		indexBindings[leaf.binding] = {
-			index: 0,
-			subordinate: false,
-			timeIntervals: [],
-		};
 		bindings = {
 			...noBindings,
-			index: indexBindings,
+			index: new Map([
+				[leaf.binding, { index: 0, subordinate: false, timeIntervals: [] }],
+			]),
 		};
 	} else if (leaf.label === 'Modal') {
 		if (leaf.word.covert) throw new Impossible('Covert Modal');
@@ -372,18 +370,13 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (cCommand === null)
 			throw new Impossible("Can't denote a Focus in isolation");
 		denotation = focus;
-		if (leaf.binding !== undefined) {
-			const indexBindings: Binding[] = [];
-			indexBindings[leaf.binding] = {
-				index: 0,
-				subordinate: false,
-				timeIntervals: [],
-			};
+		if (leaf.binding !== undefined)
 			bindings = {
 				...noBindings,
-				index: indexBindings,
+				index: new Map([
+					[leaf.binding, { index: 0, subordinate: false, timeIntervals: [] }],
+				]),
 			};
-		}
 	} else if (leaf.label === 'FocAdv') {
 		if (cCommand === null)
 			throw new Impossible("Can't denote a FocAdv in isolation");
@@ -396,15 +389,11 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		const data = focusAdverbs[value];
 		if (data === undefined) throw new Unrecognized(`FocAdv: ${value}`);
 		denotation = data;
-		const indexBindings: Binding[] = [];
-		indexBindings[leaf.binding] = {
-			index: 0,
-			subordinate: false,
-			timeIntervals: [],
-		};
 		bindings = {
 			...noBindings,
-			index: indexBindings,
+			index: new Map([
+				[leaf.binding, { index: 0, subordinate: false, timeIntervals: [] }],
+			]),
 		};
 	} else if (
 		leaf.label === 'C' ||
@@ -665,7 +654,7 @@ const qComposition: CompositionRule = (branch, left, right) => {
 			throw new Impossible("Can't identify the references to be dropped");
 		const index = bindings.covertResumptive.index;
 		// Create an index binding
-		bindings.index[branch.binding] = bindings.covertResumptive;
+		bindings.index.set(branch.binding, bindings.covertResumptive);
 		// Drop all references to the bindings originating in 𝘯
 		const rPruned = filterPresuppositions(
 			r,
@@ -708,7 +697,7 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 		const index = (
 			left.binding === undefined
 				? bindings.covertResumptive
-				: bindings.index[left.binding]
+				: bindings.index.get(left.binding)
 		)?.index;
 		if (index === undefined)
 			throw new Impossible("Can't identify the variable to be abstracted");

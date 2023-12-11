@@ -13,8 +13,3 @@ export function* reverse<A>(as: A[]): Generator<A, void, unknown> {
 	for (let i = as.length - 1; i >= 0; i--)
 		if (as.hasOwnProperty(i)) yield as[i];
 }
-
-export function* enumerate<A>(as: A[]): Generator<[A, number], void, unknown> {
-	for (let i = 0; i < as.length; i++)
-		if (as.hasOwnProperty(i)) yield [as[i], i];
-}
