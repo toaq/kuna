@@ -6,9 +6,9 @@ import './Sentences.css';
 import { useInView } from 'react-intersection-observer';
 
 // @ts-ignore
-import refgramSentencesTxt from '../../data/sentences/refgram.txt?raw';
+import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
 // @ts-ignore
-import aSentencesTxt from '../../data/sentences/a.txt?raw';
+import aSentencesTxt from '../../sentences/a.txt?raw';
 import { fix } from '../fix';
 import { denote } from '../semantics/denote';
 

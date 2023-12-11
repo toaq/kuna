@@ -6,8 +6,8 @@ export function testSentences(
 	procedure?: (sentence: string) => string,
 ) {
 	const files = [
-		'data/sentences/refgram.txt',
-		// 'data/sentences/a.txt',
+		'sentences/refgram.txt',
+		// 'sentences/a.txt',
 	];
 	const sentences = files.flatMap(x =>
 		fs.readFileSync(x).toString('utf-8').trim().split('\n'),
