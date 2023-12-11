@@ -182,12 +182,48 @@ export interface Binding {
 	timeIntervals: number[];
 }
 
+/**
+ * A summary of all the bindings originating from within a given subtree.
+ *
+ * Bindings are created by any node in the tree that conjures a new variable, or
+ * otherwise represents something that could be referenced elsewhere in the
+ * tree.
+ *
+ * For example, in "Sá duao nä jea jí tá", the DP "sá duao" binds the
+ * variable duao, the descriptive animacy class, the head anaphor hụ́sa, and an
+ * index associating it with its QP. Similarly, the DP "tá" binds the
+ * descriptive animacy class, allowing its variable to be matched up with "sá
+ * duao" during the composition process.
+ *
+ * It might seem counter-intuitive that even a simple reference like "tá" counts
+ * as a binding, but this is what allows matching exophoric references to be
+ * resolved to the same variable in a sentence like "Jea jí tá nûa tá".
+ */
 export interface Bindings {
+	/**
+	 * Bindings that can be abstracted away by a binding site of the given index.
+	 */
 	index: Map<number, Binding>;
+	/**
+	 * Bindings that can be referenced by a variable of the given name.
+	 */
 	variable: Map<string, Binding>;
+	/**
+	 * Bindings that can be referenced by an anaphoric pronoun of the given animacy
+	 * class.
+	 */
 	animacy: Map<AnimacyClass, Binding>;
+	/**
+	 * Bindings that can be referenced by a head anaphor (hu-) for the given head.
+	 */
 	head: Map<string, Binding>;
+	/**
+	 * The binding associated with the resumptive pronoun (hóa).
+	 */
 	resumptive?: Binding;
+	/**
+	 * The binding associated with the covert resumptive pronoun (PRO).
+	 */
 	covertResumptive?: Binding;
 }
 
