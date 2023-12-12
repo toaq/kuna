@@ -5,6 +5,7 @@ import {
 	Unimplemented,
 	Unrecognized,
 } from '../error';
+import { splitNonEmpty } from '../misc';
 import { inTone } from '../tokenize';
 import {
 	Branch,
@@ -144,11 +145,13 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			if (!entry) throw new Unrecognized('verb: ' + leaf.word.text);
 			if (entry.type !== 'predicate') throw new Impossible('non-predicate V');
 
-			denotation = denoteVerb(
-				entry.toaq,
-				// Agents are external to the verb, so not counted in the arity
-				entry.frame.split(' ').length - (entry.subject === 'agent' ? 1 : 0),
-			);
+			let arity = splitNonEmpty(entry.frame, ' ').length;
+			// Agents are external to the verb, so not counted in the arity
+			if (entry.subject === 'agent') arity--;
+			// In case we don't have lexical data on this word, make sure we're at least
+			// providing the minimum number of arguments
+			if (leaf.label === 'V') arity = Math.max(1, arity);
+			denotation = denoteVerb(entry.toaq, arity);
 		}
 	} else if (leaf.label === 'DP') {
 		if (leaf.word.covert) {
