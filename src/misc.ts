@@ -13,3 +13,7 @@ export function* reverse<A>(as: A[]): Generator<A, void, unknown> {
 	for (let i = as.length - 1; i >= 0; i--)
 		if (as.hasOwnProperty(i)) yield as[i];
 }
+
+export function splitNonEmpty(s: string, separator: string | RegExp): string[] {
+	return s.split(separator).filter(part => part !== '');
+}

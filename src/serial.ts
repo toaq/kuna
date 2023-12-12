@@ -1,5 +1,6 @@
 import { Impossible, Ungrammatical, Unimplemented } from './error';
 import { nextCoindex } from './fix';
+import { splitNonEmpty } from './misc';
 import { Branch, Label, Leaf, Tree, effectiveLabel, makeNull } from './tree';
 
 /**
@@ -90,58 +91,70 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 		verb.word.entry?.type === 'predicate' &&
 		verb.word.entry.subject === 'agent';
 
-	if (args.length === 1) {
-		const [subject] = args;
-		if (agent) {
-			if (!('word' in verb))
-				throw new Impossible("Serial tails can't be agents");
+	switch (args.length) {
+		case 0: {
+			if (!('word' in verb)) throw new Impossible('Weird nullary verb');
+			return {
+				label: '𝘷P',
+				left: { label: '𝘷', word: { covert: true, value: 'BE' } },
+				right: { label: 'VP', word: verb.word },
+			};
+		}
+		case 1: {
+			const [subject] = args;
+			if (agent) {
+				if (!('word' in verb))
+					throw new Impossible("Serial tails can't be agents");
+				return {
+					label: '𝘷P',
+					left: subject,
+					right: {
+						label: "𝘷'",
+						left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
+						right: { label: 'VP', word: verb.word },
+					},
+				};
+			} else {
+				return {
+					label: '𝘷P',
+					left: { label: '𝘷', word: { covert: true, value: 'BE' } },
+					right: { label: 'VP', left: verb, right: subject },
+				};
+			}
+		}
+		case 2: {
+			const [subject, directObject] = args;
+			return {
+				label: '𝘷P',
+				left: subject,
+				right: {
+					label: "𝘷'",
+					left: {
+						label: '𝘷',
+						word: { covert: true, value: agent ? 'CAUSE' : 'BE' },
+					},
+					right: { label: 'VP', left: verb, right: directObject },
+				},
+			};
+		}
+		case 3: {
+			const [subject, indirectObject, directObject] = args;
 			return {
 				label: '𝘷P',
 				left: subject,
 				right: {
 					label: "𝘷'",
 					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
-					right: { label: 'VP', word: verb.word },
+					right: {
+						label: 'VP',
+						left: indirectObject,
+						right: { label: "V'", left: verb, right: directObject },
+					},
 				},
-			};
-		} else {
-			return {
-				label: '𝘷P',
-				left: { label: '𝘷', word: { covert: true, value: 'BE' } },
-				right: { label: 'VP', left: verb, right: subject },
 			};
 		}
-	} else if (args.length === 2) {
-		const [subject, directObject] = args;
-		return {
-			label: '𝘷P',
-			left: subject,
-			right: {
-				label: "𝘷'",
-				left: {
-					label: '𝘷',
-					word: { covert: true, value: agent ? 'CAUSE' : 'BE' },
-				},
-				right: { label: 'VP', left: verb, right: directObject },
-			},
-		};
-	} else if (args.length === 3) {
-		const [subject, indirectObject, directObject] = args;
-		return {
-			label: '𝘷P',
-			left: subject,
-			right: {
-				label: "𝘷'",
-				left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
-				right: {
-					label: 'VP',
-					left: indirectObject,
-					right: { label: "V'", left: verb, right: directObject },
-				},
-			},
-		};
-	} else {
-		throw new Impossible(`Bad arity ${args.length}`);
+		default:
+			throw new Impossible(`Bad arity ${args.length}`);
 	}
 }
 
@@ -152,14 +165,14 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 	const firstFrame = getFrame(verbs[0]);
 	if (verbs.length === 1) {
-		const arity = firstFrame.split(' ').length;
+		const arity = splitNonEmpty(firstFrame, ' ').length;
 		while (args.length < arity) {
 			args.push(makeNull('DP'));
 		}
 
 		return makevP(verbs[0], args);
 	} else {
-		const frame = firstFrame.replace(/a/g, 'c').split(' ');
+		const frame = splitNonEmpty(firstFrame.replace(/a/g, 'c'), ' ');
 		for (let i = 0; i < frame.length - 1; i++) {
 			if (frame[i] !== 'c') {
 				throw new Ungrammatical("frame can't serialize: " + firstFrame);
@@ -282,7 +295,7 @@ export function fixSerial(tree: Tree, terms: Tree[]): Tree {
 			end = i;
 			continue;
 		}
-		const frame = frames[i].split(' ');
+		const frame = splitNonEmpty(frames[i], ' ');
 		const last = frame.at(-1)!;
 		if (last === 'c' && i + 1 !== end) {
 			// So everything to the right is an adjective.
