@@ -281,6 +281,10 @@ test('it denotes polarizers', () => {
 	expect(d('Jeo jela choaq jí súna nha')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nue.w(λ𝘸. †∃𝘵 : 𝘵 > t0. ∃𝘦'. τ(𝘦') ⊆ 𝘵 ∧ choaq.𝘸(jí, súna)(𝘦'))(𝘦)\"",
 	);
+	// Now try putting a polarizer in a DP
+	expect(d('Gaı jí bú jara')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ gaı.𝘸(jí, a)(𝘦') | ¬∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = a ∧ jara.𝘸(𝘦')))(𝘦) | animate(a)\"",
+	);
 });
 
 test('it denotes adjuncts', () => {
