@@ -16,7 +16,7 @@ export function App() {
 					<NavLink to="/sentences">Sentences</NavLink>
 				</nav>
 				<button style={{ marginLeft: 'auto' }} onClick={darkMode.toggle}>
-					Toggle theme
+					Theme
 				</button>
 			</header>
 			<Routes>

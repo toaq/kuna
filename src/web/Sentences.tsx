@@ -78,8 +78,10 @@ function ShowParseStatus({ status }: { status: ParseStatus }) {
 		<>
 			<span style={{ color: RED }}>{errorText}</span>
 			<span className="bullets">
-				{bullets.map(color => (
-					<span style={{ color }}>{BULLET}</span>
+				{bullets.map((color, i) => (
+					<span key={i} style={{ color }}>
+						{BULLET}
+					</span>
 				))}
 			</span>
 		</>
@@ -131,8 +133,11 @@ export function Sentences() {
 
 	return (
 		<div className="sentences">
-			<div>
-				<select onChange={e => setOutputMode(e.target.value as Mode)}>
+			<div className="sentences-settings">
+				<select
+					defaultValue={'boxes-nest'}
+					onChange={e => setOutputMode(e.target.value as Mode)}
+				>
 					<option value="tokens">Tokens</option>
 					<option value="raw-tree">Raw tree</option>
 					<option value="syntax-tree">Syntax tree</option>

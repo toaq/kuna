@@ -1,26 +1,28 @@
-.sentences {
-	position: absolute;
-	top: 50px;
-	bottom: 20px;
-	left: 20px;
-	right: 20px;
-	overflow: hidden;
-}
+@media only screen and (min-width: 800px) {
+	.sentences {
+		position: absolute;
+		top: 50px;
+		bottom: 20px;
+		left: 20px;
+		right: 20px;
+		overflow: hidden;
+	}
 
-.sentences main {
-	height: calc(100% - 25px);
-	display: flex;
-	flex-direction: row;
-	align-items: flex-start;
-}
+	.sentences main {
+		height: calc(100% - 25px);
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+	}
 
-.sentences-output .card {
-	position: absolute;
-	margin: 0;
-	margin-left: 10px;
-	overflow-y: scroll;
-	max-height: calc(100vh - 130px);
-	justify-content: start;
+	.sentences-output .card {
+		position: absolute;
+		margin: 0;
+		margin-left: 10px;
+		overflow-y: scroll;
+		max-height: calc(100vh - 130px);
+		justify-content: start;
+	}
 }
 
 .sentence-table td.sentence-text {
@@ -66,4 +68,22 @@
 .bullets {
 	font-size: 20px;
 	line-height: 0px;
+}
+
+@media only screen and (max-width: 800px) {
+	.sentences {
+		width: 100%;
+	}
+
+	.sentences-settings {
+		margin: 8px;
+	}
+
+	.card.sentence-table-container {
+		border-left: none;
+		border-right: none;
+		border-radius: 0px;
+		max-height: 60vh;
+		margin: auto;
+	}
 }

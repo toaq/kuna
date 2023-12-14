@@ -58,14 +58,19 @@ h1 {
 
 .kuna header {
 	display: flex;
-	background: hsla(220deg, 60%, 65%);
+	flex-wrap: wrap;
+	background: hsla(220deg, 90%, 70%);
 	width: 100%;
-	padding: 8px 16px;
+	padding: 0px 16px;
+}
+
+.kuna header {
+	line-height: 30px;
 }
 
 .kuna header h1 {
 	font-size: inherit;
-	color: #333;
+	color: #000;
 }
 
 .kuna a {
@@ -76,7 +81,7 @@ h1 {
 .kuna header a,
 .kuna header button {
 	display: inline-block;
-	padding: 0px 4px;
+	padding: 0px 6px;
 	background: none;
 	cursor: pointer;
 	border: none;
@@ -85,7 +90,7 @@ h1 {
 }
 
 .kuna header a.active {
-	background: #00000020;
+	background: hsla(220deg, 80%, 60%);
 }
 
 .kuna a:hover,
@@ -125,14 +130,28 @@ h1 {
 }
 
 .card {
+	max-width: 100%;
 	padding: 8px;
 	margin-top: 8px;
+	margin-left: 8px;
+	margin-right: 8px;
 	border: 2px solid hsl(220deg, 50%, 85%);
 	border-radius: 4px;
 	background-color: white;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+}
+
+@media only screen and (max-width: 600px) {
+	.card {
+		width: 100%;
+		margin-left: 0px;
+		margin-right: 0px;
+		border-left: none;
+		border-right: none;
+		border-radius: 0px;
+	}
 }
 
 .dark-mode .card {
