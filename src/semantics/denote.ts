@@ -75,7 +75,8 @@ function denoteVerb(toaq: string, arity: number): Expr {
 	}
 }
 
-function animacyClass(verb: VerbEntry): AnimacyClass {
+function animacyClass(verb: VerbEntry): AnimacyClass | null {
+	if (verb.toaq === 'raı') return null;
 	switch (verb.pronominal_class) {
 		case 'ho':
 			return 'animate';
@@ -198,7 +199,8 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			}
 			if (!verb.covert) {
 				bindings.variable.set((verb.entry as VerbEntry).toaq, binding);
-				bindings.animacy.set(animacyClass(verb.entry as VerbEntry), binding);
+				const animacy = animacyClass(verb.entry as VerbEntry);
+				if (animacy !== null) bindings.animacy.set(animacy, binding);
 			}
 		}
 	} else if (leaf.label === '𝘯') {
@@ -208,9 +210,12 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (vp === null) throw new Impossible("Can't find the VP for this 𝘯");
 		const verb = getVerbWord(vp);
 
-		denotation = verb.covert
-			? animacies.descriptive
-			: animacies[animacyClass(verb.entry as VerbEntry)];
+		denotation =
+			animacies[
+				verb.covert
+					? 'descriptive'
+					: animacyClass(verb.entry as VerbEntry) ?? 'descriptive'
+			];
 		bindings = covertHoaBindings;
 	} else if (leaf.label === '𝘷') {
 		if (leaf.word.covert) {

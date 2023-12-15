@@ -54,25 +54,29 @@ function forEachFreeVariableUsage(e: Expr, fn: (index: number) => void) {
 }
 
 function d(sentence: string): string {
-	const trees = parse(sentence);
-	expect(trees.length).toBe(1);
-	const [tree] = trees;
+	try {
+		const trees = parse(sentence);
+		expect(trees.length).toBe(1);
+		const [tree] = trees;
 
-	const { denotation } = denote(fix(tree));
-	if (denotation === null) throw new Impossible('Null denotation');
-	const denotationText = toPlainText(denotation);
+		const { denotation } = denote(fix(tree));
+		if (denotation === null) throw new Impossible('Null denotation');
+		const denotationText = toPlainText(denotation);
 
-	// Verify that no free variables are unused
-	const freeVariablesUsed = denotation.context.map(() => false);
-	forEachFreeVariableUsage(denotation, i => (freeVariablesUsed[i] = true));
-	freeVariablesUsed.forEach((used, i) => {
-		if (!used)
-			throw new Error(
-				`The free variable of type ${denotation.context[i]} at index ${i} in ${denotationText} is unused`,
-			);
-	});
+		// Verify that no free variables are unused
+		const freeVariablesUsed = denotation.context.map(() => false);
+		forEachFreeVariableUsage(denotation, i => (freeVariablesUsed[i] = true));
+		freeVariablesUsed.forEach((used, i) => {
+			if (!used)
+				throw new Error(
+					`The free variable of type ${denotation.context[i]} at index ${i} in ${denotationText} is unused`,
+				);
+		});
 
-	return denotationText;
+		return denotationText;
+	} catch (e) {
+		throw new Error(`Failed to denote "${sentence}"`, { cause: e });
+	}
 }
 
 test('it denotes a nullary verb', () => {
@@ -210,6 +214,12 @@ test('it denotes anaphora', () => {
 	);
 	expect(d('Sá nıaı nä kıaı jí hụ́sa')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∃𝘢 : ∃𝘦'. τ(𝘦') ⊆ t' ∧ nıaı.𝘸(𝘢)(𝘦'). (∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸) = jí ∧ kıaı.𝘸(𝘢)(𝘦') | animate(𝘢)))(𝘦)\"",
+	);
+});
+
+test('raı does not bind tá', () => {
+	expect(d('Kuaq jí ráı chôa tá')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ AGENT(𝘦')(𝘸) = jí ∧ kuaq.𝘸(b)(𝘦') ∧ ∃𝘦''. 𝘦'' o 𝘦' ∧ AGENT(𝘦'')(𝘸) = SUBJ(𝘦')(𝘸) ∧ choa.𝘸(a)(𝘦'') | ∃𝘦'. τ(𝘦') ⊆ t ∧ raı.𝘸(b)(𝘦')))(𝘦)\"",
 	);
 });
 
