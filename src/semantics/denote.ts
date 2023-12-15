@@ -16,7 +16,7 @@ import {
 	effectiveLabel,
 } from '../tree';
 import { Tone } from '../types';
-import { getCompositionRule } from './composition';
+import { compose } from './compose';
 import {
 	adjuncts,
 	animacies,
@@ -405,14 +405,6 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	return { ...leaf, denotation, bindings };
 }
 
-function denoteBranch(
-	branch: Branch<StrictTree>,
-	left: DTree,
-	right: DTree,
-): DTree {
-	return getCompositionRule(left, right)(branch, left, right);
-}
-
 const branchCache = new WeakMap<Branch<StrictTree>, DTree>();
 
 export function denote_(tree: StrictTree, cCommand: StrictTree | null): DTree {
@@ -427,7 +419,7 @@ export function denote_(tree: StrictTree, cCommand: StrictTree | null): DTree {
 
 		const left = denote_(tree.left, tree.right);
 		const right = denote_(tree.right, tree.left);
-		const denoted = denoteBranch(tree, left, right);
+		const denoted = compose(tree, left, right);
 		branchCache.set(tree, denoted);
 		return denoted;
 	}

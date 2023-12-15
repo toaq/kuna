@@ -352,7 +352,7 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 	}
 };
 
-export function getCompositionRule(left: DTree, right: DTree): CompositionRule {
+function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	const leftLabel = effectiveLabel(left);
 	switch (leftLabel) {
 		case 'V':
@@ -429,4 +429,15 @@ export function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	throw new Unimplemented(
 		`TODO: composition of ${leftLabel} and ${rightLabel}`,
 	);
+}
+
+/**
+ * Denotes a branch by composing the denotations of its children.
+ */
+export function compose(
+	branch: Branch<StrictTree>,
+	left: DTree,
+	right: DTree,
+): DTree {
+	return getCompositionRule(left, right)(branch, left, right);
 }
