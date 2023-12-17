@@ -43,6 +43,7 @@ import {
 	pluralCoordinator,
 	argumentCoordinator,
 	argumentConjunctions,
+	covertCp,
 } from './data';
 import {
 	DTree,
@@ -345,9 +346,12 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`Modal: ${leaf.word.text}`);
 
-		const toaq = leaf.word.entry.toaq;
+		const toaq = inTone(leaf.word.entry.toaq, Tone.T4);
 		denotation = modals[toaq];
 		if (denotation === undefined) throw new Unrecognized(`Modal: ${toaq}`);
+	} else if (leaf.label === 'CP') {
+		if (!leaf.word.covert) throw new Impossible('Overt leaf CP');
+		denotation = covertCp;
 	} else if (leaf.label === 'mı') {
 		if (leaf.word.covert) throw new Impossible('Covert mı');
 		if (leaf.word.entry === undefined)

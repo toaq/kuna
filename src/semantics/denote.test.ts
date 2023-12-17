@@ -344,7 +344,7 @@ test('it denotes plural coordination', () => {
 	);
 });
 
-test('it denotes modals', () => {
+test('it denotes modals with an overt complement', () => {
 	expect(d('Shê, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. ∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦'. τ(𝘦') ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦'). ∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦'))(𝘦) | inanimate(a)\"",
 	);
@@ -356,6 +356,15 @@ test('it denotes modals', () => {
 	);
 	expect(d('Êa, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦'. τ(𝘦') ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦'). ∃𝘦'. τ(𝘦') ⊆ t ∧ AGENT(𝘦')(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦') | ¬∃𝘦'. τ(𝘦') ⊆ t' ∧ tı.𝘸(súq, a)(𝘦')))(𝘦) | inanimate(a)\"",
+	);
+});
+
+test('it denotes modals with a covert complement', () => {
+	expect(d('Ao cho súq máq')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∀𝘸' : SHE(𝘸)(𝘸') ∧ P(𝘸'). ∃𝘦'. τ(𝘦') ⊆ t ∧ cho.𝘸'(súq, a)(𝘦') | ¬P(𝘸)))(𝘦) | inanimate(a)\"",
+	);
+	expect(d('Bu daı dua jí hú')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (¬∃𝘸' : SHE(𝘸)(𝘸') ∧ P(𝘸'). (∃𝘦'. τ(𝘦') ⊆ t ∧ dua.𝘸'(jí, a)(𝘦') | ∃𝘦'. τ(𝘦') ⊆ t' ∧ raı.𝘸'(a)(𝘦')) | ∃𝘦'. τ(𝘦') ⊆ t' ∧ raı.𝘸(a)(𝘦')))(𝘦) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
 	);
 });
 

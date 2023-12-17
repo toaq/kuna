@@ -647,6 +647,9 @@ export const modals: Record<string, Expr> = Object.fromEntries(
 	]),
 );
 
+// P
+export const covertCp = v(0, [['s', 't']]);
+
 const nameVerbWords = ['mı', 'mıru'];
 
 export const nameVerbs: Record<string, Expr> = Object.fromEntries(
