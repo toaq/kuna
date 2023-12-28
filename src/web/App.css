@@ -186,10 +186,8 @@ h1 {
 	max-width: 40em;
 	display: flex;
 	flex-wrap: wrap;
-}
-
-.gloss-item {
-	padding: 0px 4px;
+	row-gap: 1.25em;
+	column-gap: 0.75em;
 }
 
 .gloss-toaq {
