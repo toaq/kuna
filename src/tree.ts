@@ -94,8 +94,6 @@ export type Label =
 	| 'ha'
 	| 'haP'
 	| 'haoP'
-	| 'Interjection'
-	| 'InterjectionP'
 	| 'kı'
 	| 'mı'
 	| 'mıP'
@@ -133,6 +131,8 @@ export type Label =
 	| "𝘷'"
 	| 'V'
 	| "V'"
+	| 'Vocative'
+	| 'VocativeP'
 	| '𝘷P'
 	| 'VP'
 	| 'word'
@@ -262,7 +262,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 }
 
 export function makeLeaf(label: Label) {
-	return ([token]: [ToaqToken]) => ({
+	return ([token, _free]: [ToaqToken, Tree[]]) => ({
 		label,
 		word: makeWord([token]),
 	});
@@ -376,12 +376,14 @@ export function makevP(
 	reject: Object,
 ) {
 	rest ??= [[], []];
-	const [args, adjpsR] = rest;
+	let [args, adjpsR] = rest;
+	args = args.filter(x => x.label !== 'VocativeP');
 
 	const arity = (serial as any).arity;
 	if (arity !== undefined && args.length > arity) {
 		return reject;
 	}
+
 	return {
 		label: '*𝘷P',
 		children: [serial, ...adjpsL, ...args, ...adjpsR],
@@ -548,9 +550,8 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 }
 
 export function skipFree(tree: Tree): Tree {
-	if (tree.label === 'InterjectionP' && 'left' in tree) {
-		return tree.left.label === 'Interjection' ? tree.right : tree.left;
-	}
+	// For now we already don't keep "free" constituents (interjections,
+	// parentheticals) in the tree.
 	return tree;
 }
 
