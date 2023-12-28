@@ -38,7 +38,7 @@ const lexer = new ToaqTokenizer();
 @lexer lexer
 
 Fragment -> Free Fragment {% a => a[1] %}
-Fragment -> Discourse {% id %} | Argument {% id %} | AdjunctP {% id %}
+Fragment -> Discourse {% id %} | Argument {% id %} | AdjunctP1 {% id %}
 
 # ꝡa hao da. ꝡa hao da
 Discourse -> SAP Discourse {% makeDiscourse %}
@@ -103,7 +103,7 @@ TP1 -> TP Conjunction TP1 {% makeConn %}
 TP -> T1 AspP {% makeBranch('TP') %}
 TP -> Sigma T1 AspP {% make3L('ΣP', 'TP') %}
 # ë marao óguı ráı
-TP -> EvA vP DP3 {% makeEvAP %}
+TP -> EvA vP DP1 {% makeEvAP %}
 
 # (sá) pu chum hao
 TPdet -> T1 AspPdet {% makeBranch('TP') %}
@@ -148,21 +148,21 @@ DPincorp -> Huincorp Word {% makeBranch('DP') %}
 # sâ ...
 DPincorp -> Dincorp nP {% makeBranch('DP') %}
 # po sá ...
-VPoiv -> Voiv DP3 {% makeBranch('VP') %}
+VPoiv -> Voiv DP1 {% makeBranch('VP') %}
 
-Argument -> DP3 {% id %} | CPsub2 {% id %}
+Argument -> DP1 {% id %} | CPsub1 {% id %}
 
-DP1 -> DP {% id %}
-DP1 -> DP Roi DP1 {% makeConn %}
-DP2 -> DP1 {% id %}
-DP2 -> Focus DP1 {% makeBranch('FocusP') %}
-DP3 -> DP2 {% id %}
-DP3 -> DP2 Conjunction DP3 {% makeConn %}
-DP3 -> DP2 ConjunctionT1 CPsub2 {% makeConn %}
-CPsub1 -> CPsub {% id %}
-CPsub1 -> CPsub Conjunction CPsub1 {% makeConn %}
-CPsub2 -> CPsub1 {% id %}
-CPsub2 -> Focus CPsub2 {% makeBranch('FocusP') %}
+DP1 -> DP2 {% id %}
+DP1 -> DP2 Conjunction DP1 {% makeConn %}
+DP1 -> DP2 ConjunctionT1 CPsub1 {% makeConn %}
+DP2 -> DP3 {% id %}
+DP2 -> Focus DP3 {% makeBranch('FocusP') %}
+DP3 -> DP {% id %}
+DP3 -> DP Roi DP3 {% makeConn %}
+CPsub1 -> CPsub2 {% id %}
+CPsub1 -> Focus CPsub1 {% makeBranch('FocusP') %}
+CPsub2 -> CPsub {% id %}
+CPsub2 -> CPsub Conjunction CPsub2 {% makeConn %}
 T1 -> null {% makeCovertLeaf('T') %}
 T1 -> T {% id %}
 T1 -> T_prefix {% id %}
@@ -171,8 +171,10 @@ Asp1 -> null {% makeCovertLeaf('Asp') %}
 Asp1 -> Asp {% id %}
 Asp1 -> Asp_prefix {% id %}
 Asp1 -> Asp Conjunction Asp1 {% makeConn %}
-AdjunctP1 -> AdjunctP {% id %}
-AdjunctP1 -> AdjunctP Conjunction AdjunctP1 {% makeConn %}
+AdjunctP1 -> AdjunctP2 {% id %}
+AdjunctP1 -> Focus AdjunctP2 {% makeBranch('FocusP') %}
+AdjunctP2 -> AdjunctP {% id %}
+AdjunctP2 -> AdjunctP Conjunction AdjunctP2 {% makeConn %}
 Vlast -> VPincorp {% id %}
 Vlast -> VPoiv {% id %}
 Vlast -> Verb ConjunctionT1 Vlast {% makeConn %}
