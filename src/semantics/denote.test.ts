@@ -223,6 +223,12 @@ test('it denotes anaphora of focused phrases', () => {
 	);
 });
 
+test('it denoted anaphora of clausally coordinated phrases', () => {
+	expect(d('Súna rú nhána nä haı zao jí hụ́ru')).toMatchInlineSnapshot(
+		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. t ⊆ τ(𝘦') ∧ t < ExpStart(𝘦') ∧ zao.𝘸(jí, súna)(𝘦')) ∧ ∃𝘦'. t ⊆ τ(𝘦') ∧ t < ExpStart(𝘦') ∧ zao.𝘸(jí, nhána)(𝘦'))(𝘦)\"",
+	);
+});
+
 test('raı does not bind tá', () => {
 	expect(d('Kuaq jí ráı chôa tá')).toMatchInlineSnapshot(
 		"\"∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(λ𝘸. (∃𝘦'. τ(𝘦') ⊆ t' ∧ AGENT(𝘦')(𝘸) = jí ∧ kuaq.𝘸(b)(𝘦') ∧ ∃𝘦''. 𝘦'' o 𝘦' ∧ AGENT(𝘦'')(𝘸) = SUBJ(𝘦')(𝘸) ∧ choa.𝘸(a)(𝘦'') | ∃𝘦'. τ(𝘦') ⊆ t ∧ raı.𝘸(b)(𝘦')))(𝘦)\"",

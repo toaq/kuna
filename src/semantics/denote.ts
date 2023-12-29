@@ -309,15 +309,12 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			const conjunct = effectiveLabel(cCommand);
 			if (conjunct === 'DP') {
 				denotation = argumentCoordinator;
+				const binding = { index: 0, subordinate: false, timeIntervals: [] };
 				if (leaf.binding !== undefined)
 					bindings = {
 						...noBindings,
-						index: new Map([
-							[
-								leaf.binding,
-								{ index: 0, subordinate: false, timeIntervals: [] },
-							],
-						]),
+						index: new Map([[leaf.binding, binding]]),
+						head: new Map([[leaf.word.bare, binding]]),
 					};
 			} else {
 				const data = clausalConjunctions[effectiveLabel(cCommand)]?.[toaq];
