@@ -10,6 +10,7 @@ import {
 	v,
 	λ,
 	subtype,
+	Binding,
 } from './model';
 import {
 	bindTimeIntervals,
@@ -307,12 +308,23 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 	} else if (right.denotation === null) {
 		throw new Impossible(`Predicate abstraction on a null ${right.label}`);
 	} else {
-		const [l, r, bindings] = unifyDenotations(left, right);
-		const index = (
-			left.binding === undefined
-				? bindings.covertResumptive
-				: bindings.index.get(left.binding)
-		)?.index;
+		let l: Expr;
+		let r: Expr;
+		let bindings: Bindings;
+		let binding: Binding | undefined;
+		if (left.binding === undefined) {
+			[l, r, bindings] = unifyDenotations(left, right);
+			binding = bindings.covertResumptive;
+		} else {
+			// Because unifyDenotations works asymmetrically and assumes that the left
+			// has more binding information than the right, we need to pretend here that
+			// the branches are the other way around; the right may in fact have more
+			// binding information than the left's hoisted sub-tree.
+			[r, l, bindings] = unifyDenotations(right, left);
+			binding = bindings.index.get(left.binding);
+		}
+
+		const index = binding?.index;
 		if (index === undefined)
 			throw new Impossible("Can't identify the variable to be abstracted");
 

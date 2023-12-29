@@ -368,15 +368,16 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	} else if (leaf.label === 'EvA') {
 		denotation = eventAccessor;
 	} else if (leaf.label === 'Focus') {
+		if (leaf.word.covert) throw new Impossible('Covert Focus');
 		if (cCommand === null)
 			throw new Impossible("Can't denote a Focus in isolation");
 		denotation = focus;
+		const binding = { index: 0, subordinate: false, timeIntervals: [] };
 		if (leaf.binding !== undefined)
 			bindings = {
 				...noBindings,
-				index: new Map([
-					[leaf.binding, { index: 0, subordinate: false, timeIntervals: [] }],
-				]),
+				index: new Map([[leaf.binding, binding]]),
+				head: new Map([[leaf.word.bare, binding]]),
 			};
 	} else if (leaf.label === 'FocAdv') {
 		if (cCommand === null)
