@@ -115,7 +115,7 @@ const grammar: Grammar = {
     {"name": "Fragment", "symbols": ["Free", "Fragment"], "postprocess": a => a[1]},
     {"name": "Fragment", "symbols": ["Discourse"], "postprocess": id},
     {"name": "Fragment", "symbols": ["Argument"], "postprocess": id},
-    {"name": "Fragment", "symbols": ["AdjunctP"], "postprocess": id},
+    {"name": "Fragment", "symbols": ["AdjunctP1"], "postprocess": id},
     {"name": "Discourse", "symbols": ["SAP", "Discourse"], "postprocess": makeDiscourse},
     {"name": "Discourse", "symbols": ["SAP"], "postprocess": id},
     {"name": "SAP", "symbols": ["CP", "SAopt"], "postprocess": makeBranch('SAP')},
