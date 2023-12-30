@@ -41,7 +41,7 @@ const noNames: Names = {
 };
 
 function getNameType(type: ExprType): NameType {
-	return typeof type === 'string' && type !== 't' ? type : 'fn';
+	return typeof type === 'string' && type !== 't' && type !== 'a' ? type : 'fn';
 }
 
 type Alphabets = Record<NameType, string[]>;
@@ -321,6 +321,12 @@ const plainText: Format = {
 		expected_start: 'ExpStart',
 		expected_end: 'ExpEnd',
 		speech_time: 't0',
+		assert: 'ASSERT',
+		perform: 'PERFORM',
+		wish: 'WISH',
+		promise: 'PROMISE',
+		permit: 'PERMIT',
+		warn: 'WARN',
 	},
 	quote: text => `“${text}”`,
 };
@@ -406,6 +412,12 @@ const latex: Format = {
 		expected_start: '\\text{ExpStart}',
 		expected_end: '\\text{ExpEnd}',
 		speech_time: '\\text{t}_0',
+		assert: '\\text{A\\large SSERT}',
+		perform: '\\text{P\\large ERFORM}',
+		wish: '\\text{W\\large ISH}',
+		promise: '\\text{P\\large ROMISE}',
+		permit: '\\text{P\\large ERMIT}',
+		warn: '\\text{W\\large ARN}',
 	},
 	quote: text => `“${text}”`,
 };

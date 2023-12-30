@@ -50,6 +50,12 @@ import {
 	she,
 	alternative,
 	roi,
+	assert,
+	perform,
+	wish,
+	promise,
+	permit,
+	warn,
 } from './model';
 import { lift, reduce } from './operations';
 
@@ -271,36 +277,14 @@ export const polarities: Record<string, Expr> = {
 	jeo: λ(['s', 't'], ['s'], c => indeed(app(v(0, c), v(1, c)))),
 };
 
-const speechActVerbs: Record<string, string> = {
-	da: 'ruaq',
-	ka: 'karuaq',
-	ba: 'baruaq',
-	nha: 'nue',
-	doa: 'shoe',
-	ꝡo: 'zaru',
-	móq: 'teqga',
+export const speechActs: Record<string, Expr> = {
+	da: assert([]),
+	ka: perform([]),
+	ba: wish([]),
+	nha: promise([]),
+	doa: permit([]),
+	ꝡo: warn([]),
 };
-
-export const speechActs: Record<string, Expr> = Object.fromEntries(
-	Object.entries(speechActVerbs).map(
-		([toaq, verb_]) =>
-			[
-				toaq,
-				// λ𝘗. ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ ruaq.w(𝘗)(𝘦)
-				λ(['s', 't'], [], c =>
-					some('v', c, c =>
-						and(
-							subinterval(app(temporalTrace(c), v(0, c)), speechTime(c)),
-							and(
-								equals(app(app(agent(c), v(0, c)), realWorld(c)), ji(c)),
-								verb(verb_, [v(1, c)], v(0, c), realWorld(c)),
-							),
-						),
-					),
-				),
-			] as [string, Expr],
-	),
-);
 
 // λ𝘗. a
 export const headAnaphor = λ('e', ['e'], c => v(1, c));

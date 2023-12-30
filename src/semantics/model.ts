@@ -11,6 +11,7 @@ export type ExprType =
 	| 'i' // Time interval
 	| 't' // Truth value
 	| 's' // World
+	| 'a' // Speech act
 	| [ExprType, ExprType]; // Function
 
 interface Variable {
@@ -103,6 +104,8 @@ type Pronoun<Name extends string> = Constant<Name, 'e'>;
 
 type Animacy<Name extends string> = Constant<Name, ['e', 't']>;
 
+type PropSpeechAct<Name extends string> = Constant<Name, [['s', 't'], 'a']>;
+
 interface Quote {
 	head: 'quote';
 	type: 'e';
@@ -161,6 +164,12 @@ export type Expr =
 	| Constant<'expected_start', ['v', 'i']>
 	| Constant<'expected_end', ['v', 'i']>
 	| Constant<'speech_time', 'i'>
+	| PropSpeechAct<'assert'>
+	| PropSpeechAct<'perform'>
+	| PropSpeechAct<'wish'>
+	| PropSpeechAct<'promise'>
+	| PropSpeechAct<'permit'>
+	| PropSpeechAct<'warn'>
 	| Quote;
 
 export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
@@ -714,6 +723,30 @@ export function expectedEnd(context: ExprType[]): Expr {
 
 export function speechTime(context: ExprType[]): Expr {
 	return constant('speech_time', 'i', context);
+}
+
+export function assert(context: ExprType[]): Expr {
+	return constant('assert', [['s', 't'], 'a'], context);
+}
+
+export function perform(context: ExprType[]): Expr {
+	return constant('perform', [['s', 't'], 'a'], context);
+}
+
+export function wish(context: ExprType[]): Expr {
+	return constant('wish', [['s', 't'], 'a'], context);
+}
+
+export function promise(context: ExprType[]): Expr {
+	return constant('promise', [['s', 't'], 'a'], context);
+}
+
+export function permit(context: ExprType[]): Expr {
+	return constant('permit', [['s', 't'], 'a'], context);
+}
+
+export function warn(context: ExprType[]): Expr {
+	return constant('warn', [['s', 't'], 'a'], context);
 }
 
 export function quote(text: string, context: ExprType[]): Expr {
