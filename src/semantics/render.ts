@@ -44,10 +44,22 @@ function getNameType(type: ExprType): NameType {
 	return typeof type === 'string' && type !== 't' && type !== 'a' ? type : 'fn';
 }
 
+function mathematicalSansSerifItalic(name: string) {
+	const letter = name[0];
+	const primes = name.slice(1);
+	if ('a' <= letter && letter <= 'z') {
+		return String.fromCodePoint(120257 + letter.codePointAt(0)!) + primes;
+	} else if ('A' <= letter && letter <= 'Z') {
+		return String.fromCodePoint(120263 + letter.codePointAt(0)!) + primes;
+	} else {
+		throw new Impossible('invalid letter');
+	}
+}
+
 type Alphabets = Record<NameType, string[]>;
 
 const constantAlphabets: Alphabets = {
-	e: ['c', 'd', 'g', 'h', 'k'],
+	e: ['a', 'b', 'c', 'd'],
 	v: ['e'],
 	i: ['t'],
 	s: ['w'],
@@ -55,11 +67,11 @@ const constantAlphabets: Alphabets = {
 };
 
 const variableAlphabets: Alphabets = {
-	e: ['𝘢', '𝘣', '𝘹', '𝘺', '𝘻'],
-	v: ['𝘦'],
-	i: ['𝘵'],
-	s: ['𝘸'],
-	fn: ['𝘗', '𝘘', '𝘙', '𝘚', '𝘛', '𝘜', '𝘝', '𝘞', '𝘟', '𝘠', '𝘡'],
+	e: ['x', 'y', 'z'],
+	v: ['e'],
+	i: ['t'],
+	s: ['w'],
+	fn: ['P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
 };
 
 const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
@@ -137,7 +149,10 @@ const formatName = (name: Name) => {
 
 const plainText: Format = {
 	bracket: e => `(${e})`,
-	name: formatName,
+	name: name => {
+		const base = formatName(name);
+		return name.constant ? base : mathematicalSansSerifItalic(base);
+	},
 	verb: (name, args, event, world) =>
 		args.length === 0
 			? `${name}.${world}(${event})`
@@ -226,7 +241,7 @@ const plainText: Format = {
 const latex: Format = {
 	bracket: e => `\\left(${e}\\right)`,
 	name: name => {
-		const base = formatName(name).normalize('NFKC');
+		const base = formatName(name);
 		return name.constant ? `\\mathrm{${base}}` : base;
 	},
 	verb: (name, args, event, world) =>
