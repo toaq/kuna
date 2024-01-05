@@ -335,12 +335,12 @@ const latex: Format = {
 	bracket: e => `\\left(${e}\\right)`,
 	name: name => {
 		const base = formatName(name.type, name.id);
-		return name.constant ? `\\text{${base}}` : base;
+		return name.constant ? `\\mathrm{${base}}` : base;
 	},
 	verb: (name, args, event, world) =>
 		args.length === 0
-			? `\\text{${name}}_{${world}}(${event})`
-			: `\\text{${name}}_{${world}}(${args.join(', ')})(${event})`,
+			? `\\mathrm{${name}}_{${world}}(${event})`
+			: `\\mathrm{${name}}_{${world}}(${args.join(', ')})(${event})`,
 	quantifierSymbols: {
 		some: '\\exists',
 		every: '\\forall',
@@ -405,13 +405,13 @@ const latex: Format = {
 		animate: '\\text{animate}',
 		inanimate: '\\text{inanimate}',
 		abstract: '\\text{abstract}',
-		real_world: '\\text{w}',
+		real_world: '\\mathrm{w}',
 		inertia_worlds: '\\text{I\\large W}',
-		alternative: '\\text{A}',
+		alternative: '\\mathrm{A}',
 		temporal_trace: '\\tau',
 		expected_start: '\\text{ExpStart}',
 		expected_end: '\\text{ExpEnd}',
-		speech_time: '\\text{t}_0',
+		speech_time: '\\mathrm{t_0}',
 		assert: '\\text{A\\large SSERT}',
 		perform: '\\text{P\\large ERFORM}',
 		wish: '\\text{W\\large ISH}',
