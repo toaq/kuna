@@ -41,25 +41,25 @@ test('it denotes a nullary verb', () => {
 
 test('it denotes an unaccusative verb', () => {
 	expect(d('Nuo páqda')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ nuo.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ paqda.𝘸(a)(𝘦))) | animate(a)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ nuo.𝘸(c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ paqda.𝘸(c)(𝘦))) | animate(c)"',
 	);
 });
 
 test('it denotes an unergative verb', () => {
 	expect(d('Marao páqda')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = a ∧ marao.𝘸(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ paqda.𝘸(a)(𝘦))) | animate(a)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = c ∧ marao.𝘸(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ paqda.𝘸(c)(𝘦))) | animate(c)"',
 	);
 });
 
 test('it denotes a transtive verb', () => {
 	expect(d('Chuq nháo súshı')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = nháo ∧ chuq.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ sushı.𝘸(a)(𝘦))) | inanimate(a)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = nháo ∧ chuq.𝘸(c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ sushı.𝘸(c)(𝘦))) | inanimate(c)"',
 	);
 });
 
 test('it denotes a ditranstive verb', () => {
 	expect(d('Do jí nháo súshı')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = jí ∧ do.𝘸(nháo, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ sushı.𝘸(a)(𝘦))) | inanimate(a)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = jí ∧ do.𝘸(nháo, c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ sushı.𝘸(c)(𝘦))) | inanimate(c)"',
 	);
 });
 
@@ -71,7 +71,7 @@ test('it denotes speech acts', () => {
 		'"PERFORM(λ𝘸. ∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸) = jí ∧ hıo.𝘸(súq)(𝘦))"',
 	);
 	expect(d('Fa súq jéarıaq ba')).toMatchInlineSnapshot(
-		'"WISH(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = súq ∧ fa.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ jearıaq.𝘸(a)(𝘦))) | inanimate(a)"',
+		'"WISH(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = súq ∧ fa.𝘸(c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ jearıaq.𝘸(c)(𝘦))) | inanimate(c)"',
 	);
 	expect(d('Jıa faq sía huı nha')).toMatchInlineSnapshot(
 		'"PROMISE(λ𝘸. ¬∃𝘢 : ∃𝘦. τ(𝘦) ⊆ t ∧ huı.𝘸(𝘢)(𝘦). ∃𝘦. τ(𝘦) ⊆ t\' ∧ faq.𝘸(𝘢)(𝘦)) | t\' > t0"',
@@ -152,10 +152,10 @@ test('it denotes object incorporation', () => {
 
 test('it denotes exophoric references', () => {
 	expect(d('Sao jío')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ sao.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ jıo.𝘸(a)(𝘦))) | inanimate(a)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ sao.𝘸(c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ jıo.𝘸(c)(𝘦))) | inanimate(c)"',
 	);
 	expect(d('Sao máq')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. ∃𝘦. τ(𝘦) ⊆ t ∧ sao.𝘸(a)(𝘦)) | inanimate(a)"',
+		'"ASSERT(λ𝘸. ∃𝘦. τ(𝘦) ⊆ t ∧ sao.𝘸(c)(𝘦)) | inanimate(c)"',
 	);
 });
 
@@ -185,7 +185,7 @@ test('it denoted anaphora of clausally coordinated phrases', () => {
 
 test('raı does not bind tá', () => {
 	expect(d('Kuaq jí ráı chôa tá')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ AGENT(𝘦)(𝘸) = jí ∧ kuaq.𝘸(b)(𝘦) ∧ ∃𝘦'. 𝘦' o 𝘦 ∧ AGENT(𝘦')(𝘸) = SUBJ(𝘦)(𝘸) ∧ choa.𝘸(a)(𝘦') | ∃𝘦. τ(𝘦) ⊆ t ∧ raı.𝘸(b)(𝘦)))\"",
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ AGENT(𝘦)(𝘸) = jí ∧ kuaq.𝘸(d)(𝘦) ∧ ∃𝘦'. 𝘦' o 𝘦 ∧ AGENT(𝘦')(𝘸) = SUBJ(𝘦)(𝘸) ∧ choa.𝘸(c)(𝘦') | ∃𝘦. τ(𝘦) ⊆ t ∧ raı.𝘸(d)(𝘦)))\"",
 	);
 });
 
@@ -215,19 +215,19 @@ test('it denotes determiners', () => {
 		'"ASSERT(λ𝘸. GEN 𝘢 : ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(𝘢)(𝘦). (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, 𝘢)(𝘦) | animate(𝘢)))"',
 	);
 	expect(d('Maı jí ní poq')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(a)(𝘦))) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(c)(𝘦))) | animate(c) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(c)(𝘦)"',
 	);
 	expect(d('Maı jí níjuı poq')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(a)(𝘦))) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ tıjuı.w(a, jí)(𝘦)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(c)(𝘦))) | animate(c) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ tıjuı.w(c, jí)(𝘦)"',
 	);
 	expect(d('Maı jí níjao poq')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(a)(𝘦))) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ tıjao.w(a, jí)(𝘦)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(c)(𝘦))) | animate(c) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ tıjao.w(c, jí)(𝘦)"',
 	);
 	expect(d('Maı jí ké poq')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(a)(𝘦))) | animate(a) | ¬∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(c)(𝘦))) | animate(c) | ¬∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(c)(𝘦)"',
 	);
 	expect(d('Maı jí hú poq')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(a)(𝘦))) | animate(a) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(c)(𝘦))) | animate(c) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(c)(𝘦)"',
 	);
 });
 
@@ -245,7 +245,7 @@ test('it denotes imperfective aspect + quantification', () => {
 
 test('it denotes a relative clause', () => {
 	expect(d('Joaı jí ké kue, ꝡë hıq noaq jí hóa')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t'' ∧ AGENT(𝘦)(𝘸) = jí ∧ joaı.𝘸(a)(𝘦) | (∃𝘦. τ(𝘦) ⊆ t' ∧ kue.𝘸(a)(𝘦)) ∧ ∃𝘦. τ(𝘦) <.near t ∧ AGENT(𝘦)(𝘸) = jí ∧ noaq.𝘸(a)(𝘦))) | inanimate(a) | ¬∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t'' ∧ AGENT(𝘦)(𝘸) = jí ∧ joaı.𝘸(c)(𝘦) | (∃𝘦. τ(𝘦) ⊆ t' ∧ kue.𝘸(c)(𝘦)) ∧ ∃𝘦. τ(𝘦) <.near t ∧ AGENT(𝘦)(𝘸) = jí ∧ noaq.𝘸(c)(𝘦))) | inanimate(c) | ¬∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(c)(𝘦)\"",
 	);
 });
 
@@ -259,24 +259,24 @@ test('it denotes polarizers', () => {
 	);
 	// Now try putting a polarizer in a DP
 	expect(d('Gaı jí bú jara')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ gaı.𝘸(jí, a)(𝘦) | ¬∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸) = a ∧ jara.𝘸(𝘦))) | animate(a)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ gaı.𝘸(jí, c)(𝘦) | ¬∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸) = c ∧ jara.𝘸(𝘦))) | animate(c)"',
 	);
 });
 
 test('it denotes adjuncts', () => {
 	// Eventive adjuncts
 	expect(d('Za nuo tî ní kua jí')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) > t' ∧ (∃𝘦'. tı.𝘸(𝘦, a)(𝘦')) ∧ nuo.𝘸(jí)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ kua.𝘸(a)(𝘦))) | abstract(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) > t' ∧ (∃𝘦'. tı.𝘸(𝘦, c)(𝘦')) ∧ nuo.𝘸(jí)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ kua.𝘸(c)(𝘦))) | abstract(c) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(c)(𝘦)\"",
 	);
 	expect(d('Za nuo jí tî ní kua')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) > t' ∧ nuo.𝘸(jí)(𝘦) ∧ ∃𝘦'. tı.𝘸(𝘦, a)(𝘦') | ∃𝘦. τ(𝘦) ⊆ t ∧ kua.𝘸(a)(𝘦))) | abstract(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) > t' ∧ nuo.𝘸(jí)(𝘦) ∧ ∃𝘦'. tı.𝘸(𝘦, c)(𝘦') | ∃𝘦. τ(𝘦) ⊆ t ∧ kua.𝘸(c)(𝘦))) | abstract(c) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(c)(𝘦)\"",
 	);
 	// Subject-sharing adjuncts
 	expect(d('Saqsu kûq hú toa nháo')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ (∃𝘦'. 𝘦' o 𝘦 ∧ AGENT(𝘦')(𝘸) = SUBJ(𝘦)(𝘸) ∧ kuq.𝘸(a)(𝘦')) ∧ AGENT(𝘦)(𝘸) = nháo ∧ saqsu.𝘸(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ toa.𝘸(a)(𝘦))) | abstract(a) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ (∃𝘦'. 𝘦' o 𝘦 ∧ AGENT(𝘦')(𝘸) = SUBJ(𝘦)(𝘸) ∧ kuq.𝘸(c)(𝘦')) ∧ AGENT(𝘦)(𝘸) = nháo ∧ saqsu.𝘸(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ toa.𝘸(c)(𝘦))) | abstract(c) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(c)(𝘦)\"",
 	);
 	expect(d('Saqsu nháo kûq hú toa')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ AGENT(𝘦)(𝘸) = nháo ∧ saqsu.𝘸(𝘦) ∧ ∃𝘦'. 𝘦' o 𝘦 ∧ AGENT(𝘦')(𝘸) = SUBJ(𝘦)(𝘸) ∧ kuq.𝘸(a)(𝘦') | ∃𝘦. τ(𝘦) ⊆ t ∧ toa.𝘸(a)(𝘦))) | abstract(a) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ AGENT(𝘦)(𝘸) = nháo ∧ saqsu.𝘸(𝘦) ∧ ∃𝘦'. 𝘦' o 𝘦 ∧ AGENT(𝘦')(𝘸) = SUBJ(𝘦)(𝘸) ∧ kuq.𝘸(c)(𝘦') | ∃𝘦. τ(𝘦) ⊆ t ∧ toa.𝘸(c)(𝘦))) | abstract(c) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(c)(𝘦)\"",
 	);
 });
 
@@ -288,10 +288,10 @@ test('it denotes clausal coordination', () => {
 
 test('it denotes adjunct coordination', () => {
 	expect(d('Kaı râo núaq rú fêı jí máq')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ (∃𝘦'. rao.𝘸(𝘦, c)(𝘦')) ∧ (∃𝘦'. 𝘦' o 𝘦 ∧ feı.𝘸(SUBJ(𝘦)(𝘸))(𝘦')) ∧ AGENT(𝘦)(𝘸) = jí ∧ kaı.𝘸(b, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ nuaq.𝘸(c)(𝘦))) | inanimate(b) | abstract(c)\"",
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ (∃𝘦'. rao.𝘸(𝘦, g)(𝘦')) ∧ (∃𝘦'. 𝘦' o 𝘦 ∧ feı.𝘸(SUBJ(𝘦)(𝘸))(𝘦')) ∧ AGENT(𝘦)(𝘸) = jí ∧ kaı.𝘸(d, c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ nuaq.𝘸(g)(𝘦))) | inanimate(d) | abstract(g)\"",
 	);
 	expect(d('Kaı jí máq fêı rá râo núaq')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ AGENT(𝘦)(𝘸) = jí ∧ kaı.𝘸(b, a)(𝘦) ∧ ((∃𝘦'. 𝘦' o 𝘦 ∧ feı.𝘸(SUBJ(𝘦)(𝘸))(𝘦')) ∨ ∃𝘦'. rao.𝘸(𝘦, c)(𝘦')) | ∃𝘦. τ(𝘦) ⊆ t ∧ nuaq.𝘸(c)(𝘦))) | abstract(c) | inanimate(b)\"",
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ AGENT(𝘦)(𝘸) = jí ∧ kaı.𝘸(d, c)(𝘦) ∧ ((∃𝘦'. 𝘦' o 𝘦 ∧ feı.𝘸(SUBJ(𝘦)(𝘸))(𝘦')) ∨ ∃𝘦'. rao.𝘸(𝘦, g)(𝘦')) | ∃𝘦. τ(𝘦) ⊆ t ∧ nuaq.𝘸(g)(𝘦))) | abstract(g) | inanimate(d)\"",
 	);
 });
 
@@ -312,25 +312,25 @@ test('it denotes plural coordination', () => {
 
 test('it denotes modals with an overt complement', () => {
 	expect(d('Shê, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. ∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦). ∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦)) | inanimate(a)\"",
+		"\"ASSERT(λ𝘸. ∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸'(súq, c)(𝘦). ∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦)) | inanimate(c)\"",
 	);
 	expect(d('Dâı, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. ∃𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦). ∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦)) | inanimate(a)\"",
+		"\"ASSERT(λ𝘸. ∃𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸'(súq, c)(𝘦). ∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦)) | inanimate(c)\"",
 	);
 	expect(d('Âo, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦). ∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦) | ¬∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸(súq, a)(𝘦))) | inanimate(a)\"",
+		"\"ASSERT(λ𝘸. (∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸'(súq, c)(𝘦). ∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦) | ¬∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸(súq, c)(𝘦))) | inanimate(c)\"",
 	);
 	expect(d('Êa, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦). ∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦) | ¬∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸(súq, a)(𝘦))) | inanimate(a)\"",
+		"\"ASSERT(λ𝘸. (∃𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸'(súq, c)(𝘦). ∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦) | ¬∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸(súq, c)(𝘦))) | inanimate(c)\"",
 	);
 });
 
 test('it denotes modals with a covert complement', () => {
 	expect(d('Ao cho súq máq')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∀𝘸' : SHE(𝘸)(𝘸') ∧ P(𝘸'). ∃𝘦. τ(𝘦) ⊆ t ∧ cho.𝘸'(súq, a)(𝘦) | ¬P(𝘸))) | inanimate(a)\"",
+		"\"ASSERT(λ𝘸. (∀𝘸' : SHE(𝘸)(𝘸') ∧ F(𝘸'). ∃𝘦. τ(𝘦) ⊆ t ∧ cho.𝘸'(súq, c)(𝘦) | ¬F(𝘸))) | inanimate(c)\"",
 	);
 	expect(d('Bu daı dua jí hú')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (¬∃𝘸' : SHE(𝘸)(𝘸') ∧ P(𝘸'). (∃𝘦. τ(𝘦) ⊆ t ∧ dua.𝘸'(jí, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t' ∧ raı.𝘸'(a)(𝘦)) | ∃𝘦. τ(𝘦) ⊆ t' ∧ raı.𝘸(a)(𝘦))) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(a)(𝘦)\"",
+		"\"ASSERT(λ𝘸. (¬∃𝘸' : SHE(𝘸)(𝘸') ∧ F(𝘸'). (∃𝘦. τ(𝘦) ⊆ t ∧ dua.𝘸'(jí, c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t' ∧ raı.𝘸'(c)(𝘦)) | ∃𝘦. τ(𝘦) ⊆ t' ∧ raı.𝘸(c)(𝘦))) | ∃𝘦. τ(𝘦) <.near t0 ∧ meakuq.w(c)(𝘦)\"",
 	);
 });
 
@@ -345,19 +345,19 @@ test('it denotes name verbs', () => {
 
 test('it denotes quotes', () => {
 	expect(d('Cho jí shú ‹arane›')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ cho.𝘸(jí, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ eq.𝘸(a, “arane”)(𝘦))) | abstract(a)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ cho.𝘸(jí, c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ eq.𝘸(c, “arane”)(𝘦))) | abstract(c)"',
 	);
 	expect(d('Kuq nháo mó «Seakuaı jí» teo')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = nháo ∧ kuq.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ eq.𝘸(a, “Seakuaı jí”)(𝘦))) | abstract(a)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = nháo ∧ kuq.𝘸(c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ eq.𝘸(c, “Seakuaı jí”)(𝘦))) | abstract(c)"',
 	);
 });
 
 test('it denotes the event accessor', () => {
 	expect(d('Kaqgaı jí, é marao súq')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t ∧ kaqgaı.𝘸(jí, a)(𝘦) | ∃𝘦 : 𝘦 = a. AGENT(𝘦)(𝘸) = súq ∧ marao.𝘸(𝘦)))"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t ∧ kaqgaı.𝘸(jí, c)(𝘦) | ∃𝘦 : 𝘦 = c. AGENT(𝘦)(𝘸) = súq ∧ marao.𝘸(𝘦)))"',
 	);
 	expect(d('Ë marao óguı ráı')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦 : 𝘦 = b. AGENT(𝘦)(𝘸) = a ∧ marao.𝘸(𝘦) | ∃𝘦. τ(𝘦) ⊆ t\' ∧ raı.𝘸(b)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ oguı.𝘸(a)(𝘦))) | animate(a)"',
+		'"ASSERT(λ𝘸. (∃𝘦 : 𝘦 = d. AGENT(𝘦)(𝘸) = c ∧ marao.𝘸(𝘦) | ∃𝘦. τ(𝘦) ⊆ t\' ∧ raı.𝘸(d)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ oguı.𝘸(c)(𝘦))) | animate(c)"',
 	);
 });
 
@@ -373,19 +373,19 @@ test('it denotes focus adverbs', () => {
 test('it removes redundant presuppositions from binding sites', () => {
 	// There should be only one set of presuppositions for the focused DP
 	expect(d('Shıe tó gúobe')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∀𝘢 : A(𝘢)(a)(𝘸). ¬∃𝘦. τ(𝘦) ⊆ t\' ∧ shıe.𝘸(𝘢)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t\' ∧ shıe.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ guobe.𝘸(a)(𝘦))) | animate(a)"',
+		'"ASSERT(λ𝘸. (∀𝘢 : A(𝘢)(c)(𝘸). ¬∃𝘦. τ(𝘦) ⊆ t\' ∧ shıe.𝘸(𝘢)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t\' ∧ shıe.𝘸(c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ guobe.𝘸(c)(𝘦))) | animate(c)"',
 	);
 	// Likewise, there should be only one set of presuppositions for each conjunct
 	expect(d('Shıe gúobe rú óguı')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. ((∃𝘦. τ(𝘦) ⊆ t'' ∧ shıe.𝘸(b)(𝘦)) ∧ ∃𝘦. τ(𝘦) ⊆ t'' ∧ shıe.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t' ∧ guobe.𝘸(b)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ oguı.𝘸(a)(𝘦))) | animate(b) | animate(a)\"",
+		"\"ASSERT(λ𝘸. ((∃𝘦. τ(𝘦) ⊆ t'' ∧ shıe.𝘸(d)(𝘦)) ∧ ∃𝘦. τ(𝘦) ⊆ t'' ∧ shıe.𝘸(c)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t' ∧ guobe.𝘸(d)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ oguı.𝘸(c)(𝘦))) | animate(d) | animate(c)\"",
 	);
 });
 
 test('it skolemizes ló DPs that depend on other variables', () => {
 	expect(d('Nıe tú poq búe hô')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. ∀.SING 𝘢 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘢)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ nıe.𝘸(𝘢, P(𝘢))(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ bue.𝘸(P(𝘢), 𝘢)(𝘦) | inanimate(P(𝘢)) | animate(𝘢)))\"",
+		"\"ASSERT(λ𝘸. ∀.SING 𝘢 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘢)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ nıe.𝘸(𝘢, F(𝘢))(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ bue.𝘸(F(𝘢), 𝘢)(𝘦) | inanimate(F(𝘢)) | animate(𝘢)))\"",
 	);
 	expect(d('Ní leache nä moaq tú poq é geq hó léache')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∀.SING 𝘢 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘢)(𝘦). (∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸) = 𝘢 ∧ moaq.𝘸(P(a)(𝘢))(𝘦) | ∃𝘦 : 𝘦 = P(a)(𝘢). geq.𝘸(𝘢, a)(𝘦) | animate(𝘢)) | ∃𝘦. τ(𝘦) ⊆ t'' ∧ leache.𝘸(a)(𝘦))) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
+		"\"ASSERT(λ𝘸. (∀.SING 𝘢 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘢)(𝘦). (∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸) = 𝘢 ∧ moaq.𝘸(F(c)(𝘢))(𝘦) | ∃𝘦 : 𝘦 = F(c)(𝘢). geq.𝘸(𝘢, c)(𝘦) | animate(𝘢)) | ∃𝘦. τ(𝘦) ⊆ t'' ∧ leache.𝘸(c)(𝘦))) | animate(c) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(c)(𝘦)\"",
 	);
 });
