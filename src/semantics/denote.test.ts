@@ -5,53 +5,7 @@ import { denote } from './denote';
 import { Expr } from './model';
 import { toPlainText } from './render';
 import { Impossible } from '../error';
-
-function forEachFreeVariableUsage(e: Expr, fn: (index: number) => void) {
-	const sub = (...es: Expr[]) => {
-		for (const e of es) forEachFreeVariableUsage(e, fn);
-	};
-
-	switch (e.head) {
-		case 'variable':
-			fn(e.index);
-			break;
-		case 'verb':
-			sub(...e.args, e.event, e.world);
-			break;
-		case 'lambda': {
-			const fnInner = (i: number) => fn(i - 1);
-			forEachFreeVariableUsage(e.body, fnInner);
-			if (e.restriction !== undefined)
-				forEachFreeVariableUsage(e.restriction, fnInner);
-			break;
-		}
-		case 'apply':
-			sub(e.fn, e.argument);
-			break;
-		case 'presuppose':
-			sub(e.body, e.presupposition);
-			break;
-		case 'infix':
-			sub(e.left, e.right);
-			break;
-		case 'polarizer':
-			sub(e.body);
-			break;
-		case 'quantifier': {
-			const fnInner = (i: number) => fn(i - 1);
-			forEachFreeVariableUsage(e.body, fnInner);
-			if (e.restriction !== undefined)
-				forEachFreeVariableUsage(e.restriction, fnInner);
-			break;
-		}
-		case 'constant':
-		case 'quote':
-			sub();
-			break;
-		default:
-			throw new Impossible('This switch statement should be exhaustive');
-	}
-}
+import { freeVariableUsages } from './operations';
 
 function d(sentence: string): string {
 	try {
@@ -65,7 +19,7 @@ function d(sentence: string): string {
 
 		// Verify that no free variables are unused
 		const freeVariablesUsed = denotation.context.map(() => false);
-		forEachFreeVariableUsage(denotation, i => (freeVariablesUsed[i] = true));
+		for (const i of freeVariableUsages(denotation)) freeVariablesUsed[i] = true;
 		freeVariablesUsed.forEach((used, i) => {
 			if (!used)
 				throw new Error(
@@ -400,7 +354,7 @@ test('it denotes quotes', () => {
 
 test('it denotes the event accessor', () => {
 	expect(d('Kaqgaı jí, é marao súq')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t ∧ kaqgaı.𝘸(jí, a)(𝘦) | ∃𝘦 : 𝘦 = a. AGENT(𝘦)(𝘸) = súq ∧ marao.𝘸(𝘦))) | animate(a)"',
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t ∧ kaqgaı.𝘸(jí, a)(𝘦) | ∃𝘦 : 𝘦 = a. AGENT(𝘦)(𝘸) = súq ∧ marao.𝘸(𝘦)))"',
 	);
 	expect(d('Ë marao óguı ráı')).toMatchInlineSnapshot(
 		'"ASSERT(λ𝘸. (∃𝘦 : 𝘦 = b. AGENT(𝘦)(𝘸) = a ∧ marao.𝘸(𝘦) | ∃𝘦. τ(𝘦) ⊆ t\' ∧ raı.𝘸(b)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ oguı.𝘸(a)(𝘦))) | animate(a)"',
@@ -424,5 +378,14 @@ test('it removes redundant presuppositions from binding sites', () => {
 	// Likewise, there should be only one set of presuppositions for each conjunct
 	expect(d('Shıe gúobe rú óguı')).toMatchInlineSnapshot(
 		"\"ASSERT(λ𝘸. ((∃𝘦. τ(𝘦) ⊆ t'' ∧ shıe.𝘸(b)(𝘦)) ∧ ∃𝘦. τ(𝘦) ⊆ t'' ∧ shıe.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t' ∧ guobe.𝘸(b)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ oguı.𝘸(a)(𝘦))) | animate(b) | animate(a)\"",
+	);
+});
+
+test('it skolemizes ló DPs that depend on other variables', () => {
+	expect(d('Nıe tú poq búe hô')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. ∀.SING 𝘢 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘢)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ nıe.𝘸(𝘢, P(𝘢))(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ bue.𝘸(P(𝘢), 𝘢)(𝘦) | inanimate(P(𝘢)) | animate(𝘢)))\"",
+	);
+	expect(d('Ní leache nä moaq tú poq é geq hó léache')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. (∀.SING 𝘢 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘢)(𝘦). (∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸) = 𝘢 ∧ moaq.𝘸(P(a)(𝘢))(𝘦) | ∃𝘦 : 𝘦 = P(a)(𝘢). geq.𝘸(𝘢, a)(𝘦) | animate(𝘢)) | ∃𝘦. τ(𝘦) ⊆ t'' ∧ leache.𝘸(a)(𝘦))) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
 	);
 });

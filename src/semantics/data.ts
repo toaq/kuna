@@ -289,12 +289,9 @@ export const speechActs: Record<string, Expr> = {
 // λ𝘗. a
 export const headAnaphor = λ('e', ['e'], c => v(1, c));
 
-// λ𝘗 : 𝘗(a). a
-export const boundThe = λ(
-	['e', 't'],
-	['e'],
-	c => v(1, c),
-	c => app(v(0, c), v(1, c)),
+// λ𝘗. (a | 𝘗(a))
+export const boundThe = λ(['e', 't'], ['e'], c =>
+	presuppose(v(1, c), app(v(0, c), v(1, c)), 1),
 );
 
 export const covertLittleVs: Partial<Record<CovertValue, Expr | null>> = {

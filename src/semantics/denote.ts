@@ -91,7 +91,7 @@ function animacyClass(verb: VerbEntry): AnimacyClass | null {
 }
 
 function findVp(tree: StrictTree): StrictTree | null {
-	if (tree.label === 'VP') {
+	if (tree.label === 'VP' || tree.label === "EvA'") {
 		return tree;
 	} else if ('word' in tree) {
 		return null;
@@ -108,7 +108,8 @@ function getVerbWord(vp: StrictTree): Word | CovertWord {
 		const verb = vp.left;
 		switch (verb.label) {
 			case 'V':
-				if (!('word' in verb)) throw new Unrecognized('V shape');
+			case 'EvA':
+				if (!('word' in verb)) throw new Unrecognized(`${verb.label} shape`);
 				return verb.word;
 			case 'VP':
 				return getVerbWord(verb);

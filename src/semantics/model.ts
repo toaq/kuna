@@ -19,7 +19,7 @@ interface Variable {
 	type: ExprType;
 	context: ExprType[];
 	/**
-	 * The De Bruijn index of the intended variable.
+	 * The De Bruijn index of the variable in the context.
 	 */
 	index: number;
 }
@@ -56,6 +56,11 @@ interface Presuppose {
 	context: ExprType[];
 	body: Expr;
 	presupposition: Expr;
+	/**
+	 * The De Bruijn index of the variable that is said to be "defined" by this
+	 * presupposition.
+	 */
+	defines?: number;
 }
 
 type Polarizer<Name extends string> = {
@@ -333,15 +338,18 @@ export function assertContextsEqual(c1: ExprType[], c2: ExprType[]): void {
 		);
 }
 
-/**
- * Constructor for variable expressions.
- */
-export function v(index: number, context: ExprType[]): Expr {
+function assertInBounds(index: number, context: ExprType[]): void {
 	if (index < 0 || index >= context.length)
 		throw new Impossible(
 			`Index ${index} out of bounds for context ${typesToPlainText(context)}`,
 		);
+}
 
+/**
+ * Constructor for variable expressions.
+ */
+export function v(index: number, context: ExprType[]): Expr {
+	assertInBounds(index, context);
 	return { head: 'variable', type: context[index], context, index };
 }
 
@@ -409,9 +417,14 @@ export function verb(
 	};
 }
 
-export function presuppose(body: Expr, presupposition: Expr): Expr {
+export function presuppose(
+	body: Expr,
+	presupposition: Expr,
+	defines?: number,
+): Expr {
 	assertSubtype(presupposition.type, 't');
 	assertContextsEqual(body.context, presupposition.context);
+	if (defines !== undefined) assertInBounds(defines, body.context);
 
 	return {
 		head: 'presuppose',
@@ -419,6 +432,7 @@ export function presuppose(body: Expr, presupposition: Expr): Expr {
 		context: body.context,
 		body,
 		presupposition,
+		defines,
 	};
 }
 

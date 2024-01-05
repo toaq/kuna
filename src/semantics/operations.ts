@@ -1,5 +1,5 @@
 import { Impossible } from '../error';
-import { reverse, zip } from '../misc';
+import { enumerate, reverse, some, zip } from '../misc';
 import {
 	app,
 	Binding,
@@ -24,15 +24,22 @@ import { toPlainText, typeToPlainText } from './render';
 function mapVariables(
 	e: Expr,
 	newContext: ExprType[],
-	mapVariable: (e: Expr & { head: 'variable' }) => Expr,
+	mapVariable: (index: number) => Expr,
+	mapDefines: (index: number) => number | undefined,
 	mapQuantifierBody: (body: Expr, newContext: ExprType[]) => Expr,
 ): Expr {
 	const sub = (subexpr: Expr) =>
-		mapVariables(subexpr, newContext, mapVariable, mapQuantifierBody);
+		mapVariables(
+			subexpr,
+			newContext,
+			mapVariable,
+			mapDefines,
+			mapQuantifierBody,
+		);
 
 	switch (e.head) {
 		case 'variable': {
-			return mapVariable(e);
+			return mapVariable(e.index);
 		}
 		case 'verb': {
 			return verb(
@@ -56,7 +63,11 @@ function mapVariables(
 			return app(sub(e.fn), sub(e.argument));
 		}
 		case 'presuppose': {
-			return presuppose(sub(e.body), sub(e.presupposition));
+			return presuppose(
+				sub(e.body),
+				sub(e.presupposition),
+				e.defines === undefined ? undefined : mapDefines(e.defines),
+			);
 		}
 		case 'infix': {
 			return infix(e.name, e.type, sub(e.left), sub(e.right));
@@ -96,7 +107,8 @@ export function rewriteContext(
 	return mapVariables(
 		e,
 		newContext,
-		e => v(mapping(e.index), newContext),
+		i => v(mapping(i), newContext),
+		mapping,
 		(body, c) =>
 			rewriteContext(body, c, (index: number) =>
 				index === 0 ? 0 : mapping(index - 1) + 1,
@@ -106,20 +118,37 @@ export function rewriteContext(
 
 /**
  * Substitutes all references to the variable at the given index with a target
- * expression that has the context e.context.slice(index + 1).
+ * expression that has the context
+ * [...e.context.slice(0, index), ...e.context.slice(index + 1)].
  */
-function substitute(index: number, target: Expr, e: Expr): Expr {
+function substitute(
+	index: number,
+	target: Expr,
+	e: Expr,
+	defines: number | undefined = undefined,
+): Expr {
 	const newContext = [...e.context];
 	newContext.splice(index, 1);
 
 	return mapVariables(
 		e,
 		newContext,
-		e =>
-			e.index === index
-				? rewriteContext(target, newContext, i => i + index)
-				: v(e.index + (e.index < index ? 0 : -1), newContext),
-		body => substitute(index + 1, target, body),
+		i =>
+			i === index
+				? rewriteContext(
+						target,
+						newContext,
+						i => i + newContext.length - target.context.length,
+				  )
+				: v(i < index ? i : i - 1, newContext),
+		i => (i === index ? defines : i < index ? i : i - 1),
+		body =>
+			substitute(
+				index + 1,
+				target,
+				body,
+				defines === undefined ? undefined : defines + 1,
+			),
 	);
 }
 
@@ -145,15 +174,15 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 	let body: Expr;
 	// Presuppositions will be lifted out of subexpressions and appended to the
 	// body at the very end
-	const presuppositions = new Map<string, Expr>();
-	const addPresupposition = (e: Expr) =>
-		void presuppositions.set(toPlainText(e), e);
+	const presuppositions = new Map<string, [Expr, number | undefined]>();
+	const addPresupposition = (e: Expr, defines: number | undefined) =>
+		void presuppositions.set(toPlainText(e), [e, defines]);
 
 	// Reduces a subexpression and isolates it from any presuppositions
 	const reduceAndIsolate = (e: Expr) => {
 		let reduced = reduce_(e, premises);
 		while (reduced.head === 'presuppose') {
-			addPresupposition(reduced.presupposition);
+			addPresupposition(reduced.presupposition, reduced.defines);
 			reduced = reduced.body;
 		}
 		return reduced;
@@ -163,28 +192,30 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 	// presuppositions where possible
 	const quantifierReduceAndIsolate = (e: Expr) => {
 		let reduced = reduce_(e, premises);
-		const innerPresuppositions: Expr[] = [];
+		const innerPresuppositions: [Expr, number | undefined][] = [];
 		while (reduced.head === 'presuppose') {
 			try {
+				const mapping = (i: number) => {
+					if (i === 0) throw new Impossible('Quantified variable used');
+					return i - 1;
+				};
 				addPresupposition(
 					rewriteContext(
 						reduced.presupposition,
 						reduced.presupposition.context.slice(1),
-						i => {
-							if (i === 0) throw new Impossible('Quantified variable used');
-							return i - 1;
-						},
+						mapping,
 					),
+					reduced.defines === undefined ? undefined : mapping(reduced.defines),
 				);
 			} catch (e) {
 				// This presupposition evidently uses the quantified variable and cannot be
 				// lifted
-				innerPresuppositions.push(reduced.presupposition);
+				innerPresuppositions.push([reduced.presupposition, reduced.defines]);
 			}
 			reduced = reduced.body;
 		}
-		return innerPresuppositions.reduceRight(
-			(acc, p) => presuppose(acc, p),
+		return innerPresuppositions.reduceRight<Expr>(
+			(acc, [p, defines]) => presuppose(acc, p, defines),
 			reduced,
 		);
 	};
@@ -251,7 +282,8 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 		}
 		case 'presuppose': {
 			const presupposition = reduceAndIsolate(e.presupposition);
-			if (!isPremise(presupposition)) addPresupposition(presupposition);
+			if (!isPremise(presupposition))
+				addPresupposition(presupposition, e.defines);
 			body = withPremise(presupposition, () => reduceAndIsolate(e.body));
 			break;
 		}
@@ -286,7 +318,7 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 	}
 
 	return [...presuppositions.values()].reduceRight(
-		(acc, p) => presuppose(acc, p),
+		(acc, [p, defines]) => presuppose(acc, p, defines),
 		body,
 	);
 }
@@ -581,49 +613,10 @@ export function filterPresuppositions(
 	if (e.head === 'presuppose') {
 		const body = filterPresuppositions(e.body, predicate);
 		return predicate(e.presupposition)
-			? presuppose(body, e.presupposition)
+			? presuppose(body, e.presupposition, e.defines)
 			: body;
 	} else {
 		return e;
-	}
-}
-
-/**
- * Determines whether some subexpression satsifies the given predicate.
- */
-export function someSubexpression(
-	e: Expr,
-	predicate: (e: Expr) => boolean,
-): boolean {
-	if (predicate(e)) return true;
-
-	const sub = (...es: Expr[]) => es.some(e => someSubexpression(e, predicate));
-
-	switch (e.head) {
-		case 'variable':
-		case 'constant':
-		case 'quote':
-			return sub();
-		case 'verb':
-			return sub(...e.args, e.event, e.world);
-		case 'lambda':
-			return sub(
-				e.body,
-				...(e.restriction === undefined ? [] : [e.restriction]),
-			);
-		case 'apply':
-			return sub(e.fn, e.argument);
-		case 'presuppose':
-			return sub(e.body, e.presupposition);
-		case 'infix':
-			return sub(e.left, e.right);
-		case 'polarizer':
-			return sub(e.body);
-		case 'quantifier':
-			return sub(
-				e.body,
-				...(e.restriction === undefined ? [] : [e.restriction]),
-			);
 	}
 }
 
@@ -694,4 +687,133 @@ export function lift(e: Expr, t: ExprType): Expr {
 		result = λ(lp, result.context.slice(1), () => result);
 
 	return result;
+}
+
+/**
+ * Iterates over the subexpressions of a given expression, without traversing
+ * into deeper contexts (like quantifier bodies).
+ */
+function* subexprsShallow(e: Expr): Generator<Expr, void, unknown> {
+	yield e;
+
+	switch (e.head) {
+		case 'variable':
+		case 'lambda':
+		case 'quantifier':
+		case 'constant':
+		case 'quote':
+			break;
+		case 'verb':
+			for (const a of e.args) yield* subexprsShallow(a);
+			yield* subexprsShallow(e.event);
+			yield* subexprsShallow(e.world);
+			break;
+		case 'apply':
+			yield* subexprsShallow(e.fn);
+			yield* subexprsShallow(e.argument);
+			break;
+		case 'presuppose':
+			yield* subexprsShallow(e.body);
+			yield* subexprsShallow(e.presupposition);
+			break;
+		case 'infix':
+			yield* subexprsShallow(e.left);
+			yield* subexprsShallow(e.right);
+			break;
+		case 'polarizer':
+			yield* subexprsShallow(e.body);
+			break;
+		default:
+			e satisfies never; // This switch statement should be exhaustive
+	}
+}
+
+/**
+ * Iterates over the usages of free variables within an expression.
+ */
+export function* freeVariableUsages(e: Expr): Generator<number, void, unknown> {
+	for (const sub of subexprsShallow(e)) {
+		switch (sub.head) {
+			case 'variable':
+				yield sub.index;
+				break;
+			case 'lambda':
+			case 'quantifier':
+				for (const i of freeVariableUsages(sub.body)) if (i !== 0) yield i - 1;
+				if (sub.restriction !== undefined)
+					for (const i of freeVariableUsages(sub.restriction))
+						if (i !== 0) yield i - 1;
+				break;
+		}
+	}
+}
+
+/**
+ * Iterates over definitions of other variables that are relative to the given
+ * variable.
+ */
+function* relativeDefinitions(
+	e: Expr,
+	index: number,
+): Generator<number, void, unknown> {
+	for (const sub of subexprsShallow(e)) {
+		switch (sub.head) {
+			case 'presuppose':
+				if (
+					sub.defines !== undefined &&
+					sub.defines !== index &&
+					some(freeVariableUsages(sub.presupposition), i => i === index)
+				)
+					yield sub.defines;
+				break;
+			case 'lambda':
+			case 'quantifier':
+				for (const i of relativeDefinitions(sub.body, index + 1))
+					if (i !== 0) yield i - 1;
+				if (sub.restriction !== undefined)
+					for (const i of relativeDefinitions(sub.restriction, index + 1))
+						if (i !== 0) yield i - 1;
+		}
+	}
+}
+
+/**
+ * Skolemizes all entities that are defined in terms of the given variable (i.e.
+ * are presupposed to stand in a certain relation to it), so that they become a
+ * function of that variable.
+ *
+ * The input expression must be in normal form.
+ *
+ * @returns The new expression and a mapping from the old context to the new
+ *   context.
+ */
+export function skolemize(e: Expr, index: number): [Expr, (number | null)[]] {
+	// Gather the indices of all entities defined in terms of the given variable
+	const dependents = [...new Set(relativeDefinitions(e, index))].sort();
+
+	// Add the functions for each skolemized entity to the end of the context
+	const c = [
+		...e.context,
+		...dependents.map(
+			i => [e.context[index], e.context[i]] as [ExprType, ExprType],
+		),
+	];
+	const newToOld = e.context.map((_t, i) => i);
+	e = rewriteContext(e, [...c], i => i);
+
+	// Substitute each entity in turn with its skolemized form
+	for (const [d, i] of enumerate(dependents)) {
+		const d_ = d - i;
+		c.splice(d_, 1);
+		newToOld.splice(d_, 1);
+		if (index > d_) index--;
+		const fn = c.length - dependents.length + i;
+		e = substitute(d_, app(v(fn, c), v(index, c)), e, fn);
+	}
+
+	// Invert the new → old mapping
+	const oldToNew = e.context.map<number | null>(() => null);
+	for (const [old, new_] of enumerate(newToOld)) oldToNew[old] = new_;
+
+	return [e, oldToNew];
 }

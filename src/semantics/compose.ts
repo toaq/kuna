@@ -1,4 +1,5 @@
 import { Impossible, Unimplemented } from '../error';
+import { some } from '../misc';
 import { Branch, StrictTree, effectiveLabel } from '../tree';
 import {
 	and,
@@ -15,11 +16,12 @@ import {
 import {
 	bindTimeIntervals,
 	filterPresuppositions,
+	freeVariableUsages,
 	makeWorldExplicit,
 	mapBindings,
 	reduce,
 	rewriteContext,
-	someSubexpression,
+	skolemize,
 	unifyDenotations,
 } from './operations';
 
@@ -273,8 +275,7 @@ const qComposition: CompositionRule = (branch, left, right) => {
 		// Drop all references to the bindings originating in 𝘯
 		const rPruned = filterPresuppositions(
 			r,
-			p =>
-				!someSubexpression(p, e => e.head === 'variable' && e.index === index),
+			p => !some(freeVariableUsages(p), i => i === index),
 		);
 		// Delete the covert resumptive binding as it was only needed to perform this
 		// composition and should not leak outside the QP
@@ -311,22 +312,44 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 		let l: Expr;
 		let r: Expr;
 		let bindings: Bindings;
-		let binding: Binding | undefined;
+		let index: number;
 		if (left.binding === undefined) {
 			[l, r, bindings] = unifyDenotations(left, right);
-			binding = bindings.covertResumptive;
+			if (bindings.covertResumptive === undefined)
+				throw new Impossible("Can't identify the variable to be abstracted");
+			index = bindings.covertResumptive.index;
 		} else {
+			const rightBinding = right.bindings.index.get(left.binding);
+			if (rightBinding === undefined)
+				throw new Impossible("Can't identify the variable to be abstracted");
+			// Skolemize all variables that are defined in terms of the variable to be
+			// abstracted
+			const [skm, skmMapping] = skolemize(right.denotation, rightBinding.index);
+			const skmRight: DTree = {
+				...right,
+				denotation: skm,
+				bindings: mapBindings(right.bindings, b => {
+					const index = skmMapping[b.index];
+					return index === null
+						? undefined
+						: {
+								index,
+								subordinate: b.subordinate,
+								timeIntervals: b.timeIntervals.map(i => skmMapping[i]!),
+						  };
+				}),
+			};
+
 			// Because unifyDenotations works asymmetrically and assumes that the left
 			// has more binding information than the right, we need to pretend here that
 			// the branches are the other way around; the right may in fact have more
 			// binding information than the left's hoisted sub-tree.
-			[r, l, bindings] = unifyDenotations(right, left);
-			binding = bindings.index.get(left.binding);
+			// TODO: I think this still doesn't get us quite the right behavior if
+			// something in between the binding site and the bound structure shadows the
+			// binding.
+			[r, l, bindings] = unifyDenotations(skmRight, left);
+			index = bindings.index.get(left.binding)!.index;
 		}
-
-		const index = binding?.index;
-		if (index === undefined)
-			throw new Impossible("Can't identify the variable to be abstracted");
 
 		// Remove the abstracted binding from the final denotation
 		const newContext = [...r.context];
