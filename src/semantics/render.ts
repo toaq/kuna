@@ -46,122 +46,20 @@ function getNameType(type: ExprType): NameType {
 
 type Alphabets = Record<NameType, string[]>;
 
-const defaultAlphabets: Alphabets = {
-	e: [
-		'a',
-		'b',
-		'c',
-		'd',
-		'f',
-		'g',
-		'h',
-		'i',
-		'j',
-		'k',
-		'l',
-		'm',
-		'n',
-		'o',
-		'p',
-		'q',
-		'r',
-		's',
-		'u',
-		'v',
-		'x',
-		'y',
-		'z',
-	],
+const constantAlphabets: Alphabets = {
+	e: ['c', 'd', 'g', 'h', 'k'],
 	v: ['e'],
 	i: ['t'],
 	s: ['w'],
-	fn: [
-		'P',
-		'Q',
-		'R',
-		'S',
-		'T',
-		'U',
-		'V',
-		'W',
-		'X',
-		'Y',
-		'Z',
-		'A',
-		'B',
-		'C',
-		'D',
-		'E',
-		'F',
-		'G',
-		'H',
-		'I',
-		'J',
-		'K',
-		'L',
-		'M',
-		'N',
-		'O',
-	],
+	fn: ['F', 'G', 'H'],
 };
 
-const italicAlphabets: Alphabets = {
-	e: [
-		'𝘢',
-		'𝘣',
-		'𝘤',
-		'𝘥',
-		'𝘧',
-		'𝘨',
-		'𝘩',
-		'𝘪',
-		'𝘫',
-		'𝘬',
-		'𝘭',
-		'𝘮',
-		'𝘯',
-		'𝘰',
-		'𝘱',
-		'𝘲',
-		'𝘳',
-		'𝘴',
-		'𝘶',
-		'𝘷',
-		'𝘹',
-		'𝘺',
-		'𝘻',
-	],
+const variableAlphabets: Alphabets = {
+	e: ['𝘢', '𝘣', '𝘹', '𝘺', '𝘻'],
 	v: ['𝘦'],
 	i: ['𝘵'],
 	s: ['𝘸'],
-	fn: [
-		'𝘗',
-		'𝘘',
-		'𝘙',
-		'𝘚',
-		'𝘛',
-		'𝘜',
-		'𝘝',
-		'𝘞',
-		'𝘟',
-		'𝘠',
-		'𝘡',
-		'𝘈',
-		'𝘉',
-		'𝘊',
-		'𝘋',
-		'𝘌',
-		'𝘍',
-		'𝘎',
-		'𝘏',
-		'𝘐',
-		'𝘑',
-		'𝘒',
-		'𝘓',
-		'𝘔',
-		'𝘕',
-		'𝘖',
-	],
+	fn: ['𝘗', '𝘘', '𝘙', '𝘚', '𝘛', '𝘜', '𝘝', '𝘞', '𝘟', '𝘠', '𝘡'],
 };
 
 const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
@@ -229,23 +127,17 @@ interface Format {
 	quote: (text: string) => string;
 }
 
-const formatName = (
-	type: NameType,
-	id: number,
-	alphabets = defaultAlphabets,
-) => {
-	const alphabet = alphabets[type];
-	return `${alphabet[id % alphabet.length]}${"'".repeat(id / alphabet.length)}`;
+const formatName = (name: Name) => {
+	const alphabets = name.constant ? constantAlphabets : variableAlphabets;
+	const alphabet = alphabets[name.type];
+	return (
+		alphabet[name.id % alphabet.length] + "'".repeat(name.id / alphabet.length)
+	);
 };
 
 const plainText: Format = {
 	bracket: e => `(${e})`,
-	name: name =>
-		formatName(
-			name.type,
-			name.id,
-			name.constant ? defaultAlphabets : italicAlphabets,
-		),
+	name: formatName,
 	verb: (name, args, event, world) =>
 		args.length === 0
 			? `${name}.${world}(${event})`
@@ -334,7 +226,7 @@ const plainText: Format = {
 const latex: Format = {
 	bracket: e => `\\left(${e}\\right)`,
 	name: name => {
-		const base = formatName(name.type, name.id);
+		const base = formatName(name).normalize('NFKC');
 		return name.constant ? `\\mathrm{${base}}` : base;
 	},
 	verb: (name, args, event, world) =>
@@ -427,7 +319,8 @@ const latex: Format = {
  */
 function addName(type: ExprType, names: Names, constant = false): Names {
 	const nameType = getNameType(type);
-	const alphabetSize = defaultAlphabets[nameType].length;
+	const alphabets = constant ? constantAlphabets : variableAlphabets;
+	const alphabetSize = alphabets[nameType].length;
 	const ids = constant ? names.nextConstantIds : names.nextVariableIds;
 
 	let id = ids[nameType];
