@@ -295,6 +295,7 @@ export const boundTheNp = λ(['e', 't'], ['e'], c =>
 	presuppose(v(1, c), app(v(0, c), v(1, c)), 1),
 );
 
+// λ𝘗. (a | Cont(a)(𝘸) = 𝘗)
 export const boundTheCp = λ(['s', 't'], ['e', 's'], c =>
 	presuppose(
 		v(1, c),
