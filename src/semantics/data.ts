@@ -56,6 +56,7 @@ import {
 	promise,
 	permit,
 	warn,
+	content,
 } from './model';
 import { lift, reduce } from './operations';
 
@@ -290,8 +291,16 @@ export const speechActs: Record<string, Expr> = {
 export const headAnaphor = λ('e', ['e'], c => v(1, c));
 
 // λ𝘗. (a | 𝘗(a))
-export const boundThe = λ(['e', 't'], ['e'], c =>
+export const boundTheNp = λ(['e', 't'], ['e'], c =>
 	presuppose(v(1, c), app(v(0, c), v(1, c)), 1),
+);
+
+export const boundTheCp = λ(['s', 't'], ['e', 's'], c =>
+	presuppose(
+		v(1, c),
+		equals(app(app(content(c), v(1, c)), v(2, c)), v(0, c)),
+		1,
+	),
 );
 
 export const covertLittleVs: Partial<Record<CovertValue, Expr | null>> = {

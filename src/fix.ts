@@ -84,8 +84,7 @@ class Scope {
 	quantify(dp: Branch<StrictTree>) {
 		const { left: d, right: nP } = dp;
 		assertLeaf(d);
-		if (d.word.covert) throw new Impossible('Covert D');
-		if (d.word.entry !== undefined) {
+		if (!d.word.covert && d.word.entry !== undefined) {
 			const quantifier = quantifiers[inTone(d.word.entry.toaq, Tone.T2)];
 			if (quantifier !== undefined)
 				this.bind(d, { type: 'quantification', quantifier, nP });

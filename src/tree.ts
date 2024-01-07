@@ -309,6 +309,20 @@ export function make3L(label: Label, labelR: Label) {
 	};
 }
 
+export function make3LCovertLeft(
+	label: Label,
+	covertLabel: Label,
+	labelR: Label,
+) {
+	return ([rl, rr]: [Tree, Tree]) => {
+		return {
+			label,
+			left: makeNull(covertLabel),
+			right: { label: labelR, left: rl, right: rr },
+		};
+	};
+}
+
 export function makeRose(label: Label) {
 	return ([children]: [Tree[]]) => {
 		return {

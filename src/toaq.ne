@@ -6,6 +6,7 @@ import * as TreeModule from "./tree";
 
 const {
 	make3L,
+	make3LCovertLeft,
 	makeAdjunctPI,
 	makeAdjunctPT,
 	makeBranch,
@@ -52,7 +53,7 @@ CP -> Copt Clause {% makeBranch('CP') %}
 # ꝡä hao
 CPsub -> Csub Clause {% makeBranch('CP') %}
 # ꝡâ hao
-CPincorp -> Cincorp Clause {% makeBranch('CP') %}
+CPincorp -> Cincorp Clause {% make3LCovertLeft('DP', 'D', 'CP') %}
 # ꝡë hao
 CPrel -> Crel Clause {% makeBranch('CPrel') %}
 # (nä) hao
@@ -150,19 +151,20 @@ DPincorp -> Dincorp nP {% makeBranch('DP') %}
 # po sá ...
 VPoiv -> Voiv DP1 {% makeBranch('VP') %}
 
-Argument -> DP1 {% id %} | CPsub1 {% id %}
+Argument -> DP1 {% id %} | CParg1 {% id %}
 
 DP1 -> DP2 {% id %}
 DP1 -> DP2 Conjunction DP1 {% makeConn %}
-DP1 -> DP2 ConjunctionT1 CPsub1 {% makeConn %}
+DP1 -> DP2 ConjunctionT1 CParg1 {% makeConn %}
 DP2 -> DP3 {% id %}
 DP2 -> Focus DP3 {% makeBranch('FocusP') %}
 DP3 -> DP {% id %}
 DP3 -> DP Roi DP3 {% makeConn %}
-CPsub1 -> CPsub2 {% id %}
-CPsub1 -> Focus CPsub1 {% makeBranch('FocusP') %}
-CPsub2 -> CPsub {% id %}
-CPsub2 -> CPsub Conjunction CPsub2 {% makeConn %}
+CParg1 -> CParg2 {% id %}
+CParg1 -> Focus CParg1 {% makeBranch('FocusP') %}
+CParg2 -> CParg3 {% id %}
+CParg2 -> CParg3 Conjunction CParg2 {% makeConn %}
+CParg3 -> CPsub {% makeBranchCovertLeft('DP', 'D') %}
 T1 -> null {% makeCovertLeaf('T') %}
 T1 -> T {% id %}
 T1 -> T_prefix {% id %}

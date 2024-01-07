@@ -249,6 +249,12 @@ test('it denotes a relative clause', () => {
 	);
 });
 
+test('it denotes a content clause', () => {
+	expect(d('Chı jí, ꝡä za ruqshua')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ chı.𝘸(jí, a)(𝘦) | Cont(a)(𝘸) = λ𝘸'. ∃𝘦. τ(𝘦) > t ∧ ruqshua.𝘸'(𝘦)))\"",
+	);
+});
+
 test('it denotes polarizers', () => {
 	// Note the covert T in this example (this used to parse wrong)
 	expect(d('Bu geq jí nháo')).toMatchInlineSnapshot(
@@ -381,11 +387,16 @@ test('it removes redundant presuppositions from binding sites', () => {
 	);
 });
 
-test('it skolemizes ló DPs that depend on other variables', () => {
+test('it skolemizes exophoric DPs that depend on other variables', () => {
 	expect(d('Nıe tú poq búe hô')).toMatchInlineSnapshot(
 		"\"ASSERT(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ nıe.𝘸(𝘹, F(𝘹))(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ bue.𝘸(F(𝘹), 𝘹)(𝘦) | inanimate(F(𝘹)) | animate(𝘹)))\"",
 	);
 	expect(d('Ní leache nä moaq tú poq é geq hó léache')).toMatchInlineSnapshot(
 		"\"ASSERT(λ𝘸. (∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸) = 𝘹 ∧ moaq.𝘸(F(a)(𝘹))(𝘦) | ∃𝘦 : 𝘦 = F(a)(𝘹). geq.𝘸(𝘹, a)(𝘦) | animate(𝘹)) | ∃𝘦. τ(𝘦) ⊆ t'' ∧ leache.𝘸(a)(𝘦))) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
 	);
+	expect(d('Dua tú poq, ꝡä gırı hó')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ dua.𝘸(𝘹, F(𝘹))(𝘦) | Cont(F(𝘹))(𝘸) = λ𝘸'. ∃𝘦. τ(𝘦) ⊆ t ∧ gırı.𝘸'(𝘹)(𝘦) | animate(𝘹)))\"",
+	);
+	// TODO: Dependency chains like "Tú nhạshı nä nhạ́gu lô nhạshı nä hao nhạ́saq lô
+	// nhạgu"
 });

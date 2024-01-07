@@ -169,6 +169,7 @@ export type Expr =
 	| Constant<'expected_start', ['v', 'i']>
 	| Constant<'expected_end', ['v', 'i']>
 	| Constant<'speech_time', 'i'>
+	| Constant<'content', ['e', ['s', ['s', 't']]]>
 	| PropSpeechAct<'assert'>
 	| PropSpeechAct<'perform'>
 	| PropSpeechAct<'wish'>
@@ -737,6 +738,10 @@ export function expectedEnd(context: ExprType[]): Expr {
 
 export function speechTime(context: ExprType[]): Expr {
 	return constant('speech_time', 'i', context);
+}
+
+export function content(context: ExprType[]): Expr {
+	return constant('content', ['e', ['s', ['s', 't']]], context);
 }
 
 export function assert(context: ExprType[]): Expr {
