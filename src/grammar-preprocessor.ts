@@ -15,7 +15,7 @@
  * Foo<A> (uppercase) is treated as a generic rule with a variable "A", and
  * Foo<b> (lowercase) is treated as an instantiation thereof with A = b.
  *
- * It also processes C-style "#ifdef FLAG, #else, #endif" directives.
+ * It also processes C-style `#ifdef FLAG / #else / #endif` directives.
  *
  * It's not very fancy, and uses regex to get the job done. It expects rules to
  * be contained in one line and only refer to at most one generic variable.
@@ -120,20 +120,23 @@ function main(): void {
 
 	if (args.length < 2) {
 		console.error(
-			'Usage: npx esr src/grammar-preprocessor.ts src/toaq.generic.ne src/toaq.ne [flags]',
+			`Usage:\n\n    export KUNA_FLAGS="FOO BAR"\n    npx esr src/grammar-preprocessor.ts input.kuna.ne output.ne\n`,
 		);
 		process.exit(1);
 	}
 
-	const inputFilePath = args[0];
-	const outputFilePath = args[1];
-	const flags = new Set([...args.slice(2)]);
+	const inputPath = args[0];
+	const outputPath = args[1];
+	const flags = new Set([...(process.env.KUNA_FLAGS ?? '').split(/\s+/)]);
+	console.log(`🍳 Preprocessing ${inputPath} into ${outputPath} with flags:`, [
+		...flags,
+	]);
 
-	const contents: string = fs.readFileSync(inputFilePath, 'utf-8');
+	const contents: string = fs.readFileSync(inputPath, 'utf-8');
 	const converted = preprocess(contents.trim().split('\n'), flags);
 
-	fs.writeFileSync(outputFilePath, converted.join('\n') + '\n', 'utf-8');
-	console.log('Processing complete.');
+	fs.writeFileSync(outputPath, converted.join('\n') + '\n', 'utf-8');
+	console.log('✨ Preprocessing complete.');
 }
 
 if (require.main === module) {

@@ -3,3 +3,6 @@ node_modules/
 output.*
 /*.png
 dist
+
+# Generated from src/toaq.generic.ne by grammar-preprocessor.ts
+src/toaq.ne
