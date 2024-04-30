@@ -1,9 +1,9 @@
 import { test, expect } from 'vitest';
-import { expandGenerics } from './grammar-preprocessor';
+import { preprocess } from './grammar-preprocessor';
 
 test('it expands generics', () => {
 	expect(
-		expandGenerics([
+		preprocess([
 			`CP -> wa Clause<main>`,
 			`CPsub -> wä Clause<sub>`,
 			`Clause<S> -> TP<S>`,
@@ -19,4 +19,46 @@ test('it expands generics', () => {
 		  "TP_sub -> T AspP_sub",
 		]
 	`);
+
+	expect(
+		preprocess([
+			`F<X> -> G<X> H<X>`,
+			`G<X> -> J G<X>`,
+			`A -> F<a>`,
+			`B -> F<b>`,
+			`C -> F<c>`,
+		]),
+	).toMatchInlineSnapshot(`
+		[
+		  "F_a -> G_a H_a",
+		  "F_b -> G_b H_b",
+		  "F_c -> G_c H_c",
+		  "G_a -> J G_a",
+		  "G_b -> J G_b",
+		  "G_c -> J G_c",
+		  "A -> F_a",
+		  "B -> F_b",
+		  "C -> F_c",
+		]
+	`);
+});
+
+test('it expands ifdefs', () => {
+	const file = [
+		'a',
+		'#ifdef XYZ',
+		'b',
+		'#ifndef NOC',
+		'c',
+		'#endif',
+		'#else',
+		'd',
+		'e',
+		'#endif',
+		'f',
+	];
+	expect(preprocess(file, new Set([]))).toEqual(['a', 'd', 'e', 'f']);
+	expect(preprocess(file, new Set(['NOC']))).toEqual(['a', 'd', 'e', 'f']);
+	expect(preprocess(file, new Set(['XYZ']))).toEqual(['a', 'b', 'c', 'f']);
+	expect(preprocess(file, new Set(['XYZ', 'NOC']))).toEqual(['a', 'b', 'f']);
 });

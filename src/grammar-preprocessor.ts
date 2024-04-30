@@ -15,6 +15,8 @@
  * Foo<A> (uppercase) is treated as a generic rule with a variable "A", and
  * Foo<b> (lowercase) is treated as an instantiation thereof with A = b.
  *
+ * It also processes C-style "#ifdef FLAG, #else, #endif" directives.
+ *
  * It's not very fancy, and uses regex to get the job done. It expects rules to
  * be contained in one line and only refer to at most one generic variable.
  */
@@ -26,7 +28,9 @@ interface Definition {
 	line: string;
 }
 
-export function expandGenerics(lines: string[]): string[] {
+export function preprocess(lines: string[], flags?: Set<string>): string[] {
+	flags ??= new Set();
+
 	let expanded: string[][] = [];
 
 	/** Map from generic types to the lines they were defined on and their source code. */
@@ -56,8 +60,26 @@ export function expandGenerics(lines: string[]): string[] {
 	}
 
 	let lineIndex = 0;
+	let ifdefs: [string, boolean][] = [];
 
 	for (let line of lines) {
+		let m: RegExpMatchArray | null;
+		if ((m = line.trim().match(/^#ifdef\s+(\w+)\b/))) {
+			ifdefs.push([m[1], true]);
+			continue;
+		} else if ((m = line.trim().match(/^#ifndef\s+(\w+)\b/))) {
+			ifdefs.push([m[1], false]);
+			continue;
+		} else if ((m = line.trim().match(/^#else\b/))) {
+			ifdefs[ifdefs.length - 1][1] = !ifdefs[ifdefs.length - 1][1];
+			continue;
+		} else if ((m = line.trim().match(/^#endif\b/))) {
+			ifdefs.pop();
+			continue;
+		}
+
+		if (!ifdefs.every(([flag, value]) => flags.has(flag) === value)) continue;
+
 		// Expand generic instances (Foo<x> -> Foo_x) and remember the values.
 		line = line.replace(/(\w+)<([a-z]\w*)>/g, (_, type, value) => {
 			genericValues.set(type, genericValues.get(type) || []);
@@ -66,7 +88,6 @@ export function expandGenerics(lines: string[]): string[] {
 			return type + '_' + value;
 		});
 
-		let m: RegExpMatchArray | null;
 		if ((m = line.trim().match(/^(\w+)<([A-Z]\w*)>/))) {
 			const typeName = m[1];
 			const typeParam = m[2];
@@ -97,18 +118,19 @@ export function expandGenerics(lines: string[]): string[] {
 function main(): void {
 	const args = process.argv.slice(2);
 
-	if (args.length !== 2) {
+	if (args.length < 2) {
 		console.error(
-			'Usage: npx esr src/grammar-preprocessor.ts src/toaq.generic.ne src/toaq.ne',
+			'Usage: npx esr src/grammar-preprocessor.ts src/toaq.generic.ne src/toaq.ne [flags]',
 		);
 		process.exit(1);
 	}
 
 	const inputFilePath = args[0];
 	const outputFilePath = args[1];
+	const flags = new Set([...args.slice(2)]);
 
 	const contents: string = fs.readFileSync(inputFilePath, 'utf-8');
-	const converted = expandGenerics(contents.trim().split('\n'));
+	const converted = preprocess(contents.trim().split('\n'), flags);
 
 	fs.writeFileSync(outputFilePath, converted.join('\n') + '\n', 'utf-8');
 	console.log('Processing complete.');
