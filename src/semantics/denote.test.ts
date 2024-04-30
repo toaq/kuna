@@ -272,10 +272,10 @@ test('it denotes polarizers', () => {
 test('it denotes adjuncts', () => {
 	// Eventive adjuncts
 	expect(d('Za nuo tî ní kua jí')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) > t' ∧ (∃𝘦'. tı.𝘸(𝘦, a)(𝘦')) ∧ nuo.𝘸(jí)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ kua.𝘸(a)(𝘦))) | abstract(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) > t' ∧ (∃𝘦'. tı.𝘸(𝘦, a)(𝘦')) ∧ nuo.𝘸(jí)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ kua.𝘸(a)(𝘦))) | inanimate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
 	);
 	expect(d('Za nuo jí tî ní kua')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) > t' ∧ nuo.𝘸(jí)(𝘦) ∧ ∃𝘦'. tı.𝘸(𝘦, a)(𝘦') | ∃𝘦. τ(𝘦) ⊆ t ∧ kua.𝘸(a)(𝘦))) | abstract(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) > t' ∧ nuo.𝘸(jí)(𝘦) ∧ ∃𝘦'. tı.𝘸(𝘦, a)(𝘦') | ∃𝘦. τ(𝘦) ⊆ t ∧ kua.𝘸(a)(𝘦))) | inanimate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
 	);
 	// Subject-sharing adjuncts
 	expect(d('Saqsu kûq hú toa nháo')).toMatchInlineSnapshot(
