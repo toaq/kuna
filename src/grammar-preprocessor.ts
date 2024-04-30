@@ -28,8 +28,8 @@ interface Definition {
 	line: string;
 }
 
-export function preprocess(lines: string[], flags?: Set<string>): string[] {
-	flags ??= new Set();
+export function preprocess(lines: string[], flags_?: Set<string>): string[] {
+	const flags = flags_ ?? new Set();
 
 	let expanded: string[][] = [];
 
@@ -120,14 +120,18 @@ function main(): void {
 
 	if (args.length < 2) {
 		console.error(
-			`Usage:\n\n    export KUNA_FLAGS="FOO BAR"\n    npx esr src/grammar-preprocessor.ts input.kuna.ne output.ne\n`,
+			`Usage:\n\n` +
+				`    export KUNA_FLAGS="FOO BAR"\n` +
+				`    npx esr src/grammar-preprocessor.ts input.kuna.ne output.ne\n`,
 		);
 		process.exit(1);
 	}
 
 	const inputPath = args[0];
 	const outputPath = args[1];
-	const flags = new Set([...(process.env.KUNA_FLAGS ?? '').split(/\s+/)]);
+	const flags = new Set(
+		[...(process.env.KUNA_FLAGS ?? '').split(/\s+/)].filter(x => x),
+	);
 	console.log(`🍳 Preprocessing ${inputPath} into ${outputPath} with flags:`, [
 		...flags,
 	]);
