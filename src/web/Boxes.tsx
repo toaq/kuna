@@ -1,15 +1,10 @@
 import { ReactNode, createContext, useContext } from 'react';
 import { useDarkMode } from 'usehooks-ts';
-import {
-	BoxClause,
-	BoxSentence,
-	PostField,
-	circled,
-	repairTones,
-} from '../boxes';
+import { BoxClause, BoxSentence, PostField, circled } from '../boxes';
 import { Glosser } from '../gloss';
 import { Tree } from '../tree';
 import './Boxes.css';
+import { repairTones } from '../tokenize';
 
 interface BoxesContext {
 	cpIndices: Map<Tree, number>;

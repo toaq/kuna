@@ -1,7 +1,7 @@
 import { dictionary, Entry } from './dictionary';
 import { Impossible } from './error';
 import { getFrame } from './serial';
-import { bare, clean, ToaqToken, tone } from './tokenize';
+import { bare, clean, repairTones, ToaqToken, tone } from './tokenize';
 import { Tone } from './types';
 
 export interface Word {
@@ -180,6 +180,38 @@ export function containsWords(
 			child =>
 				!stopLabels.includes(child.label) &&
 				containsWords(child, words, stopLabels),
+		);
+	}
+}
+
+function circled(i: number): string {
+	return i < 10 ? '⓪①②③④⑤⑥⑦⑧⑨'[i] : `(${i})`;
+}
+
+export function treeText(tree: Tree, cpIndices?: Map<Tree, number>): string {
+	if ('word' in tree) {
+		if (tree.word.covert) {
+			return '';
+		} else {
+			return tree.word.text;
+		}
+	} else if ('left' in tree) {
+		if (cpIndices) {
+			const cpIndex = cpIndices.get(tree);
+			if (cpIndex !== undefined) {
+				return circled(cpIndex);
+			}
+		}
+
+		return repairTones(
+			(treeText(tree.left) + ' ' + treeText(tree.right)).trim(),
+		);
+	} else {
+		return repairTones(
+			tree.children
+				.map(x => treeText(x))
+				.join(' ')
+				.trim(),
 		);
 	}
 }

@@ -46,6 +46,13 @@ export function inTone(word: string, tone: Tone): string {
 		.replace(/i/gu, 'ı');
 }
 
+export function repairTones(text: string): string {
+	return text.replace(/◌(.) (\S+)/g, (m, diacritic, word) => {
+		const tone = diacritic.charCodeAt() === 0x301 ? Tone.T2 : Tone.T4;
+		return inTone(word, tone).normalize();
+	});
+}
+
 export function tone(word: string): Tone {
 	const norm = word.normalize('NFKD').match(/[\u0301\u0308\u0302]/);
 	if (!norm) {

@@ -1,5 +1,5 @@
 import { inTone } from './tokenize';
-import { Tree, assertBranch, skipFree } from './tree';
+import { Tree, assertBranch, skipFree, treeText } from './tree';
 import { Tone } from './types';
 import { Impossible, Ungrammatical, Unimplemented } from './error';
 
@@ -30,13 +30,6 @@ export interface BoxSentence {
 	speechAct: Tree;
 }
 
-export function repairTones(text: string): string {
-	return text.replace(/◌(.) (\S+)/g, (m, diacritic, word) => {
-		const tone = diacritic.charCodeAt() === 0x301 ? Tone.T2 : Tone.T4;
-		return inTone(word, tone).normalize();
-	});
-}
-
 function isArgument(tree: Tree): boolean {
 	while (
 		'right' in tree &&
@@ -63,29 +56,7 @@ class Boxifier {
 	cps: Tree[] = [];
 
 	private words(tree: Tree): string {
-		if ('word' in tree) {
-			if (tree.word.covert) {
-				return '';
-			} else {
-				return tree.word.text;
-			}
-		} else if ('left' in tree) {
-			const cpIndex = this.cpIndices.get(tree);
-			if (cpIndex !== undefined) {
-				return circled(cpIndex);
-			}
-
-			return repairTones(
-				(this.words(tree.left) + ' ' + this.words(tree.right)).trim(),
-			);
-		} else {
-			return repairTones(
-				tree.children
-					.map(x => this.words(x))
-					.join(' ')
-					.trim(),
-			);
-		}
+		return treeText(tree, this.cpIndices);
 	}
 
 	private isOvertCp(tree: Tree) {
