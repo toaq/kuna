@@ -286,7 +286,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 				gloss_abbreviation: lemmaForm,
 				pronominal_class: 'ta',
 				distribution: 'd',
-				frame: 'c',
+				frame: '?',
 				english: '',
 				subject: 'free',
 			},
@@ -396,15 +396,18 @@ export function makeSerial(
 	const children = verbs.concat([vlast]);
 	const frames = children.map(getFrame);
 	const frame = frames[frames.length - 1];
-	let arity: number | undefined = frame === '' ? 0 : frame.split(' ').length;
-	for (let i = frames.length - 2; i >= 0; i--) {
-		const frame = frames[i].split(' ');
-		const last = frame.at(-1)![0];
-		if (last === 'c') {
-			// So everything to the right is an adjective?
-			arity = frame.length;
-		} else {
-			arity += frame.length - 1 - Number(last);
+	let arity: number | undefined;
+	if (!frames.includes('?')) {
+		arity = frame === '' ? 0 : frame.split(' ').length;
+		for (let i = frames.length - 2; i >= 0; i--) {
+			const frame = frames[i].split(' ');
+			const last = frame.at(-1)![0];
+			if (last === 'c') {
+				// So everything to the right is an adjective?
+				arity = frame.length;
+			} else {
+				arity += frame.length - 1 - Number(last);
+			}
 		}
 	}
 	return {
@@ -440,13 +443,16 @@ export function makevP(
 	args = args.filter(x => x.label !== 'VocativeP');
 
 	const arity = (serial as any).arity;
-	if (arity !== undefined && args.length > arity) {
-		return reject;
-	}
+	if (arity !== undefined) {
+		// Disallow overfilling clauses:
+		if (args.length > arity) {
+			return reject;
+		}
 
-	// Disallow underfilling subclauses:
-	if (depth === 'sub' && args.length !== arity) {
-		return reject;
+		// Disallow underfilling subclauses:
+		if (depth === 'sub' && args.length !== arity) {
+			return reject;
+		}
 	}
 
 	// Disallow adjuncts that could have gone in a subclause:
