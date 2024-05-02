@@ -62,7 +62,9 @@ const lexer = new ToaqTokenizer();
 @lexer lexer
 
 Fragment -> Free Fragment {% a => a[1] %}
-Fragment -> Discourse {% id %} | Argument {% id %} | AdjunctPcon {% id %}
+Fragment -> Discourse {% id %}
+Fragment -> Argument {% id %}
+Fragment -> AdjunctPcon {% id %}
 
 # ꝡa hao da. ꝡa hao da
 Discourse -> SAP Discourse {% makeDiscourse %}
@@ -174,7 +176,8 @@ DPincorp -> Dincorp nP {% makeBranch('DP') %}
 # po sá ...
 VPoiv -> Voiv DPcon {% makeBranch('VP') %}
 
-Argument -> DPcon {% id %} | CPargcon {% id %}
+Argument -> DPcon {% id %}
+Argument -> CPargcon {% id %}
 
 DPcon -> DProi {% id %}
 DPcon -> DProi Conjunction DPcon {% makeConn %}
@@ -268,7 +271,9 @@ Word -> %word Free:* {% makeLeaf('word') %}
 
 VocativeP -> Vocative Argument {% makeBranch('VocativeP') %}
 Vocative -> %vocative {% makeLeaf('Vocative') %}
-VocArgument -> Argument {% id %} | VocativeP {% id %}
+VocArgument -> Argument {% id %}
+VocArgument -> VocativeP {% id %}
 Parenthetical -> %start_parenthetical Fragment %end_parenthetical {% id %}
 
-Free -> Interjection {% id %} | Parenthetical {% id %}
+Free -> Interjection {% id %}
+Free -> Parenthetical {% id %}
