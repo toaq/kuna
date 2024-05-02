@@ -8,23 +8,15 @@ import {
 	Interaction,
 } from 'discord.js';
 import _ from 'lodash';
-import toaduaDump from '../../data/toadua/dump.json';
 import { dictionary } from '../dictionary';
+import { ToaduaEntry, toadua } from '../toadua';
 import { drawTreeToCanvas } from '../tree/draw';
 import { parse } from '../parse';
 import { pngGlossSentence } from '../png-gloss';
 import { toEnglish } from '../english/tree';
 import { denotationRenderText } from '../tree/place';
 
-interface ToaduaEntry {
-	head: string;
-	body: string;
-	user: string;
-	scope: string;
-	score: number;
-}
-
-const toadua = toaduaDump as ToaduaEntry[];
+const toaduaEntries = [...toadua.values()];
 
 export class KunaBot {
 	constructor(private client: Client) {}
@@ -123,7 +115,7 @@ export class KunaBot {
 		const entries: ToaduaEntry[] = [];
 		while (entries.length < amount) {
 			const newEntry = _.sample(
-				toadua.filter(
+				toaduaEntries.filter(
 					entry =>
 						entry.scope === 'en' &&
 						!entry.head.includes(' ') &&
@@ -176,7 +168,7 @@ export class KunaBot {
 		const mode = interaction.options.getString('mode', false) ?? 'official';
 		const author = interaction.options.getString('author', false);
 		const ok = this.quizFilter(mode, author);
-		const candidates = toadua.filter(e => e.scope === 'en' && ok(e));
+		const candidates = toaduaEntries.filter(e => e.scope === 'en' && ok(e));
 		if (candidates.length < r + p) {
 			await interaction.reply('Not enough words!');
 			return;
