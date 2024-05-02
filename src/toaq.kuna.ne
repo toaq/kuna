@@ -62,7 +62,7 @@ const lexer = new ToaqTokenizer();
 @lexer lexer
 
 Fragment -> Free Fragment {% a => a[1] %}
-Fragment -> Discourse {% id %} | Argument {% id %} | AdjunctPfoc {% id %}
+Fragment -> Discourse {% id %} | Argument {% id %} | AdjunctPcon {% id %}
 
 # ꝡa hao da. ꝡa hao da
 Discourse -> SAP Discourse {% makeDiscourse %}
@@ -102,7 +102,7 @@ Clause -> MTP {% id %}
 # jí nä pu hao hóa
 Clause -> Argument Na CPrelna {% make3L('𝘷P', "𝘷'") %}
 # râo fíachaq nä pu hao hóa
-Clause -> AdjunctPfoc Na CPrelna {% make3L('𝘷P', "𝘷'") %}
+Clause -> AdjunctPcon Na CPrelna {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
 Clause -> ModalP Na MTP {% make3L('𝘷P', "𝘷'") %}
 ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
@@ -142,7 +142,7 @@ AspP -> Aspcon vP {% makeBranch('AspP') %}
 AspPdet -> Aspcon vPdet {% makeBranch('AspP') %}
 
 # tua hao tî kúe jí súq râo níchaq
-vP -> Serial AdjunctPfoc:* (VocArgument:+ AdjunctPfoc:*):? {% makevP %}
+vP -> Serial AdjunctPcon:* (VocArgument:+ AdjunctPcon:*):? {% makevP %}
 
 # (sá) tua hao
 vPdet -> Serialdet {% makevPdet %}
@@ -174,19 +174,19 @@ DPincorp -> Dincorp nP {% makeBranch('DP') %}
 # po sá ...
 VPoiv -> Voiv DPcon {% makeBranch('VP') %}
 
-Argument -> DPcon {% id %} | CPargfoc {% id %}
+Argument -> DPcon {% id %} | CPargcon {% id %}
 
-DPcon -> DPfoc {% id %}
-DPcon -> DPfoc Conjunction DPcon {% makeConn %}
-DPcon -> DPfoc ConjunctionT1 CPargfoc {% makeConn %}
-DPfoc -> DProi {% id %}
-DPfoc -> Focus DProi {% makeBranch('FocusP') %}
-DProi -> DP {% id %}
-DProi -> DP Roi DProi {% makeConn %}
-CPargfoc -> CPargcon {% id %}
-CPargfoc -> Focus CPargfoc {% makeBranch('FocusP') %}
-CPargcon -> CParg {% id %}
-CPargcon -> CParg Conjunction CPargcon {% makeConn %}
+DPcon -> DProi {% id %}
+DPcon -> DProi Conjunction DPcon {% makeConn %}
+DPcon -> DProi ConjunctionT1 CPargcon {% makeConn %}
+DProi -> DPfoc {% id %}
+DProi -> DPfoc Roi DProi {% makeConn %}
+DPfoc -> DP {% id %}
+DPfoc -> Focus DP {% makeBranch('FocusP') %}
+CPargcon -> CPargfoc {% id %}
+CPargcon -> CPargfoc Conjunction CPargcon {% makeConn %}
+CPargfoc -> CParg {% id %}
+CPargfoc -> Focus CParg {% makeBranch('FocusP') %}
 CParg -> CPsub {% makeBranchCovertLeft('DP', 'D') %}
 CPrelcon -> CPrel {% id %}
 CPrelcon -> CPrel Conjunction CPrelcon {% makeConn %}
@@ -198,10 +198,10 @@ Aspcon -> null {% makeCovertLeaf('Asp') %}
 Aspcon -> Asp {% id %}
 Aspcon -> Asp_prefix {% id %}
 Aspcon -> Asp Conjunction Aspcon {% makeConn %}
-AdjunctPfoc -> AdjunctPcon {% id %}
-AdjunctPfoc -> Focus AdjunctPcon {% makeBranch('FocusP') %}
-AdjunctPcon -> AdjunctP {% id %}
-AdjunctPcon -> AdjunctP Conjunction AdjunctPcon {% makeConn %}
+AdjunctPcon -> AdjunctPfoc {% id %}
+AdjunctPcon -> AdjunctPfoc Conjunction AdjunctPcon {% makeConn %}
+AdjunctPfoc -> AdjunctP {% id %}
+AdjunctPfoc -> Focus AdjunctP {% makeBranch('FocusP') %}
 Vlast -> VPincorp {% id %}
 Vlast -> VPoiv {% id %}
 Vlast -> Verb ConjunctionT1 Vlast {% makeConn %}
