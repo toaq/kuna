@@ -202,6 +202,12 @@ export class ClauseTranslator {
 			case 'mä':
 				complementizer = 'if';
 				break;
+			case 'lä':
+				complementizer = 'to';
+				if (this.subject?.text === 'X') {
+					this.subject = { text: '', person: VerbForm.Infinitive };
+				}
+				break;
 		}
 
 		const subjectVerbForm = this.subject?.person ?? VerbForm.Third;

@@ -76,10 +76,19 @@ function tpToEnglish(tree: Branch<Tree>): Constituent {
  */
 function dpToEnglish(tree: Branch<Tree>): Constituent {
 	const d = tree.left;
-	const nP = tree.right as Branch<Tree>;
-	const translator = new ClauseTranslator();
-	translator.processCP(nP.right);
-	const noun = translator.emit('DP');
+	const complement = tree.right as Branch<Tree>;
+	let noun;
+	if (complement.label === '𝘯P') {
+		const translator = new ClauseTranslator();
+		translator.processCP(complement.right);
+		noun = translator.emit('DP');
+	} else if (complement.label === 'CP') {
+		const translator = new ClauseTranslator();
+		translator.processCP(complement);
+		noun = translator.emit();
+	} else {
+		throw new Unimplemented('Unrecognized DP complement: ' + complement.label);
+	}
 	if (clean(leafText(d)) === 'báq') {
 		return { text: noun + 's', person: VerbForm.Plural };
 	} else {
