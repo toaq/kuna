@@ -91,7 +91,7 @@ DP -> Hu Word {% makeBranch('DP') %}
 # sá ...
 DP -> D nP {% makeBranch('DP') %}
 # (sá) ꝡë hao
-nP -> nP CPrel {% makeBranch('𝘯P') %}
+nP -> nP CPrel1 {% makeBranch('𝘯P') %}
 # (sá) ∅ hao
 nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 
@@ -188,6 +188,8 @@ CParg1 -> Focus CParg1 {% makeBranch('FocusP') %}
 CParg2 -> CParg3 {% id %}
 CParg2 -> CParg3 Conjunction CParg2 {% makeConn %}
 CParg3 -> CPsub {% makeBranchCovertLeft('DP', 'D') %}
+CPrel1 -> CPrel {% id %}
+CPrel1 -> CPrel Conjunction CPrel1 {% makeConn %}
 T1 -> null {% makeCovertLeaf('T') %}
 T1 -> T {% id %}
 T1 -> T_prefix {% id %}

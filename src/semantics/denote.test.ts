@@ -316,6 +316,12 @@ test('it denotes plural coordination', () => {
 	);
 });
 
+test('it denotes relative clause coordination', () => {
+	expect(d('De líem, ꝡë rıq hóa, rú, ꝡë nuı hóa')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t''' ∧ de.𝘸(a)(𝘦) | (∃𝘦. τ(𝘦) ⊆ t'' ∧ lıem.𝘸(a)(𝘦)) ∧ (∃𝘦. τ(𝘦) ⊆ t' ∧ rıq.𝘸(a)(𝘦)) ∧ ∃𝘦. τ(𝘦) ⊆ t ∧ nuı.𝘸(a)(𝘦)))\"",
+	);
+});
+
 test('it denotes modals with an overt complement', () => {
 	expect(d('Shê, ꝡä tı súq máq, nä buja jí súq')).toMatchInlineSnapshot(
 		"\"ASSERT(λ𝘸. ∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t' ∧ tı.𝘸'(súq, a)(𝘦). ∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸') = jí ∧ buja.𝘸'(súq)(𝘦)) | inanimate(a)\"",
