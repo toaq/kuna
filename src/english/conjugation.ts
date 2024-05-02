@@ -17,6 +17,7 @@ const irregularVerbs: Record<string, string> = {
 	have: 'have,has,had,have,having,had',
 	will: 'will,will,would,be about to,being about to,been about to',
 	can: 'can,can,could,be able to,being able to,been able to',
+	sleep: 'sleep,sleeps,slept,sleep,sleeping,slept',
 };
 
 export function conjugate(verb: string, person: VerbForm, past: boolean) {
@@ -153,12 +154,13 @@ export function mergeConstructions(
 	aspect: VerbConstruction,
 ): VerbConstruction {
 	// TODO it's actually more complex
-	let merged = { ...tense, ...aspect };
+	let merged = { ...aspect, ...tense };
 	if (aspect.auxiliary) {
 		if (!tense.auxiliary || tense.auxiliary === 'do') {
 			merged.auxiliary = aspect.auxiliary;
 		} else {
 			merged.auxiliary2 = aspect.auxiliary;
+			merged.verbForm = aspect.verbForm;
 		}
 	}
 	return merged;

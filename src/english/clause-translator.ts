@@ -225,13 +225,22 @@ export class ClauseTranslator {
 		const auxiliary2 = merged.auxiliary2 ?? '';
 		const preVerb = merged.preVerb ?? '';
 		if (merged.verbForm) verbForm = merged.verbForm;
+		const auxiliaryInfinitive = auxiliary;
 
 		if (auxiliary) {
 			auxiliary = conjugate(auxiliary, subjectVerbForm, past);
 			if (this.negative) auxiliary = negateAuxiliary(auxiliary);
 		}
 
-		const mainVerb = this.mainVerb(mode, verbForm, !!auxiliary, past);
+		let mainVerb = this.mainVerb(mode, verbForm, !!auxiliary, past);
+
+		// Transform "Does she be" → "Is she" or "She doesn't be" → "She isn't"
+		if (/^be /.test(mainVerb) && auxiliaryInfinitive === 'do') {
+			mainVerb = mainVerb.replace(/^be /, '');
+			auxiliary = conjugate('be', subjectVerbForm, past);
+			if (this.negative) auxiliary = negateAuxiliary(auxiliary);
+		}
+
 		const earlyAdjuncts = this.earlyAdjuncts.map(x => x + ',');
 		const text = (constituent?: Constituent) =>
 			constituent
