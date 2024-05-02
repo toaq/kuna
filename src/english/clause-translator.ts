@@ -168,7 +168,9 @@ export class ClauseTranslator {
 		if (!this.verb) return '';
 		const pos = this.pos(this.verb);
 		if (mode === 'DP') {
-			if (pos === 'verb') {
+			if (this.verb === 'something') {
+				return '';
+			} else if (pos === 'verb') {
 				return this.verb + 'er';
 			} else if (pos === 'adjective') {
 				return this.verb + ' thing';

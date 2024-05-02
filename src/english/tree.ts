@@ -93,7 +93,11 @@ function dpToEnglish(tree: Branch<Tree>): Constituent {
 		return { text: noun + 's', person: VerbForm.Plural };
 	} else {
 		const det = treeToEnglish(d).text;
-		return { text: (det + ' ' + noun).trim() };
+		let text = (det + ' ' + noun).trim();
+		if (text === 'which') text = 'what';
+		if (text === 'some') text = 'something';
+		if (text === 'every') text = 'everything';
+		return { text };
 	}
 }
 
