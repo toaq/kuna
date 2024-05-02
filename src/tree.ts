@@ -286,7 +286,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 				gloss_abbreviation: lemmaForm,
 				pronominal_class: 'ta',
 				distribution: 'd',
-				frame: '',
+				frame: 'c',
 				english: '',
 				subject: 'free',
 			},
@@ -395,18 +395,16 @@ export function makeSerial(
 ) {
 	const children = verbs.concat([vlast]);
 	const frames = children.map(getFrame);
-	let arity: number | undefined = undefined;
-	if (!(frames.includes('') || frames.includes('variable'))) {
-		arity = frames[frames.length - 1].split(' ').length;
-		for (let i = frames.length - 2; i >= 0; i--) {
-			const frame = frames[i].split(' ');
-			const last = frame.at(-1)![0];
-			if (last === 'c') {
-				// So everything to the right is an adjective?
-				arity = frame.length;
-			} else {
-				arity += frame.length - 1 - Number(last);
-			}
+	const frame = frames[frames.length - 1];
+	let arity: number | undefined = frame === '' ? 0 : frame.split(' ').length;
+	for (let i = frames.length - 2; i >= 0; i--) {
+		const frame = frames[i].split(' ');
+		const last = frame.at(-1)![0];
+		if (last === 'c') {
+			// So everything to the right is an adjective?
+			arity = frame.length;
+		} else {
+			arity += frame.length - 1 - Number(last);
 		}
 	}
 	return {
@@ -416,10 +414,26 @@ export function makeSerial(
 	};
 }
 
+function endsInClauseBoundary(tree: Tree) {
+	if (
+		tree.label === 'CP' ||
+		(tree.label === 'CPrel' && 'left' in tree && treeText(tree.left) !== '')
+	) {
+		return true;
+	} else if ('right' in tree) {
+		return endsInClauseBoundary(tree.right);
+	} else if ('children' in tree) {
+		return endsInClauseBoundary(tree.children[tree.children.length - 1]);
+	} else {
+		return false;
+	}
+}
+
 export function makevP(
 	[serial, adjpsL, rest]: [Tree, Tree[], [Tree[], Tree[]] | null],
 	location: number,
 	reject: Object,
+	depth: 'main' | 'sub',
 ) {
 	rest ??= [[], []];
 	let [args, adjpsR] = rest;
@@ -430,10 +444,40 @@ export function makevP(
 		return reject;
 	}
 
+	// Disallow underfilling subclauses:
+	if (depth === 'sub' && args.length !== arity) {
+		return reject;
+	}
+
+	// Disallow adjuncts that could have gone in a subclause:
+	if (
+		adjpsR.length &&
+		args.length &&
+		endsInClauseBoundary(args[args.length - 1])
+	) {
+		return reject;
+	}
+
 	return {
 		label: '*𝘷P',
 		children: [serial, ...adjpsL, ...args, ...adjpsR],
 	};
+}
+
+export function makevP_main(
+	args: [Tree, Tree[], [Tree[], Tree[]] | null],
+	location: number,
+	reject: Object,
+) {
+	return makevP(args, location, reject, 'main');
+}
+
+export function makevP_sub(
+	args: [Tree, Tree[], [Tree[], Tree[]] | null],
+	location: number,
+	reject: Object,
+) {
+	return makevP(args, location, reject, 'sub');
 }
 
 export function makevPdet([serial]: [Tree], location: number, reject: Object) {
@@ -463,7 +507,15 @@ export function makeEvAPdet([rl, rr]: [Tree, Tree]) {
 	};
 }
 
-export function makeConn([left, c, right]: [Tree, Tree, Tree]) {
+export function makeConn(
+	[left, c, right]: [Tree, Tree, Tree],
+	location: number,
+	reject: Object,
+) {
+	// Don't parse "Hao ꝡä hao jí rú hao súq" as "(Hao ꝡä hao jí) rú hao súq":
+	if (left.label === 'TP' && endsInClauseBoundary(left)) {
+		return reject;
+	}
 	return {
 		label: '&P',
 		left,

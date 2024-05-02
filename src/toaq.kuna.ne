@@ -52,7 +52,8 @@ const {
     makeSingleChild,
 	makeT1ModalvP,
 	makeWord,
-	makevP,
+	makevP_main,
+	makevP_sub,
 	makevPdet,
 } = TreeModule as any;
 const lexer = new ToaqTokenizer();
@@ -74,15 +75,15 @@ Discourse -> SAP {% id %}
 SAP -> CP SAopt {% makeBranch('SAP') %}
 
 # ꝡa hao
-CP -> Copt Clause {% makeBranch('CP') %}
+CP -> Copt Clause<main> {% makeBranch('CP') %}
 # ꝡä hao
-CPsub -> Csub Clause {% makeBranch('CP') %}
+CPsub -> Csub Clause<sub> {% makeBranch('CP') %}
 # ꝡâ hao
-CPincorp -> Cincorp Clause {% make3LCovertLeft('DP', 'D', 'CP') %}
+CPincorp -> Cincorp Clause<sub> {% make3LCovertLeft('DP', 'D', 'CP') %}
 # ꝡë hao
-CPrel -> Crel Clause {% makeBranch('CPrel') %}
+CPrel -> Crel Clause<sub> {% makeBranch('CPrel') %}
 # (nä) hao
-CPrelna -> Clause {% makeBranchCovertLeft('CPrel', 'Crel') %}
+CPrelna<S> -> Clause<S> {% makeBranchCovertLeft('CPrel', 'Crel') %}
 # (sá) ∅ hao
 CPdet -> MTPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 
@@ -98,25 +99,25 @@ nP -> nP CPrelcon {% makeBranch('𝘯P') %}
 nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 
 # ní bï pu hao
-Clause -> Argument Bi Clause {% make3L('TopicP', "Topic'") %}
+Clause<S> -> Argument Bi Clause<S> {% make3L('TopicP', "Topic'") %}
 # pu hao
-Clause -> MTP {% id %}
+Clause<S> -> MTP<S> {% id %}
 # jí nä pu hao hóa
-Clause -> Argument Na CPrelna {% make3L('𝘷P', "𝘷'") %}
+Clause<S> -> Argument Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
 # râo fíachaq nä pu hao hóa
-Clause -> AdjunctPcon Na CPrelna {% make3L('𝘷P', "𝘷'") %}
+Clause<S> -> AdjunctPcon Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
-Clause -> ModalP Na MTP {% make3L('𝘷P', "𝘷'") %}
+Clause<S> -> ModalP Na MTP<S> {% make3L('𝘷P', "𝘷'") %}
 ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
 # hao jí gö hao jí
-Clause -> MTP Go Clause {% makeRetroactiveCleft %}
+Clause<S> -> MTP<main> Go Clause<S> {% makeRetroactiveCleft %}
 
 # "MTP" is a TP that can have a t1 modal in front.
 
 # ao pu chum hao jí
-MTP -> TPcon {% id %}
-MTP -> Modal TPcon {% makeT1ModalvP %}
-MTP -> Sigma Modal TPcon {% makeSigmaT1ModalvP %}
+MTP<S> -> TPcon<S> {% id %}
+MTP<S> -> Modal TPcon<S> {% makeT1ModalvP %}
+MTP<S> -> Sigma Modal TPcon<S> {% makeSigmaT1ModalvP %}
 
 # (sá) ao hao
 MTPdet -> TPdet {% id %}
@@ -124,27 +125,27 @@ MTPdet -> Modal TPdet {% makeT1ModalvP %}
 MTPdet -> Sigma Modal TPdet {% makeSigmaT1ModalvP %}
 
 # pu chum hao jí
-TPcon -> TP {% id %}
-TPcon -> TP Conjunction TPcon {% makeConn %}
-TP -> Tcon AspP {% makeBranch('TP') %}
-TP -> Sigma Tcon AspP {% make3L('ΣP', 'TP') %}
+TPcon<S> -> TP<S> {% id %}
+TPcon<S> -> TP<S> Conjunction TPcon<S> {% makeConn %}
+TP<S> -> Tcon AspP<S> {% makeBranch('TP') %}
+TP<S> -> Sigma Tcon AspP<S> {% make3L('ΣP', 'TP') %}
 # ë marao óguı ráı
-TP -> EvA vP DPcon {% makeEvAP %}
+TP<S> -> EvA vP<sub> DPcon {% makeEvAP %}
 
 # (sá) pu chum hao
 TPdet -> Tcon AspPdet {% makeBranch('TP') %}
 TPdet -> Sigma Tcon AspPdet {% make3L('ΣP', 'TP') %}
 # (sá) ë marao óguı
-TPdet -> EvA vP {% makeEvAPdet %}
+TPdet -> EvA vP<sub> {% makeEvAPdet %}
 
 # chum hao jí
-AspP -> Aspcon vP {% makeBranch('AspP') %}
+AspP<S> -> Aspcon vP<S> {% makeBranch('AspP') %}
 
 # (sá) chum hao
 AspPdet -> Aspcon vPdet {% makeBranch('AspP') %}
 
 # tua hao tî kúe jí súq râo níchaq
-vP -> Serial AdjunctPcon:* (VocArgument:+ AdjunctPcon:*):? {% makevP %}
+vP<S> -> Serial AdjunctPcon:* (VocArgument:+ AdjunctPcon:*):? {% makevP<S> %}
 
 # (sá) tua hao
 vPdet -> Serialdet {% makevPdet %}
