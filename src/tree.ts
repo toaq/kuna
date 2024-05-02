@@ -1,6 +1,6 @@
 import { dictionary, Entry } from './dictionary';
 import { Impossible } from './error';
-import { guessFrameUsingToadua, toaduaFrames } from './frame';
+import { guessFrameUsingToadua } from './frame';
 import { getFrame } from './serial';
 import { bare, clean, repairTones, ToaqToken, tone } from './tokenize';
 import { Tone } from './types';
@@ -418,19 +418,43 @@ export function makeSerial(
 	};
 }
 
-function endsInClauseBoundary(tree: Tree) {
-	if (
-		tree.label === 'CP' ||
-		(tree.label === 'CPrel' && 'left' in tree && treeText(tree.left) !== '')
-	) {
-		return true;
-	} else if ('right' in tree) {
-		return endsInClauseBoundary(tree.right);
+function isCovertLeaf(tree: Tree): boolean {
+	return 'word' in tree && tree.word.covert;
+}
+
+function findAtRightBoundary(
+	tree: Tree,
+	predicate: (t: Tree) => boolean,
+): Tree | undefined {
+	if (predicate(tree)) {
+		return tree;
 	} else if ('children' in tree) {
-		return endsInClauseBoundary(tree.children[tree.children.length - 1]);
+		// Hack to avoid descending into PRO leaves @_@
+		let i = tree.children.length - 1;
+		while (i >= 0 && isCovertLeaf(tree.children[i])) i -= 1;
+		return i >= 0
+			? findAtRightBoundary(tree.children[i], predicate)
+			: undefined;
+	} else if ('right' in tree) {
+		// Same here
+		const child = isCovertLeaf(tree.right) ? tree.left : tree.right;
+		return findAtRightBoundary(child, predicate);
 	} else {
-		return false;
+		return undefined;
 	}
+}
+
+function endsInClauseBoundary(tree: Tree): Tree | undefined {
+	return findAtRightBoundary(
+		tree,
+		t =>
+			t.label === 'CP' ||
+			(t.label === 'CPrel' && 'left' in t && treeText(t.left) !== ''),
+	);
+}
+
+function endsInDP(tree: Tree) {
+	return findAtRightBoundary(tree, t => t.label === 'DP' && treeText(t) !== '');
 }
 
 export function makevP(
@@ -522,6 +546,10 @@ export function makeConn(
 	// Don't parse "Hao ꝡä hao jí rú hao súq" as "(Hao ꝡä hao jí) rú hao súq":
 	if (left.label === 'TP' && endsInClauseBoundary(left)) {
 		return reject;
+	}
+	// Don't parse "báq nueq po báq goso ró báq guobe" wrong:
+	if (left.label === 'DP') {
+		if ('right' in left && endsInDP(left.right)) return reject;
 	}
 	return {
 		label: '&P',
