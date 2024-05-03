@@ -272,10 +272,10 @@ export const tenses: Record<string, Expr> = {
 };
 
 export const polarities: Record<string, Expr> = {
-	// λ𝘗. ¬𝘗(𝘸)
-	bu: λ(['s', 't'], ['s'], c => not(app(v(0, c), v(1, c)))),
-	// λ𝘗. †𝘗(𝘸)
-	jeo: λ(['s', 't'], ['s'], c => indeed(app(v(0, c), v(1, c)))),
+	// λ𝘗. ¬𝘗
+	bu: λ('t', [], c => not(v(0, c))),
+	// λ𝘗. †𝘗
+	jeo: λ('t', [], c => indeed(v(0, c))),
 };
 
 export const speechActs: Record<string, Expr> = {
@@ -552,7 +552,7 @@ const conjunctionWords: Record<string, (left: Expr, right: Expr) => Expr> = {
 const conjunctTypes: Partial<Record<Label, ExprType>> = {
 	AdjunctP: ['v', 't'],
 	CPrel: ['e', 't'],
-	TP: 't',
+	ΣP: 't',
 };
 
 export const clausalConjunctions: Partial<Record<Label, Record<string, Expr>>> =

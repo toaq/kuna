@@ -276,13 +276,15 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			if (denotation === undefined) throw new Unrecognized(`T: ${toaq}`);
 		}
 	} else if (leaf.label === 'Σ') {
-		if (leaf.word.covert) throw new Impossible('Covert Σ');
-		if (leaf.word.entry === undefined)
+		if (leaf.word.covert) {
+			denotation = null;
+		} else if (leaf.word.entry === undefined) {
 			throw new Unrecognized(`Σ: ${leaf.word.text}`);
-
-		const toaq = leaf.word.entry.toaq.replace(/-$/, '');
-		denotation = polarities[toaq];
-		if (denotation === undefined) throw new Unrecognized(`Σ: ${toaq}`);
+		} else {
+			const toaq = leaf.word.entry.toaq.replace(/-$/, '');
+			denotation = polarities[toaq];
+			if (denotation === undefined) throw new Unrecognized(`Σ: ${toaq}`);
+		}
 	} else if (leaf.label === 'SA') {
 		let toaq: string;
 		if (leaf.word.covert) {

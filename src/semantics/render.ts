@@ -293,7 +293,7 @@ const latex: Format = {
 	},
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
 	polarizerSymbols: {
-		not: '\\not',
+		not: '\\neg',
 		indeed: '\\dagger',
 	},
 	polarizer: (symbol, body) => `${symbol} ${body}`,

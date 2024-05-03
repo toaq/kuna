@@ -85,7 +85,7 @@ CPrel -> Crel Clause<sub> {% makeBranch('CPrel') %}
 # (nä) hao
 CPrelna<S> -> Clause<S> {% makeBranchCovertLeft('CPrel', 'Crel') %}
 # (sá) ∅ hao
-CPdet -> MTPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
+CPdet -> MSPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 
 # jí
 DP -> %pronoun Free:* {% makeLeaf('DP') %}
@@ -101,40 +101,44 @@ nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 # ní bï pu hao
 Clause<S> -> Argument Bi Clause<S> {% make3L('TopicP', "Topic'") %}
 # pu hao
-Clause<S> -> MTP<S> {% id %}
+Clause<S> -> MSP<S> {% id %}
 # jí nä pu hao hóa
 Clause<S> -> Argument Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
 # râo fíachaq nä pu hao hóa
 Clause<S> -> AdjunctPcon Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
-Clause<S> -> ModalP Na MTP<S> {% make3L('𝘷P', "𝘷'") %}
+Clause<S> -> ModalP Na MSP<S> {% make3L('𝘷P', "𝘷'") %}
 ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
 # hao jí gö hao jí
-Clause<S> -> MTP<main> Go Clause<S> {% makeRetroactiveCleft %}
+Clause<S> -> MSP<main> Go Clause<S> {% makeRetroactiveCleft %}
 
-# "MTP" is a TP that can have a t1 modal in front.
+# "MSP" is a SigmaP that can have a t1 modal in front.
 
-# ao pu chum hao jí
-MTP<S> -> TPcon<S> {% id %}
-MTP<S> -> Modal TPcon<S> {% makeT1ModalvP %}
-MTP<S> -> Sigma Modal TPcon<S> {% makeSigmaT1ModalvP %}
+# ao jeo pu chum hao jí
+MSP<S> -> SigmaPcon<S> {% id %}
+MSP<S> -> Modal SigmaPcon<S> {% makeT1ModalvP %}
+MSP<S> -> Sigma Modal SigmaPcon<S> {% makeSigmaT1ModalvP %}
 
 # (sá) ao hao
-MTPdet -> TPdet {% id %}
-MTPdet -> Modal TPdet {% makeT1ModalvP %}
-MTPdet -> Sigma Modal TPdet {% makeSigmaT1ModalvP %}
+MSPdet -> SigmaPdet {% id %}
+MSPdet -> Modal SigmaPdet {% makeT1ModalvP %}
+MSPdet -> Sigma Modal SigmaPdet {% makeSigmaT1ModalvP %}
+
+# jeo pu chum hao jí
+SigmaPcon<S> -> SigmaP<S> {% id %}
+SigmaPcon<S> -> SigmaP<S> Conjunction SigmaPcon<S> {% makeConn %}
+SigmaP<S> -> Sigmacon TP<S> {% makeBranch('ΣP') %}
+
+# (sá) jeo pu chum hao
+SigmaPdet -> Sigmacon TPdet {% makeBranch('ΣP') %}
 
 # pu chum hao jí
-TPcon<S> -> TP<S> {% id %}
-TPcon<S> -> TP<S> Conjunction TPcon<S> {% makeConn %}
 TP<S> -> Tcon AspP<S> {% makeBranch('TP') %}
-TP<S> -> Sigma Tcon AspP<S> {% make3L('ΣP', 'TP') %}
 # ë marao óguı ráı
 TP<S> -> EvA vP<sub> DPcon {% makeEvAP %}
 
 # (sá) pu chum hao
 TPdet -> Tcon AspPdet {% makeBranch('TP') %}
-TPdet -> Sigma Tcon AspPdet {% make3L('ΣP', 'TP') %}
 # (sá) ë marao óguı
 TPdet -> EvA vP<sub> {% makeEvAPdet %}
 
@@ -194,6 +198,9 @@ CPargfoc -> Focus CParg {% makeBranch('FocusP') %}
 CParg -> CPsub {% makeBranchCovertLeft('DP', 'D') %}
 CPrelcon -> CPrel {% id %}
 CPrelcon -> CPrel Conjunction CPrelcon {% makeConn %}
+Sigmacon -> null {% makeCovertLeaf('Σ') %}
+Sigmacon -> Sigma {% id %}
+Sigmacon -> Sigma Conjunction Sigmacon {% makeConn %}
 Tcon -> null {% makeCovertLeaf('T') %}
 Tcon -> T {% id %}
 Tcon -> T_prefix {% id %}
