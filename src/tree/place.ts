@@ -78,7 +78,7 @@ export interface PlacedBranch {
 
 export type PlacedTree = PlacedLeaf | PlacedBranch;
 
-function getLabel(tree: Tree | DTree): string {
+export function getLabel(tree: Tree | DTree): string {
 	return 'denotation' in tree && tree.denotation !== null
 		? `${tree.label} : ${typeToPlainText(tree.denotation.type)}`
 		: tree.label;

@@ -1,0 +1,48 @@
+.tree-stack,
+.tree-node,
+.tree-roof {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.tree-node {
+	padding-top: 0.5em;
+	padding-left: 1em;
+	padding-right: 1em;
+}
+
+.tree-node:hover {
+	background: #f0000010;
+}
+
+.tree-children {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: start;
+}
+
+.tree-label {
+	font-weight: bold;
+}
+
+.tree-denotation {
+	color: red;
+	font-size: 10px;
+}
+
+.tree-word {
+	color: #0066ff;
+}
+
+.tree-roof {
+	background: #eeeeff;
+	cursor: pointer;
+	padding: 0.5em;
+}
+
+.tree-roof:hover {
+	background: #e2e2ff;
+}

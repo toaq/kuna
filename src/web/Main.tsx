@@ -23,6 +23,7 @@ import { ToaqTokenizer } from '../tokenize';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
 import { Boxes } from './Boxes';
 import { Tokens } from './Tokens';
+import { TreeBrowser } from './TreeBrowser';
 
 type TreeMode =
 	| 'syntax-tree'
@@ -41,7 +42,7 @@ export type Mode =
 	| 'logical-form-latex'
 	| 'english'
 	| 'tokens';
-type TreeFormat = 'png-latex' | 'png-text' | 'textual' | 'json';
+type TreeFormat = 'png-latex' | 'png-text' | 'textual' | 'json' | 'react';
 
 function errorString(e: any): string {
 	const string = String(e);
@@ -162,6 +163,8 @@ export function Main(props: MainProps) {
 				);
 			case 'json':
 				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
+			case 'react':
+				return <TreeBrowser tree={tree} />;
 		}
 	}
 
@@ -280,6 +283,7 @@ export function Main(props: MainProps) {
 								<option value="png-text">Image (plain text)</option>
 								<option value="textual">Text art</option>
 								<option value="json">JSON</option>
+								<option value="react">React</option>
 							</select>
 						</label>
 					</div>
