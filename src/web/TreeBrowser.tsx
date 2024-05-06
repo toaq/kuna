@@ -75,6 +75,14 @@ export function TreeBrowser(props: {
 				</div>
 			) : children.length ? (
 				<div className="tree-roof" onClick={() => setExpanded(true)}>
+					<svg
+						height="8"
+						width="100%"
+						preserveAspectRatio="none"
+						viewBox="0 0 50 10"
+					>
+						<path d="M25 0 L50 8 L0 8 Z" fill="none" stroke="black" />
+					</svg>
 					<div className="tree-word">{treeText(tree) || '(expand)'}</div>
 				</div>
 			) : undefined}
