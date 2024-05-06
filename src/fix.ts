@@ -202,6 +202,7 @@ function fix_(
 			return fix_(vP.right.right, newBinding, undefined);
 		}
 
+		// Subclauses open a new scope
 		if (tree.label === 'CP' || tree.label === 'CPrel') {
 			const newScope = new Scope(newBinding);
 			const right = fix_(tree.right, newBinding, newScope);
@@ -209,6 +210,25 @@ function fix_(
 				label: tree.label,
 				left: fix_(tree.left, newBinding, scope),
 				right: newScope.wrap(right),
+			};
+		}
+
+		// Conjoined clauses each get a new scope of their own
+		if (tree.label === '&P' && effectiveLabel(tree) !== 'DP') {
+			const leftScope = new Scope(newBinding);
+			const left = fix_(tree.left, newBinding, leftScope);
+			const rightScope = new Scope(newBinding);
+			assertBranch(tree.right);
+			const conjunction = fix_(tree.right.left, newBinding, scope);
+			const right = fix_(tree.right.right, newBinding, rightScope);
+			return {
+				label: tree.label,
+				left: leftScope.wrap(left),
+				right: {
+					label: tree.right.label,
+					left: conjunction,
+					right: rightScope.wrap(right),
+				},
 			};
 		}
 

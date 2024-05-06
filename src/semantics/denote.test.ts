@@ -288,7 +288,7 @@ test('it denotes adjuncts', () => {
 
 test('it denotes clausal coordination', () => {
 	expect(d('Joaı súq báq rua rú sea jí rú luq tú raı')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. GEN 𝘹 : ∃𝘦. τ(𝘦) ⊆ t''' ∧ rua.𝘸(𝘹)(𝘦). (∀.SING 𝘺 : ∃𝘦. τ(𝘦) ⊆ t'' ∧ raı.𝘸(𝘺)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'''' ∧ AGENT(𝘦)(𝘸) = súq ∧ joaı.𝘸(𝘹)(𝘦)) ∧ (∃𝘦. τ(𝘦) ⊆ t' ∧ sea.𝘸(jí)(𝘦)) ∧ ∃𝘦. τ(𝘦) ⊆ t ∧ luq.𝘸(𝘺)(𝘦) | inanimate(𝘹)))\"",
+		"\"ASSERT(λ𝘸. (GEN 𝘹 : ∃𝘦. τ(𝘦) ⊆ t''' ∧ rua.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'''' ∧ AGENT(𝘦)(𝘸) = súq ∧ joaı.𝘸(𝘹)(𝘦) | inanimate(𝘹))) ∧ (∃𝘦. τ(𝘦) ⊆ t'' ∧ sea.𝘸(jí)(𝘦)) ∧ ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ raı.𝘸(𝘹)(𝘦). ∃𝘦. τ(𝘦) ⊆ t' ∧ luq.𝘸(𝘹)(𝘦))\"",
 	);
 });
 
