@@ -8,10 +8,18 @@ import { MathJax } from 'better-react-mathjax';
 import { CompactExpr, compact } from '../semantics/compact';
 import { Theme } from '../tree/theme';
 
-export function Denotation(props: { denotation: Expr; compact: boolean }) {
+export function Denotation(props: {
+	denotation: Expr;
+	compact: boolean;
+	theme: Theme;
+}) {
 	const expr = props.compact ? compact(props.denotation) : props.denotation;
 	return (
-		<MathJax className="tree-formula" hideUntilTypeset="every">
+		<MathJax
+			className="tree-formula"
+			hideUntilTypeset="every"
+			style={{ color: props.theme.denotationColor }}
+		>
 			{'$$\\LARGE ' + toLatex(expr) + '$$'}
 		</MathJax>
 	);
@@ -21,8 +29,9 @@ export function Node(props: {
 	tree: Tree | DTree;
 	expanded: boolean;
 	compactDenotations: boolean;
+	theme: Theme;
 }) {
-	const { tree, compactDenotations } = props;
+	const { tree, compactDenotations, theme } = props;
 	return (
 		<div className="tree-node">
 			<div className="tree-node-contents">
@@ -31,11 +40,12 @@ export function Node(props: {
 					<Denotation
 						denotation={tree.denotation}
 						compact={compactDenotations}
+						theme={theme}
 					/>
 				)}
 				{'word' in tree && (
 					<>
-						<div className="tree-word">
+						<div className="tree-word" style={{ color: theme.wordColor }}>
 							{tree.word.covert ? tree.word.value : tree.word.text}
 						</div>
 						{tree.word.covert ? undefined : (
@@ -89,6 +99,7 @@ export function TreeBrowser(props: {
 					tree={tree}
 					expanded={expanded}
 					compactDenotations={compactDenotations}
+					theme={theme}
 				/>
 			</div>
 			{expanded ? (
@@ -110,7 +121,7 @@ export function TreeBrowser(props: {
 						preserveAspectRatio="none"
 						viewBox="0 0 50 10"
 					>
-						<path d="M25 0 L50 8 L0 8 Z" fill="none" stroke="black" />
+						<path d="M25 0 L50 8 L0 8 Z" fill="none" stroke={theme.textColor} />
 					</svg>
 					<div className="tree-word">{treeText(tree) || '(expand)'}</div>
 				</div>

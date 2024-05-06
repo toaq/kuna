@@ -85,7 +85,7 @@ export function Main(props: MainProps) {
 	const treeImg = useRef<HTMLImageElement>(null);
 	const [meaningCompact, setMeaningCompact] = useState(false);
 
-	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png-latex');
+	const [treeFormat, setTreeFormat] = useState<TreeFormat>('react');
 	useEffect(() => {
 		if (props.mode) generate(props.mode);
 		else if (latestMode) generate(latestMode);
@@ -288,13 +288,14 @@ export function Main(props: MainProps) {
 						<label>
 							Tree format:
 							<select
+								value={treeFormat}
 								onChange={e => setTreeFormat(e.target.value as TreeFormat)}
 							>
+								<option value="react">React</option>
 								<option value="png-latex">Image (LaTeX)</option>
 								<option value="png-text">Image (plain text)</option>
 								<option value="textual">Text art</option>
 								<option value="json">JSON</option>
-								<option value="react">React</option>
 							</select>
 						</label>
 					</div>

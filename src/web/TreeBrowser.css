@@ -15,10 +15,6 @@
 	height: 7em;
 }
 
-.tree-node-contents:hover {
-	background: #f0000010;
-}
-
 .tree-children {
 	display: flex;
 	flex-direction: row;
@@ -31,20 +27,10 @@
 }
 
 .tree-formula {
-	color: red;
 	font-size: 7px;
 }
 
-.tree-word {
-	color: #0066ff;
-}
-
 .tree-roof {
-	background: #eeeeff;
 	cursor: pointer;
 	padding: 0.5em;
-}
-
-.tree-roof:hover {
-	background: #e2e2ff;
 }
