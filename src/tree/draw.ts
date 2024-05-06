@@ -9,36 +9,13 @@ import {
 	RenderedDenotation,
 	TreePlacer,
 } from './place';
+import { Theme, ThemeName, themes } from './theme';
 
 interface Location {
 	x: number;
 	y: number;
 	width: number;
 }
-
-export type ThemeName = 'dark' | 'light';
-
-export interface Theme {
-	backgroundColor: string;
-	textColor: string;
-	denotationColor: string;
-	wordColor: string;
-}
-
-const themes: Record<ThemeName, Theme> = {
-	dark: {
-		backgroundColor: '#36393E',
-		textColor: '#DCDDDE',
-		denotationColor: '#FF4466',
-		wordColor: '#99EEFF',
-	},
-	light: {
-		backgroundColor: '#FFFFFF',
-		textColor: '#000000',
-		denotationColor: '#FF0000',
-		wordColor: '#3399FF',
-	},
-};
 
 class TreeDrawer {
 	private margin = 40;
@@ -85,7 +62,7 @@ class TreeDrawer {
 	}
 
 	private drawText(
-		text: string | RenderedDenotation,
+		text: string | RenderedDenotation<CanvasRenderingContext2D>,
 		x: number,
 		y: number,
 		color: string,
@@ -109,7 +86,11 @@ class TreeDrawer {
 		if (maxY > this.extent.maxY) this.extent.maxY = maxY;
 	}
 
-	private drawLabel(x: number, y: number, tree: PlacedTree): void {
+	private drawLabel(
+		x: number,
+		y: number,
+		tree: PlacedTree<CanvasRenderingContext2D>,
+	): void {
 		if (tree.coindex) {
 			const w1 = this.ctx.measureText(tree.label).width;
 			const w2 = this.ctx.measureText(tree.coindex).width;
@@ -120,7 +101,11 @@ class TreeDrawer {
 		}
 	}
 
-	private drawLeaf(x: number, y: number, tree: PlacedLeaf): void {
+	private drawLeaf(
+		x: number,
+		y: number,
+		tree: PlacedLeaf<CanvasRenderingContext2D>,
+	): void {
 		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
 			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
@@ -145,7 +130,11 @@ class TreeDrawer {
 		}
 	}
 
-	private drawBranch(x: number, y: number, tree: PlacedBranch): void {
+	private drawBranch(
+		x: number,
+		y: number,
+		tree: PlacedBranch<CanvasRenderingContext2D>,
+	): void {
 		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
 			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
@@ -159,7 +148,11 @@ class TreeDrawer {
 		}
 	}
 
-	private drawTree(x: number, y: number, tree: PlacedTree): void {
+	private drawTree(
+		x: number,
+		y: number,
+		tree: PlacedTree<CanvasRenderingContext2D>,
+	): void {
 		if ('word' in tree) {
 			this.drawLeaf(x, y, tree);
 		} else {
@@ -200,7 +193,10 @@ class TreeDrawer {
 
 	public async drawToCanvas(
 		tree: Tree | DTree,
-		renderer: (denotation: CompactExpr, theme: Theme) => RenderedDenotation,
+		renderer: (
+			denotation: CompactExpr,
+			theme: Theme,
+		) => RenderedDenotation<CanvasRenderingContext2D>,
 	): Promise<Canvas> {
 		const placer = new TreePlacer(this.ctx, this.theme, renderer);
 		const placed = placer.placeTree(tree);
@@ -216,7 +212,10 @@ export function drawTreeToCanvas(options: {
 	theme: ThemeName;
 	tall: boolean;
 	tree: Tree | DTree;
-	renderer: (denotation: CompactExpr, theme: Theme) => RenderedDenotation;
+	renderer: (
+		denotation: CompactExpr,
+		theme: Theme,
+	) => RenderedDenotation<CanvasRenderingContext2D>;
 }): Promise<Canvas> {
 	const { theme, tall, tree, renderer } = options;
 	const layerHeight = tall ? 150 : 100;

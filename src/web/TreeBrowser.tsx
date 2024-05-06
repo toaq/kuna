@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { DTree, Expr } from '../semantics/model';
 import { Tree, treeText } from '../tree';
-import { getLabel } from '../tree/place';
+import { TreePlacer, getLabel } from '../tree/place';
 import { toLatex } from '../semantics/render';
 import './TreeBrowser.css';
 import { MathJax } from 'better-react-mathjax';
-import { compact } from '../semantics/compact';
+import { CompactExpr, compact } from '../semantics/compact';
+import { Theme } from '../tree/theme';
 
 export function Denotation(props: { denotation: Expr; compact: boolean }) {
 	const expr = props.compact ? compact(props.denotation) : props.denotation;
@@ -21,32 +22,40 @@ export function Node(props: {
 	expanded: boolean;
 	compactDenotations: boolean;
 }) {
-	const { tree, expanded, compactDenotations } = props;
+	const { tree, compactDenotations } = props;
 	return (
 		<div className="tree-node">
-			<div className="tree-label">{getLabel(tree)}</div>
-			{'denotation' in tree && tree.denotation && (
-				<Denotation denotation={tree.denotation} compact={compactDenotations} />
-			)}
-			{'word' in tree && (
-				<>
-					<div className="tree-word">
-						{tree.word.covert ? tree.word.value : tree.word.text}
-					</div>
-					{tree.word.covert ? undefined : (
-						<div className="tree-gloss">{tree.word.entry?.gloss}</div>
-					)}
-				</>
-			)}
+			<div className="tree-node-contents">
+				<div className="tree-label">{getLabel(tree)}</div>
+				{'denotation' in tree && tree.denotation && (
+					<Denotation
+						denotation={tree.denotation}
+						compact={compactDenotations}
+					/>
+				)}
+				{'word' in tree && (
+					<>
+						<div className="tree-word">
+							{tree.word.covert ? tree.word.value : tree.word.text}
+						</div>
+						{tree.word.covert ? undefined : (
+							<div className="tree-gloss">{tree.word.entry?.gloss}</div>
+						)}
+					</>
+				)}
+			</div>
 		</div>
 	);
 }
 
+type Ctx = { measureText: (text: string) => { width: number } };
+
 export function TreeBrowser(props: {
 	tree: Tree | DTree;
 	compactDenotations: boolean;
+	theme: Theme;
 }) {
-	const { tree, compactDenotations } = props;
+	const { tree, compactDenotations, theme } = props;
 	const children =
 		'left' in tree
 			? [tree.left, tree.right]
@@ -54,6 +63,25 @@ export function TreeBrowser(props: {
 			? tree.children
 			: [];
 	const [expanded, setExpanded] = useState(false);
+
+	const ctx: Ctx = {
+		measureText(text: string) {
+			return { width: 50 };
+		},
+	};
+
+	const denotationRenderer = (denotation: CompactExpr, theme: Theme) => ({
+		draw: async (
+			ctx: Ctx,
+			centerX: number,
+			bottomY: number,
+			color: string,
+		) => {},
+		width: (ctx: Ctx) => 50,
+		height: (ctx: Ctx) => 20,
+	});
+	const placed = new TreePlacer(ctx, theme, denotationRenderer);
+
 	return (
 		<div className="tree-stack">
 			<div style={{ cursor: 'pointer' }} onClick={() => setExpanded(false)}>
@@ -70,6 +98,7 @@ export function TreeBrowser(props: {
 							tree={c}
 							key={c.label + i}
 							compactDenotations={compactDenotations}
+							theme={theme}
 						/>
 					))}
 				</div>

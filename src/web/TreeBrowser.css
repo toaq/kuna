@@ -1,9 +1,10 @@
 .tree-stack,
 .tree-node,
+.tree-node-contents,
 .tree-roof {
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
+	justify-content: start;
 	align-items: center;
 }
 
@@ -11,9 +12,10 @@
 	padding-top: 0.5em;
 	padding-left: 1em;
 	padding-right: 1em;
+	height: 7em;
 }
 
-.tree-node:hover {
+.tree-node-contents:hover {
 	background: #f0000010;
 }
 

@@ -13,7 +13,8 @@ import { denote } from '../semantics/denote';
 import { toLatex, toPlainText } from '../semantics/render';
 import { textual_tree_from_json } from '../textual-tree';
 import { Tree } from '../tree';
-import { drawTreeToCanvas, Theme } from '../tree/draw';
+import { drawTreeToCanvas } from '../tree/draw';
+import { Theme } from '../tree/theme';
 
 import {
 	compact as compactDenotation,
@@ -24,6 +25,7 @@ import { denotationRenderLatex, denotationRenderText } from '../tree/place';
 import { Boxes } from './Boxes';
 import { Tokens } from './Tokens';
 import { TreeBrowser } from './TreeBrowser';
+import { themes } from '../tree/theme';
 
 type TreeMode =
 	| 'syntax-tree'
@@ -131,7 +133,7 @@ export function Main(props: MainProps) {
 					<pre>{textual_tree_from_json(tree).replace(/\x1b\[\d+m/g, '')}</pre>
 				);
 			case 'png-latex':
-			case 'png-text':
+			case 'png-text': {
 				const theme = darkMode.isDarkMode ? 'dark' : 'light';
 				const baseRenderer =
 					treeFormat === 'png-latex'
@@ -161,15 +163,19 @@ export function Main(props: MainProps) {
 						src={''}
 					/>
 				);
+			}
 			case 'json':
 				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
-			case 'react':
+			case 'react': {
+				const themeName = darkMode.isDarkMode ? 'dark' : 'light';
 				return (
 					<TreeBrowser
 						tree={tree}
 						compactDenotations={mode === 'semantics-tree-compact'}
+						theme={themes[themeName]}
 					/>
 				);
+			}
 		}
 	}
 
