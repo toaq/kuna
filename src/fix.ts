@@ -202,7 +202,7 @@ function fix_(
 			return fix_(vP.right.right, newBinding, undefined);
 		}
 
-		if (tree.label === 'CP') {
+		if (tree.label === 'CP' || tree.label === 'CPrel') {
 			const newScope = new Scope(newBinding);
 			const right = fix_(tree.right, newBinding, newScope);
 			return {

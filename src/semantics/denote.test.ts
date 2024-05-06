@@ -398,11 +398,20 @@ test('it skolemizes exophoric DPs that depend on other variables', () => {
 		"\"ASSERT(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ nıe.𝘸(𝘹, F(𝘹))(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ bue.𝘸(F(𝘹), 𝘹)(𝘦) | inanimate(F(𝘹)) | animate(𝘹)))\"",
 	);
 	expect(d('Ní leache nä moaq tú poq é geq hó léache')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. (∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸) = 𝘹 ∧ moaq.𝘸(F(a)(𝘹))(𝘦) | ∃𝘦 : 𝘦 = F(a)(𝘹). geq.𝘸(𝘹, a)(𝘦) | animate(𝘹)) | ∃𝘦. τ(𝘦) ⊆ t'' ∧ leache.𝘸(a)(𝘦))) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
+		"\"ASSERT(λ𝘸. (∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t' ∧ AGENT(𝘦)(𝘸) = 𝘹 ∧ moaq.𝘸(F(a)(𝘹))(𝘦) | ∃𝘦 : 𝘦 = F(a)(𝘹). geq.𝘸(𝘹, a)(𝘦) | animate(𝘹)) | ∃𝘦. τ(𝘦) ⊆ t'' ∧ leache.𝘸(a)(𝘦))) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
 	);
 	expect(d('Dua tú poq, ꝡä gırı hó')).toMatchInlineSnapshot(
 		"\"ASSERT(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ dua.𝘸(𝘹, F(𝘹))(𝘦) | Cont(F(𝘹))(𝘸) = λ𝘸'. ∃𝘦. τ(𝘦) ⊆ t ∧ gırı.𝘸'(𝘹)(𝘦) | animate(𝘹)))\"",
 	);
 	// TODO: Dependency chains like "Tú nhạshı nä nhạ́gu lô nhạshı nä hao nhạ́saq lô
 	// nhạgu"
+});
+
+test('subclauses open a new scope', () => {
+	expect(d('Dua jí, ꝡä dua jí sía')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t'' ∧ dua.𝘸(jí, a)(𝘦) | Cont(a)(𝘸) = λ𝘸'. ¬∃𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ raı.𝘸'(𝘹)(𝘦). ∃𝘦. τ(𝘦) ⊆ t' ∧ dua.𝘸'(jí, 𝘹)(𝘦)))\"",
+	);
+	expect(d('Gaı póq, ꝡë cho hó tú rua, rúa')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t'''' ∧ gaı.𝘸(b, a)(𝘦) | (∃𝘦. τ(𝘦) ⊆ t''' ∧ poq.𝘸(b)(𝘦)) ∧ ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ rua.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ cho.𝘸(b, 𝘹)(𝘦) | inanimate(𝘹)) | ∃𝘦. τ(𝘦) ⊆ t ∧ rua.𝘸(a)(𝘦))) | animate(b) | inanimate(a)\"",
+	);
 });
