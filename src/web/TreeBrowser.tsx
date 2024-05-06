@@ -1,17 +1,32 @@
 import { useState } from 'react';
-import { DTree } from '../semantics/model';
+import { DTree, Expr } from '../semantics/model';
 import { Tree, treeText } from '../tree';
 import { getLabel } from '../tree/place';
-import { toPlainText } from '../semantics/render';
+import { toLatex } from '../semantics/render';
 import './TreeBrowser.css';
+import { MathJax } from 'better-react-mathjax';
+import { compact } from '../semantics/compact';
 
-export function Node(props: { tree: Tree | DTree; expanded: boolean }) {
-	const { tree, expanded } = props;
+export function Denotation(props: { denotation: Expr; compact: boolean }) {
+	const expr = props.compact ? compact(props.denotation) : props.denotation;
+	return (
+		<MathJax className="tree-formula" hideUntilTypeset="every">
+			{'$$\\LARGE ' + toLatex(expr) + '$$'}
+		</MathJax>
+	);
+}
+
+export function Node(props: {
+	tree: Tree | DTree;
+	expanded: boolean;
+	compactDenotations: boolean;
+}) {
+	const { tree, expanded, compactDenotations } = props;
 	return (
 		<div className="tree-node">
 			<div className="tree-label">{getLabel(tree)}</div>
 			{'denotation' in tree && tree.denotation && (
-				<div className="tree-denotation">{toPlainText(tree.denotation)}</div>
+				<Denotation denotation={tree.denotation} compact={compactDenotations} />
 			)}
 			{'word' in tree && (
 				<>
@@ -27,8 +42,11 @@ export function Node(props: { tree: Tree | DTree; expanded: boolean }) {
 	);
 }
 
-export function TreeBrowser(props: { tree: Tree | DTree }) {
-	const { tree } = props;
+export function TreeBrowser(props: {
+	tree: Tree | DTree;
+	compactDenotations: boolean;
+}) {
+	const { tree, compactDenotations } = props;
 	const children =
 		'left' in tree
 			? [tree.left, tree.right]
@@ -39,12 +57,20 @@ export function TreeBrowser(props: { tree: Tree | DTree }) {
 	return (
 		<div className="tree-stack">
 			<div style={{ cursor: 'pointer' }} onClick={() => setExpanded(false)}>
-				<Node tree={tree} expanded={expanded} />
+				<Node
+					tree={tree}
+					expanded={expanded}
+					compactDenotations={compactDenotations}
+				/>
 			</div>
 			{expanded ? (
 				<div className="tree-children">
 					{children.map((c, i) => (
-						<TreeBrowser tree={c} key={c.label + i} />
+						<TreeBrowser
+							tree={c}
+							key={c.label + i}
+							compactDenotations={compactDenotations}
+						/>
 					))}
 				</div>
 			) : children.length ? (

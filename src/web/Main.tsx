@@ -164,7 +164,12 @@ export function Main(props: MainProps) {
 			case 'json':
 				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
 			case 'react':
-				return <TreeBrowser tree={tree} />;
+				return (
+					<TreeBrowser
+						tree={tree}
+						compactDenotations={mode === 'semantics-tree-compact'}
+					/>
+				);
 		}
 	}
 
