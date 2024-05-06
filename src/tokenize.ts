@@ -219,8 +219,8 @@ export class ToaqTokenizer {
 								wordTone === Tone.T1
 									? 'prefix_conjunctionizer_in_t1'
 									: wordTone === Tone.T4
-									? 'prefix_conjunctionizer_in_t4'
-									: 'prefix_conjunctionizer',
+										? 'prefix_conjunctionizer_in_t4'
+										: 'prefix_conjunctionizer',
 							value: inTone(tokenText, wordTone),
 							index: m.index,
 						});

@@ -139,7 +139,7 @@ function substitute(
 						target,
 						newContext,
 						i => i + newContext.length - target.context.length,
-				  )
+					)
 				: v(i < index ? i : i - 1, newContext),
 		i => (i === index ? defines : i < index ? i : i - 1),
 		body =>
@@ -537,7 +537,7 @@ export function bindTimeIntervals(
 			? {
 					...b,
 					timeIntervals: [...b.timeIntervals, ...unboundTimeIntervals],
-			  }
+				}
 			: b,
 	);
 }
@@ -572,8 +572,8 @@ export function makeWorldExplicit(tree: DTree): DTree {
 		i > worldIndex
 			? i + explicitArguments
 			: i === worldIndex
-			? 0
-			: i + 1 + explicitArguments,
+				? 0
+				: i + 1 + explicitArguments,
 	);
 
 	// Add the function applications

@@ -263,7 +263,7 @@ export class TreePlacer {
 		return 'word' in tree
 			? this.placeLeaf(tree)
 			: 'children' in tree
-			? this.placeRose(tree)
-			: this.placeBranch(tree);
+				? this.placeRose(tree)
+				: this.placeBranch(tree);
 	}
 }

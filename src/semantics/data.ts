@@ -334,14 +334,14 @@ export const animacies = Object.fromEntries(
 				a,
 				pred === null
 					? // λ𝘗. 𝘗
-					  λ(['e', 't'], ['e'], c => v(0, c))
+						λ(['e', 't'], ['e'], c => v(0, c))
 					: // λ𝘗 : animate(a). 𝘗
-					  λ(
+						λ(
 							['e', 't'],
 							['e'],
 							c => v(0, c),
 							c => app(pred(c), v(1, c)),
-					  ),
+						),
 			] as [AnimacyClass, Expr],
 	),
 ) as Record<AnimacyClass, Expr>;

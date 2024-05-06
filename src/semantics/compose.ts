@@ -100,7 +100,7 @@ const eventIdentification: CompositionRule = (branch, left, right) => {
 							eventIdentificationRightOnlyTemplate(right.denotation.context),
 							right.denotation,
 						),
-				  );
+					);
 		bindings = right.bindings;
 	} else if (right.denotation === null) {
 		({ denotation, bindings } = left);
@@ -226,7 +226,7 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 								index: indexMapping(b.index),
 								subordinate: true,
 								timeIntervals: b.timeIntervals.map(indexMapping),
-						  },
+							},
 				),
 			};
 		}
@@ -336,7 +336,7 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 								index,
 								subordinate: b.subordinate,
 								timeIntervals: b.timeIntervals.map(i => skmMapping[i]!),
-						  };
+							};
 				}),
 			};
 
@@ -381,7 +381,7 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 							index: indexMapping(b.index),
 							subordinate: b.subordinate,
 							timeIntervals: b.timeIntervals.map(indexMapping),
-					  },
+						},
 			),
 		};
 	}
