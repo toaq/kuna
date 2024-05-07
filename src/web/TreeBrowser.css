@@ -1,7 +1,7 @@
 .tree-stack,
 .tree-node,
 .tree-node-contents,
-.tree-roof {
+.tree-roof, .tree-subtree {
 	display: flex;
 	flex-direction: column;
 	justify-content: start;
@@ -9,13 +9,15 @@
 }
 
 .tree-node {
-	padding-top: 0.5em;
-	padding-left: 1em;
-	padding-right: 1em;
-	height: 7em;
+	height: 6em;
+}
+
+.tree-subtree {
+	/* outline: 2px solid #ff00ff; */
 }
 
 .tree-children {
+	width: 0px;
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
@@ -23,7 +25,7 @@
 }
 
 .tree-label {
-	font-weight: bold;
+	/* font-weight: bold; */
 }
 
 .tree-formula {

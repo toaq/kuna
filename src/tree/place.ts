@@ -47,6 +47,7 @@ export interface RenderedDenotation<C extends DrawContext> {
 	) => Promise<void>;
 	width(ctx: C): number;
 	height(ctx: C): number;
+	denotation: CompactExpr;
 }
 
 interface PlacedLeafBase<C extends DrawContext> {
@@ -105,6 +106,7 @@ export function denotationRenderText(
 		height(ctx) {
 			return 30;
 		},
+		denotation,
 	};
 }
 
@@ -145,6 +147,7 @@ export function denotationRenderLatex(
 		height(ctx) {
 			return pxHeight;
 		},
+		denotation,
 	};
 }
 
