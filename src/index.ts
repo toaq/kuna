@@ -5,7 +5,7 @@ import yargs from 'yargs';
 import { pngGlossSentence } from './png-gloss';
 import { Tree } from './tree';
 import { fix } from './fix';
-import { compact } from './compact';
+import { trimTree } from './trim';
 import { drawTreeToCanvas } from './tree/draw';
 import { parse } from './parse';
 import { textual_tree_from_json } from './textual-tree';
@@ -28,7 +28,7 @@ function getTrees(argv: {
 		trees = trees.map(t => fix(t));
 	}
 	if (argv.compact) {
-		trees = trees.map(compact);
+		trees = trees.map(trimTree);
 	}
 	return trees;
 }

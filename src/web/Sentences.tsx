@@ -141,7 +141,7 @@ export function Sentences() {
 					<option value="tokens">Tokens</option>
 					<option value="raw-tree">Raw tree</option>
 					<option value="syntax-tree">Syntax tree</option>
-					<option value="compact-tree">Simplified tree</option>
+					<option value="trimmed-tree">Trimmed tree</option>
 					<option value="semantics-tree">Denoted tree</option>
 					<option value="semantics-tree-compact">Compact denoted tree</option>
 					<option value="boxes-flat">Boxes (flat)</option>

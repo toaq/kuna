@@ -4,7 +4,7 @@ import { ReactElement, useEffect, useRef, useState } from 'react';
 import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 
 import { boxify } from '../boxes';
-import { compact as compactTree } from '../compact';
+import { trimTree } from '../trim';
 import { treeToEnglish } from '../english/tree';
 import { fix } from '../fix';
 import { Glosser } from '../gloss';
@@ -26,7 +26,7 @@ import { Tokens } from './Tokens';
 
 type TreeMode =
 	| 'syntax-tree'
-	| 'compact-tree'
+	| 'trimmed-tree'
 	| 'semantics-tree'
 	| 'semantics-tree-compact'
 	| 'raw-tree';
@@ -122,7 +122,7 @@ export function Main(props: MainProps) {
 	function getTree(mode: TreeMode): ReactElement {
 		let tree = parseInput();
 		if (mode !== 'raw-tree') tree = fix(tree);
-		if (mode === 'compact-tree') tree = compactTree(tree);
+		if (mode === 'trimmed-tree') tree = trimTree(tree);
 		if (mode.includes('semantics')) tree = denote(tree as any);
 		switch (treeFormat) {
 			case 'textual':
@@ -210,7 +210,7 @@ export function Main(props: MainProps) {
 			case 'boxes-split':
 				return getBoxes('split');
 			case 'syntax-tree':
-			case 'compact-tree':
+			case 'trimmed-tree':
 			case 'semantics-tree':
 			case 'semantics-tree-compact':
 			case 'raw-tree':
@@ -292,9 +292,7 @@ export function Main(props: MainProps) {
 						<div className="button-group">
 							<div className="button-group-name">Tree</div>
 							<button onClick={() => generate('syntax-tree')}>Syntax</button>
-							<button onClick={() => generate('compact-tree')}>
-								Simplified
-							</button>
+							<button onClick={() => generate('trimmed-tree')}>Trimmed</button>
 							<button onClick={() => generate('semantics-tree')}>
 								Denoted
 							</button>
