@@ -1,8 +1,7 @@
-import { toadua } from './toadua';
-
 export function guessFrameFromDefinition(definition: string): string {
-	const frame = definition
-		.split(';')[0]
+	const def = definition.split(';').filter(x => !x.startsWith('predicate:'))[0];
+	if (!def) return '?';
+	const frame = def
 		.toLowerCase()
 		.replace(/\d/g, '')
 		.replace(/▯ (\S+ ){0,2}the case/g, '0')
@@ -12,9 +11,4 @@ export function guessFrameFromDefinition(definition: string): string {
 		.replace(/[^012▯]/g, '')
 		.replace(/▯/g, 'c');
 	return [...frame].join(' ');
-}
-
-export function guessFrameUsingToadua(lemma: string): string {
-	const entry = toadua.get(lemma);
-	return entry ? guessFrameFromDefinition(entry.body) : '?';
 }
