@@ -29,7 +29,6 @@ import { themes } from '../tree/theme';
 
 type TreeMode =
 	| 'syntax-tree'
-	| 'trimmed-tree'
 	| 'semantics-tree'
 	| 'semantics-tree-compact'
 	| 'raw-tree';
@@ -84,6 +83,7 @@ export function Main(props: MainProps) {
 	const math = latestMode?.startsWith('logical-form');
 	const treeImg = useRef<HTMLImageElement>(null);
 	const [meaningCompact, setMeaningCompact] = useState(false);
+	const [trimmed, setTrimmed] = useState(false);
 
 	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png-latex');
 	useEffect(() => {
@@ -125,8 +125,8 @@ export function Main(props: MainProps) {
 	function getTree(mode: TreeMode): ReactElement {
 		let tree = parseInput();
 		if (mode !== 'raw-tree') tree = fix(tree);
-		if (mode === 'trimmed-tree') tree = trimTree(tree);
 		if (mode.includes('semantics')) tree = denote(tree as any);
+		if (trimmed) tree = trimTree(tree);
 		switch (treeFormat) {
 			case 'textual':
 				return (
@@ -140,7 +140,8 @@ export function Main(props: MainProps) {
 						? denotationRenderLatex
 						: denotationRenderText;
 				const renderer =
-					mode === 'semantics-tree-compact'
+					mode === 'semantics-tree-compact' ||
+					mode === 'semantics-tree-compact-trimmed'
 						? (e: CompactExpr, t: Theme) =>
 								baseRenderer(compactDenotation(e), t)
 						: baseRenderer;
@@ -224,7 +225,6 @@ export function Main(props: MainProps) {
 			case 'boxes-split':
 				return getBoxes('split');
 			case 'syntax-tree':
-			case 'trimmed-tree':
 			case 'semantics-tree':
 			case 'semantics-tree-compact':
 			case 'raw-tree':
@@ -293,7 +293,7 @@ export function Main(props: MainProps) {
 							>
 								<option value="png-latex">Image (LaTeX)</option>
 								<option value="png-text">Image (plain text)</option>
-								<option value="react">React</option>
+								<option value="react">React (WIP)</option>
 								<option value="textual">Text art</option>
 								<option value="json">JSON</option>
 							</select>
@@ -308,13 +308,20 @@ export function Main(props: MainProps) {
 						<div className="button-group">
 							<div className="button-group-name">Tree</div>
 							<button onClick={() => generate('syntax-tree')}>Syntax</button>
-							<button onClick={() => generate('trimmed-tree')}>Trimmed</button>
 							<button onClick={() => generate('semantics-tree')}>
 								Denoted
 							</button>
 							<button onClick={() => generate('semantics-tree-compact')}>
 								Compact
 							</button>
+							<label>
+								<input
+									type="checkbox"
+									checked={trimmed}
+									onChange={e => setTrimmed(e.target.checked)}
+								/>
+								Trim nulls
+							</label>
 						</div>
 						<div className="button-group">
 							<div className="button-group-name">Boxes</div>
