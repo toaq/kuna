@@ -1,0 +1,39 @@
+.tree-stack,
+.tree-node,
+.tree-node-contents,
+.tree-roof,
+.tree-subtree {
+	display: flex;
+	flex-direction: column;
+	justify-content: start;
+	align-items: center;
+}
+
+.tree-node {
+	height: 6em;
+}
+
+.tree-subtree {
+	/* outline: 2px solid #ff00ff; */
+}
+
+.tree-children {
+	width: 0px;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: start;
+}
+
+.tree-label {
+	/* font-weight: bold; */
+}
+
+.tree-formula {
+	font-size: 7px;
+}
+
+.tree-roof {
+	cursor: pointer;
+	padding: 0.5em;
+}

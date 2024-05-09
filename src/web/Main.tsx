@@ -13,7 +13,8 @@ import { denote } from '../semantics/denote';
 import { toLatex, toPlainText } from '../semantics/render';
 import { textual_tree_from_json } from '../textual-tree';
 import { Tree } from '../tree';
-import { drawTreeToCanvas, Theme } from '../tree/draw';
+import { drawTreeToCanvas } from '../tree/draw';
+import { Theme } from '../tree/theme';
 
 import {
 	compact as compactDenotation,
@@ -23,6 +24,8 @@ import { ToaqTokenizer } from '../tokenize';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
 import { Boxes } from './Boxes';
 import { Tokens } from './Tokens';
+import { TreeBrowser } from './TreeBrowser';
+import { themes } from '../tree/theme';
 
 type TreeMode =
 	| 'syntax-tree'
@@ -41,7 +44,7 @@ export type Mode =
 	| 'logical-form-latex'
 	| 'english'
 	| 'tokens';
-type TreeFormat = 'png-latex' | 'png-text' | 'textual' | 'json';
+type TreeFormat = 'png-latex' | 'png-text' | 'textual' | 'json' | 'react';
 
 function errorString(e: any): string {
 	const string = String(e);
@@ -130,7 +133,7 @@ export function Main(props: MainProps) {
 					<pre>{textual_tree_from_json(tree).replace(/\x1b\[\d+m/g, '')}</pre>
 				);
 			case 'png-latex':
-			case 'png-text':
+			case 'png-text': {
 				const theme = darkMode.isDarkMode ? 'dark' : 'light';
 				const baseRenderer =
 					treeFormat === 'png-latex'
@@ -160,8 +163,19 @@ export function Main(props: MainProps) {
 						src={''}
 					/>
 				);
+			}
 			case 'json':
 				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
+			case 'react': {
+				const themeName = darkMode.isDarkMode ? 'dark' : 'light';
+				return (
+					<TreeBrowser
+						tree={tree}
+						compactDenotations={mode === 'semantics-tree-compact'}
+						theme={themes[themeName]}
+					/>
+				);
+			}
 		}
 	}
 
@@ -274,10 +288,12 @@ export function Main(props: MainProps) {
 						<label>
 							Tree format:
 							<select
+								value={treeFormat}
 								onChange={e => setTreeFormat(e.target.value as TreeFormat)}
 							>
 								<option value="png-latex">Image (LaTeX)</option>
 								<option value="png-text">Image (plain text)</option>
+								<option value="react">React</option>
 								<option value="textual">Text art</option>
 								<option value="json">JSON</option>
 							</select>
