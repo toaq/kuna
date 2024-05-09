@@ -1,7 +1,7 @@
 import { dictionary, Entry } from './dictionary';
 import { Impossible } from './error';
-import { guessFrameUsingToadua } from './frame';
 import { getFrame } from './serial';
+import { toadua } from './toadua';
 import { bare, clean, repairTones, ToaqToken, tone } from './tokenize';
 import { Tone } from './types';
 
@@ -287,7 +287,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 				gloss_abbreviation: lemmaForm,
 				pronominal_class: 'ta',
 				distribution: 'd',
-				frame: guessFrameUsingToadua(lemmaForm),
+				frame: toadua()[lemmaForm]?.frame ?? '?',
 				english: '',
 				subject: 'free',
 			},

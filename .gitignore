@@ -4,5 +4,8 @@ output.*
 /*.png
 dist
 
+# Downloaded by src/scripts/build-data.ts
+data/toadua/dump.json
+
 # Generated from src/toaq.generic.ne by grammar-preprocessor.ts
 src/toaq.ne

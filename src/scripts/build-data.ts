@@ -26,6 +26,9 @@ async function fetchToadua(): Promise<{ results: any[] }> {
 }
 
 async function readToadua(): Promise<{ results: any[] }> {
+	if (!fs.existsSync('data/toadua')) {
+		fs.mkdirSync('data/toadua');
+	}
 	if (!fs.existsSync('data/toadua/dump.json')) {
 		const toadua = await fetchToadua();
 		fs.writeFileSync('data/toadua/dump.json', JSON.stringify(toadua));
@@ -58,23 +61,23 @@ readToadua().then(({ results }) => {
 	// Sort by ascending score so that higher scoring entries get processed later and overwrite earlier ones.
 	results.sort((a, b) => a.score - b.score);
 
-	let glosses: Record<string, string> = {};
-	let frames: Record<string, string> = {};
+	let entries: Record<string, any> = {};
 
-	for (let entry of results) {
-		if (entry['scope'] !== 'en') continue;
-		if (entry['score'] < 0) continue;
-		const head = entry['head'];
+	for (let result of results) {
+		if (result['scope'] !== 'en') continue;
+		if (result['score'] < 0) continue;
+		const head = result['head'];
 		if (head.length >= 30) continue;
-		const body = entry['body'];
+		const body = result['body'];
 		const gloss = makeGloss(body);
+		let entry: any = { body, head, user: result.user, score: result.score };
 		if (gloss && gloss.length <= 25) {
-			glosses[head] = gloss;
+			entry.gloss = gloss;
 		}
 		const frame = guessFrameFromDefinition(body);
-		if (frame) frames[head] = frame;
+		if (frame) entry.frame = frame;
+		entries[head] = entry;
 	}
 
-	fs.writeFileSync('data/toadua/glosses.json', JSON.stringify(glosses));
-	fs.writeFileSync('data/toadua/frames.json', JSON.stringify(frames));
+	fs.writeFileSync('data/toadua/toadua.json', JSON.stringify(entries));
 });

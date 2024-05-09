@@ -1,14 +1,22 @@
-import toaduaDump from '../data/toadua/dump.json';
+import * as fs from 'fs';
+import path from 'path';
 
 export interface ToaduaEntry {
 	head: string;
 	body: string;
 	user: string;
-	scope: string;
 	score: number;
+	gloss?: string;
+	frame?: string;
 }
 
-export const toadua = new Map<string, ToaduaEntry>();
-for (const e of toaduaDump as ToaduaEntry[]) {
-	toadua.set(e.head, e);
+let _toadua: Record<string, ToaduaEntry>;
+
+export function toadua(): Record<string, ToaduaEntry> {
+	return (_toadua ??= JSON.parse(
+		fs.readFileSync(
+			path.resolve(__dirname, '../data/toadua/toadua.json'),
+			'utf8',
+		),
+	));
 }

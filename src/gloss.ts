@@ -1,7 +1,7 @@
 import { Entry, dictionary } from './dictionary';
 import { bare, clean, splitPrefixes, tone } from './tokenize';
 import { Tone } from './types';
-import toaduaGlossesJson from '../data/toadua/glosses.json';
+import toaduaGlossesJson from '../data/toadua/toadua.json';
 
 interface Gloss {
 	toaq: string;
@@ -9,8 +9,9 @@ interface Gloss {
 }
 
 let toaduaGlosses = new Map();
-for (const [word, gloss] of Object.entries(toaduaGlossesJson)) {
-	toaduaGlosses.set(word.toLowerCase(), gloss.replace(/\s+/g, '.'));
+for (const [word, e] of Object.entries(toaduaGlossesJson)) {
+	if ('gloss' in e)
+		toaduaGlosses.set(word.toLowerCase(), e.gloss.replace(/\s+/g, '.'));
 }
 
 const words = [...toaduaGlosses.keys()]

@@ -16,7 +16,7 @@ import { pngGlossSentence } from '../png-gloss';
 import { toEnglish } from '../english/tree';
 import { denotationRenderText } from '../tree/place';
 
-const toaduaEntries = [...toadua.values()];
+const toaduaEntries = [...Object.values(toadua())];
 
 export class KunaBot {
 	constructor(private client: Client) {}
@@ -117,7 +117,6 @@ export class KunaBot {
 			const newEntry = _.sample(
 				toaduaEntries.filter(
 					entry =>
-						entry.scope === 'en' &&
 						!entry.head.includes(' ') &&
 						!entries.some(previous => entry.user === previous.user),
 				),
@@ -168,7 +167,7 @@ export class KunaBot {
 		const mode = interaction.options.getString('mode', false) ?? 'official';
 		const author = interaction.options.getString('author', false);
 		const ok = this.quizFilter(mode, author);
-		const candidates = toaduaEntries.filter(e => e.scope === 'en' && ok(e));
+		const candidates = toaduaEntries.filter(e => ok(e));
 		if (candidates.length < r + p) {
 			await interaction.reply('Not enough words!');
 			return;
