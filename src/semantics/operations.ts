@@ -1,5 +1,5 @@
-import { Impossible } from '../error';
-import { enumerate, reverse, some, zip } from '../misc';
+import { Impossible } from '../core/error';
+import { enumerate, reverse, some, zip } from '../core/misc';
 import {
 	app,
 	Binding,

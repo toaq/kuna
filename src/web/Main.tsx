@@ -3,15 +3,15 @@ import _ from 'lodash';
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 
-import { boxify } from '../boxes';
-import { trimTree } from '../trim';
+import { boxify } from '../modes/boxes';
+import { trimTree } from '../tree/trim';
 import { treeToEnglish } from '../english/tree';
-import { fix } from '../fix';
-import { Glosser } from '../gloss';
-import { parse } from '../parse';
+import { fix } from '../core/fix';
+import { Glosser } from '../morphology/gloss';
+import { parse } from '../modes/parse';
 import { denote } from '../semantics/denote';
 import { toLatex, toPlainText } from '../semantics/render';
-import { textual_tree_from_json } from '../textual-tree';
+import { textual_tree_from_json } from '../modes/textual-tree';
 import { Tree } from '../tree';
 import { drawTreeToCanvas } from '../tree/draw';
 import { Theme } from '../tree/theme';
@@ -20,7 +20,7 @@ import {
 	compact as compactDenotation,
 	CompactExpr,
 } from '../semantics/compact';
-import { ToaqTokenizer } from '../tokenize';
+import { ToaqTokenizer } from '../morphology/tokenize';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
 import { Boxes } from './Boxes';
 import { Tokens } from './Tokens';

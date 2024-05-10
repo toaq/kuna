@@ -1,4 +1,4 @@
-import { Impossible } from '../error';
+import { Impossible } from '../core/error';
 import { Branch, Leaf } from '../tree';
 import { toPlainText, typesToPlainText, typeToPlainText } from './render';
 

@@ -1,4 +1,4 @@
-import { SubjectType } from '../dictionary';
+import { SubjectType } from '../morphology/dictionary';
 import { CovertValue, Label } from '../tree';
 import {
 	after,

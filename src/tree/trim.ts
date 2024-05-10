@@ -1,4 +1,4 @@
-import { Tree, isBoringNull } from './tree';
+import { Tree, isBoringNull } from '.';
 
 /**
  * Trim null leaves from a tree and coalesce the labels. For example,

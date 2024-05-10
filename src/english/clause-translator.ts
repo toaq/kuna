@@ -1,5 +1,5 @@
-import { Impossible, Unimplemented } from '../error';
-import { clean } from '../tokenize';
+import { Impossible, Unimplemented } from '../core/error';
+import { clean } from '../morphology/tokenize';
 import { Leaf, Tree, assertBranch } from '../tree';
 import {
 	VerbForm,

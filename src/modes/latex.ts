@@ -1,6 +1,6 @@
-import { DTree } from './semantics/model';
-import { toLatex as exprToLatex, typeToLatex } from './semantics/render';
-import { Tree } from './tree';
+import { DTree } from '../semantics/model';
+import { toLatex as exprToLatex, typeToLatex } from '../semantics/render';
+import { Tree } from '../tree';
 
 export function latexEscape(text: string): string {
 	return '{' + text.replace(/Σ/g, '$\\Sigma$') + '}';

@@ -1,4 +1,4 @@
-import { Impossible } from '../error';
+import { Impossible } from '../core/error';
 import { CompactExpr } from './compact';
 import { Expr, ExprType } from './model';
 

@@ -7,10 +7,10 @@ import {
 	assertBranch,
 	assertLeaf,
 	effectiveLabel,
-} from './tree';
+} from '../tree';
 import { Impossible } from './error';
 import { reverse } from './misc';
-import { inTone } from './tokenize';
+import { inTone } from '../morphology/tokenize';
 import { Tone } from './types';
 
 interface Quantification {

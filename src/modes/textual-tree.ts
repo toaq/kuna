@@ -1,4 +1,4 @@
-import { Tree } from './tree';
+import { Tree } from '../tree';
 
 function ttree_converted(data: Tree): { label: string; branches: any } {
 	if ('word' in data) {

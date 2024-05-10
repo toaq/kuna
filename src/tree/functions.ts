@@ -1,4 +1,4 @@
-import { bare, clean, repairTones } from '../tokenize';
+import { bare, clean, repairTones } from '../morphology/tokenize';
 import { Label, Tree, assertBranch } from './types';
 
 export function isBoringNull(tree: Tree): boolean {

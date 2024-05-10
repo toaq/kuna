@@ -1,5 +1,5 @@
-import { Impossible } from '../error';
-import { Glosser } from '../gloss';
+import { Impossible } from '../core/error';
+import { Glosser } from '../morphology/gloss';
 import { Leaf, Tree } from '../tree';
 import { Constituent } from './clause-translator';
 import { verbFormFor } from './conjugation';

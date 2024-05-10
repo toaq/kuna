@@ -50,7 +50,7 @@ declare var vocative: any;
 declare var start_parenthetical: any;
 declare var end_parenthetical: any;
 
-import { ToaqTokenizer } from "./tokenize";
+import { ToaqTokenizer } from "./morphology/tokenize";
 import * as TreeModule from "./tree";
 
 const {

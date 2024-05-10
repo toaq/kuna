@@ -1,6 +1,6 @@
-import { Impossible, Unimplemented } from '../error';
-import { parse } from '../parse';
-import { bare, clean } from '../tokenize';
+import { Impossible, Unimplemented } from '../core/error';
+import { parse } from '../modes/parse';
+import { bare, clean } from '../morphology/tokenize';
 import { Branch, Leaf, Tree, assertBranch, isQuestion } from '../tree';
 import { ClauseTranslator, Constituent } from './clause-translator';
 import { VerbForm } from './conjugation';

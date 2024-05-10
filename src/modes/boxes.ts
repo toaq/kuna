@@ -1,7 +1,7 @@
-import { inTone } from './tokenize';
-import { Tree, assertBranch, skipFree, treeText } from './tree';
-import { Tone } from './types';
-import { Impossible, Ungrammatical, Unimplemented } from './error';
+import { inTone } from '../morphology/tokenize';
+import { Tree, assertBranch, skipFree, treeText } from '../tree';
+import { Tone } from '../core/types';
+import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 
 export interface PostField {
 	earlyAdjuncts: Tree[];

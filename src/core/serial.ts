@@ -1,7 +1,7 @@
 import { Impossible, Ungrammatical, Unimplemented } from './error';
 import { nextCoindex } from './fix';
 import { splitNonEmpty } from './misc';
-import { Branch, Label, Leaf, Tree, effectiveLabel, makeNull } from './tree';
+import { Branch, Label, Leaf, Tree, effectiveLabel, makeNull } from '../tree';
 
 /**
  * Toaq serials are too complicated to parse directly in the context-free

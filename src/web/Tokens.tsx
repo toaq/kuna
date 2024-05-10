@@ -1,5 +1,5 @@
-import { Glosser } from '../gloss';
-import { ToaqToken } from '../tokenize';
+import { Glosser } from '../morphology/gloss';
+import { ToaqToken } from '../morphology/tokenize';
 import './Tokens.css';
 
 function Token(props: { token: ToaqToken }) {

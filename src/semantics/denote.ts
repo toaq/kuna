@@ -1,12 +1,12 @@
-import { VerbEntry } from '../dictionary';
+import { VerbEntry } from '../morphology/dictionary';
 import {
 	Impossible,
 	Ungrammatical,
 	Unimplemented,
 	Unrecognized,
-} from '../error';
-import { splitNonEmpty } from '../misc';
-import { inTone } from '../tokenize';
+} from '../core/error';
+import { splitNonEmpty } from '../core/misc';
+import { inTone } from '../morphology/tokenize';
 import {
 	Branch,
 	CovertWord,
@@ -15,7 +15,7 @@ import {
 	Word,
 	effectiveLabel,
 } from '../tree';
-import { Tone } from '../types';
+import { Tone } from '../core/types';
 import { compose } from './compose';
 import {
 	adjuncts,

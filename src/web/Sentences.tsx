@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { useMemo, useState } from 'react';
-import { parse } from '../parse';
+import { parse } from '../modes/parse';
 import { Main, Mode } from './Main';
 import './Sentences.css';
 import { useInView } from 'react-intersection-observer';
@@ -9,7 +9,7 @@ import { useInView } from 'react-intersection-observer';
 import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
 // @ts-ignore
 import aSentencesTxt from '../../sentences/a.txt?raw';
-import { fix } from '../fix';
+import { fix } from '../core/fix';
 import { denote } from '../semantics/denote';
 
 const rSentences: string[] = refgramSentencesTxt.split('\n');

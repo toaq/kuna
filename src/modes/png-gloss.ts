@@ -1,5 +1,5 @@
 import { loadImage, createCanvas, registerFont } from 'canvas';
-import { Glosser } from './gloss';
+import { Glosser } from '../morphology/gloss';
 
 export function pngGlossSentence(
 	sentence: string,

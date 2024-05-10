@@ -1,5 +1,5 @@
-import { Impossible, Unimplemented } from '../error';
-import { some } from '../misc';
+import { Impossible, Unimplemented } from '../core/error';
+import { some } from '../core/misc';
 import { Branch, StrictTree, effectiveLabel } from '../tree';
 import {
 	and,

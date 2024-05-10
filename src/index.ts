@@ -1,17 +1,17 @@
-import { toDocument } from './latex';
+import { toDocument } from './modes/latex';
 import * as fs from 'fs';
-import { Glosser } from './gloss';
+import { Glosser } from './morphology/gloss';
 import yargs from 'yargs';
-import { pngGlossSentence } from './png-gloss';
+import { pngGlossSentence } from './modes/png-gloss';
 import { Tree } from './tree';
-import { fix } from './fix';
-import { trimTree } from './trim';
+import { fix } from './core/fix';
+import { trimTree } from './tree/trim';
 import { drawTreeToCanvas } from './tree/draw';
-import { parse } from './parse';
-import { textual_tree_from_json } from './textual-tree';
-import { testSentences } from './test-sentences';
+import { parse } from './modes/parse';
+import { textual_tree_from_json } from './modes/textual-tree';
+import { testSentences } from './modes/test-sentences';
 import { denote } from './semantics/denote';
-import { ToaqTokenizer } from './tokenize';
+import { ToaqTokenizer } from './morphology/tokenize';
 import { toEnglish } from './english/tree';
 import { denotationRenderText } from './tree/place';
 

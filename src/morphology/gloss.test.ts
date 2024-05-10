@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { Glosser } from './gloss';
+import { Glosser } from './morphology/gloss';
 
 test('it glosses Toaq words', () => {
 	const glosser = new Glosser(false);
