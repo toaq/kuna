@@ -1,8 +1,4 @@
-import { Tree } from './tree';
-
-function isNull(tree: Tree): boolean {
-	return 'word' in tree && tree.word.covert && tree.word.value === '∅';
-}
+import { Tree, isBoringNull } from './tree';
 
 /**
  * Trim null leaves from a tree and coalesce the labels. For example,
@@ -20,14 +16,14 @@ export function trimTree(tree: Tree): Tree {
 		return { ...tree, children: tree.children.map(trimTree) };
 	}
 
-	if (isNull(tree.left)) {
+	if (isBoringNull(tree.left)) {
 		let result = { ...trimTree(tree.right) };
 		result.label = (tree.label + '·' + result.label) as any;
 		console.log({ result, tree });
 		if ((tree as any).denotation)
 			(result as any).denotation = (tree as any).denotation;
 		return result;
-	} else if (isNull(tree.right)) {
+	} else if (isBoringNull(tree.right)) {
 		let result = { ...trimTree(tree.left) };
 		result.label = (tree.label + '·' + result.label) as any;
 		if ((tree as any).denotation)

@@ -51,6 +51,17 @@ export function makeNull(label: Label): Leaf {
 	return { label, word: { covert: true, value: '∅' } };
 }
 
+export function isBoringNull(tree: Tree): boolean {
+	return (
+		'word' in tree &&
+		tree.word.covert &&
+		(tree.word.value === '∅' ||
+			tree.word.value === 'BE' ||
+			tree.word.value === 'CAUSE' ||
+			tree.word.value === 'PRO')
+	);
+}
+
 export type Label =
 	| '*Serial'
 	| '*𝘷P'
