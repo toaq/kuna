@@ -8,10 +8,10 @@ import {
 	assertLeaf,
 	effectiveLabel,
 } from '../tree';
-import { Impossible } from './error';
-import { reverse } from './misc';
+import { Impossible } from '../core/error';
+import { reverse } from '../core/misc';
 import { inTone } from '../morphology/tokenize';
-import { Tone } from './types';
+import { Tone } from '../morphology/tone';
 
 interface Quantification {
 	type: 'quantification';
@@ -166,18 +166,25 @@ class Scope {
 	}
 }
 
+/**
+ * Recurses down a parsed syntax tree to recover the deep structure.
+ */
 class Recoverer {
 	private nextBinding = 0;
 	private nextCoindex = 0;
 
 	constructor() {}
 
-	private newBinding(): number {
-		return this.nextBinding++;
-	}
-
 	private newCoindex(): string {
 		return String.fromCodePoint('𝑖'.codePointAt(0)! + this.nextCoindex++);
+	}
+
+	private newScope(): Scope {
+		return new Scope(() => this.nextBinding++);
+	}
+
+	private fixSerial(serial: Tree, terms: Tree[]): Tree {
+		return fixSerial(serial, terms, () => this.newCoindex());
 	}
 
 	recover(tree: Tree, scope: Scope | undefined): StrictTree {
@@ -190,9 +197,7 @@ class Recoverer {
 				}
 				if (!('children' in serial)) throw new Impossible('strange *Serial');
 
-				const vP = fixSerial(serial, tree.children.slice(1), () =>
-					this.newCoindex(),
-				);
+				const vP = this.fixSerial(serial, tree.children.slice(1));
 				return this.recover(vP, scope);
 			} else {
 				throw new Impossible('unexpected non-binary tree: ' + tree.label);
@@ -200,9 +205,7 @@ class Recoverer {
 		} else if ('left' in tree) {
 			if (tree.label === 'VP' && tree.left.label === '*Serial') {
 				// Tiny hack to extract a VP from fixSerial:
-				const vP = fixSerial(tree.left, [pro(), tree.right], () =>
-					this.newCoindex(),
-				);
+				const vP = this.fixSerial(tree.left, [pro(), tree.right]);
 				assertBranch(vP);
 				assertBranch(vP.right);
 				return this.recover(vP.right.right, undefined);
@@ -210,7 +213,7 @@ class Recoverer {
 
 			// Subclauses open a new scope
 			if (tree.label === 'CP' || tree.label === 'CPrel') {
-				const newScope = new Scope(() => this.newBinding());
+				const newScope = this.newScope();
 				const right = this.recover(tree.right, newScope);
 				return {
 					label: tree.label,
@@ -221,9 +224,9 @@ class Recoverer {
 
 			// Conjoined clauses each get a new scope of their own
 			if (tree.label === '&P' && effectiveLabel(tree) !== 'DP') {
-				const leftScope = new Scope(() => this.newBinding());
+				const leftScope = this.newScope();
 				const left = this.recover(tree.left, leftScope);
-				const rightScope = new Scope(() => this.newBinding());
+				const rightScope = this.newScope();
 				assertBranch(tree.right);
 				const conjunction = this.recover(tree.right.left, scope);
 				const right = this.recover(tree.right.right, rightScope);
@@ -260,7 +263,8 @@ class Recoverer {
 }
 
 /**
- * Recover a deep-structure Toaq syntax tree by undoing movement.
+ * Recover a deep-structure Toaq syntax tree by undoing movement and creating
+ * QP/FocAdvP around scope boundaries.
  *
  * @param tree A surface-structure tree parsed by the Nearley grammar.
  * @returns A strictly binary deep-structure syntax tree.

@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 import { parse } from '../modes/parse';
-import { recover } from '../core/recover';
+import { recover } from '../syntax/recover';
 import { denote } from './denote';
 import { Expr } from './model';
 import { toPlainText } from './render';

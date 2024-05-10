@@ -1,5 +1,5 @@
 import { inTone } from './tokenize';
-import { Tone } from '../core/types';
+import { Tone } from './tone';
 
 export const verbTypes = [
 	'name quote',

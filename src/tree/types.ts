@@ -1,6 +1,6 @@
 import { Entry } from '../morphology/dictionary';
 import { Impossible } from '../core/error';
-import { Tone } from '../core/types';
+import { Tone } from '../morphology/tone';
 
 export interface Word {
 	covert: false;

@@ -1,6 +1,6 @@
 import { dictionary, underscoredWordTypes } from './dictionary';
 import { Impossible, Ungrammatical } from '../core/error';
-import { Tone } from '../core/types';
+import { Tone } from './tone';
 
 // Vyái → ꝡáı
 export function clean(word: string): string {

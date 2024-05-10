@@ -9,7 +9,7 @@ import { useInView } from 'react-intersection-observer';
 import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
 // @ts-ignore
 import aSentencesTxt from '../../sentences/a.txt?raw';
-import { recover } from '../core/recover';
+import { recover } from '../syntax/recover';
 import { denote } from '../semantics/denote';
 
 const rSentences: string[] = refgramSentencesTxt.split('\n');

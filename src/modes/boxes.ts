@@ -1,6 +1,6 @@
 import { inTone } from '../morphology/tokenize';
 import { Tree, assertBranch, skipFree, treeText } from '../tree';
-import { Tone } from '../core/types';
+import { Tone } from '../morphology/tone';
 import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 
 export interface PostField {

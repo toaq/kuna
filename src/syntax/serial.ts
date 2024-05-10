@@ -1,5 +1,5 @@
-import { Impossible, Ungrammatical, Unimplemented } from './error';
-import { splitNonEmpty } from './misc';
+import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
+import { splitNonEmpty } from '../core/misc';
 import { Branch, Label, Leaf, Tree, effectiveLabel, makeNull } from '../tree';
 
 /**

@@ -6,7 +6,7 @@ import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 import { boxify } from '../modes/boxes';
 import { trimTree } from '../tree/trim';
 import { treeToEnglish } from '../english/tree';
-import { recover } from '../core/recover';
+import { recover } from '../syntax/recover';
 import { Glosser } from '../morphology/gloss';
 import { parse } from '../modes/parse';
 import { denote } from '../semantics/denote';

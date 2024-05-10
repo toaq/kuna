@@ -9,7 +9,7 @@ import {
 	splitPrefixes,
 	ToaqTokenizer,
 } from './tokenize';
-import { Tone } from '../core/types';
+import { Tone } from './tone';
 
 test('it cleans up Toaq words', () => {
 	expect(clean('gi')).toEqual('gı');

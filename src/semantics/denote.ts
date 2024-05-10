@@ -15,7 +15,7 @@ import {
 	Word,
 	effectiveLabel,
 } from '../tree';
-import { Tone } from '../core/types';
+import { Tone } from '../morphology/tone';
 import { compose } from './compose';
 import {
 	adjuncts,

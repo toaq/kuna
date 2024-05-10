@@ -4,7 +4,7 @@ import { Glosser } from './morphology/gloss';
 import yargs from 'yargs';
 import { pngGlossSentence } from './modes/png-gloss';
 import { Tree } from './tree';
-import { recover } from './core/recover';
+import { recover } from './syntax/recover';
 import { trimTree } from './tree/trim';
 import { drawTreeToCanvas } from './tree/draw';
 import { parse } from './modes/parse';

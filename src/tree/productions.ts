@@ -1,5 +1,5 @@
 import { dictionary } from '../morphology/dictionary';
-import { getFrame } from '../core/serial';
+import { getFrame } from '../syntax/serial';
 import { toadua } from '../morphology/toadua';
 import { bare, ToaqToken, tone } from '../morphology/tokenize';
 import {
