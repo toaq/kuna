@@ -74,11 +74,11 @@ class Scope {
 	 * Add a binding site to this scope. The first site added will have the highest
 	 * scope.
 	 * @param origin The structure from which the binding originates.
-	 * @param b The binding site.
+	 * @param site The binding site.
 	 */
-	private bind(origin: StrictTree, b: BindingSite) {
+	private bind(origin: StrictTree, site: BindingSite) {
 		origin.binding = this.newBinding();
-		this.bindings.push([b, origin.binding]);
+		this.bindings.push([site, origin.binding]);
 	}
 
 	quantify(dp: Branch<StrictTree>) {
@@ -166,19 +166,12 @@ class Scope {
 	}
 }
 
-let coindexCount = 0;
-
-export function nextCoindex(): string {
-	return String.fromCodePoint('𝑖'.codePointAt(0)! + coindexCount++);
-}
-
 function fix_(
 	tree: Tree,
 	newBinding: () => number,
 	scope: Scope | undefined,
+	newCoindex: () => string,
 ): StrictTree {
-	coindexCount = 0;
-
 	if ('children' in tree) {
 		if (tree.label === '*𝘷P') {
 			const serial = tree.children[0];
@@ -188,27 +181,27 @@ function fix_(
 			}
 			if (!('children' in serial)) throw new Impossible('strange *Serial');
 
-			const vP = fixSerial(serial, tree.children.slice(1));
-			return fix_(vP, newBinding, scope);
+			const vP = fixSerial(serial, tree.children.slice(1), newCoindex);
+			return fix_(vP, newBinding, scope, newCoindex);
 		} else {
 			throw new Impossible('unexpected non-binary tree: ' + tree.label);
 		}
 	} else if ('left' in tree) {
 		if (tree.label === 'VP' && tree.left.label === '*Serial') {
 			// Tiny hack to extract a VP from fixSerial:
-			const vP = fixSerial(tree.left, [pro(), tree.right]);
+			const vP = fixSerial(tree.left, [pro(), tree.right], newCoindex);
 			assertBranch(vP);
 			assertBranch(vP.right);
-			return fix_(vP.right.right, newBinding, undefined);
+			return fix_(vP.right.right, newBinding, undefined, newCoindex);
 		}
 
 		// Subclauses open a new scope
 		if (tree.label === 'CP' || tree.label === 'CPrel') {
 			const newScope = new Scope(newBinding);
-			const right = fix_(tree.right, newBinding, newScope);
+			const right = fix_(tree.right, newBinding, newScope, newCoindex);
 			return {
 				label: tree.label,
-				left: fix_(tree.left, newBinding, scope),
+				left: fix_(tree.left, newBinding, scope, newCoindex),
 				right: newScope.wrap(right),
 			};
 		}
@@ -216,11 +209,11 @@ function fix_(
 		// Conjoined clauses each get a new scope of their own
 		if (tree.label === '&P' && effectiveLabel(tree) !== 'DP') {
 			const leftScope = new Scope(newBinding);
-			const left = fix_(tree.left, newBinding, leftScope);
+			const left = fix_(tree.left, newBinding, leftScope, newCoindex);
 			const rightScope = new Scope(newBinding);
 			assertBranch(tree.right);
-			const conjunction = fix_(tree.right.left, newBinding, scope);
-			const right = fix_(tree.right.right, newBinding, rightScope);
+			const conjunction = fix_(tree.right.left, newBinding, scope, newCoindex);
+			const right = fix_(tree.right.right, newBinding, rightScope, newCoindex);
 			return {
 				label: tree.label,
 				left: leftScope.wrap(left),
@@ -232,8 +225,8 @@ function fix_(
 			};
 		}
 
-		const left = fix_(tree.left, newBinding, scope);
-		const right = fix_(tree.right, newBinding, scope);
+		const left = fix_(tree.left, newBinding, scope, newCoindex);
+		const right = fix_(tree.right, newBinding, scope, newCoindex);
 		const fixed = { label: tree.label, left, right };
 
 		if (scope !== undefined && effectiveLabel(tree) === 'DP') {
@@ -252,7 +245,20 @@ function fix_(
 	}
 }
 
+/**
+ * Recover a deep-structure Toaq syntax tree by undoing movement.
+ *
+ * @param tree A surface-structure tree parsed by the Nearley grammar.
+ * @returns A strictly binary deep-structure syntax tree.
+ */
 export function fix(tree: Tree): StrictTree {
 	let nextBinding = 0;
-	return fix_(tree, () => nextBinding++, undefined);
+	let coindexCount = 0;
+
+	return fix_(
+		tree,
+		() => nextBinding++,
+		undefined,
+		() => String.fromCodePoint('𝑖'.codePointAt(0)! + coindexCount++),
+	);
 }

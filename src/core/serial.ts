@@ -1,5 +1,4 @@
 import { Impossible, Ungrammatical, Unimplemented } from './error';
-import { nextCoindex } from './fix';
 import { splitNonEmpty } from './misc';
 import { Branch, Label, Leaf, Tree, effectiveLabel, makeNull } from '../tree';
 
@@ -162,7 +161,11 @@ function makevP(verb: Tree, args: Tree[]): Tree {
  * Given a *Serial and the arguments from a *𝘷P, make a proper 𝘷P. If there
  * aren't enough arguments this will pad with PRO.
  */
-function serialTovP(verbs: Tree[], args: Tree[]): Tree {
+function serialTovP(
+	verbs: Tree[],
+	args: Tree[],
+	newCoindex: () => string,
+): Tree {
 	const firstFrame = getFrame(verbs[0]);
 	if (verbs.length === 1) {
 		const arity = splitNonEmpty(firstFrame, ' ').length;
@@ -189,13 +192,13 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			switch (lastSlot[i + 1]) {
 				case 'i':
 					if (args.length > 0) {
-						args[0].coindex ??= nextCoindex();
+						args[0].coindex ??= newCoindex();
 						pros[i].coindex = args[0].coindex;
 					}
 					break;
 				case 'j':
 					if (args.length > 1) {
-						args[1].coindex ??= nextCoindex();
+						args[1].coindex ??= newCoindex();
 						pros[i].coindex = args[1].coindex;
 					}
 					break;
@@ -208,7 +211,7 @@ function serialTovP(verbs: Tree[], args: Tree[]): Tree {
 			args.push(makeNull('DP'));
 		}
 		const innerArgs: Tree[] = [...pros, ...args.slice(cCount)];
-		args.push(serialTovP(verbs.slice(1), innerArgs));
+		args.push(serialTovP(verbs.slice(1), innerArgs, newCoindex));
 		return makevP(verbs[0], args);
 	}
 }
@@ -225,11 +228,18 @@ interface KivP {
  * Given a *Serial with possible kı-, and the arguments from a *𝘷P, make a
  * proper 𝘷P tagged with possible kı-.
  */
-function segmentToKivP(segment: Tree[], args: Tree[]): KivP {
+function segmentToKivP(
+	segment: Tree[],
+	args: Tree[],
+	newCoindex: () => string,
+): KivP {
 	if (segment[0].label === '𝘢') {
-		return { ki: segment[0], vP: serialTovP(segment.slice(1), args) };
+		return {
+			ki: segment[0],
+			vP: serialTovP(segment.slice(1), args, newCoindex),
+		};
 	} else {
-		return { vP: serialTovP(segment, args) };
+		return { vP: serialTovP(segment, args, newCoindex) };
 	}
 }
 
@@ -273,7 +283,11 @@ function attachAdjective(VP: Tree, kivP: KivP): Tree {
  * - attaching all the adjectives, and
  * - attaching the adjuncts.
  */
-export function fixSerial(tree: Tree, terms: Tree[]): Tree {
+export function fixSerial(
+	tree: Tree,
+	terms: Tree[],
+	newCoindex: () => string,
+): Tree {
 	if (tree.label !== '*Serial') {
 		throw new Impossible('not a serial');
 	}
@@ -320,7 +334,7 @@ export function fixSerial(tree: Tree, terms: Tree[]): Tree {
 	}
 
 	// Now the first segment is the serial verb and everything after it is serial adjectives.
-	let { ki, vP } = segmentToKivP(segments[0], args);
+	let { ki, vP } = segmentToKivP(segments[0], args, newCoindex);
 	if (ki) {
 		throw new Ungrammatical("Serial can't start with kı-");
 	}
@@ -331,7 +345,10 @@ export function fixSerial(tree: Tree, terms: Tree[]): Tree {
 		ptr = ptr.right as Branch<Tree>;
 	}
 	for (let i = 1; i < segments.length; i++) {
-		ptr.right = attachAdjective(ptr.right, segmentToKivP(segments[i], [pro()]));
+		ptr.right = attachAdjective(
+			ptr.right,
+			segmentToKivP(segments[i], [pro()], newCoindex),
+		);
 	}
 
 	// Attach AdjunctPs to 𝘷P
