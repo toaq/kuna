@@ -1,284 +1,20 @@
-import { dictionary, Entry } from './dictionary';
-import { Impossible } from './error';
-import { getFrame } from './serial';
-import { toadua } from './toadua';
-import { bare, clean, repairTones, ToaqToken, tone } from './tokenize';
-import { Tone } from './types';
-
-export interface Word {
-	covert: false;
-	index: number | undefined;
-	text: string;
-	bare: string;
-	tone: Tone;
-	entry: Entry | undefined;
-}
-
-export type CovertValue =
-	| '∅'
-	| 'BE'
-	| 'CAUSE'
-	| 'PRO'
-	| '∃'
-	| '¬∃'
-	| '∀'
-	| '∀.SING'
-	| '∀.CUML'
-	| 'GEN'
-	| 'EXO'
-	| 'ENDO'
-	| 'DEM'
-	| 'PROX'
-	| 'DIST'
-	| '[only]'
-	| '[also]'
-	| '[even]'
-	| '[and]'
-	| '[or]'
-	| '[xor]'
-	| '[or?]'
-	| '[but]';
-
-export interface CovertWord {
-	covert: true;
-	value: CovertValue;
-}
+import { dictionary } from '../dictionary';
+import { getFrame } from '../serial';
+import { toadua } from '../toadua';
+import { bare, ToaqToken, tone } from '../tokenize';
+import {
+	endsInClauseBoundary,
+	endsInDP,
+	labelForPrefix,
+	skipFree,
+} from './functions';
+import { Label, Leaf, Tree, Word } from './types';
 
 /**
  * Make a null leaf with the given label.
  */
 export function makeNull(label: Label): Leaf {
 	return { label, word: { covert: true, value: '∅' } };
-}
-
-export function isBoringNull(tree: Tree): boolean {
-	return (
-		'word' in tree &&
-		tree.word.covert &&
-		(tree.word.value === '∅' ||
-			tree.word.value === 'BE' ||
-			tree.word.value === 'CAUSE' ||
-			tree.word.value === 'PRO')
-	);
-}
-
-export type Label =
-	| '*Serial'
-	| '*𝘷P'
-	| '*𝘷Pdet'
-	| '&'
-	| '&(naP)'
-	| "&'"
-	| '&P'
-	| '&Q'
-	| "&Q'"
-	| '&QP'
-	| '𝘢'
-	| '𝘢P'
-	| 'Adjunct'
-	| 'AdjunctP'
-	| 'Asp'
-	| 'AspP'
-	| 'be'
-	| 'beP'
-	| 'bo'
-	| 'boP'
-	| 'bu'
-	| 'buP'
-	| 'buq'
-	| 'buqP'
-	| 'C'
-	| 'Crel'
-	| 'CP'
-	| 'CPrel'
-	| 'D'
-	| 'DP'
-	| 'Discourse'
-	| 'EvA'
-	| "EvA'"
-	| 'EvAP'
-	| 'FocAdv'
-	| 'FocAdvP'
-	| 'Focus'
-	| 'FocusP'
-	| 'ge'
-	| 'geP'
-	| 'ha'
-	| 'haP'
-	| 'haoP'
-	| 'kı'
-	| 'mı'
-	| 'mıP'
-	| 'Modal'
-	| 'ModalP'
-	| 'mo'
-	| 'moP'
-	| 'mu'
-	| 'muP'
-	| 'nha'
-	| 'nhaP'
-	| '𝘯'
-	| '𝘯P'
-	| 'Q'
-	| 'QP'
-	| 'SA'
-	| 'SAP'
-	| 'shu'
-	| 'shuP'
-	| 'su'
-	| 'suP'
-	| 'T'
-	| 'TP'
-	| 'te'
-	| 'teP'
-	| 'Telicity'
-	| 'TelicityP'
-	| 'teo'
-	| 'teoP'
-	| 'text'
-	| 'Topic'
-	| "Topic'"
-	| 'TopicP'
-	| '𝘷'
-	| "𝘷'"
-	| 'V'
-	| "V'"
-	| 'Vocative'
-	| 'VocativeP'
-	| '𝘷P'
-	| 'VP'
-	| 'word'
-	| 'Σ'
-	| 'ΣP';
-
-export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
-	if (label.endsWith('P') || label === 'CPrel' || label === '*𝘷Pdet') {
-		return 'phrase';
-	} else if (label.endsWith("'")) {
-		return 'bar';
-	} else {
-		return 'head';
-	}
-}
-
-export function effectiveLabel(tree: Tree): Label {
-	if (tree.label === '&P') {
-		assertBranch(tree);
-		return effectiveLabel(tree.left);
-	} else if (tree.label === 'FocusP') {
-		assertBranch(tree);
-		return effectiveLabel(tree.right);
-	} else {
-		return tree.label;
-	}
-}
-
-export function containsWords(
-	tree: Tree,
-	words: string[],
-	stopLabels: Label[],
-): boolean {
-	if ('word' in tree) {
-		return !tree.word.covert && words.includes(clean(tree.word.text));
-	} else if ('left' in tree) {
-		return (
-			(!stopLabels.includes(tree.left.label) &&
-				containsWords(tree.left, words, stopLabels)) ||
-			(!stopLabels.includes(tree.right.label) &&
-				containsWords(tree.right, words, stopLabels))
-		);
-	} else {
-		return tree.children.some(
-			child =>
-				!stopLabels.includes(child.label) &&
-				containsWords(child, words, stopLabels),
-		);
-	}
-}
-
-function circled(i: number): string {
-	return i < 10 ? '⓪①②③④⑤⑥⑦⑧⑨'[i] : `(${i})`;
-}
-
-export function treeText(tree: Tree, cpIndices?: Map<Tree, number>): string {
-	if ('word' in tree) {
-		if (tree.word.covert) {
-			return '';
-		} else {
-			return tree.word.text;
-		}
-	} else if ('left' in tree) {
-		if (cpIndices) {
-			const cpIndex = cpIndices.get(tree);
-			if (cpIndex !== undefined) {
-				return circled(cpIndex);
-			}
-		}
-
-		return repairTones(
-			(treeText(tree.left) + ' ' + treeText(tree.right)).trim(),
-		);
-	} else {
-		return repairTones(
-			tree.children
-				.map(x => treeText(x))
-				.join(' ')
-				.trim(),
-		);
-	}
-}
-
-export function isQuestion(tree: Tree): boolean {
-	return containsWords(
-		tree,
-		['hí', 'rí', 'rı', 'rî', 'ma', 'tıo', 'hıa'],
-		['CP'],
-	);
-}
-
-interface TreeBase {
-	/**
-	 * The syntactic label of this node.
-	 */
-	label: Label;
-	/**
-	 * An index correlating a binding site with the structure it binds.
-	 */
-	binding?: number;
-	/**
-	 * A letter correlating an overt verbal argument with the PROs in a serial
-	 * verb.
-	 */
-	coindex?: string;
-}
-
-export interface Leaf extends TreeBase {
-	id?: string;
-	movedTo?: string;
-	word: Word | CovertWord;
-}
-
-export interface Branch<T> extends TreeBase {
-	left: T;
-	right: T;
-}
-
-export interface Rose<T> extends TreeBase {
-	children: T[];
-}
-
-export type Tree = Leaf | Branch<Tree> | Rose<Tree>;
-
-export type StrictTree = Leaf | Branch<StrictTree>;
-
-export function assertLeaf(tree: Tree): asserts tree is Leaf {
-	if ('word' in tree) return;
-	throw new Impossible('Unexpected non-leaf ' + tree.label);
-}
-
-export function assertBranch(tree: Tree): asserts tree is Branch<Tree> {
-	if ('left' in tree) return;
-	throw new Impossible('Unexpected non-branch ' + tree.label);
 }
 
 export function makeWord([token]: [ToaqToken]): Word {
@@ -427,45 +163,6 @@ export function makeSerial(
 		arity,
 		children,
 	};
-}
-
-function isCovertLeaf(tree: Tree): boolean {
-	return 'word' in tree && tree.word.covert;
-}
-
-function findAtRightBoundary(
-	tree: Tree,
-	predicate: (t: Tree) => boolean,
-): Tree | undefined {
-	if (predicate(tree)) {
-		return tree;
-	} else if ('children' in tree) {
-		// Hack to avoid descending into PRO leaves @_@
-		let i = tree.children.length - 1;
-		while (i >= 0 && isCovertLeaf(tree.children[i])) i -= 1;
-		return i >= 0
-			? findAtRightBoundary(tree.children[i], predicate)
-			: undefined;
-	} else if ('right' in tree) {
-		// Same here
-		const child = isCovertLeaf(tree.right) ? tree.left : tree.right;
-		return findAtRightBoundary(child, predicate);
-	} else {
-		return undefined;
-	}
-}
-
-function endsInClauseBoundary(tree: Tree): Tree | undefined {
-	return findAtRightBoundary(
-		tree,
-		t =>
-			t.label === 'CP' ||
-			(t.label === 'CPrel' && 'left' in t && treeText(t.left) !== ''),
-	);
-}
-
-function endsInDP(tree: Tree) {
-	return findAtRightBoundary(tree, t => t.label === 'DP' && treeText(t) !== '');
 }
 
 export function makevP(
@@ -640,25 +337,8 @@ export function makeSigmaT1ModalvP([sigma, modal, tp]: [Tree, Tree, Tree]) {
 	};
 }
 
-function prefixLabel(word: string): Label {
-	const p = bare(word).replace(/-$/, '');
-	switch (p) {
-		case 'beı':
-		case 'juaq':
-		case 'ku':
-		case 'mao':
-		case 'to':
-			return 'Focus';
-		case 'fa':
-		case 'ruı':
-			return 'Telicity';
-		default:
-			return p as Label;
-	}
-}
-
 export function makePrefixLeaf([token]: [ToaqToken]) {
-	const label = prefixLabel(token.value);
+	const label = labelForPrefix(token.value);
 	return {
 		label,
 		word: makeWord([token]),
@@ -691,12 +371,6 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 			},
 		},
 	};
-}
-
-export function skipFree(tree: Tree): Tree {
-	// For now we already don't keep "free" constituents (interjections,
-	// parentheticals) in the tree.
-	return tree;
 }
 
 export function makeDiscourse(

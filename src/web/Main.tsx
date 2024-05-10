@@ -140,8 +140,7 @@ export function Main(props: MainProps) {
 						? denotationRenderLatex
 						: denotationRenderText;
 				const renderer =
-					mode === 'semantics-tree-compact' ||
-					mode === 'semantics-tree-compact-trimmed'
+					mode === 'semantics-tree-compact'
 						? (e: CompactExpr, t: Theme) =>
 								baseRenderer(compactDenotation(e), t)
 						: baseRenderer;
