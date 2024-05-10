@@ -17,14 +17,13 @@
 	"name": "kuna",
 	"version": "0.0.1",
 	"description": "Tools for parsing Toaq Delta",
-	"main": "index.js",
 	"scripts": {
 		"prepare": "husky install && bash ./.husky/post-checkout",
 		"postinstall": "npm run codegen",
 		"prettier:check": "npx -p prettier prettier -c --cache .",
 		"prettier:format": "npx -p prettier prettier -w .",
-		"cli": "npx esr src/index.ts",
-		"cli:debug": "node --inspect-brk -r esbuild-runner/register src/index.ts",
+		"cli": "npx esr src/cli.ts",
+		"cli:debug": "node --inspect-brk -r esbuild-runner/register src/cli.ts",
 		"bot": "npx esr src/bot/main.ts",
 		"bot:debug": "node --inspect-brk -r esbuild-runner/register src/bot/main.ts",
 		"codegen": "npx esr src/scripts/grammar-preprocessor.ts src/toaq.kuna.ne src/toaq.ne && npx nearleyc src/toaq.ne -o src/grammar.ts",
@@ -39,7 +38,7 @@
 		"type": "git",
 		"url": "git+https://github.com/toaq/kuna.git"
 	},
-	"author": "Lynn",
+	"author": "the Toaq Community",
 	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/toaq/kuna/issues"
