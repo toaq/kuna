@@ -24,7 +24,7 @@
 @preprocessor typescript
 
 @{%
-import { ToaqTokenizer } from "./tokenize";
+import { ToaqTokenizer } from "./morphology/tokenize";
 import * as TreeModule from "./tree";
 
 const {
