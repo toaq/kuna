@@ -2,6 +2,7 @@ build/
 node_modules/
 output.*
 /*.png
+!pipeline.png
 dist
 
 # Downloaded by src/scripts/build-data.ts

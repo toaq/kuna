@@ -1,9 +1,8 @@
 # Kuna
 
 Kuna is a software suite for parsing Toaq Delta. It can translate Toaq into box
-diagrams, syntax trees, logic formulas, and more.
-
-The word _kuna_ /ˈkʰuːna/ is Toaq for "sentence."
+diagrams, syntax trees, logic formulas, and more. The word _kuna_ /ˈkʰuːna/ is
+Toaq for "sentence."
 
 ## Using Kuna
 
@@ -55,3 +54,29 @@ export KUNA_TOKEN=your.discord.bot.token
 npm install
 npm run bot
 ```
+
+## How Kuna works
+
+![pipeline overview](pipeline.png)
+
+1. The input text is tokenized by `src/morphology/tokenize.ts`.
+2. The token stream is parsed by a context-free grammar for surface-level Toaq,
+   defined in `src/toaq.kuna.ne`.
+3. A
+   [logical form](https://toaqlanguage.wordpress.com/2022/09/26/logical-language-misconceptions/)
+   tree is recovered by `src/syntax/recover.ts`. This involves undoing
+   [syntactic movement](https://en.wikipedia.org/wiki/Syntactic_movement) and
+   adding scope information to the tree.
+4. This tree can be interpreted/denoted by the code in `src/semantics` to
+   produce a semantic representation (formula).
+5. The various modules in `src/modes` can transform, annotate, consume, or
+   display these results.
+
+## Useful commands
+
+- `npm run data:build` downloads all English definitions from Toadua and guesses
+  glosses and frames, storing the result in `data/toadua/toadua.json`.
+  - The result is checked into version control for convenience, but we can run
+    this every once in a while to teach Kuna new words.
+- `npm run codegen` converts `src/toaq.kuna.ne` to `src/toaq.ne`. This runs
+  automatically after `npm install`.
