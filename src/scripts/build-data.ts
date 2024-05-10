@@ -1,28 +1,31 @@
 import * as fs from 'fs';
-import { guessFrameFromDefinition } from '../frame';
+import { guessFrameFromDefinition } from '../morphology/frame';
 import https from 'https';
 
-async function fetchToadua(): Promise<{ results: any[] }> {
+async function post(
+	hostname: string,
+	path: string,
+	body: string,
+): Promise<string> {
 	return new Promise((resolve, reject) => {
-		const req = https.request(
-			{
-				hostname: 'toadua.uakci.pl',
-				path: '/api',
-				method: 'POST',
-			},
-			res => {
-				const chunks: Buffer[] = [];
-				res.on('data', data => chunks.push(data));
-				res.on('end', () => {
-					let body = Buffer.concat(chunks).toString('utf8');
-					resolve(JSON.parse(body));
-				});
-			},
-		);
+		const req = https.request({ hostname, path, method: 'POST' }, res => {
+			const chunks: Buffer[] = [];
+			res.on('data', data => chunks.push(data));
+			res.on('end', () => {
+				let body = Buffer.concat(chunks).toString('utf8');
+				resolve(body);
+			});
+		});
 		req.on('error', reject);
-		req.write(JSON.stringify({ action: 'search', query: ['scope', 'en'] }));
+		req.write(body);
 		req.end();
 	});
+}
+
+async function fetchToadua(): Promise<{ results: any[] }> {
+	const query = JSON.stringify({ action: 'search', query: ['scope', 'en'] });
+	const response = await post('toadua.uakci.pl', '/api', query);
+	return JSON.parse(response);
 }
 
 async function readToadua(): Promise<{ results: any[] }> {
