@@ -4,7 +4,7 @@ import { Glosser } from './morphology/gloss';
 import yargs from 'yargs';
 import { pngGlossSentence } from './modes/png-gloss';
 import { Tree } from './tree';
-import { fix } from './core/fix';
+import { recover } from './core/recover';
 import { trimTree } from './tree/trim';
 import { drawTreeToCanvas } from './tree/draw';
 import { parse } from './modes/parse';
@@ -23,9 +23,9 @@ function getTrees(argv: {
 }): Tree[] {
 	let trees = parse(argv.sentence!);
 	if (argv.semantics) {
-		trees = trees.map(t => fix(t)).map(denote);
+		trees = trees.map(t => recover(t)).map(denote);
 	} else if (!argv.surface) {
-		trees = trees.map(t => fix(t));
+		trees = trees.map(t => recover(t));
 	}
 	if (argv.compact) {
 		trees = trees.map(trimTree);

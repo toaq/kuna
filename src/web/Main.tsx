@@ -6,7 +6,7 @@ import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 import { boxify } from '../modes/boxes';
 import { trimTree } from '../tree/trim';
 import { treeToEnglish } from '../english/tree';
-import { fix } from '../core/fix';
+import { recover } from '../core/recover';
 import { Glosser } from '../morphology/gloss';
 import { parse } from '../modes/parse';
 import { denote } from '../semantics/denote';
@@ -124,7 +124,7 @@ export function Main(props: MainProps) {
 
 	function getTree(mode: TreeMode): ReactElement {
 		let tree = parseInput();
-		if (mode !== 'raw-tree') tree = fix(tree);
+		if (mode !== 'raw-tree') tree = recover(tree);
 		if (mode.includes('semantics')) tree = denote(tree as any);
 		if (trimmed) tree = trimTree(tree);
 		switch (treeFormat) {
@@ -197,7 +197,7 @@ export function Main(props: MainProps) {
 		renderer: (e: CompactExpr) => string,
 		compact: boolean,
 	): ReactElement {
-		let expr: any = denote(fix(parseInput())).denotation;
+		let expr: any = denote(recover(parseInput())).denotation;
 		if (!expr) return <>No denotation</>;
 		if (compact) expr = compactDenotation(expr);
 		return <>{renderer(expr)}</>;

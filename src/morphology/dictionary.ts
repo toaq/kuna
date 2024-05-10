@@ -140,8 +140,8 @@ export class Dictionary {
 
 	private initialize() {
 		const entries: Entry[] = [
-			...require('../dictionary/dictionary.json'),
-			...require('../data/unofficial.json'),
+			...require('../../dictionary/dictionary.json'),
+			...require('../../data/unofficial.json'),
 		] as Entry[];
 
 		for (const e of entries) {

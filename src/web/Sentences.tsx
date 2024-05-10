@@ -9,7 +9,7 @@ import { useInView } from 'react-intersection-observer';
 import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
 // @ts-ignore
 import aSentencesTxt from '../../sentences/a.txt?raw';
-import { fix } from '../core/fix';
+import { recover } from '../core/recover';
 import { denote } from '../semantics/denote';
 
 const rSentences: string[] = refgramSentencesTxt.split('\n');
@@ -43,9 +43,9 @@ function checkParse(sentence: string): ParseStatus {
 		if (n > 1) return { status: 'ambiguous', count: n };
 		if (n === 0) return { status: 'no parse' };
 		try {
-			const fixed = fix(trees[0]);
+			const deepStructure = recover(trees[0]);
 			try {
-				denote(fixed);
+				denote(deepStructure);
 				return { status: 'ok' };
 			} catch {
 				return { status: 'denote failed' };

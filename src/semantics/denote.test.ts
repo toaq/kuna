@@ -1,6 +1,6 @@
 import { test, expect } from 'vitest';
 import { parse } from '../modes/parse';
-import { fix } from '../core/fix';
+import { recover } from '../core/recover';
 import { denote } from './denote';
 import { Expr } from './model';
 import { toPlainText } from './render';
@@ -13,7 +13,7 @@ function d(sentence: string): string {
 		expect(trees.length).toBe(1);
 		const [tree] = trees;
 
-		const { denotation } = denote(fix(tree));
+		const { denotation } = denote(recover(tree));
 		if (denotation === null) throw new Impossible('Null denotation');
 		const denotationText = toPlainText(denotation);
 

@@ -114,7 +114,7 @@ class Scope {
 	}
 
 	/**
-	 * Wrap the given CompCP (probably TP) in the binding sites for this scope.
+	 * Wrap the given CompCP (probably ΣP) in the binding sites for this scope.
 	 */
 	wrap(tree: StrictTree): StrictTree {
 		for (const [b, index] of reverse(this.bindings)) {
@@ -166,82 +166,96 @@ class Scope {
 	}
 }
 
-function fix_(
-	tree: Tree,
-	newBinding: () => number,
-	scope: Scope | undefined,
-	newCoindex: () => string,
-): StrictTree {
-	if ('children' in tree) {
-		if (tree.label === '*𝘷P') {
-			const serial = tree.children[0];
-			if (!serial) throw new Impossible('*𝘷P without children');
-			if (serial.label !== '*Serial') {
-				throw new Impossible('*𝘷P without *Serial, instead: ' + serial.label);
-			}
-			if (!('children' in serial)) throw new Impossible('strange *Serial');
+class Recoverer {
+	private nextBinding = 0;
+	private nextCoindex = 0;
 
-			const vP = fixSerial(serial, tree.children.slice(1), newCoindex);
-			return fix_(vP, newBinding, scope, newCoindex);
+	constructor() {}
+
+	private newBinding(): number {
+		return this.nextBinding++;
+	}
+
+	private newCoindex(): string {
+		return String.fromCodePoint('𝑖'.codePointAt(0)! + this.nextCoindex++);
+	}
+
+	recover(tree: Tree, scope: Scope | undefined): StrictTree {
+		if ('children' in tree) {
+			if (tree.label === '*𝘷P') {
+				const serial = tree.children[0];
+				if (!serial) throw new Impossible('*𝘷P without children');
+				if (serial.label !== '*Serial') {
+					throw new Impossible('*𝘷P without *Serial, instead: ' + serial.label);
+				}
+				if (!('children' in serial)) throw new Impossible('strange *Serial');
+
+				const vP = fixSerial(serial, tree.children.slice(1), () =>
+					this.newCoindex(),
+				);
+				return this.recover(vP, scope);
+			} else {
+				throw new Impossible('unexpected non-binary tree: ' + tree.label);
+			}
+		} else if ('left' in tree) {
+			if (tree.label === 'VP' && tree.left.label === '*Serial') {
+				// Tiny hack to extract a VP from fixSerial:
+				const vP = fixSerial(tree.left, [pro(), tree.right], () =>
+					this.newCoindex(),
+				);
+				assertBranch(vP);
+				assertBranch(vP.right);
+				return this.recover(vP.right.right, undefined);
+			}
+
+			// Subclauses open a new scope
+			if (tree.label === 'CP' || tree.label === 'CPrel') {
+				const newScope = new Scope(() => this.newBinding());
+				const right = this.recover(tree.right, newScope);
+				return {
+					label: tree.label,
+					left: this.recover(tree.left, scope),
+					right: newScope.wrap(right),
+				};
+			}
+
+			// Conjoined clauses each get a new scope of their own
+			if (tree.label === '&P' && effectiveLabel(tree) !== 'DP') {
+				const leftScope = new Scope(() => this.newBinding());
+				const left = this.recover(tree.left, leftScope);
+				const rightScope = new Scope(() => this.newBinding());
+				assertBranch(tree.right);
+				const conjunction = this.recover(tree.right.left, scope);
+				const right = this.recover(tree.right.right, rightScope);
+				return {
+					label: tree.label,
+					left: leftScope.wrap(left),
+					right: {
+						label: tree.right.label,
+						left: conjunction,
+						right: rightScope.wrap(right),
+					},
+				};
+			}
+
+			const left = this.recover(tree.left, scope);
+			const right = this.recover(tree.right, scope);
+			const fixed = { label: tree.label, left, right };
+
+			if (scope !== undefined && effectiveLabel(tree) === 'DP') {
+				if (tree.label === 'DP') {
+					scope.quantify(fixed);
+				} else if (tree.label === 'FocusP') {
+					scope.focus(fixed);
+				} else if (tree.label === '&P') {
+					scope.conjoin(fixed);
+				}
+			}
+
+			return fixed;
 		} else {
-			throw new Impossible('unexpected non-binary tree: ' + tree.label);
+			return tree;
 		}
-	} else if ('left' in tree) {
-		if (tree.label === 'VP' && tree.left.label === '*Serial') {
-			// Tiny hack to extract a VP from fixSerial:
-			const vP = fixSerial(tree.left, [pro(), tree.right], newCoindex);
-			assertBranch(vP);
-			assertBranch(vP.right);
-			return fix_(vP.right.right, newBinding, undefined, newCoindex);
-		}
-
-		// Subclauses open a new scope
-		if (tree.label === 'CP' || tree.label === 'CPrel') {
-			const newScope = new Scope(newBinding);
-			const right = fix_(tree.right, newBinding, newScope, newCoindex);
-			return {
-				label: tree.label,
-				left: fix_(tree.left, newBinding, scope, newCoindex),
-				right: newScope.wrap(right),
-			};
-		}
-
-		// Conjoined clauses each get a new scope of their own
-		if (tree.label === '&P' && effectiveLabel(tree) !== 'DP') {
-			const leftScope = new Scope(newBinding);
-			const left = fix_(tree.left, newBinding, leftScope, newCoindex);
-			const rightScope = new Scope(newBinding);
-			assertBranch(tree.right);
-			const conjunction = fix_(tree.right.left, newBinding, scope, newCoindex);
-			const right = fix_(tree.right.right, newBinding, rightScope, newCoindex);
-			return {
-				label: tree.label,
-				left: leftScope.wrap(left),
-				right: {
-					label: tree.right.label,
-					left: conjunction,
-					right: rightScope.wrap(right),
-				},
-			};
-		}
-
-		const left = fix_(tree.left, newBinding, scope, newCoindex);
-		const right = fix_(tree.right, newBinding, scope, newCoindex);
-		const fixed = { label: tree.label, left, right };
-
-		if (scope !== undefined && effectiveLabel(tree) === 'DP') {
-			if (tree.label === 'DP') {
-				scope.quantify(fixed);
-			} else if (tree.label === 'FocusP') {
-				scope.focus(fixed);
-			} else if (tree.label === '&P') {
-				scope.conjoin(fixed);
-			}
-		}
-
-		return fixed;
-	} else {
-		return tree;
 	}
 }
 
@@ -251,14 +265,6 @@ function fix_(
  * @param tree A surface-structure tree parsed by the Nearley grammar.
  * @returns A strictly binary deep-structure syntax tree.
  */
-export function fix(tree: Tree): StrictTree {
-	let nextBinding = 0;
-	let coindexCount = 0;
-
-	return fix_(
-		tree,
-		() => nextBinding++,
-		undefined,
-		() => String.fromCodePoint('𝑖'.codePointAt(0)! + coindexCount++),
-	);
+export function recover(tree: Tree): StrictTree {
+	return new Recoverer().recover(tree, undefined);
 }
