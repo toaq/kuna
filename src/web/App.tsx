@@ -10,7 +10,8 @@ export function App() {
 	return (
 		<div className={darkMode.isDarkMode ? 'kuna dark-mode' : 'kuna'}>
 			<header>
-				<h1>mí Kuna</h1>
+				<img src="../favicon.ico" height="24" />
+				<h1>kuna</h1>
 				<nav style={{ marginLeft: 10 }}>
 					<NavLink to="/">Interactive</NavLink>
 					<NavLink to="/sentences">Sentences</NavLink>

@@ -62,6 +62,11 @@ h1 {
 	background: hsla(220deg, 90%, 70%);
 	width: 100%;
 	padding: 0px 16px;
+	align-items: center;
+}
+
+.kuna header img {
+	filter: brightness(0%) invert();
 }
 
 .kuna header {
@@ -70,7 +75,7 @@ h1 {
 
 .kuna header h1 {
 	font-size: inherit;
-	color: #000;
+	color: #fff;
 }
 
 .kuna a {
@@ -81,7 +86,7 @@ h1 {
 .kuna header a,
 .kuna header button {
 	display: inline-block;
-	padding: 0px 6px;
+	padding: 4px 6px;
 	background: none;
 	cursor: pointer;
 	border: none;
