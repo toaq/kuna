@@ -9,6 +9,8 @@ import { trimTree } from './tree/trim';
 import { drawTreeToCanvas } from './tree/draw';
 import { parse } from './modes/parse';
 import { textual_tree_from_json } from './modes/textual-tree';
+import KDL from 'kdljs';
+import { formatTreeAsKdl } from './modes/kdl';
 import { testSentences } from './modes/test-sentences';
 import { denote } from './semantics/denote';
 import { ToaqTokenizer } from './morphology/tokenize';
@@ -150,6 +152,18 @@ yargs
 		function (argv) {
 			const trees = getTrees(argv);
 			console.log(JSON.stringify(trees));
+		},
+	)
+	.command(
+		'tree-kdl',
+		'List of parse trees in KDL format',
+		yargs => {
+			yargs.demandOption('sentence');
+		},
+
+		function (argv) {
+			const trees = getTrees(argv);
+			console.log(KDL.format(trees.map(formatTreeAsKdl)));
 		},
 	)
 	.command(

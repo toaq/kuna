@@ -50,6 +50,7 @@
 		"better-react-mathjax": "^2.0.3",
 		"canvas": "^2.11.2",
 		"discord.js": "^14.13.0",
+		"kdljs": "^0.2.0",
 		"lodash": "^4.17.21",
 		"mathjax": "^3.2.2",
 		"mathjax-full": "^3.2.2",
