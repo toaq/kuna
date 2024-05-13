@@ -1,5 +1,5 @@
 import { inTone } from '../morphology/tokenize';
-import { Tree, assertBranch, skipFree, treeText } from '../tree';
+import { Tree, assertBranch, skipFree, treeChildren, treeText } from '../tree';
 import { Tone } from '../morphology/tone';
 import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 
@@ -74,13 +74,8 @@ class Boxifier {
 			this.cpIndices.set(tree, this.cps.length);
 			this.cps.push(tree);
 		}
-		if ('left' in tree) {
-			this.harvestCps(tree.left);
-			this.harvestCps(tree.right);
-		} else if ('children' in tree) {
-			for (const c of tree.children) {
-				this.harvestCps(c);
-			}
+		for (const child of treeChildren(tree)) {
+			this.harvestCps(child);
 		}
 	}
 
