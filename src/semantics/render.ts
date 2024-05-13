@@ -391,7 +391,7 @@ const json: Format<JsonExprIntermediate> = {
 	symbolForQuantifier: quantifier => quantifier,
 	quantifier: (symbol, name, body) =>
 		({
-			[symbol as Quantifier]: name as string,
+			[symbol as Quantifier]: (name as { variable: string }).variable,
 			body: body as JsonExpr,
 		}) as JsonQuantifierExpr,
 	restrictedQuantifier: (symbol, name, restriction, body) =>
