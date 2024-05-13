@@ -16,6 +16,13 @@ import { denote } from './semantics/denote';
 import { ToaqTokenizer } from './morphology/tokenize';
 import { toEnglish } from './english/tree';
 import { denotationRenderText } from './tree/place';
+import { DTree } from './semantics/model';
+import {
+	toPlainText,
+	toLatex,
+	toJson,
+	jsonStringifyCompact,
+} from './semantics/render';
 
 function getTrees(argv: {
 	sentence: string | undefined;
@@ -195,6 +202,44 @@ yargs
 			const trees = getTrees(argv);
 			console.log(trees.length + ' parses');
 			fs.writeFileSync(argv.output as string, toDocument(trees));
+		},
+	)
+	.command(
+		'denote',
+		'Full denotation in given format',
+		yargs => {
+			yargs.demandOption('sentence');
+			yargs.option('format', {
+				type: 'string',
+				choices: ['text', 'latex', 'json'],
+				default: 'text',
+			});
+		},
+
+		function (argv) {
+			const dtrees = getTrees({ ...argv, semantics: true }) as DTree[];
+			const format = argv.format as 'text' | 'latex' | 'json';
+			switch (format) {
+				case 'text':
+					for (const dtree of dtrees) {
+						console.log(toPlainText(dtree.denotation!));
+					}
+					break;
+				case 'latex':
+					for (const dtree of dtrees) {
+						console.log(toLatex(dtree.denotation!));
+					}
+					break;
+				case 'json':
+					console.log(
+						jsonStringifyCompact(
+							dtrees.map(({ denotation }) => toJson(denotation!)),
+						),
+					);
+					break;
+				default:
+					format satisfies never;
+			}
 		},
 	)
 	.command(
