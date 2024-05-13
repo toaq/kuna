@@ -166,8 +166,9 @@ class TreeDrawer {
 		this.ctx.lineWidth = 1;
 		for (const [i, j] of this.arrows) {
 			this.ctx.beginPath();
-			const start = this.locations.get(i)!;
-			const end = this.locations.get(j)!;
+			const start = this.locations.get(i);
+			const end = this.locations.get(j);
+			if (!start || !end) continue;
 			const x0 = start.x - start.width / 2;
 			const y0 = Math.max(end.y + 50, start.y + 20);
 			const x1 = end.x;
