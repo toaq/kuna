@@ -249,8 +249,8 @@ function serialTovP(
 		v.id ??= makeId();
 		v0.id ??= makeId();
 		v.movedTo = v0.id;
-		args.push(vP);
-		return makevP(v0, args);
+		const outerArgs: Tree[] = [...args.slice(0, cCount), vP];
+		return makevP(v0, outerArgs);
 	}
 }
 
