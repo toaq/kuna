@@ -134,6 +134,7 @@ yargs
 				tall: argv.semantics,
 				tree: trees[0],
 				renderer: denotationRenderText,
+				showArrows: false,
 			});
 			const png = canvas.toBuffer('image/png');
 			fs.writeFileSync(argv.output as string, png);

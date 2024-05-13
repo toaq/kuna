@@ -33,6 +33,7 @@ class TreeDrawer {
 	constructor(
 		private theme: Theme,
 		private layerHeight: number,
+		private showArrows: boolean,
 	) {
 		const width = 8400;
 		const height = 4400;
@@ -167,12 +168,12 @@ class TreeDrawer {
 			this.ctx.beginPath();
 			const start = this.locations.get(i)!;
 			const end = this.locations.get(j)!;
-			const x0 = start.x - start.width / 2 - 15;
-			const y0 = start.y;
+			const x0 = start.x - start.width / 2;
+			const y0 = Math.max(end.y + 50, start.y + 20);
 			const x1 = end.x;
-			const y1 = end.y + 25;
+			const y1 = end.y + 20;
 			this.ctx.moveTo(x0, y0);
-			this.ctx.quadraticCurveTo(x1, y0, x1, y1);
+			this.ctx.bezierCurveTo((x0 + x1) / 2, y0 + 40, x1, y0, x1, y1);
 			this.ctx.stroke();
 			for (const dx of [-8, 8]) {
 				this.drawLine(x1, y1, x1 + dx, y1 + 8);
@@ -183,7 +184,7 @@ class TreeDrawer {
 	private fitCanvasToContents() {
 		const { minX, maxX, minY, maxY } = this.extent;
 		const cropWidth = maxX - minX;
-		const cropHeight = maxY - minY;
+		const cropHeight = maxY - minY + 30;
 		const temp = this.ctx.getImageData(minX, minY, cropWidth, cropHeight);
 		this.canvas.width = cropWidth;
 		this.canvas.height = cropHeight;
@@ -202,7 +203,7 @@ class TreeDrawer {
 		const placed = placer.placeTree(tree);
 		this.drawTree(this.rootX, this.rootY, placed);
 		await Promise.all(this.promises);
-		this.drawArrows();
+		if (this.showArrows) this.drawArrows();
 		this.fitCanvasToContents();
 		return this.canvas;
 	}
@@ -216,9 +217,10 @@ export function drawTreeToCanvas(options: {
 		denotation: CompactExpr,
 		theme: Theme,
 	) => RenderedDenotation<CanvasRenderingContext2D>;
+	showArrows: boolean;
 }): Promise<Canvas> {
-	const { theme, tall, tree, renderer } = options;
+	const { theme, tall, tree, renderer, showArrows } = options;
 	const layerHeight = tall ? 150 : 100;
-	const drawer = new TreeDrawer(themes[theme], layerHeight);
+	const drawer = new TreeDrawer(themes[theme], layerHeight, showArrows);
 	return drawer.drawToCanvas(tree, renderer);
 }

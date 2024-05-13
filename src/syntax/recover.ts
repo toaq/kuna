@@ -172,6 +172,7 @@ class Scope {
 class Recoverer {
 	private nextBinding = 0;
 	private nextCoindex = 0;
+	private nextMovementId = 0;
 
 	constructor() {}
 
@@ -185,6 +186,14 @@ class Recoverer {
 
 	private fixSerial(serial: Tree, terms: Tree[]): Tree {
 		return fixSerial(serial, terms, () => this.newCoindex());
+	}
+
+	private move(source: Tree, target: Tree) {
+		assertLeaf(source);
+		source.id ??= 'r' + this.nextMovementId++;
+		assertLeaf(target);
+		target.id ??= 'r' + this.nextMovementId++;
+		source.movedTo = target.id;
 	}
 
 	recover(tree: Tree, scope: Scope | undefined): StrictTree {
@@ -253,6 +262,22 @@ class Recoverer {
 				} else if (tree.label === '&P') {
 					scope.conjoin(fixed);
 				}
+			}
+
+			// v-to-Asp movement
+			if (tree.label === 'AspP' && right.label === '𝘷P') {
+				assertBranch(right);
+				const v =
+					right.left.label === '𝘷'
+						? right.left
+						: (right.right as Branch<Tree>).left;
+				this.move(v, left);
+			}
+
+			// Asp-to-T movement
+			if (tree.label === 'TP' && right.label === 'AspP') {
+				assertBranch(right);
+				this.move(right.left, left);
 			}
 
 			return fixed;

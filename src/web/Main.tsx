@@ -134,7 +134,6 @@ export function Main(props: MainProps) {
 				);
 			case 'png-latex':
 			case 'png-text': {
-				const theme = darkMode.isDarkMode ? 'dark' : 'light';
 				const baseRenderer =
 					treeFormat === 'png-latex'
 						? denotationRenderLatex
@@ -144,8 +143,13 @@ export function Main(props: MainProps) {
 						? (e: CompactExpr, t: Theme) =>
 								baseRenderer(compactDenotation(e), t)
 						: baseRenderer;
-				const tall = mode.includes('semantics');
-				drawTreeToCanvas({ theme, tall, tree, renderer }).then(canvas => {
+				drawTreeToCanvas({
+					theme: darkMode.isDarkMode ? 'dark' : 'light',
+					tall: mode.includes('semantics'),
+					tree,
+					renderer,
+					showArrows: mode === 'syntax-tree',
+				}).then(canvas => {
 					setTimeout(() => {
 						if (treeImg.current) {
 							treeImg.current.src = canvas.toDataURL();

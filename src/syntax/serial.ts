@@ -1,6 +1,15 @@
 import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
-import { Branch, Label, Leaf, Tree, effectiveLabel, makeNull } from '../tree';
+import {
+	Branch,
+	Label,
+	Leaf,
+	Tree,
+	assertBranch,
+	assertLeaf,
+	effectiveLabel,
+	makeNull,
+} from '../tree';
 
 /**
  * Toaq serials are too complicated to parse directly in the context-free
@@ -83,6 +92,11 @@ export function getFrame(verb: Tree): string {
 	}
 }
 
+let _i = 0;
+function makeId(): string {
+	return 's' + _i++;
+}
+
 function makevP(verb: Tree, args: Tree[]): Tree {
 	const agent =
 		'word' in verb &&
@@ -90,13 +104,15 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 		verb.word.entry?.type === 'predicate' &&
 		verb.word.entry.subject === 'agent';
 
+	const v = makeId();
+
 	switch (args.length) {
 		case 0: {
 			if (!('word' in verb)) throw new Impossible('Weird nullary verb');
 			return {
 				label: '𝘷P',
-				left: { label: '𝘷', word: { covert: true, value: 'BE' } },
-				right: { label: 'VP', word: verb.word },
+				left: { label: '𝘷', word: { covert: true, value: 'BE' }, id: v },
+				right: { id: makeId(), label: 'VP', word: verb.word, movedTo: v },
 			};
 		}
 		case 1: {
@@ -109,15 +125,19 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 					left: subject,
 					right: {
 						label: "𝘷'",
-						left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
-						right: { label: 'VP', word: verb.word },
+						left: { label: '𝘷', word: { covert: true, value: 'CAUSE' }, id: v },
+						right: { id: makeId(), label: 'VP', word: verb.word, movedTo: v },
 					},
 				};
 			} else {
 				return {
 					label: '𝘷P',
-					left: { label: '𝘷', word: { covert: true, value: 'BE' } },
-					right: { label: 'VP', left: verb, right: subject },
+					left: { label: '𝘷', word: { covert: true, value: 'BE' }, id: v },
+					right: {
+						label: 'VP',
+						left: { id: makeId(), ...verb, movedTo: v },
+						right: subject,
+					},
 				};
 			}
 		}
@@ -131,8 +151,13 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 					left: {
 						label: '𝘷',
 						word: { covert: true, value: agent ? 'CAUSE' : 'BE' },
+						id: v,
 					},
-					right: { label: 'VP', left: verb, right: directObject },
+					right: {
+						label: 'VP',
+						left: { id: makeId(), ...verb, movedTo: v },
+						right: directObject,
+					},
 				},
 			};
 		}
@@ -143,11 +168,15 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 				left: subject,
 				right: {
 					label: "𝘷'",
-					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' } },
+					left: { label: '𝘷', word: { covert: true, value: 'CAUSE' }, id: v },
 					right: {
 						label: 'VP',
 						left: indirectObject,
-						right: { label: "V'", left: verb, right: directObject },
+						right: {
+							label: "V'",
+							left: { id: makeId(), ...verb, movedTo: v },
+							right: directObject,
+						},
 					},
 				},
 			};
@@ -211,8 +240,17 @@ function serialTovP(
 			args.push(makeNull('DP'));
 		}
 		const innerArgs: Tree[] = [...pros, ...args.slice(cCount)];
-		args.push(serialTovP(verbs.slice(1), innerArgs, newCoindex));
-		return makevP(verbs[0], args);
+		const v0 = verbs[0];
+		assertLeaf(v0);
+		const vP = serialTovP(verbs.slice(1), innerArgs, newCoindex);
+		assertBranch(vP);
+		const v = vP.left.label === '𝘷' ? vP.left : (vP.right as Branch<Tree>).left;
+		assertLeaf(v);
+		v.id ??= makeId();
+		v0.id ??= makeId();
+		v.movedTo = v0.id;
+		args.push(vP);
+		return makevP(v0, args);
 	}
 }
 
