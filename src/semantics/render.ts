@@ -1,3 +1,4 @@
+import { values } from 'lodash';
 import { Impossible } from '../core/error';
 import { CompactExpr } from './compact';
 import { Expr, ExprType } from './model';
@@ -101,42 +102,40 @@ const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
 		coevent: false,
 	};
 
+type Quantifier = (Expr & { head: 'quantifier' })['name'] | 'lambda';
+type Infix = (Expr & { head: 'infix' })['name'];
+type Polarizer = (Expr & { head: 'polarizer' })['name'];
+type Constant = (Expr & { head: 'constant' })['name'];
+
 /**
  * Specification of a rendering format, such as plain text or LaTeX.
  */
-interface Format {
-	bracket: (e: string) => string;
-	name: (name: Name) => string;
-	verb: (name: string, args: string[], event: string, world: string) => string;
-	quantifierSymbols: Record<
-		(Expr & { head: 'quantifier' })['name'] | 'lambda',
-		string
-	>;
-	quantifier: (symbol: string, name: string, body: string) => string;
-	restrictedQuantifier: (
-		symbol: string,
-		name: string,
-		restriction: string,
-		body: string,
-	) => string;
+interface Format<T> {
+	bracket: (e: T) => T;
+	name: (name: Name) => T;
+	verb: (name: string, args: T[], event: T, world: T) => T;
+	symbolForQuantifier: (symbol: Quantifier) => T;
+	quantifier: (symbol: T, name: T, body: T) => T;
+	restrictedQuantifier: (symbol: T, name: T, restriction: T, body: T) => T;
+	aspect: (infix: T, right: T) => T;
 	eventCompound: (
-		symbol: string,
+		symbol: T,
 		verbName: string,
-		event: string,
-		world: string,
-		aspect: string,
-		agent: string | undefined,
-		args: string[],
-		body: string | undefined,
-	) => string;
-	apply: (fn: string, argument: string) => string;
-	presuppose: (body: string, presupposition: string) => string;
-	infixSymbols: Record<(Expr & { head: 'infix' })['name'], string>;
-	infix: (symbol: string, left: string, right: string) => string;
-	polarizerSymbols: Record<(Expr & { head: 'polarizer' })['name'], string>;
-	polarizer: (symbol: string, body: string) => string;
-	constantSymbols: Record<(Expr & { head: 'constant' })['name'], string>;
-	quote: (text: string) => string;
+		event: T,
+		world: T,
+		aspect: T,
+		agent: T | undefined,
+		args: T[],
+		body: T | undefined,
+	) => T;
+	apply: (fn: T, argument: T) => T;
+	presuppose: (body: T, presupposition: T) => T;
+	symbolForInfix: (symbol: Infix) => T;
+	infix: (symbol: T, left: T, right: T) => T;
+	symbolForPolarizer: (symbol: Polarizer) => T;
+	polarizer: (symbol: T, body: T) => T;
+	symbolForConstant: (symbol: Constant) => T;
+	quote: (text: string) => T;
 }
 
 const formatName = (name: Name) => {
@@ -147,7 +146,12 @@ const formatName = (name: Name) => {
 	);
 };
 
-const plainText: Format = {
+const fnFromMap =
+	<const T extends string, U>(extension: Record<T, U>) =>
+	(t: T): U =>
+		extension[t];
+
+const plainText: Format<string> = {
 	bracket: e => `(${e})`,
 	name: name => {
 		const base = formatName(name);
@@ -157,17 +161,18 @@ const plainText: Format = {
 		args.length === 0
 			? `${name}.${world}(${event})`
 			: `${name}.${world}(${args.join(', ')})(${event})`,
-	quantifierSymbols: {
+	symbolForQuantifier: fnFromMap({
 		some: '∃',
 		every: '∀',
 		every_sing: '∀.SING ',
 		every_cuml: '∀.CUML ',
 		gen: 'GEN ',
 		lambda: 'λ',
-	},
+	}),
 	quantifier: (symbol, name, body) => `${symbol}${name}. ${body}`,
 	restrictedQuantifier: (symbol, name, restriction, body) =>
 		`${symbol}${name} : ${restriction}. ${body}`,
+	aspect: (infix, right) => infix + right,
 	eventCompound: (
 		symbol,
 		verbName,
@@ -187,7 +192,7 @@ const plainText: Format = {
 	},
 	apply: (fn, argument) => `${fn}(${argument})`,
 	presuppose: (body, presupposition) => `${body} | ${presupposition}`,
-	infixSymbols: {
+	symbolForInfix: fnFromMap({
 		and: '∧',
 		or: '∨',
 		equals: '=',
@@ -198,14 +203,14 @@ const plainText: Format = {
 		after_near: '>.near',
 		roi: '&',
 		coevent: 'o',
-	},
+	}),
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
-	polarizerSymbols: {
+	symbolForPolarizer: fnFromMap({
 		not: '¬',
 		indeed: '†',
-	},
+	}),
 	polarizer: (symbol, body) => `${symbol}${body}`,
-	constantSymbols: {
+	symbolForConstant: fnFromMap({
 		ji: 'jí',
 		suq: 'súq',
 		nhao: 'nháo',
@@ -235,11 +240,11 @@ const plainText: Format = {
 		promise: 'PROMISE',
 		permit: 'PERMIT',
 		warn: 'WARN',
-	},
+	}),
 	quote: text => `“${text}”`,
 };
 
-const latex: Format = {
+const latex: Format<string> = {
 	bracket: e => `\\left(${e}\\right)`,
 	name: name => {
 		const base = formatName(name);
@@ -249,17 +254,18 @@ const latex: Format = {
 		args.length === 0
 			? `\\mathrm{${name}}_{${world}}(${event})`
 			: `\\mathrm{${name}}_{${world}}(${args.join(', ')})(${event})`,
-	quantifierSymbols: {
+	symbolForQuantifier: fnFromMap({
 		some: '\\exists',
 		every: '\\forall',
 		every_sing: '\\forall_{\\mathrm{\\large SING}}',
 		every_cuml: '\\forall_{\\mathrm{\\large CUML}}',
 		gen: '\\mathrm{\\large GEN}\\ ',
 		lambda: '\\lambda',
-	},
+	}),
 	quantifier: (symbol, name, body) => `${symbol} ${name}.\\ ${body}`,
 	restrictedQuantifier: (symbol, name, restriction, body) =>
 		`${symbol} ${name} : ${restriction}.\\ ${body}`,
+	aspect: (infix, right) => infix + right,
 	eventCompound: (
 		symbol,
 		verbName,
@@ -279,7 +285,7 @@ const latex: Format = {
 	},
 	apply: (fn, argument) => `${fn}(${argument})`,
 	presuppose: (body, presupposition) => `${body}\\ |\\ ${presupposition}`,
-	infixSymbols: {
+	symbolForInfix: fnFromMap({
 		and: '\\land{}',
 		or: '\\lor{}',
 		equals: '=',
@@ -290,14 +296,14 @@ const latex: Format = {
 		after_near: '>_{\\text{near}}',
 		roi: '&',
 		coevent: '\\operatorname{o}',
-	},
+	}),
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
-	polarizerSymbols: {
+	symbolForPolarizer: fnFromMap({
 		not: '\\neg',
 		indeed: '\\dagger',
-	},
+	}),
 	polarizer: (symbol, body) => `${symbol} ${body}`,
-	constantSymbols: {
+	symbolForConstant: fnFromMap({
 		ji: '\\text{jí}',
 		suq: '\\text{súq}',
 		nhao: '\\text{nháo}',
@@ -327,8 +333,109 @@ const latex: Format = {
 		promise: '\\mathrm{P\\large ROMISE}',
 		permit: '\\mathrm{P\\large ERMIT}',
 		warn: '\\mathrm{W\\large ARN}',
-	},
+	}),
 	quote: text => `“${text}”`,
+};
+
+// TypeScript won't allow { ['a' | 'b']: 'c' } for { a: 'c' } | { b: 'c' }, but it
+// will happily split a union type case-by-case in a mapped type and as a map index.
+type OneKeyAmong<Keys extends string, Value> = {
+	[key in Keys]: { [_ in key]: Value };
+}[Keys];
+
+type JsonAspect = { infix: string; right: JsonExpr };
+
+export type JsonExpr =
+	| { variable: string }
+	| { constant: string }
+	| { quote: string }
+	| { verb: string; event: JsonExpr; world: JsonExpr; args: JsonExpr[] }
+	| JsonQuantifierExpr
+	| {
+			compound: string;
+			event: JsonExpr;
+			world: JsonExpr;
+			aspect: JsonAspect;
+			agent?: JsonExpr;
+			args: JsonExpr[];
+			body?: JsonExpr;
+	  }
+	| { apply: JsonExpr; to: JsonExpr }
+	| { claim: JsonExpr; presupposing: JsonExpr }
+	| { infix: Infix; left: JsonExpr; right: JsonExpr }
+	| JsonPolarizerExpr;
+
+type JsonQuantifierExpr = OneKeyAmong<Quantifier, string> & {
+	restriction?: JsonExpr;
+	body: JsonExpr;
+};
+
+// TypeScript will complain about a circular type definition if we use
+// OneKeyAmong here (possibly because there's no &-intersection-type
+// refinement).
+type JsonPolarizerExpr = {
+	[polarizer in Polarizer]: { [_ in polarizer]: JsonExpr };
+}[Polarizer];
+
+type JsonExprIntermediate = JsonExpr | JsonAspect | string;
+
+const json: Format<JsonExprIntermediate> = {
+	bracket: expr => expr,
+	name: ({ id, type }: Name) => ({ variable: `${type}${id}` }),
+	verb: (verb, args, event, world) => ({
+		verb,
+		args: args as JsonExpr[],
+		event: event as JsonExpr,
+		world: world as JsonExpr,
+	}),
+	symbolForQuantifier: quantifier => quantifier,
+	quantifier: (symbol, name, body) =>
+		({
+			[symbol as Quantifier]: (name as { variable: string }).variable,
+			body: body as JsonExpr,
+		}) as JsonQuantifierExpr,
+	restrictedQuantifier: (symbol, name, restriction, body) =>
+		Object.assign(json.quantifier(symbol, name, body), {
+			restriction: restriction as JsonExpr,
+		}),
+	aspect: (infix, right) => ({
+		infix: infix as string,
+		right: right as JsonExpr,
+	}),
+	eventCompound: (
+		_symbol,
+		verbName,
+		event,
+		world,
+		aspect,
+		agent,
+		args,
+		body,
+	) => ({
+		compound: verbName,
+		event: event as JsonExpr,
+		world: world as JsonExpr,
+		aspect: aspect as JsonAspect,
+		args: args as JsonExpr[],
+		...(agent && { agent: agent as JsonExpr }),
+		...(body && { body: body as JsonExpr }),
+	}),
+	apply: (apply, to) => ({ apply: apply as JsonExpr, to: to as JsonExpr }),
+	presuppose: (claim, presupposing) => ({
+		claim: claim as JsonExpr,
+		presupposing: presupposing as JsonExpr,
+	}),
+	symbolForInfix: infix => infix,
+	infix: (infix, left, right) => ({
+		infix: infix as Infix,
+		left: left as JsonExpr,
+		right: right as JsonExpr,
+	}),
+	symbolForPolarizer: polarizer => polarizer,
+	polarizer: (polarizer, body) =>
+		({ [polarizer as Polarizer]: body as JsonExpr }) as JsonPolarizerExpr,
+	symbolForConstant: constant => ({ constant }),
+	quote: quote => ({ quote }),
 };
 
 /**
@@ -358,7 +465,7 @@ function addName(type: ExprType, names: Names, constant = false): Names {
 	};
 }
 
-function getName(index: number, names: Names, fmt: Format): string {
+function getName<T>(index: number, names: Names, fmt: Format<T>): T {
 	return fmt.name(names.context[index]);
 }
 
@@ -372,13 +479,13 @@ function getName(index: number, names: Names, fmt: Format): string {
  * @param rightPrecedence The precedence of the closest operator to the left of
  *   this subexpression that could affect its bracketing.
  */
-function render(
+function render<T>(
 	e: CompactExpr,
 	names: Names,
-	fmt: Format,
+	fmt: Format<T>,
 	leftPrecedence: number,
 	rightPrecedence: number,
-): string {
+): T {
 	switch (e.head) {
 		case 'variable': {
 			return getName(e.index, names, fmt);
@@ -390,7 +497,7 @@ function render(
 			return fmt.verb(e.name, args, event, world);
 		}
 		case 'lambda': {
-			const symbol = fmt.quantifierSymbols.lambda;
+			const symbol = fmt.symbolForQuantifier('lambda');
 			const p = 2;
 			const bracket = rightPrecedence > p;
 			const innerNames = addName(e.type[0], names);
@@ -403,7 +510,7 @@ function render(
 				bracket ? 0 : rightPrecedence,
 			);
 
-			let content: string;
+			let content: T;
 			if (e.restriction === undefined) {
 				content = fmt.quantifier(symbol, name, body);
 			} else {
@@ -442,7 +549,7 @@ function render(
 			return bracket ? fmt.bracket(content) : content;
 		}
 		case 'infix': {
-			const symbol = fmt.infixSymbols[e.name];
+			const symbol = fmt.symbolForInfix(e.name);
 			const p = infixPrecedence[e.name];
 			const associative = infixAssociativity[e.name];
 			const bracket =
@@ -461,7 +568,7 @@ function render(
 			return bracket ? fmt.bracket(content) : content;
 		}
 		case 'polarizer': {
-			const symbol = fmt.polarizerSymbols[e.name];
+			const symbol = fmt.symbolForPolarizer(e.name);
 			const p = 12;
 			const bracket = rightPrecedence > p;
 			const body = render(e.body, names, fmt, p, bracket ? 0 : rightPrecedence);
@@ -469,7 +576,7 @@ function render(
 			return bracket ? fmt.bracket(content) : content;
 		}
 		case 'quantifier': {
-			const symbol = fmt.quantifierSymbols[e.name];
+			const symbol = fmt.symbolForQuantifier(e.name);
 			const p = 2;
 			const bracket = rightPrecedence > p;
 			const innerNames = addName(e.body.context[0], names);
@@ -482,7 +589,7 @@ function render(
 				bracket ? 0 : rightPrecedence,
 			);
 
-			let content: string;
+			let content: T;
 			if (e.restriction === undefined) {
 				content = fmt.quantifier(symbol, name, body);
 			} else {
@@ -499,16 +606,16 @@ function render(
 			return bracket ? fmt.bracket(content) : content;
 		}
 		case 'constant': {
-			return fmt.constantSymbols[e.name];
+			return fmt.symbolForConstant(e.name);
 		}
 		case 'quote': {
 			return fmt.quote(e.text);
 		}
 		case 'event_compound': {
-			const symbol = fmt.quantifierSymbols['some'];
+			const symbol = fmt.symbolForQuantifier('some');
 			const p = 2;
 			const bracket = rightPrecedence > p;
-			let body: string | undefined;
+			let body: T | undefined;
 			const innerNames = addName('v', names);
 			const eventName = getName(0, innerNames, fmt);
 			if (e.body) {
@@ -522,9 +629,10 @@ function render(
 			}
 			const world = render(e.world, innerNames, fmt, 0, 0);
 			if (e.aspect.head !== 'infix') throw new Impossible('Non-infix aspect');
-			const aspect =
-				fmt.infixSymbols[e.aspect.name] +
-				render(e.aspect.right, innerNames, fmt, 0, 0);
+			const aspect = fmt.aspect(
+				fmt.symbolForInfix(e.aspect.name),
+				render(e.aspect.right, innerNames, fmt, 0, 0),
+			);
 			const agent = e.agent
 				? render(e.agent, innerNames, fmt, 0, 0)
 				: undefined;
@@ -545,15 +653,15 @@ function render(
 	}
 }
 
-const renderCache = new Map<Format, WeakMap<CompactExpr, string>>();
+const renderCache = new Map<Format<any>, WeakMap<CompactExpr, unknown>>();
 
-function renderFull(e: CompactExpr, fmt: Format): string {
+function renderFull<T>(e: CompactExpr, fmt: Format<T>): T {
 	let cache = renderCache.get(fmt);
 	if (cache === undefined) {
 		cache = new WeakMap();
 		renderCache.set(fmt, cache);
 	}
-	const cachedResult = cache.get(e);
+	const cachedResult = cache.get(e) as T;
 	if (cachedResult !== undefined) return cachedResult;
 
 	let names = noNames;
@@ -576,6 +684,33 @@ export function toPlainText(e: CompactExpr): string {
 
 export function toLatex(e: CompactExpr): string {
 	return renderFull(e, latex);
+}
+
+export function toJson(e: CompactExpr): JsonExpr {
+	return renderFull(e, json) as JsonExpr;
+}
+
+// A replacement for JSON.stringify that uses less linebreaks, à la Haskell coding style.
+export function jsonStringifyCompact(expr: any): string {
+	if (!(typeof expr === 'object')) return JSON.stringify(expr);
+
+	const isArray = Array.isArray(expr);
+	const [opening, closing] = ['{}', '[]'][+isArray];
+
+	const entries = Object.entries(expr);
+	if (!entries.length) return `${opening} ${closing}`;
+
+	return entries
+		.map(([key, value], index, { length }) => {
+			const maybeKey = isArray ? '' : `${JSON.stringify(key)}: `;
+			const valueStringified = jsonStringifyCompact(value)
+				.split('\n')
+				.join('\n' + ' '.repeat(isArray ? 4 : 2 + maybeKey.length));
+			const maybeOpening = index === 0 ? `${opening} ` : '';
+			const commaOrClosing = index === length - 1 ? ` ${closing}` : ',';
+			return maybeOpening + maybeKey + valueStringified + commaOrClosing;
+		})
+		.join('\n');
 }
 
 export function typeToPlainText(t: ExprType): string {
