@@ -7,6 +7,7 @@ import {
 	assertBranch,
 	assertLeaf,
 	effectiveLabel,
+	findHead,
 } from '../tree';
 import { Impossible } from '../core/error';
 import { reverse } from '../core/misc';
@@ -266,18 +267,12 @@ class Recoverer {
 
 			// v-to-Asp movement
 			if (tree.label === 'AspP' && right.label === '𝘷P') {
-				assertBranch(right);
-				const v =
-					right.left.label === '𝘷'
-						? right.left
-						: (right.right as Branch<Tree>).left;
-				this.move(v, left);
+				this.move(findHead(right), left);
 			}
 
 			// Asp-to-T movement
 			if (tree.label === 'TP' && right.label === 'AspP') {
-				assertBranch(right);
-				this.move(right.left, left);
+				this.move(findHead(right), left);
 			}
 
 			return fixed;

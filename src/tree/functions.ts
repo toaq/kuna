@@ -12,6 +12,28 @@ export function isBoringNull(tree: Tree): boolean {
 	);
 }
 
+/** Extract the head X from an XP or X'. */
+export function findHead(tree: Tree): Tree {
+	while (tree.label.match(/['P]$/)) {
+		const headLabel = tree.label.replace(/['P]$/, '');
+		if ('left' in tree) {
+			if (tree.left.label.replace(/['P]$/, '') === headLabel) {
+				tree = tree.left;
+			} else {
+				tree = tree.right;
+			}
+		} else if ('children' in tree) {
+			for (const child of tree.children) {
+				if (child.label.replace(/['P]$/, '') === headLabel) {
+					tree = child;
+					break;
+				}
+			}
+		}
+	}
+	return tree;
+}
+
 export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
 	if (label.endsWith('P') || label === 'CPrel' || label === '*𝘷Pdet') {
 		return 'phrase';
