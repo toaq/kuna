@@ -51,7 +51,6 @@ export interface RenderedDenotation<C extends DrawContext> {
 }
 
 interface PlacedLeafBase<C extends DrawContext> {
-	depth: 0;
 	width: number;
 	label: string;
 	denotation?: RenderedDenotation<C>;
@@ -73,7 +72,6 @@ export type PlacedLeaf<C extends DrawContext> = PlacedLeafBase<C> &
 	(HasWord | NoWord);
 
 export interface PlacedBranch<C extends DrawContext> {
-	depth: number;
 	width: number;
 	label: string;
 	denotation?: RenderedDenotation<C>;
@@ -208,7 +206,6 @@ export class TreePlacer<C extends DrawContext> {
 			denotation ? denotation.width(this.ctx) : 0,
 		);
 		return {
-			depth: 0,
 			width,
 			label,
 			word,
@@ -224,7 +221,6 @@ export class TreePlacer<C extends DrawContext> {
 		denotation: RenderedDenotation<C> | undefined,
 		children: PlacedTree<C>[],
 	): PlacedBranch<C> {
-		const depth = Math.max(...children.map(c => c.depth)) + 1;
 		const width = Math.max(
 			this.ctx.measureText(label).width,
 			denotation ? denotation.width(this.ctx) : 0,
@@ -241,7 +237,6 @@ export class TreePlacer<C extends DrawContext> {
 			}
 		}
 		return {
-			depth,
 			width,
 			label,
 			denotation,

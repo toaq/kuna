@@ -1,5 +1,5 @@
 import KDL from 'kdljs';
-import { Tree } from '../tree';
+import { Tree, treeChildren } from '../tree';
 
 const toStringRecord = <O extends object>(obj: O) => {
 	for (const key in obj) {
@@ -37,13 +37,7 @@ export const kdlNode = (partialNode: PartialKdlNode): KDL.Node => ({
 });
 
 export function formatTreeAsKdl(tree: Tree): KDL.Node {
-	const children =
-		'word' in tree
-			? []
-			: 'children' in tree
-				? tree.children
-				: [tree.left, tree.right];
-
+	const children = treeChildren(tree);
 	return kdlNode({
 		name: tree.label,
 		children: children.map(formatTreeAsKdl),
