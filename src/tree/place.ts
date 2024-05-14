@@ -158,12 +158,17 @@ function layerExtents<C extends DrawContext>(
 		const left = Math.min(...frontier.map(e => e.x - e.tree.width / 2));
 		const right = Math.max(...frontier.map(e => e.x + e.tree.width / 2));
 		extents.push({ left, right });
-		let newFrontier = [];
+		const newFrontier = [];
 		for (const e of frontier) {
 			if ('word' in e.tree) {
 				newFrontier.push({
 					x: e.x,
-					tree: { width: e.tree.width, children: [] } as any as PlacedTree<C>,
+					tree: {
+						width: e.tree.width,
+						children: [],
+						label: e.tree.label,
+						distanceBetweenChildren: 0,
+					},
 				});
 				continue;
 			}
@@ -187,6 +192,7 @@ export class TreePlacer<C extends DrawContext> {
 			denotation: Expr,
 			theme: Theme,
 		) => RenderedDenotation<C>,
+		private horizontalMargin: number = 30,
 	) {}
 
 	private placeLeaf(
@@ -226,13 +232,14 @@ export class TreePlacer<C extends DrawContext> {
 			denotation ? denotation.width(this.ctx) : 0,
 		);
 		let distanceBetweenChildren = 0;
+		const les = children.map(layerExtents);
 		for (let i = 0; i < children.length - 1; i++) {
-			const l = layerExtents(children[i]);
-			const r = layerExtents(children[i + 1]);
+			const l = les[i];
+			const r = les[i + 1];
 			for (let j = 0; j < Math.min(r.length, l.length); j++) {
 				distanceBetweenChildren = Math.max(
 					distanceBetweenChildren,
-					l[j].right - r[j].left + 30,
+					l[j].right - r[j].left + this.horizontalMargin,
 				);
 			}
 		}
