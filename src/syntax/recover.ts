@@ -11,8 +11,9 @@ import {
 } from '../tree';
 import { Impossible } from '../core/error';
 import { reverse } from '../core/misc';
-import { inTone } from '../morphology/tokenize';
+import { inTone, repairTones } from '../morphology/tokenize';
 import { Tone } from '../morphology/tone';
+import { moveUp } from '../tree/movement';
 
 interface Quantification {
 	type: 'quantification';
@@ -191,10 +192,8 @@ class Recoverer {
 
 	private move(source: Tree, target: Tree) {
 		assertLeaf(source);
-		source.id ??= 'r' + this.nextMovementId++;
 		assertLeaf(target);
-		target.id ??= 'r' + this.nextMovementId++;
-		source.movedTo = target.id;
+		moveUp(source, target);
 	}
 
 	recover(tree: Tree, scope: Scope | undefined): StrictTree {

@@ -11,6 +11,7 @@ import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
 import { Theme } from './theme';
+import { Movement } from './movement';
 
 const adaptor = liteAdaptor();
 RegisterHTMLHandler(adaptor);
@@ -54,8 +55,7 @@ interface PlacedLeafBase<C extends DrawContext> {
 	width: number;
 	label: string;
 	denotation?: RenderedDenotation<C>;
-	id?: string;
-	movedTo?: string;
+	movement?: Movement;
 	coindex?: string;
 }
 
@@ -209,6 +209,7 @@ export class TreePlacer<C extends DrawContext> {
 			this.ctx.measureText(label).width,
 			this.ctx.measureText(word ?? '').width,
 			this.ctx.measureText(gloss ?? '').width,
+			this.ctx.measureText(leaf.movement?.text ?? '').width,
 			denotation ? denotation.width(this.ctx) : 0,
 		);
 		return {
@@ -217,8 +218,7 @@ export class TreePlacer<C extends DrawContext> {
 			word,
 			gloss,
 			denotation,
-			id: leaf.id,
-			movedTo: leaf.movedTo,
+			movement: leaf.movement,
 		};
 	}
 

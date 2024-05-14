@@ -10,6 +10,7 @@ import {
 	TreePlacer,
 } from './place';
 import { Theme, ThemeName, themes } from './theme';
+import { MovementID } from './movement';
 
 interface Location {
 	x: number;
@@ -26,14 +27,14 @@ class TreeDrawer {
 	private rootX: number;
 	private rootY: number;
 	private extent: { minX: number; maxX: number; minY: number; maxY: number };
-	private locations: Map<string, Location> = new Map();
-	private arrows: Array<[string, string]> = [];
+	private locations: Map<MovementID, Location> = new Map();
+	private arrows: Array<[MovementID, MovementID]> = [];
 	private promises: Array<Promise<void>> = [];
 
 	constructor(
 		private theme: Theme,
 		private layerHeight: number,
-		private showArrows: boolean,
+		private showMovement: boolean,
 	) {
 		const width = 8400;
 		const height = 4400;
@@ -111,22 +112,33 @@ class TreeDrawer {
 		if (tree.denotation) {
 			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
 		}
-		if (tree.word !== undefined) {
+
+		const [wordColor, word] =
+			this.showMovement && tree.movement && tree.movement.text
+				? [this.theme.movedWordColor, tree.movement.text]
+				: [
+						this.showMovement && tree.movement?.movedTo
+							? this.theme.traceColor
+							: this.theme.wordColor,
+						tree.word,
+					];
+
+		if (word !== undefined) {
 			const dy = 35 + (tree.denotation?.height(this.ctx) ?? 0);
 			this.drawLine(x, y + dy, x, y + this.layerHeight - 15);
-			this.drawText(tree.word, x, y + this.layerHeight, this.theme.wordColor);
-			if (tree.gloss) {
+			this.drawText(word, x, y + this.layerHeight, wordColor);
+			if (tree.word && tree.gloss) {
 				const yg = y + this.layerHeight + 30;
 				this.drawText(tree.gloss, x, yg, this.theme.textColor);
 			}
 		}
 
-		if (tree.id) {
+		if (tree.movement) {
 			const width = this.ctx.measureText(tree.word ?? '').width;
 			const location = { x, y: y + 120, width };
-			this.locations.set(tree.id, location);
-			if (tree.movedTo) {
-				this.arrows.push([tree.id, tree.movedTo]);
+			this.locations.set(tree.movement.id, location);
+			if (tree.movement.movedTo) {
+				this.arrows.push([tree.movement.id, tree.movement.movedTo]);
 			}
 		}
 	}
@@ -162,9 +174,9 @@ class TreeDrawer {
 	}
 
 	private drawArrows() {
-		this.ctx.strokeStyle = this.theme.textColor;
-		this.ctx.lineWidth = 1;
 		for (const [i, j] of this.arrows) {
+			this.ctx.strokeStyle = this.theme.textColor;
+			this.ctx.lineWidth = 1;
 			this.ctx.beginPath();
 			const start = this.locations.get(i);
 			const end = this.locations.get(j);
@@ -172,13 +184,21 @@ class TreeDrawer {
 			const x0 = start.x - start.width / 2;
 			const y0 = Math.max(end.y + 50, start.y + 20);
 			const x1 = end.x;
-			const y1 = end.y + 20;
+			const y1 = end.y + 40;
 			this.ctx.moveTo(x0, y0);
 			this.ctx.bezierCurveTo((x0 + x1) / 2, y0 + 40, x1, y0, x1, y1);
 			this.ctx.stroke();
 			for (const dx of [-8, 8]) {
 				this.drawLine(x1, y1, x1 + dx, y1 + 8);
 			}
+
+			// Cross out the text
+			this.ctx.strokeStyle = this.theme.traceColor;
+			this.ctx.lineWidth = 2;
+			this.ctx.beginPath();
+			this.ctx.moveTo(start.x - start.width / 2, start.y - 10);
+			this.ctx.lineTo(start.x + start.width / 2, start.y - 10);
+			this.ctx.stroke();
 		}
 	}
 
@@ -204,7 +224,7 @@ class TreeDrawer {
 		const placed = placer.placeTree(tree);
 		this.drawTree(this.rootX, this.rootY, placed);
 		await Promise.all(this.promises);
-		if (this.showArrows) this.drawArrows();
+		if (this.showMovement) this.drawArrows();
 		this.fitCanvasToContents();
 		return this.canvas;
 	}
@@ -218,10 +238,10 @@ export function drawTreeToCanvas(options: {
 		denotation: CompactExpr,
 		theme: Theme,
 	) => RenderedDenotation<CanvasRenderingContext2D>;
-	showArrows: boolean;
+	showMovement: boolean;
 }): Promise<Canvas> {
-	const { theme, tall, tree, renderer, showArrows } = options;
+	const { theme, tall, tree, renderer, showMovement } = options;
 	const layerHeight = tall ? 150 : 100;
-	const drawer = new TreeDrawer(themes[theme], layerHeight, showArrows);
+	const drawer = new TreeDrawer(themes[theme], layerHeight, showMovement);
 	return drawer.drawToCanvas(tree, renderer);
 }

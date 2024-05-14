@@ -75,7 +75,7 @@ export class KunaBot {
 					tall: false,
 					tree,
 					renderer: denotationRenderText,
-					showArrows: false,
+					showMovement: false,
 				}),
 			),
 		);

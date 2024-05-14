@@ -11,7 +11,7 @@ import {
 	realizeTense,
 } from './conjugation';
 import { serialToEnglish, treeToEnglish } from './tree';
-import { leafText } from './leaf';
+import { leafText } from '../tree/functions';
 
 // @ts-ignore
 import { Tagger } from 'pos';

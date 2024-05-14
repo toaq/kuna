@@ -148,7 +148,7 @@ export function Main(props: MainProps) {
 					tall: mode.includes('semantics'),
 					tree,
 					renderer,
-					showArrows: mode === 'syntax-tree',
+					showMovement: mode === 'syntax-tree',
 				}).then(canvas => {
 					setTimeout(() => {
 						if (treeImg.current) {

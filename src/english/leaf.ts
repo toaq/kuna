@@ -1,16 +1,8 @@
-import { Impossible } from '../core/error';
 import { Glosser } from '../morphology/gloss';
-import { Leaf, Tree } from '../tree';
+import { Leaf } from '../tree';
+import { leafText } from '../tree/functions';
 import { Constituent } from './clause-translator';
 import { verbFormFor } from './conjugation';
-
-export function leafText(tree: Tree): string {
-	if (!('word' in tree)) {
-		throw new Impossible('Unexpected non-leaf ' + tree.label);
-	}
-	if (tree.word.covert) return '';
-	return tree.word.text;
-}
 
 export function leafTextToEnglish(text: string): string {
 	if (text === '◌́') {

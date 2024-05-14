@@ -48,7 +48,7 @@ export function formatTreeAsKdl(tree: Tree): KDL.Node {
 		properties: {
 			binding: tree.binding,
 			coindex: tree.coindex,
-			...('word' in tree ? { id: tree.id, movedTo: tree.movedTo } : {}),
+			...('word' in tree ? { movement: tree.movement } : {}),
 		},
 	});
 }

@@ -4,7 +4,8 @@ import { bare, clean } from '../morphology/tokenize';
 import { Branch, Leaf, Tree, assertBranch, isQuestion } from '../tree';
 import { ClauseTranslator, Constituent } from './clause-translator';
 import { VerbForm } from './conjugation';
-import { leafText, leafTextToEnglish, leafToEnglish } from './leaf';
+import { leafTextToEnglish, leafToEnglish } from './leaf';
+import { leafText } from '../tree/functions';
 
 /**
  * Translate one verb (part of a *Serial) to English.

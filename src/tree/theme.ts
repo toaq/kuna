@@ -5,6 +5,8 @@ export interface Theme {
 	textColor: string;
 	denotationColor: string;
 	wordColor: string;
+	movedWordColor: string;
+	traceColor: string;
 }
 
 export const themes: Record<ThemeName, Theme> = {
@@ -13,11 +15,15 @@ export const themes: Record<ThemeName, Theme> = {
 		textColor: '#DCDDDE',
 		denotationColor: '#FF4466',
 		wordColor: '#99EEFF',
+		movedWordColor: '#FF99EE',
+		traceColor: '#9999FF',
 	},
 	light: {
 		backgroundColor: '#FFFFFF',
 		textColor: '#000000',
 		denotationColor: '#FF0000',
 		wordColor: '#3399FF',
+		movedWordColor: '#FF3399',
+		traceColor: '#AAAAFF',
 	},
 };

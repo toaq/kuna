@@ -59,6 +59,11 @@ yargs
 		describe: 'Annotate parse tree with semantics',
 		default: false,
 	})
+	.option('movement', {
+		type: 'boolean',
+		describe: 'Show effects of syntactic movement',
+		default: false,
+	})
 	.option('compact', {
 		type: 'boolean',
 		describe: 'Remove empty phrases with null heads',
@@ -143,7 +148,7 @@ yargs
 				tall: argv.semantics,
 				tree: trees[0],
 				renderer: denotationRenderText,
-				showArrows: false,
+				showMovement: argv.movement,
 			});
 			const png = canvas.toBuffer('image/png');
 			fs.writeFileSync(argv.output as string, png);

@@ -1,5 +1,4 @@
 import { Impossible } from '../core/error';
-import { some } from '../core/misc';
 import { bare, clean, repairTones } from '../morphology/tokenize';
 import { Label, Tree, assertBranch } from './types';
 
@@ -82,13 +81,17 @@ function circled(i: number): string {
 	return i < 10 ? '⓪①②③④⑤⑥⑦⑧⑨'[i] : `(${i})`;
 }
 
+export function leafText(tree: Tree): string {
+	if (!('word' in tree)) {
+		throw new Impossible('Unexpected non-leaf ' + tree.label);
+	}
+	if (tree.word.covert) return '';
+	return tree.word.text;
+}
+
 export function treeText(tree: Tree, cpIndices?: Map<Tree, number>): string {
 	if ('word' in tree) {
-		if (tree.word.covert) {
-			return '';
-		} else {
-			return tree.word.text;
-		}
+		return leafText(tree);
 	} else {
 		if (cpIndices) {
 			const cpIndex = cpIndices.get(tree);

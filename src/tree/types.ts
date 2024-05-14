@@ -1,6 +1,7 @@
 import { Entry } from '../morphology/dictionary';
 import { Impossible } from '../core/error';
 import { Tone } from '../morphology/tone';
+import { Movement } from './movement';
 
 export interface Word {
 	covert: false;
@@ -147,8 +148,7 @@ interface TreeBase {
 }
 
 export interface Leaf extends TreeBase {
-	id?: string;
-	movedTo?: string;
+	movement?: Movement;
 	word: Word | CovertWord;
 }
 
