@@ -85,6 +85,7 @@ export function Main(props: MainProps) {
 	const treeImg = useRef<HTMLImageElement>(null);
 	const [meaningCompact, setMeaningCompact] = useState(false);
 	const [trimmed, setTrimmed] = useState(false);
+	const [showMovement, setShowMovement] = useState(false);
 	const [truncateLabels, setTruncateLabels] = useState('');
 
 	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png-latex');
@@ -150,7 +151,7 @@ export function Main(props: MainProps) {
 					tall: mode.includes('semantics'),
 					tree,
 					renderer,
-					showMovement: mode === 'syntax-tree',
+					showMovement,
 					truncateLabels: truncateLabels.trim().split(/[\s,]+/),
 				}).then(canvas => {
 					setTimeout(() => {
@@ -302,30 +303,48 @@ export function Main(props: MainProps) {
 							</label>
 						</div>
 						{advanced && (
-							<div>
-								<label>Tree format:</label>
-								<select
-									value={treeFormat}
-									onChange={e => setTreeFormat(e.target.value as TreeFormat)}
-								>
-									<option value="png-latex">Image (LaTeX)</option>
-									<option value="png-text">Image (plain text)</option>
-									<option value="react">React (WIP)</option>
-									<option value="textual">Text art</option>
-									<option value="json">JSON</option>
-								</select>
-							</div>
-						)}
-						{advanced && (
-							<div>
-								<label>Roof labels:</label>
-								<input
-									type="text"
-									value={truncateLabels}
-									onChange={e => setTruncateLabels(e.target.value)}
-									placeholder={`DP QP`}
-								/>
-							</div>
+							<>
+								<div>
+									<label>Tree format:</label>
+									<select
+										value={treeFormat}
+										onChange={e => setTreeFormat(e.target.value as TreeFormat)}
+									>
+										<option value="png-latex">Image (LaTeX)</option>
+										<option value="png-text">Image (plain text)</option>
+										<option value="react">React (WIP)</option>
+										<option value="textual">Text art</option>
+										<option value="json">JSON</option>
+									</select>
+								</div>
+								<div>
+									<label>Roof labels:</label>
+									<input
+										type="text"
+										value={truncateLabels}
+										onChange={e => setTruncateLabels(e.target.value)}
+										placeholder={`DP QP`}
+									/>
+								</div>
+								<div>
+									<label>
+										<input
+											type="checkbox"
+											checked={trimmed}
+											onChange={e => setTrimmed(e.target.checked)}
+										/>
+										Trim nulls
+									</label>
+									<label>
+										<input
+											type="checkbox"
+											checked={showMovement}
+											onChange={e => setShowMovement(e.target.checked)}
+										/>
+										Show movement
+									</label>
+								</div>
+							</>
 						)}
 					</div>
 					<div className="buttons">
@@ -347,14 +366,6 @@ export function Main(props: MainProps) {
 									<button onClick={() => generate('semantics-tree-compact')}>
 										Compact
 									</button>
-									<label>
-										<input
-											type="checkbox"
-											checked={trimmed}
-											onChange={e => setTrimmed(e.target.checked)}
-										/>
-										Trim nulls
-									</label>
 								</>
 							)}
 						</div>
