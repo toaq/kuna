@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import _ from 'lodash';
+import _, { truncate } from 'lodash';
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 
@@ -76,6 +76,7 @@ export function Main(props: MainProps) {
 		false,
 	);
 
+	const [advanced, setAdvanced] = useLocalStorage('advanced', false);
 	const [latestMode, setLatestMode] = useState<Mode | undefined>(props.mode);
 	const [latestOutput, setLatestOutput] = useState<ReactElement>(
 		<>Output will appear here.</>,
@@ -84,6 +85,7 @@ export function Main(props: MainProps) {
 	const treeImg = useRef<HTMLImageElement>(null);
 	const [meaningCompact, setMeaningCompact] = useState(false);
 	const [trimmed, setTrimmed] = useState(false);
+	const [truncateLabels, setTruncateLabels] = useState('');
 
 	const [treeFormat, setTreeFormat] = useState<TreeFormat>('png-latex');
 	useEffect(() => {
@@ -144,11 +146,12 @@ export function Main(props: MainProps) {
 								baseRenderer(compactDenotation(e), t)
 						: baseRenderer;
 				drawTreeToCanvas({
-					theme: darkMode.isDarkMode ? 'dark' : 'light',
+					themeName: darkMode.isDarkMode ? 'dark' : 'light',
 					tall: mode.includes('semantics'),
 					tree,
 					renderer,
 					showMovement: mode === 'syntax-tree',
+					truncateLabels: truncateLabels.trim().split(/[\s,]+/),
 				}).then(canvas => {
 					setTimeout(() => {
 						if (treeImg.current) {
@@ -278,7 +281,7 @@ export function Main(props: MainProps) {
 				</div>
 			)}
 			{!props.input && (
-				<div className="card settings">
+				<div className="card settings" style={{ width: '30em' }}>
 					<textarea
 						rows={3}
 						value={inputText}
@@ -288,43 +291,72 @@ export function Main(props: MainProps) {
 						}}
 					/>
 					<div className="toggles">
-						<label>
-							Tree format:
-							<select
-								value={treeFormat}
-								onChange={e => setTreeFormat(e.target.value as TreeFormat)}
-							>
-								<option value="png-latex">Image (LaTeX)</option>
-								<option value="png-text">Image (plain text)</option>
-								<option value="react">React (WIP)</option>
-								<option value="textual">Text art</option>
-								<option value="json">JSON</option>
-							</select>
-						</label>
+						<div>
+							<label>
+								<input
+									type="checkbox"
+									checked={advanced}
+									onChange={e => setAdvanced(e.target.checked)}
+								/>
+								Advanced options
+							</label>
+						</div>
+						{advanced && (
+							<div>
+								<label>Tree format:</label>
+								<select
+									value={treeFormat}
+									onChange={e => setTreeFormat(e.target.value as TreeFormat)}
+								>
+									<option value="png-latex">Image (LaTeX)</option>
+									<option value="png-text">Image (plain text)</option>
+									<option value="react">React (WIP)</option>
+									<option value="textual">Text art</option>
+									<option value="json">JSON</option>
+								</select>
+							</div>
+						)}
+						{advanced && (
+							<div>
+								<label>Roof labels:</label>
+								<input
+									type="text"
+									value={truncateLabels}
+									onChange={e => setTruncateLabels(e.target.value)}
+									placeholder={`DP QP`}
+								/>
+							</div>
+						)}
 					</div>
 					<div className="buttons">
-						<div className="button-group">
-							<div className="button-group-name">Debug</div>
-							<button onClick={() => generate('tokens')}>Tokens</button>
-							<button onClick={() => generate('raw-tree')}>Raw tree</button>
-						</div>
+						{advanced && (
+							<div className="button-group">
+								<div className="button-group-name">Debug</div>
+								<button onClick={() => generate('tokens')}>Tokens</button>
+								<button onClick={() => generate('raw-tree')}>Raw tree</button>
+							</div>
+						)}
 						<div className="button-group">
 							<div className="button-group-name">Tree</div>
 							<button onClick={() => generate('syntax-tree')}>Syntax</button>
 							<button onClick={() => generate('semantics-tree')}>
 								Denoted
 							</button>
-							<button onClick={() => generate('semantics-tree-compact')}>
-								Compact
-							</button>
-							<label>
-								<input
-									type="checkbox"
-									checked={trimmed}
-									onChange={e => setTrimmed(e.target.checked)}
-								/>
-								Trim nulls
-							</label>
+							{advanced && (
+								<>
+									<button onClick={() => generate('semantics-tree-compact')}>
+										Compact
+									</button>
+									<label>
+										<input
+											type="checkbox"
+											checked={trimmed}
+											onChange={e => setTrimmed(e.target.checked)}
+										/>
+										Trim nulls
+									</label>
+								</>
+							)}
 						</div>
 						<div className="button-group">
 							<div className="button-group-name">Boxes</div>
@@ -343,21 +375,23 @@ export function Main(props: MainProps) {
 							<div className="button-group-name">Translate</div>
 							<button onClick={() => generate('english')}>English</button>
 						</div>
-						<div className="button-group">
-							<div className="button-group-name">Meaning</div>
-							<button onClick={() => generate('logical-form')}>Text</button>
-							<button onClick={() => generate('logical-form-latex')}>
-								LaTeX
-							</button>
-							<label>
-								<input
-									type="checkbox"
-									checked={meaningCompact}
-									onChange={e => setMeaningCompact(e.target.checked)}
-								/>
-								Compact
-							</label>
-						</div>
+						{advanced && (
+							<div className="button-group">
+								<div className="button-group-name">Meaning</div>
+								<button onClick={() => generate('logical-form')}>Text</button>
+								<button onClick={() => generate('logical-form-latex')}>
+									LaTeX
+								</button>
+								<label>
+									<input
+										type="checkbox"
+										checked={meaningCompact}
+										onChange={e => setMeaningCompact(e.target.checked)}
+									/>
+									Compact
+								</label>
+							</div>
+						)}
 					</div>
 				</div>
 			)}

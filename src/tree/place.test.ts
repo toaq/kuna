@@ -13,7 +13,7 @@ function summarize<C extends DrawContext>(tree: PlacedTree<C>): any {
 
 test('it places trees', () => {
 	const measureText = (text: string) => ({ width: text.length * 20 });
-	const placer = new TreePlacer({ measureText }, themes.light, undefined!);
+	const placer = new TreePlacer({ measureText }, undefined!);
 	const tree = parse('gaı jí máq rú hao jí')[0];
 	expect(summarize(placer.placeTree(tree))).toMatchInlineSnapshot(`
 		{

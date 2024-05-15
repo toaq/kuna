@@ -213,8 +213,10 @@ h1 {
 	margin-top: 8px;
 }
 
-.toggles label select {
-	margin-inline-start: 8px;
+.toggles label {
+	display: inline-block;
+	margin-top: 4px;
+	margin-inline-end: 8px;
 }
 
 .parses {

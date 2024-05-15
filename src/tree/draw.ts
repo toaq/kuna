@@ -18,6 +18,13 @@ interface Location {
 	width: number;
 }
 
+interface TreeDrawerOptions {
+	theme: Theme;
+	layerHeight: number;
+	showMovement: boolean;
+	truncateLabels: string[];
+}
+
 class TreeDrawer {
 	private margin = 40;
 	private font = '27px Noto Sans Math, Noto Sans';
@@ -30,17 +37,16 @@ class TreeDrawer {
 	private locations: Map<MovementID, Location> = new Map();
 	private arrows: Array<[MovementID, MovementID]> = [];
 	private promises: Array<Promise<void>> = [];
+	get theme(): Theme {
+		return this.options.theme;
+	}
 
-	constructor(
-		private theme: Theme,
-		private layerHeight: number,
-		private showMovement: boolean,
-	) {
+	constructor(private options: TreeDrawerOptions) {
 		const width = 8400;
 		const height = 4400;
 		this.canvas = createCanvas(width, height);
 		this.ctx = this.canvas.getContext('2d');
-		this.ctx.fillStyle = theme.backgroundColor;
+		this.ctx.fillStyle = options.theme.backgroundColor;
 		this.ctx.fillRect(0, 0, width, height);
 		this.ctx.font = this.font;
 		this.ctx.textAlign = 'center';
@@ -55,7 +61,7 @@ class TreeDrawer {
 	}
 
 	private drawLine(x1: number, y1: number, x2: number, y2: number): void {
-		this.ctx.strokeStyle = this.theme.textColor;
+		this.ctx.strokeStyle = this.options.theme.textColor;
 		this.ctx.lineWidth = 1;
 		this.ctx.beginPath();
 		this.ctx.moveTo(x1, y1);
@@ -114,10 +120,10 @@ class TreeDrawer {
 		}
 
 		const [wordColor, word] =
-			this.showMovement && tree.movement && tree.movement.text
+			this.options.showMovement && tree.movement && tree.movement.text
 				? [this.theme.movedWordColor, tree.movement.text]
 				: [
-						this.showMovement && tree.movement?.movedTo
+						this.options.showMovement && tree.movement?.movedTo
 							? this.theme.traceColor
 							: this.theme.wordColor,
 						tree.word,
@@ -125,10 +131,18 @@ class TreeDrawer {
 
 		if (word !== undefined) {
 			const dy = 35 + (tree.denotation?.height(this.ctx) ?? 0);
-			this.drawLine(x, y + dy, x, y + this.layerHeight - 15);
-			this.drawText(word, x, y + this.layerHeight, wordColor);
+			const y1 = y + this.options.layerHeight - 15;
+			if (tree.roof) {
+				this.drawLine(x, y + dy, x - tree.width / 2, y1);
+				this.drawLine(x, y + dy, x + tree.width / 2, y1);
+				this.drawLine(x - tree.width / 2, y1, x + tree.width / 2, y1);
+			} else {
+				this.drawLine(x, y + dy, x, y1);
+			}
+
+			this.drawText(word, x, y + this.options.layerHeight, wordColor);
 			if (tree.word && tree.gloss) {
-				const yg = y + this.layerHeight + 30;
+				const yg = y + this.options.layerHeight + 30;
 				this.drawText(tree.gloss, x, yg, this.theme.textColor);
 			}
 		}
@@ -155,9 +169,9 @@ class TreeDrawer {
 		const n = tree.children.length;
 		for (let i = 0; i < n; i++) {
 			const dx = (i - (n - 1) / 2) * tree.distanceBetweenChildren;
-			this.drawTree(x + dx, y + this.layerHeight, tree.children[i]);
+			this.drawTree(x + dx, y + this.options.layerHeight, tree.children[i]);
 			const dy = 35 + (tree.denotation?.height(this.ctx) ?? 0);
-			this.drawLine(x, y + dy, x + dx, y + this.layerHeight - 15);
+			this.drawLine(x, y + dy, x + dx, y + this.options.layerHeight - 15);
 		}
 	}
 
@@ -220,18 +234,21 @@ class TreeDrawer {
 			theme: Theme,
 		) => RenderedDenotation<CanvasRenderingContext2D>,
 	): Promise<Canvas> {
-		const placer = new TreePlacer(this.ctx, this.theme, renderer);
+		const placer = new TreePlacer(this.ctx, renderer, {
+			theme: this.theme,
+			truncateLabels: this.options.truncateLabels,
+		});
 		const placed = placer.placeTree(tree);
 		this.drawTree(this.rootX, this.rootY, placed);
 		await Promise.all(this.promises);
-		if (this.showMovement) this.drawArrows();
+		if (this.options.showMovement) this.drawArrows();
 		this.fitCanvasToContents();
 		return this.canvas;
 	}
 }
 
 export function drawTreeToCanvas(options: {
-	theme: ThemeName;
+	themeName: ThemeName;
 	tall: boolean;
 	tree: Tree | DTree;
 	renderer: (
@@ -239,9 +256,14 @@ export function drawTreeToCanvas(options: {
 		theme: Theme,
 	) => RenderedDenotation<CanvasRenderingContext2D>;
 	showMovement: boolean;
+	truncateLabels: string[];
 }): Promise<Canvas> {
-	const { theme, tall, tree, renderer, showMovement } = options;
-	const layerHeight = tall ? 150 : 100;
-	const drawer = new TreeDrawer(themes[theme], layerHeight, showMovement);
-	return drawer.drawToCanvas(tree, renderer);
+	const layerHeight = options.tall ? 150 : 100;
+	const drawer = new TreeDrawer({
+		theme: themes[options.themeName],
+		layerHeight,
+		showMovement: options.showMovement,
+		truncateLabels: options.truncateLabels,
+	});
+	return drawer.drawToCanvas(options.tree, options.renderer);
 }

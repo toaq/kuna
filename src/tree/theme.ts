@@ -16,7 +16,7 @@ export const themes: Record<ThemeName, Theme> = {
 		denotationColor: '#FF4466',
 		wordColor: '#99EEFF',
 		movedWordColor: '#FF99EE',
-		traceColor: '#9999FF',
+		traceColor: '#DCDDDE',
 	},
 	light: {
 		backgroundColor: '#FFFFFF',
@@ -24,6 +24,6 @@ export const themes: Record<ThemeName, Theme> = {
 		denotationColor: '#FF0000',
 		wordColor: '#3399FF',
 		movedWordColor: '#FF3399',
-		traceColor: '#AAAAFF',
+		traceColor: '#000000',
 	},
 };

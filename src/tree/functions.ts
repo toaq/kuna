@@ -85,6 +85,12 @@ export function leafText(tree: Tree): string {
 	if (!('word' in tree)) {
 		throw new Impossible('Unexpected non-leaf ' + tree.label);
 	}
+	if (tree.movement && tree.movement.text) {
+		return tree.movement.text;
+	}
+	if (tree.movement && tree.movement.movedTo) {
+		return '';
+	}
 	if (tree.word.covert) return '';
 	return tree.word.text;
 }

@@ -154,7 +154,7 @@ export function TreeBrowser(props: {
 		height: (ctx: Ctx) => 1,
 		denotation,
 	});
-	const placer = new TreePlacer(ctx, theme, denotationRenderer);
+	const placer = new TreePlacer(ctx, denotationRenderer, { theme });
 	const placed = placer.placeTree(tree);
 	return (
 		<Subtree

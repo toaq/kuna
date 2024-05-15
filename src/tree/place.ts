@@ -1,7 +1,7 @@
 import { CanvasRenderingContext2D } from 'canvas';
 import { DTree, Expr } from '../semantics/model';
 import { toPlainText, toLatex, typeToPlainText } from '../semantics/render';
-import { Branch, Leaf, Rose, Tree } from '../tree';
+import { Branch, Leaf, Rose, Tree, treeText } from '../tree';
 import { CompactExpr, compact } from '../semantics/compact';
 
 import { mathjax } from 'mathjax-full/js/mathjax';
@@ -10,7 +10,7 @@ import { SVG } from 'mathjax-full/js/output/svg';
 import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
-import { Theme } from './theme';
+import { Theme, themes } from './theme';
 import { Movement } from './movement';
 
 const adaptor = liteAdaptor();
@@ -57,6 +57,7 @@ interface PlacedLeafBase<C extends DrawContext> {
 	denotation?: RenderedDenotation<C>;
 	movement?: Movement;
 	coindex?: string;
+	roof?: boolean;
 }
 
 interface HasWord {
@@ -184,16 +185,31 @@ function layerExtents<C extends DrawContext>(
 	return extents;
 }
 
+interface TreePlacerOptions {
+	theme: Theme;
+	horizontalMargin: number;
+	truncateLabels: string[];
+}
+
+const defaultOptions: TreePlacerOptions = {
+	theme: themes.light,
+	horizontalMargin: 30,
+	truncateLabels: [],
+};
+
 export class TreePlacer<C extends DrawContext> {
+	private options: TreePlacerOptions;
+
 	constructor(
 		private ctx: C,
-		private theme: Theme,
 		private denotationRenderer: (
 			denotation: Expr,
 			theme: Theme,
 		) => RenderedDenotation<C>,
-		private horizontalMargin: number = 30,
-	) {}
+		options: Partial<TreePlacerOptions> = {},
+	) {
+		this.options = { ...defaultOptions, ...options };
+	}
 
 	private placeLeaf(
 		leaf: Leaf | (Leaf & { denotation: Expr | null }),
@@ -203,7 +219,7 @@ export class TreePlacer<C extends DrawContext> {
 		const word = leaf.word.covert ? leaf.word.value : leaf.word.text;
 		const denotation =
 			'denotation' in leaf && leaf.denotation !== null
-				? this.denotationRenderer(leaf.denotation, this.theme)
+				? this.denotationRenderer(leaf.denotation, this.options.theme)
 				: undefined;
 		const width = Math.max(
 			this.ctx.measureText(label).width,
@@ -219,6 +235,29 @@ export class TreePlacer<C extends DrawContext> {
 			gloss,
 			denotation,
 			movement: leaf.movement,
+		};
+	}
+
+	private placeRoof(tree: Tree | DTree): PlacedLeaf<C> {
+		const label = getLabel(tree);
+		const denotation =
+			'denotation' in tree && tree.denotation !== null
+				? this.denotationRenderer(tree.denotation, this.options.theme)
+				: undefined;
+		const text = treeText(tree);
+
+		const width = Math.max(
+			this.ctx.measureText(label).width,
+			this.ctx.measureText(text ?? '').width,
+			denotation ? denotation.width(this.ctx) : 0,
+		);
+		return {
+			width,
+			label,
+			word: text,
+			gloss: undefined,
+			denotation,
+			roof: true,
 		};
 	}
 
@@ -239,7 +278,7 @@ export class TreePlacer<C extends DrawContext> {
 			for (let j = 0; j < Math.min(r.length, l.length); j++) {
 				distanceBetweenChildren = Math.max(
 					distanceBetweenChildren,
-					l[j].right - r[j].left + this.horizontalMargin,
+					l[j].right - r[j].left + this.options.horizontalMargin,
 				);
 			}
 		}
@@ -257,7 +296,7 @@ export class TreePlacer<C extends DrawContext> {
 	): PlacedBranch<C> {
 		const denotation =
 			'denotation' in branch && branch.denotation !== null
-				? this.denotationRenderer(branch.denotation, this.theme)
+				? this.denotationRenderer(branch.denotation, this.options.theme)
 				: undefined;
 		const children = [
 			this.placeTree(branch.left),
@@ -272,10 +311,12 @@ export class TreePlacer<C extends DrawContext> {
 	}
 
 	public placeTree(tree: Tree | DTree): PlacedTree<C> {
-		return 'word' in tree
-			? this.placeLeaf(tree)
-			: 'children' in tree
-				? this.placeRose(tree)
-				: this.placeBranch(tree);
+		if ('word' in tree) {
+			return this.placeLeaf(tree);
+		} else if (this.options.truncateLabels.includes(tree.label)) {
+			return this.placeRoof(tree);
+		} else {
+			return 'children' in tree ? this.placeRose(tree) : this.placeBranch(tree);
+		}
 	}
 }

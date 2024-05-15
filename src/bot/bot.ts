@@ -71,7 +71,7 @@ export class KunaBot {
 		const canvases = await Promise.all(
 			trees.map(tree =>
 				drawTreeToCanvas({
-					theme: 'dark',
+					themeName: 'dark',
 					tall: false,
 					tree,
 					renderer: denotationRenderText,
