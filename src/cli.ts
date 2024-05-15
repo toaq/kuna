@@ -149,6 +149,7 @@ yargs
 				tree: trees[0],
 				renderer: denotationRenderText,
 				showMovement: argv.movement,
+				truncateLabels: [],
 			});
 			const png = canvas.toBuffer('image/png');
 			fs.writeFileSync(argv.output as string, png);
