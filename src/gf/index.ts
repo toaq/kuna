@@ -2,7 +2,7 @@ import { Unimplemented } from '../core/error';
 import { baseForm } from '../morphology/tokenize';
 import { Branch, Leaf, StrictTree, assertBranch, assertLabel } from '../tree';
 import { leafText as actualLeafText } from '../tree';
-import { G_N, G_PN, G_V, G_V2 } from './lexicon';
+import { G_N, G_PN, G_V, G_V2, G_V3 } from './lexicon';
 import lexicon from './lexicon';
 
 type G_Quant = 'IndefArt' | 'DefArt';
@@ -11,12 +11,12 @@ type G_Tense = 'TPres' | 'TPast' | 'TFut' | 'TCond';
 type G_Ant = 'ASimul' | 'AAnter';
 type G_Pol = 'PPos' | 'PNeg';
 type G_Det = ['DetQuant', G_Quant, G_Num];
-type G_Pron = 'i_Pron' | 'you_Pron' | 'she_Pron' | 'it_Pron';
+type G_Pron = `${string}_Pron`;
 type G_CN = ['UseN', G_N] | ['RelCN', G_CN, G_RS];
 type G_NP = ['UsePron', G_Pron] | ['UsePN', G_PN] | ['DetCN', G_Det, G_CN];
 type G_Temp = ['TTAnt', G_Tense, G_Ant];
 type G_Comp = ['CompCN', G_CN];
-type G_VPSlash = ['SlashV2a', G_V2];
+type G_VPSlash = ['SlashV2a', G_V2] | ['Slash2V3', G_V3, G_NP];
 type G_VP =
 	| ['UseV', G_V]
 	| ['UseComp', G_Comp]
@@ -62,8 +62,19 @@ function pronounToGf(leaf: Leaf): G_Pron {
 	switch (leafText(leaf)) {
 		case 'jí':
 			return 'i_Pron';
+		case 'íme':
+		case 'áma':
+		case 'úmo':
+			return 'we_Pron';
 		case 'súq':
-			return 'you_Pron';
+			return 'youSg_Pron';
+		case 'súna':
+			return 'youPl_Pron';
+		case 'nháo':
+		case 'hó':
+			return 'she_Pron';
+		case 'nhána':
+			return 'they_Pron';
 		default:
 			return 'it_Pron';
 	}
@@ -166,6 +177,7 @@ function dToGf(tree: StrictTree): G_Det {
  * Convert a Toaq DP (determiner phrase) to a GF NP (noun phrase).
  */
 function dpToGf(tree: StrictTree): G_NP {
+	assertLabel(tree, 'DP');
 	if ('word' in tree) {
 		return ['UsePron', pronounToGf(tree)];
 	} else {
@@ -192,7 +204,7 @@ function dpToGf(tree: StrictTree): G_NP {
  * Convert a Toaq intransitive verb to a GF VP (verb phrase). This may introduce a copula.
  */
 function vToGf(tree: StrictTree): G_VP {
-	assertLabel(tree, 'V');
+	// assertLabel(tree, 'V');
 	const text = baseForm(leafText(tree));
 	const verb = lexicon.V.get(text);
 	if (verb) return ['UseV', verb];
@@ -210,6 +222,17 @@ function v2ToGf(tree: StrictTree, object: G_NP): G_VP {
 	const verb = lexicon.V2.get(text);
 	if (verb) return ['ComplSlash', ['SlashV2a', verb], object];
 	throw new Unimplemented('Unknown V2: ' + text);
+}
+
+/**
+ * Convert a Toaq ditransitive verb and objects to a GF VP (verb phrase).
+ */
+function v3ToGf(tree: StrictTree, IO: G_NP, DO: G_NP): G_VP {
+	assertLabel(tree, 'V');
+	const text = baseForm(leafText(tree));
+	const verb = lexicon.V3.get(text);
+	if (verb) return ['ComplSlash', ['Slash2V3', verb, IO], DO];
+	throw new Unimplemented('Unknown V3: ' + text);
 }
 
 /**
@@ -236,13 +259,25 @@ function vpToGf(tree: StrictTree): G_Cl {
 		const v = vbar.left;
 		assertLabel(v, '𝘷');
 		const VP = vbar.right;
-
-		// Transitive case
-		assertBranch(VP);
 		assertLabel(VP, 'VP');
-		const object = dpToGf(VP.right);
-		const gvp: G_VP = v2ToGf(VP.left, object);
-		return ['PredVP', subject, gvp];
+		if ('right' in VP) {
+			if (VP.right.label === "V'") {
+				const IO = dpToGf(VP.left);
+				const Vbar = VP.right;
+				assertBranch(Vbar);
+				const V = Vbar.left;
+				const DO = dpToGf(Vbar.right);
+				const gvp: G_VP = v3ToGf(V, IO, DO);
+				return ['PredVP', subject, gvp];
+			} else {
+				const object = dpToGf(VP.right);
+				const gvp: G_VP = v2ToGf(VP.left, object);
+				return ['PredVP', subject, gvp];
+			}
+		} else {
+			const gvp: G_VP = vToGf(VP);
+			return ['PredVP', subject, gvp];
+		}
 	}
 }
 

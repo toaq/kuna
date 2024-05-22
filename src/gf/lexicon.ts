@@ -3,6 +3,7 @@ export type G_N = `${string}_N`;
 export type G_A = `${string}_A`;
 export type G_V = `${string}_V`;
 export type G_V2 = `${string}_V2`;
+export type G_V3 = `${string}_V3`;
 
 export default {
 	N: new Map<string, G_N>([
@@ -26,6 +27,10 @@ export default {
 		['chuq', 'eat_V2'],
 		['noaq', 'read_V2'],
 		['kaqgaı', 'see_V2'],
+	]),
+	V3: new Map<string, G_V3>([
+		['do', 'give_V3'],
+		['dıeq', 'send_V3'],
 	]),
 	PN: new Map<string, G_PN>([
 		['parı', 'paris_PN'],
