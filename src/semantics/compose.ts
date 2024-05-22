@@ -346,7 +346,7 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 			// binding information than the left's hoisted sub-tree.
 			// TODO: I think this still doesn't get us quite the right behavior if
 			// something in between the binding site and the bound structure shadows the
-			// binding.
+			// binding. For example, in "Do sá raı sá raı sá raq lô raı".
 			[r, l, bindings] = unifyDenotations(skmRight, left);
 			index = bindings.index.get(left.binding)!.index;
 		}
