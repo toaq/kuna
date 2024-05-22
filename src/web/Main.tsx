@@ -65,6 +65,37 @@ export interface MainProps {
 	mode?: Mode;
 }
 
+interface Linearization {
+	to: string;
+	text: string;
+}
+
+export function ShowLinearization({
+	linearization: { to, text },
+}: {
+	linearization: Linearization;
+}) {
+	if (to === 'LibraryBrowserAPI') {
+		return undefined;
+	} else {
+		const lang = {
+			LibraryBrowserBul: 'bg',
+			LibraryBrowserChi: 'zh',
+			LibraryBrowserDut: 'nl',
+			LibraryBrowserEng: 'en',
+			LibraryBrowserSpa: 'es',
+			LibraryBrowserSwe: 'sv',
+		}[to];
+		if (lang === 'zh-Hans') text = text.replace(/\s/g, '');
+		return (
+			<div className="linearization">
+				<dd>{lang}</dd>
+				<dt lang={lang}>{text}</dt>
+			</div>
+		);
+	}
+}
+
 export function Main(props: MainProps) {
 	const darkMode = useDarkMode();
 	const [parseCount, setParseCount] = useState(0);
@@ -83,6 +114,7 @@ export function Main(props: MainProps) {
 	const [latestOutput, setLatestOutput] = useState<ReactElement>(
 		<>Output will appear here.</>,
 	);
+	const [linearizations, setLinearizations] = useState<Linearization[]>([]);
 	const math = latestMode?.startsWith('logical-form');
 	const treeImg = useRef<HTMLImageElement>(null);
 	const [meaningCompact, setMeaningCompact] = useState(false);
@@ -221,6 +253,11 @@ export function Main(props: MainProps) {
 	function getGf(): ReactElement {
 		const tree = parseInput();
 		const recovered = recover(tree);
+		const gf = showGf(treeToGf(recovered));
+		fetch(
+			'https://cloud.grammaticalframework.org/grammars/LibraryBrowser.pgf?command=linearize&tree=' +
+				encodeURIComponent(gf),
+		).then(x => x.json().then(j => setLinearizations(j)));
 		return <>{showGf(treeToGf(recovered))}</>;
 	}
 
@@ -438,6 +475,13 @@ export function Main(props: MainProps) {
 			) : (
 				<div className={classNames('card', 'output', { math })}>
 					{latestOutput}
+					{latestMode === 'gf' && (
+						<ul>
+							{linearizations.map((l, i) => (
+								<ShowLinearization linearization={l} key={i} />
+							))}
+						</ul>
+					)}
 				</div>
 			)}
 		</>

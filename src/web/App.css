@@ -242,3 +242,15 @@ h1 {
 .center {
 	text-align: center;
 }
+
+.linearization {
+	display: flex;
+	align-items: baseline;
+}
+
+.linearization dd {
+	width: 2em;
+	font-family: monospace;
+	font-weight: bold;
+	margin: 0;
+}
