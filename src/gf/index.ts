@@ -21,7 +21,7 @@ type G_VP =
 	| ['UseV', G_V]
 	| ['UseComp', G_Comp]
 	| ['ComplSlash', G_VPSlash, G_NP];
-type G_Cl = ['PredVP', G_NP, G_VP];
+type G_Cl = ['PredVP', G_NP, G_VP] | ['ImpersCl', G_VP];
 type G_RCl = ['RelCl', G_Cl];
 type G_S = ['UseCl', G_Temp, G_Pol, G_Cl];
 type G_RS = ['UseRCl', G_Temp, G_Pol, G_RCl];
@@ -140,9 +140,11 @@ function simplifyRsToCn(rs: G_RS): G_CN | undefined {
 	if (rs[0] === 'UseRCl' && isDefaultTemp(rs[1]) && rs[2] === 'PPos') {
 		const rcl = rs[3];
 		const cl = rcl[1];
-		const vp = cl[2];
-		if (vp[0] === 'UseComp') {
-			return vp[1][1];
+		if (cl[0] === 'PredVP') {
+			const vp = cl[2];
+			if (vp[0] === 'UseComp') {
+				return vp[1][1];
+			}
 		}
 	}
 }
@@ -201,6 +203,17 @@ function dpToGf(tree: StrictTree): G_NP {
 }
 
 /**
+ * Convert a Toaq nullary verb to a GF VP (verb phrase).
+ */
+function v0ToGf(tree: StrictTree): G_VP {
+	// assertLabel(tree, 'V');
+	const text = baseForm(leafText(tree));
+	const verb = lexicon.V0.get(text);
+	if (verb) return ['UseV', verb];
+	throw new Unimplemented('Unknown V0: ' + text);
+}
+
+/**
  * Convert a Toaq intransitive verb to a GF VP (verb phrase). This may introduce a copula.
  */
 function vToGf(tree: StrictTree): G_VP {
@@ -244,13 +257,17 @@ function vpToGf(tree: StrictTree): G_Cl {
 	if (tree.left.label === '𝘷') {
 		// Intransitive case
 		const VP = tree.right;
-		assertBranch(VP);
 		assertLabel(VP, 'VP');
-		assertLabel(VP.left, 'V');
-		assertLabel(VP.right, 'DP');
-		const gvp: G_VP = vToGf(VP.left);
-		const subject = dpToGf(VP.right);
-		return ['PredVP', subject, gvp];
+		if ('right' in VP) {
+			assertLabel(VP.left, 'V');
+			assertLabel(VP.right, 'DP');
+			const gvp: G_VP = vToGf(VP.left);
+			const subject = dpToGf(VP.right);
+			return ['PredVP', subject, gvp];
+		} else {
+			const gvp: G_VP = v0ToGf(VP);
+			return ['ImpersCl', gvp];
+		}
 	} else {
 		const subject = dpToGf(tree.left);
 		const vbar = tree.right;

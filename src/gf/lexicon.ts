@@ -1,7 +1,8 @@
 export type G_PN = `${string}_PN`;
 export type G_N = `${string}_N`;
 export type G_A = `${string}_A`;
-export type G_V = `${string}_V`;
+export type G_V0 = `${string}_V0`;
+export type G_V = `${string}_V` | G_V0;
 export type G_V2 = `${string}_V2`;
 export type G_V3 = `${string}_V3`;
 
@@ -19,6 +20,7 @@ export default {
 		['huı', 'bad_A'],
 		['gı', 'good_A'],
 	]),
+	V0: new Map<string, G_V0>([['ruqshua', 'rain_V0']]),
 	V: new Map<string, G_V>([
 		['nuo', 'sleep_V'],
 		['koı', 'walk_V'],

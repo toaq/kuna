@@ -89,7 +89,7 @@ export function ShowLinearization({
 		if (lang === 'zh-Hans') text = text.replace(/\s/g, '');
 		return (
 			<div className="linearization">
-				<dd>{lang}</dd>
+				<dd>{lang}:&nbsp;</dd>
 				<dt lang={lang}>{text}</dt>
 			</div>
 		);

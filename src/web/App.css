@@ -244,13 +244,17 @@ h1 {
 }
 
 .linearization {
-	display: flex;
+	display: block;
 	align-items: baseline;
 }
 
 .linearization dd {
-	width: 2em;
+	display: inline-block;
 	font-family: monospace;
 	font-weight: bold;
 	margin: 0;
+}
+
+.linearization dt {
+	display: inline;
 }
