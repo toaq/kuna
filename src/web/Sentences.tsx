@@ -150,6 +150,7 @@ export function Sentences() {
 					<option value="gloss">Gloss</option>
 					<option value="technical-gloss">Technical gloss</option>
 					<option value="english">English</option>
+					<option value="gf">GF</option>
 					<option value="logical-form">Formula (text)</option>
 					<option value="logical-form-latex">Formula (LaTeX code)</option>
 				</select>

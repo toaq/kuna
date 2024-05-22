@@ -174,3 +174,9 @@ export function assertBranch(tree: Tree): asserts tree is Branch<Tree> {
 	if ('left' in tree) return;
 	throw new Impossible('Unexpected non-branch ' + tree.label);
 }
+
+export function assertLabel(tree: Tree, label: Label): void {
+	if (tree.label !== label) {
+		throw new Impossible(`Expected ${label} but found ${tree.label}`);
+	}
+}

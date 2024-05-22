@@ -26,6 +26,7 @@ import { Boxes } from './Boxes';
 import { Tokens } from './Tokens';
 import { TreeBrowser } from './TreeBrowser';
 import { themes } from '../tree/theme';
+import { showGf, treeToGf } from '../gf';
 
 type TreeMode =
 	| 'syntax-tree'
@@ -42,6 +43,7 @@ export type Mode =
 	| 'logical-form'
 	| 'logical-form-latex'
 	| 'english'
+	| 'gf'
 	| 'tokens';
 type TreeFormat = 'png-latex' | 'png-text' | 'textual' | 'json' | 'react';
 
@@ -216,6 +218,12 @@ export function Main(props: MainProps) {
 		return <>{treeToEnglish(tree).text}</>;
 	}
 
+	function getGf(): ReactElement {
+		const tree = parseInput();
+		const recovered = recover(tree);
+		return <>{showGf(treeToGf(recovered))}</>;
+	}
+
 	function getTokens(): ReactElement {
 		setParseCount(1);
 		const tokenizer = new ToaqTokenizer();
@@ -246,6 +254,8 @@ export function Main(props: MainProps) {
 				return getLogicalForm(toLatex, meaningCompact);
 			case 'english':
 				return getEnglish();
+			case 'gf':
+				return getGf();
 			case 'tokens':
 				return getTokens();
 		}
@@ -385,6 +395,7 @@ export function Main(props: MainProps) {
 						<div className="button-group">
 							<div className="button-group-name">Translate</div>
 							<button onClick={() => generate('english')}>English</button>
+							<button onClick={() => generate('gf')}>GF</button>
 						</div>
 						{advanced && (
 							<div className="button-group">
