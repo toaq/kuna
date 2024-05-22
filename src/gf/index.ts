@@ -23,18 +23,42 @@ type G_VP =
 	| ['ComplSlash', G_VPSlash, G_NP];
 type G_Cl = ['PredVP', G_NP, G_VP];
 type G_RCl = ['RelCl', G_Cl];
-type Tensed<Ctor, Cl> = [Ctor, G_Temp, G_Pol, Cl];
-type G_S = Tensed<'UseCl', G_Cl>;
-type G_RS = Tensed<'UseRCl', G_RCl>;
+type G_S = ['UseCl', G_Temp, G_Pol, G_Cl];
+type G_RS = ['UseRCl', G_Temp, G_Pol, G_RCl];
 type G_Utt = ['UttS', G_S];
 
-type Gf = G_NP | G_Utt;
+type Gf =
+	| G_Quant
+	| G_Num
+	| G_Tense
+	| G_Ant
+	| G_Pol
+	| G_Det
+	| G_Pron
+	| G_CN
+	| G_NP
+	| G_Temp
+	| G_Comp
+	| G_VPSlash
+	| G_VP
+	| G_Cl
+	| G_RCl
+	| G_S
+	| G_RS
+	| G_Utt;
 
+/**
+ * Get leaf text ignoring movement.
+ */
 function leafText(leaf: StrictTree): string {
 	return actualLeafText({ ...leaf, movement: undefined });
 }
 
+/**
+ * Convert a Toaq pronoun DP to a GF pronoun.
+ */
 function pronounToGf(leaf: Leaf): G_Pron {
+	assertLabel(leaf, 'DP');
 	switch (leafText(leaf)) {
 		case 'jí':
 			return 'i_Pron';
@@ -45,10 +69,62 @@ function pronounToGf(leaf: Leaf): G_Pron {
 	}
 }
 
+/**
+ * Convert a Toaq polarity Σ to a GF polarity.
+ */
+function polarityToGf(tree: StrictTree): G_Pol {
+	assertLabel(tree, 'Σ');
+	switch (leafText(tree)) {
+		case 'bu':
+		case 'aımu':
+			return 'PNeg';
+		default:
+			return 'PPos';
+	}
+}
+
+/**
+ * Convert a Toaq tense T to a GF tense.
+ */
+function tenseToGf(tree: StrictTree): G_Tense {
+	assertLabel(tree, 'T');
+	switch (leafText(tree)) {
+		case 'pu':
+			return 'TPast';
+		case 'jıa':
+			return 'TFut';
+		// TODO: mala
+		default:
+			return 'TPres';
+	}
+}
+
+/**
+ * Convert a Toaq aspect Asp to a GF anteriority.
+ */
+function aspectToGf(tree: StrictTree): G_Ant {
+	assertLabel(tree, 'Asp');
+	switch (leafText(tree)) {
+		case '':
+		case 'chum':
+			return 'ASimul';
+		case 'tam':
+		default:
+			return 'AAnter';
+		// TODO: fancy aspects
+	}
+}
+
+/**
+ * Is this Temp the default tense/aspect?
+ */
 function isDefaultTemp(temp: G_Temp): boolean {
 	return temp[1] === 'TPres' && temp[2] === 'ASimul';
 }
 
+/**
+ * If the given RS looks like "such that it is an apple", extract the CN "apple".
+ */
 function simplifyRsToCn(rs: G_RS): G_CN | undefined {
 	if (rs[0] === 'UseRCl' && isDefaultTemp(rs[1]) && rs[2] === 'PPos') {
 		const rcl = rs[3];
@@ -60,6 +136,9 @@ function simplifyRsToCn(rs: G_RS): G_CN | undefined {
 	}
 }
 
+/**
+ * Convert a Toaq 𝘯P to a GF CN (common noun).
+ */
 function npToGf(tree: StrictTree): G_CN {
 	assertBranch(tree);
 	assertLabel(tree, '𝘯P');
@@ -67,6 +146,9 @@ function npToGf(tree: StrictTree): G_CN {
 	return simplifyRsToCn(rs) ?? ['RelCN', ['UseN', 'person_N'], rs];
 }
 
+/**
+ * Convert a Toaq D (determiner) to a GF Det.
+ */
 function dToGf(tree: StrictTree): G_Det {
 	const text = leafText(tree);
 	switch (text) {
@@ -80,6 +162,9 @@ function dToGf(tree: StrictTree): G_Det {
 	}
 }
 
+/**
+ * Convert a Toaq DP (determiner phrase) to a GF NP (noun phrase).
+ */
 function dpToGf(tree: StrictTree): G_NP {
 	if ('word' in tree) {
 		return ['UsePron', pronounToGf(tree)];
@@ -103,6 +188,9 @@ function dpToGf(tree: StrictTree): G_NP {
 	}
 }
 
+/**
+ * Convert a Toaq intransitive verb to a GF VP (verb phrase). This may introduce a copula.
+ */
 function vToGf(tree: StrictTree): G_VP {
 	assertLabel(tree, 'V');
 	const text = baseForm(leafText(tree));
@@ -113,6 +201,9 @@ function vToGf(tree: StrictTree): G_VP {
 	throw new Unimplemented('Unknown V: ' + text);
 }
 
+/**
+ * Convert a Toaq transitive verb and object to a GF VP (verb phrase).
+ */
 function v2ToGf(tree: StrictTree, object: G_NP): G_VP {
 	assertLabel(tree, 'V');
 	const text = baseForm(leafText(tree));
@@ -121,10 +212,14 @@ function v2ToGf(tree: StrictTree, object: G_NP): G_VP {
 	throw new Unimplemented('Unknown V2: ' + text);
 }
 
+/**
+ * Convert a Toaq 𝘷P to a GF Cl (clause without tense).
+ */
 function vpToGf(tree: StrictTree): G_Cl {
 	assertBranch(tree);
 	assertLabel(tree, '𝘷P');
 	if (tree.left.label === '𝘷') {
+		// Intransitive case
 		const VP = tree.right;
 		assertBranch(VP);
 		assertLabel(VP, 'VP');
@@ -141,6 +236,8 @@ function vpToGf(tree: StrictTree): G_Cl {
 		const v = vbar.left;
 		assertLabel(v, '𝘷');
 		const VP = vbar.right;
+
+		// Transitive case
 		assertBranch(VP);
 		assertLabel(VP, 'VP');
 		const object = dpToGf(VP.right);
@@ -149,57 +246,94 @@ function vpToGf(tree: StrictTree): G_Cl {
 	}
 }
 
+/**
+ * Convert a declarative AspP to an S. This sets a default tense and polarity
+ * which is overwritten higher up in the call stack.
+ */
 function declarativeAsppToGf(tree: StrictTree): G_S {
 	assertBranch(tree);
 	assertLabel(tree, 'AspP');
 	const cl = vpToGf(tree.right);
-	return ['UseCl', ['TTAnt', 'TPres', 'ASimul'], 'PPos', cl];
+	return ['UseCl', ['TTAnt', 'TPres', aspectToGf(tree.left)], 'PPos', cl];
 }
 
+/**
+ * Convert a declarative TP to an S.
+ */
 function declarativeTpToGf(tree: StrictTree): G_S {
 	assertBranch(tree);
 	assertLabel(tree, 'TP');
-	return declarativeAsppToGf(tree.right);
+	const s = declarativeAsppToGf(tree.right);
+	s[1][1] = tenseToGf(tree.left);
+	return s;
 }
 
+/**
+ * Convert a declarative ΣP to an S.
+ */
 function declarativeΣpToGf(tree: StrictTree): G_S {
 	assertBranch(tree);
 	assertLabel(tree, 'ΣP');
-	return declarativeTpToGf(tree.right);
+	const s = declarativeTpToGf(tree.right);
+	s[2] = polarityToGf(tree.left);
+	return s;
 }
 
+/**
+ * Convert a declarative CP to an S.
+ */
 function declarativeCpToGf(tree: StrictTree): G_S {
 	assertBranch(tree);
 	assertLabel(tree, 'CP');
 	return declarativeΣpToGf(tree.right);
 }
 
+/**
+ * Convert a relative AspP to an RS. This sets a default tense and polarity
+ * which is overwritten higher up in the call stack.
+ */
 function relativeAsppToGf(tree: StrictTree): G_RS {
 	assertBranch(tree);
 	assertLabel(tree, 'AspP');
 	const cl = vpToGf(tree.right);
 	const rcl: G_RCl = ['RelCl', cl];
-	return ['UseRCl', ['TTAnt', 'TPres', 'ASimul'], 'PPos', rcl];
+	return ['UseRCl', ['TTAnt', 'TPres', aspectToGf(tree.left)], 'PPos', rcl];
 }
 
+/**
+ * Convert a relative TP to an RS.
+ */
 function relativeTpToGf(tree: StrictTree): G_RS {
 	assertBranch(tree);
 	assertLabel(tree, 'TP');
-	return relativeAsppToGf(tree.right);
+	const rs = relativeAsppToGf(tree.right);
+	rs[1][1] = tenseToGf(tree.left);
+	return rs;
 }
 
+/**
+ * Convert a relative ΣP to an RS.
+ */
 function relativeΣpToGf(tree: StrictTree): G_RS {
 	assertBranch(tree);
 	assertLabel(tree, 'ΣP');
-	return relativeTpToGf(tree.right);
+	const rs = relativeTpToGf(tree.right);
+	rs[2] = polarityToGf(tree.left);
+	return rs;
 }
 
+/**
+ * Convert a relative CP to an RS.
+ */
 function relativeCpToGf(tree: StrictTree): G_RS {
 	assertBranch(tree);
 	assertLabel(tree, 'CPrel');
 	return relativeΣpToGf(tree.right);
 }
 
+/**
+ * Convert a Toaq SAP (speech act phrase) to a GF "utterance."
+ */
 function sapToGf(tree: StrictTree): G_Utt {
 	assertBranch(tree);
 	const sa = tree.right;
@@ -211,6 +345,9 @@ function sapToGf(tree: StrictTree): G_Utt {
 	}
 }
 
+/**
+ * Convert any Toaq syntax sub-tree to the appropriate GF expression.
+ */
 export function treeToGf(tree: StrictTree): Gf {
 	if (tree.label === 'DP') {
 		return dpToGf(tree);
@@ -221,6 +358,12 @@ export function treeToGf(tree: StrictTree): Gf {
 	}
 }
 
-export function showGf(gf: any): string {
+/**
+ * Format any GF expression into a parenthesized string.
+ *
+ * The result can be tested on
+ * <https://cloud.grammaticalframework.org/syntax-editor/editor.html>
+ */
+export function showGf(gf: Gf | string): string {
 	return typeof gf === 'string' ? gf : '(' + gf.map(showGf).join(' ') + ')';
 }
