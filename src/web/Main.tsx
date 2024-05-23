@@ -1,5 +1,5 @@
 import classNames from 'classnames';
-import _, { truncate } from 'lodash';
+import _ from 'lodash';
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 
@@ -14,7 +14,6 @@ import { toLatex, toPlainText } from '../semantics/render';
 import { textual_tree_from_json } from '../modes/textual-tree';
 import { Tree } from '../tree';
 import { drawTreeToCanvas } from '../tree/draw';
-import { Theme } from '../tree/theme';
 
 import {
 	compact as compactDenotation,
@@ -136,22 +135,17 @@ export function Main(props: MainProps) {
 					<pre>{textual_tree_from_json(tree).replace(/\x1b\[\d+m/g, '')}</pre>
 				);
 			case 'png-latex':
-			case 'png-text': {
-				const baseRenderer =
-					treeFormat === 'png-latex'
-						? denotationRenderLatex
-						: denotationRenderText;
-				const renderer =
-					mode === 'semantics-tree-compact'
-						? (e: CompactExpr, t: Theme) =>
-								baseRenderer(compactDenotation(e), t)
-						: baseRenderer;
+			case 'png-text':
 				drawTreeToCanvas({
 					themeName: darkMode.isDarkMode ? 'dark' : 'light',
 					tall: mode.includes('semantics'),
 					tree,
-					renderer,
+					renderer:
+						treeFormat === 'png-latex'
+							? denotationRenderLatex
+							: denotationRenderText,
 					showMovement,
+					compact: mode === 'semantics-tree-compact',
 					truncateLabels: truncateLabels.trim().split(/[\s,]+/),
 				}).then(canvas => {
 					setTimeout(() => {
@@ -171,7 +165,6 @@ export function Main(props: MainProps) {
 						src={''}
 					/>
 				);
-			}
 			case 'json':
 				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
 			case 'react': {

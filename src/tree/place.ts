@@ -188,12 +188,14 @@ function layerExtents<C extends DrawContext>(
 interface TreePlacerOptions {
 	theme: Theme;
 	horizontalMargin: number;
+	compact: boolean;
 	truncateLabels: string[];
 }
 
 const defaultOptions: TreePlacerOptions = {
 	theme: themes.light,
 	horizontalMargin: 30,
+	compact: false,
 	truncateLabels: [],
 };
 
@@ -203,12 +205,22 @@ export class TreePlacer<C extends DrawContext> {
 	constructor(
 		private ctx: C,
 		private denotationRenderer: (
-			denotation: Expr,
+			denotation: CompactExpr,
 			theme: Theme,
 		) => RenderedDenotation<C>,
 		options: Partial<TreePlacerOptions> = {},
 	) {
 		this.options = { ...defaultOptions, ...options };
+	}
+
+	private renderDenotation(
+		tree: Tree | DTree,
+	): RenderedDenotation<C> | undefined {
+		if (!('denotation' in tree) || tree.denotation === null) return undefined;
+		const expr = this.options.compact
+			? compact(tree.denotation)
+			: tree.denotation;
+		return this.denotationRenderer(expr, this.options.theme);
 	}
 
 	private placeLeaf(
@@ -217,10 +229,7 @@ export class TreePlacer<C extends DrawContext> {
 		const gloss = leaf.word.covert ? undefined : leaf.word.entry?.gloss;
 		const label = getLabel(leaf);
 		const word = leaf.word.covert ? leaf.word.value : leaf.word.text;
-		const denotation =
-			'denotation' in leaf && leaf.denotation !== null
-				? this.denotationRenderer(leaf.denotation, this.options.theme)
-				: undefined;
+		const denotation = this.renderDenotation(leaf);
 		const width = Math.max(
 			this.ctx.measureText(label).width,
 			this.ctx.measureText(word ?? '').width,
@@ -240,10 +249,7 @@ export class TreePlacer<C extends DrawContext> {
 
 	private placeRoof(tree: Tree | DTree): PlacedLeaf<C> {
 		const label = getLabel(tree);
-		const denotation =
-			'denotation' in tree && tree.denotation !== null
-				? this.denotationRenderer(tree.denotation, this.options.theme)
-				: undefined;
+		const denotation = this.renderDenotation(tree);
 		const text = treeText(tree);
 
 		const width = Math.max(
@@ -294,10 +300,7 @@ export class TreePlacer<C extends DrawContext> {
 	private placeBranch(
 		branch: Branch<Tree> | (Branch<DTree> & { denotation: Expr | null }),
 	): PlacedBranch<C> {
-		const denotation =
-			'denotation' in branch && branch.denotation !== null
-				? this.denotationRenderer(branch.denotation, this.options.theme)
-				: undefined;
+		const denotation = this.renderDenotation(branch);
 		const children = [
 			this.placeTree(branch.left),
 			this.placeTree(branch.right),
