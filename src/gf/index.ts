@@ -13,7 +13,11 @@ type G_Pol = 'PPos' | 'PNeg';
 type G_Det = ['DetQuant', G_Quant, G_Num] | 'every_Det';
 type G_Pron = `${string}_Pron`;
 type G_CN = ['UseN', G_N] | ['RelCN', G_CN, G_RS];
-type G_NP = ['UsePron', G_Pron] | ['UsePN', G_PN] | ['DetCN', G_Det, G_CN];
+type G_NP =
+	| ['UsePron', G_Pron]
+	| ['UsePN', G_PN]
+	| ['DetCN', G_Det, G_CN]
+	| ['ConjNP', G_Conj, G_ListNP];
 type G_Temp = ['TTAnt', G_Tense, G_Ant];
 type G_AP = ['PositA', G_A];
 type G_Comp = ['CompCN', G_CN] | ['CompAP', G_AP];
@@ -27,6 +31,8 @@ type G_RCl = ['RelCl', G_Cl];
 type G_S = ['UseCl', G_Temp, G_Pol, G_Cl];
 type G_RS = ['UseRCl', G_Temp, G_Pol, G_RCl];
 type G_Utt = ['UttS', G_S];
+type G_Conj = 'and_Conj' | 'or_Conj';
+type G_ListNP = ['BaseNP', G_NP, G_NP] | ['ConsNP', G_NP, G_ListNP];
 
 type Gf =
 	| G_Quant
@@ -47,7 +53,9 @@ type Gf =
 	| G_RCl
 	| G_S
 	| G_RS
-	| G_Utt;
+	| G_Utt
+	| G_Conj
+	| G_ListNP;
 
 /**
  * Get leaf text ignoring movement.
@@ -144,8 +152,9 @@ function simplifyRsToCn(rs: G_RS): G_CN | undefined {
 		const cl = rcl[1];
 		if (cl[0] === 'PredVP') {
 			const vp = cl[2];
-			if (vp[0] === 'UseComp' && vp[1][0] == 'CompCN') {
-				return vp[1][1];
+			if (vp[0] === 'UseComp') {
+				const comp = vp[1];
+				if (comp[0] === 'CompCN') return comp[1];
 			}
 		}
 	}
@@ -188,9 +197,38 @@ function dToGf(tree: StrictTree): G_Det {
 }
 
 /**
+ * Convert a Toaq & (conjunction) to a GF Conj.
+ */
+function conjToGf(tree: StrictTree): G_Conj {
+	const text = leafText(tree);
+	switch (text) {
+		case 'rú':
+		case 'róı':
+			return 'and_Conj';
+		case 'ró':
+		case 'rá':
+			return 'or_Conj';
+		default:
+			throw new Unimplemented('conjToGf: ' + text);
+	}
+}
+
+/**
  * Convert a Toaq DP (determiner phrase) to a GF NP (noun phrase).
  */
 function dpToGf(tree: StrictTree): G_NP {
+	if (tree.label === '&P') {
+		assertBranch(tree);
+		assertLabel(tree.left, 'DP');
+		assertBranch(tree.right);
+		assertLabel(tree.right, "&'");
+		assertLabel(tree.right.left, '&');
+		assertLabel(tree.right.right, 'DP');
+		const np1 = dpToGf(tree.left);
+		const conj = conjToGf(tree.right.left);
+		const np2 = dpToGf(tree.right.right);
+		return ['ConjNP', conj, ['BaseNP', np1, np2]];
+	}
 	assertLabel(tree, 'DP');
 	if ('word' in tree) {
 		return ['UsePron', pronounToGf(tree)];
