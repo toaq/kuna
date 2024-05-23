@@ -3,6 +3,7 @@ export type G_N = `${string}_N`;
 export type G_A = `${string}_A`;
 export type G_V0 = `${string}_V0`;
 export type G_V = `${string}_V` | G_V0;
+export type G_VS = `${string}_VS`;
 export type G_V2 = `${string}_V2`;
 export type G_V2S = `${string}_V2S`;
 export type G_V2Q = `${string}_V2Q`;
@@ -31,6 +32,13 @@ export default {
 	V: new Map<string, G_V>([
 		['nuo', 'sleep_V'],
 		['koı', 'walk_V'],
+	]),
+	VS: new Map<string, G_VS>([
+		['faqtea', 'fear_VS'],
+		['lutea', 'fear_VS'],
+		['zaı', 'hope_VS'],
+		['dua', 'know_VS'],
+		['ruaq', 'say_VS'],
 	]),
 	V2: new Map<string, G_V2>([
 		['chuq', 'eat_V2'],

@@ -2,7 +2,7 @@ import { Unimplemented } from '../core/error';
 import { baseForm } from '../morphology/tokenize';
 import { Branch, Leaf, StrictTree, assertBranch, assertLabel } from '../tree';
 import { leafText as actualLeafText } from '../tree';
-import { G_A, G_N, G_PN, G_V, G_V2, G_V3 } from './lexicon';
+import { G_A, G_N, G_PN, G_V, G_V2, G_V2S, G_V3, G_VS } from './lexicon';
 import lexicon from './lexicon';
 
 type G_Quant = 'IndefArt' | 'DefArt' | 'that_Quant' | 'this_Quant';
@@ -21,18 +21,26 @@ type G_NP =
 type G_Temp = ['TTAnt', G_Tense, G_Ant];
 type G_AP = ['PositA', G_A];
 type G_Comp = ['CompCN', G_CN] | ['CompAP', G_AP];
-type G_VPSlash = ['SlashV2a', G_V2] | ['Slash2V3', G_V3, G_NP];
+type G_VPSlash =
+	| ['SlashV2a', G_V2]
+	| ['Slash2V3', G_V3, G_NP]
+	| ['SlashV2S', G_V2S, G_S];
 type G_VP =
 	| ['UseV', G_V]
 	| ['UseComp', G_Comp]
-	| ['ComplSlash', G_VPSlash, G_NP];
-type G_Cl = ['PredVP', G_NP, G_VP] | ['ImpersCl', G_VP];
+	| ['ComplSlash', G_VPSlash, G_NP]
+	| ['ComplVS', G_VS, G_S];
+type G_Cl =
+	| ['PredVP', G_NP, G_VP]
+	| ['PredSCVP', G_SC, G_VP]
+	| ['ImpersCl', G_VP];
 type G_RCl = ['RelCl', G_Cl];
 type G_S = ['UseCl', G_Temp, G_Pol, G_Cl];
 type G_RS = ['UseRCl', G_Temp, G_Pol, G_RCl];
 type G_Utt = ['UttS', G_S];
 type G_Conj = 'and_Conj' | 'or_Conj';
 type G_ListNP = ['BaseNP', G_NP, G_NP] | ['ConsNP', G_NP, G_ListNP];
+type G_SC = ['EmbedS', G_S] | ['EmbedVP', G_VP];
 
 type Gf =
 	| G_Quant
@@ -55,7 +63,8 @@ type Gf =
 	| G_RS
 	| G_Utt
 	| G_Conj
-	| G_ListNP;
+	| G_ListNP
+	| G_SC;
 
 /**
  * Get leaf text ignoring movement.
@@ -214,9 +223,17 @@ function conjToGf(tree: StrictTree): G_Conj {
 }
 
 /**
- * Convert a Toaq DP (determiner phrase) to a GF NP (noun phrase).
+ * Is this NP-or-SC an SC?
  */
-function dpToGf(tree: StrictTree): G_NP {
+function isSc(x: G_NP | G_SC): x is G_SC {
+	return x[0] === 'EmbedS' || x[0] === 'EmbedVP';
+}
+
+/**
+ * Convert a Toaq DP (determiner phrase) to a GF NP (noun phrase) or SC
+ * (embedded sentence).
+ */
+function dpToGf(tree: StrictTree): G_NP | G_SC {
 	if (tree.label === '&P') {
 		assertBranch(tree);
 		assertLabel(tree.left, 'DP');
@@ -227,6 +244,9 @@ function dpToGf(tree: StrictTree): G_NP {
 		const np1 = dpToGf(tree.left);
 		const conj = conjToGf(tree.right.left);
 		const np2 = dpToGf(tree.right.right);
+		if (isSc(np1) || isSc(np2)) {
+			throw new Unimplemented('CP&CP');
+		}
 		return ['ConjNP', conj, ['BaseNP', np1, np2]];
 	}
 	assertLabel(tree, 'DP');
@@ -240,10 +260,7 @@ function dpToGf(tree: StrictTree): G_NP {
 			return ['DetCN', dToGf(tree.left), cn];
 		} else if (complement.label === 'CP') {
 			const s = declarativeCpToGf(complement);
-			// uhh
-			throw new Unimplemented(
-				'Unrecognized DP complement: ' + complement.label,
-			);
+			return ['EmbedS', s];
 		} else {
 			throw new Unimplemented(
 				'Unrecognized DP complement: ' + complement.label,
@@ -278,6 +295,32 @@ function vToGf(tree: StrictTree): G_VP {
 }
 
 /**
+ * Convert a Toaq (c 0) verb ("VS") to a GF VP.
+ */
+function vsToGf(tree: StrictTree, object: G_SC): G_VP {
+	assertLabel(tree, 'V');
+	const text = baseForm(leafText(tree));
+	const verb = lexicon.VS.get(text);
+	if (object[0] === 'EmbedS') {
+		if (verb) return ['ComplVS', verb, object[1]];
+	}
+	throw new Unimplemented('Unknown VS: ' + text);
+}
+
+/**
+ * Convert a Toaq (c c 0) verb ("V2S") to a GF VP.
+ */
+function v2sToGf(tree: StrictTree, IO: G_NP, DO: G_SC): G_VP {
+	assertLabel(tree, 'V');
+	const text = baseForm(leafText(tree));
+	const verb = lexicon.V2S.get(text);
+	if (DO[0] === 'EmbedS') {
+		if (verb) return ['ComplSlash', ['SlashV2S', verb, DO[1]], IO];
+	}
+	throw new Unimplemented('Unknown VS: ' + text);
+}
+
+/**
  * Convert a Toaq transitive verb and object to a GF VP (verb phrase).
  */
 function v2ToGf(tree: StrictTree, object: G_NP): G_VP {
@@ -306,16 +349,21 @@ function vpToGf(tree: StrictTree): G_Cl {
 	assertBranch(tree);
 	assertLabel(tree, '𝘷P');
 	if (tree.left.label === '𝘷') {
-		// Intransitive case
 		const VP = tree.right;
 		assertLabel(VP, 'VP');
 		if ('right' in VP) {
+			// intransitive like "nuo" or "gı" or "poq"
 			assertLabel(VP.left, 'V');
 			assertLabel(VP.right, 'DP');
 			const gvp: G_VP = vToGf(VP.left);
 			const subject = dpToGf(VP.right);
-			return ['PredVP', subject, gvp];
+			if (isSc(subject)) {
+				return ['PredSCVP', subject, gvp];
+			} else {
+				return ['PredVP', subject, gvp];
+			}
 		} else {
+			// nullary like "ruqshua"
 			const gvp: G_VP = v0ToGf(VP);
 			return ['ImpersCl', gvp];
 		}
@@ -330,21 +378,39 @@ function vpToGf(tree: StrictTree): G_Cl {
 		assertLabel(VP, 'VP');
 		if ('right' in VP) {
 			if (VP.right.label === "V'") {
+				// ditransitive like "do"
 				const IO = dpToGf(VP.left);
+				if (isSc(IO)) throw new Unimplemented('IO is SC');
 				const Vbar = VP.right;
 				assertBranch(Vbar);
 				const V = Vbar.left;
 				const DO = dpToGf(Vbar.right);
-				const gvp: G_VP = v3ToGf(V, IO, DO);
-				return ['PredVP', subject, gvp];
+				const gvp: G_VP = isSc(DO) ? v2sToGf(V, IO, DO) : v3ToGf(V, IO, DO);
+				if (isSc(subject)) {
+					return ['PredSCVP', subject, gvp];
+				} else {
+					return ['PredVP', subject, gvp];
+				}
 			} else {
+				// transitive like "chuq"
 				const object = dpToGf(VP.right);
-				const gvp: G_VP = v2ToGf(VP.left, object);
-				return ['PredVP', subject, gvp];
+				const gvp: G_VP = isSc(object)
+					? vsToGf(VP.left, object)
+					: v2ToGf(VP.left, object);
+				if (isSc(subject)) {
+					return ['PredSCVP', subject, gvp];
+				} else {
+					return ['PredVP', subject, gvp];
+				}
 			}
 		} else {
+			// agentive intransitive like "koı"
 			const gvp: G_VP = vToGf(VP);
-			return ['PredVP', subject, gvp];
+			if (isSc(subject)) {
+				return ['PredSCVP', subject, gvp];
+			} else {
+				return ['PredVP', subject, gvp];
+			}
 		}
 	}
 }
