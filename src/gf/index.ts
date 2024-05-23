@@ -2,7 +2,7 @@ import { Unimplemented } from '../core/error';
 import { baseForm } from '../morphology/tokenize';
 import { Branch, Leaf, StrictTree, assertBranch, assertLabel } from '../tree';
 import { leafText as actualLeafText } from '../tree';
-import { G_N, G_PN, G_V, G_V2, G_V3 } from './lexicon';
+import { G_A, G_N, G_PN, G_V, G_V2, G_V3 } from './lexicon';
 import lexicon from './lexicon';
 
 type G_Quant = 'IndefArt' | 'DefArt' | 'that_Quant' | 'this_Quant';
@@ -15,7 +15,8 @@ type G_Pron = `${string}_Pron`;
 type G_CN = ['UseN', G_N] | ['RelCN', G_CN, G_RS];
 type G_NP = ['UsePron', G_Pron] | ['UsePN', G_PN] | ['DetCN', G_Det, G_CN];
 type G_Temp = ['TTAnt', G_Tense, G_Ant];
-type G_Comp = ['CompCN', G_CN];
+type G_AP = ['PositA', G_A];
+type G_Comp = ['CompCN', G_CN] | ['CompAP', G_AP];
 type G_VPSlash = ['SlashV2a', G_V2] | ['Slash2V3', G_V3, G_NP];
 type G_VP =
 	| ['UseV', G_V]
@@ -38,6 +39,7 @@ type Gf =
 	| G_CN
 	| G_NP
 	| G_Temp
+	| G_AP
 	| G_Comp
 	| G_VPSlash
 	| G_VP
@@ -142,7 +144,7 @@ function simplifyRsToCn(rs: G_RS): G_CN | undefined {
 		const cl = rcl[1];
 		if (cl[0] === 'PredVP') {
 			const vp = cl[2];
-			if (vp[0] === 'UseComp') {
+			if (vp[0] === 'UseComp' && vp[1][0] == 'CompCN') {
 				return vp[1][1];
 			}
 		}
@@ -216,7 +218,6 @@ function dpToGf(tree: StrictTree): G_NP {
  * Convert a Toaq nullary verb to a GF VP (verb phrase).
  */
 function v0ToGf(tree: StrictTree): G_VP {
-	// assertLabel(tree, 'V');
 	const text = baseForm(leafText(tree));
 	const verb = lexicon.V0.get(text);
 	if (verb) return ['UseV', verb];
@@ -227,12 +228,14 @@ function v0ToGf(tree: StrictTree): G_VP {
  * Convert a Toaq intransitive verb to a GF VP (verb phrase). This may introduce a copula.
  */
 function vToGf(tree: StrictTree): G_VP {
-	// assertLabel(tree, 'V');
 	const text = baseForm(leafText(tree));
 	const verb = lexicon.V.get(text);
 	if (verb) return ['UseV', verb];
 	const noun = lexicon.N.get(text);
 	if (noun) return ['UseComp', ['CompCN', ['UseN', noun]]];
+	const adj = lexicon.A.get(text);
+	if (adj) return ['UseComp', ['CompAP', ['PositA', adj]]];
+
 	throw new Unimplemented('Unknown V: ' + text);
 }
 
