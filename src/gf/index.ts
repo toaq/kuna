@@ -336,6 +336,11 @@ function declarativeTpToGf(tree: StrictTree): G_S {
 function declarativeΣpToGf(tree: StrictTree): G_S {
 	assertBranch(tree);
 	assertLabel(tree, 'ΣP');
+	while (tree.left.label === 'QP' || tree.left.label === '&QP') {
+		tree = tree.right;
+		assertBranch(tree);
+		assertLabel(tree, 'ΣP');
+	}
 	const s = declarativeTpToGf(tree.right);
 	s[2] = polarityToGf(tree.left);
 	return s;
@@ -379,6 +384,11 @@ function relativeTpToGf(tree: StrictTree): G_RS {
 function relativeΣpToGf(tree: StrictTree): G_RS {
 	assertBranch(tree);
 	assertLabel(tree, 'ΣP');
+	while (tree.left.label === 'QP' || tree.left.label === '&QP') {
+		tree = tree.right;
+		assertBranch(tree);
+		assertLabel(tree, 'ΣP');
+	}
 	const rs = relativeTpToGf(tree.right);
 	rs[2] = polarityToGf(tree.left);
 	return rs;
