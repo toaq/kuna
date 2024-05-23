@@ -28,7 +28,7 @@ function getTrees(argv: {
 	sentence: string | undefined;
 	surface: boolean | undefined;
 	semantics: boolean | undefined;
-	compact: boolean | undefined;
+	trim: boolean | undefined;
 }): Tree[] {
 	let trees = parse(argv.sentence!);
 	if (argv.semantics) {
@@ -36,7 +36,7 @@ function getTrees(argv: {
 	} else if (!argv.surface) {
 		trees = trees.map(t => recover(t));
 	}
-	if (argv.compact) {
+	if (argv.trim) {
 		trees = trees.map(trimTree);
 	}
 	return trees;
@@ -64,7 +64,7 @@ yargs
 		describe: 'Show effects of syntactic movement',
 		default: false,
 	})
-	.option('compact', {
+	.option('trim', {
 		type: 'boolean',
 		describe: 'Remove empty phrases with null heads',
 		default: false,
