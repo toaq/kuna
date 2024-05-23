@@ -78,15 +78,7 @@ export function ShowLinearization({
 	if (to === 'LibraryBrowserAPI') {
 		return undefined;
 	} else {
-		const lang = {
-			LibraryBrowserBul: 'bg',
-			LibraryBrowserChi: 'zh',
-			LibraryBrowserDut: 'nl',
-			LibraryBrowserEng: 'en',
-			LibraryBrowserSpa: 'es',
-			LibraryBrowserSwe: 'sv',
-		}[to];
-		if (lang === 'zh-Hans') text = text.replace(/\s/g, '');
+		const lang = to.replace(/^ResourceDemo/, '').toLowerCase();
 		return (
 			<div className="linearization">
 				<dd>{lang}:&nbsp;</dd>
@@ -255,7 +247,7 @@ export function Main(props: MainProps) {
 		const recovered = recover(tree);
 		const gf = showGf(treeToGf(recovered));
 		fetch(
-			'https://cloud.grammaticalframework.org/grammars/LibraryBrowser.pgf?command=linearize&tree=' +
+			'https://cloud.grammaticalframework.org/grammars/ResourceDemo.pgf?command=linearize&tree=' +
 				encodeURIComponent(gf),
 		).then(x => x.json().then(j => setLinearizations(j)));
 		return <>{showGf(treeToGf(recovered))}</>;

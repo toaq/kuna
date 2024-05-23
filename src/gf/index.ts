@@ -10,7 +10,7 @@ type G_Num = 'NumSg' | 'NumPl';
 type G_Tense = 'TPres' | 'TPast' | 'TFut' | 'TCond';
 type G_Ant = 'ASimul' | 'AAnter';
 type G_Pol = 'PPos' | 'PNeg';
-type G_Det = ['DetQuant', G_Quant, G_Num] | 'every_Det';
+type G_Det = ['DetQuant', G_Quant, G_Num] | `${string}_Det`;
 type G_Pron = `${string}_Pron`;
 type G_CN = ['UseN', G_N] | ['RelCN', G_CN, G_RS];
 type G_NP =
@@ -28,6 +28,7 @@ type G_VPSlash =
 type G_VP =
 	| ['UseV', G_V]
 	| ['UseComp', G_Comp]
+	| G_Comp
 	| ['ComplSlash', G_VPSlash, G_NP]
 	| ['ComplVS', G_VS, G_S];
 type G_Cl =
@@ -165,6 +166,9 @@ function simplifyRsToCn(rs: G_RS): G_CN | undefined {
 				const comp = vp[1];
 				if (comp[0] === 'CompCN') return comp[1];
 			}
+			if (vp[0] === 'CompCN') {
+				return vp[1];
+			}
 		}
 	}
 }
@@ -186,19 +190,19 @@ function dToGf(tree: StrictTree): G_Det {
 	const text = leafText(tree);
 	switch (text) {
 		case 'sá':
-			return ['DetQuant', 'IndefArt', 'NumSg'];
+			return 'aSg_Det'; // ['DetQuant', 'IndefArt', 'NumSg'];
 		case 'báq':
-			return ['DetQuant', 'IndefArt', 'NumPl'];
+			return 'aPl_Det'; // ['DetQuant', 'IndefArt', 'NumPl'];
 		case 'tú':
 			return 'every_Det';
 		case 'hú':
-			return ['DetQuant', 'that_Quant', 'NumSg'];
+			return 'that_Det'; // ['DetQuant', 'that_Quant', 'NumSg'];
 		case 'ní':
-			return ['DetQuant', 'this_Quant', 'NumSg'];
+			return 'this_Det'; // ['DetQuant', 'this_Quant', 'NumSg'];
 		case 'ké':
 		case 'ló':
 		case '◌́':
-			return ['DetQuant', 'DefArt', 'NumSg'];
+			return 'theSg_Det'; // ['DetQuant', 'DefArt', 'NumSg'];
 
 		default:
 			throw new Unimplemented('dToGf: ' + text);
@@ -285,11 +289,16 @@ function v0ToGf(tree: StrictTree): G_VP {
 function vToGf(tree: StrictTree): G_VP {
 	const text = baseForm(leafText(tree));
 	const verb = lexicon.V.get(text);
+
+	// Different between ResourceDemo.pgf and LibraryBrowser.pgf?
+	// const useComp = (x: G_Comp) => ['UseComp', x];
+	const useComp = (x: G_Comp) => x;
+
 	if (verb) return ['UseV', verb];
 	const noun = lexicon.N.get(text);
-	if (noun) return ['UseComp', ['CompCN', ['UseN', noun]]];
+	if (noun) return useComp(['CompCN', ['UseN', noun]]);
 	const adj = lexicon.A.get(text);
-	if (adj) return ['UseComp', ['CompAP', ['PositA', adj]]];
+	if (adj) return useComp(['CompAP', ['PositA', adj]]);
 
 	throw new Unimplemented('Unknown V: ' + text);
 }
