@@ -5,12 +5,12 @@ import { leafText as actualLeafText } from '../tree';
 import { G_N, G_PN, G_V, G_V2, G_V3 } from './lexicon';
 import lexicon from './lexicon';
 
-type G_Quant = 'IndefArt' | 'DefArt';
+type G_Quant = 'IndefArt' | 'DefArt' | 'that_Quant' | 'this_Quant';
 type G_Num = 'NumSg' | 'NumPl';
 type G_Tense = 'TPres' | 'TPast' | 'TFut' | 'TCond';
 type G_Ant = 'ASimul' | 'AAnter';
 type G_Pol = 'PPos' | 'PNeg';
-type G_Det = ['DetQuant', G_Quant, G_Num];
+type G_Det = ['DetQuant', G_Quant, G_Num] | 'every_Det';
 type G_Pron = `${string}_Pron`;
 type G_CN = ['UseN', G_N] | ['RelCN', G_CN, G_RS];
 type G_NP = ['UsePron', G_Pron] | ['UsePN', G_PN] | ['DetCN', G_Det, G_CN];
@@ -167,6 +167,16 @@ function dToGf(tree: StrictTree): G_Det {
 	switch (text) {
 		case 'sá':
 			return ['DetQuant', 'IndefArt', 'NumSg'];
+		case 'báq':
+			return ['DetQuant', 'IndefArt', 'NumPl'];
+		case 'tú':
+			return 'every_Det';
+		case 'hú':
+			return ['DetQuant', 'that_Quant', 'NumSg'];
+		case 'ní':
+			return ['DetQuant', 'this_Quant', 'NumSg'];
+		case 'ké':
+		case 'ló':
 		case '◌́':
 			return ['DetQuant', 'DefArt', 'NumSg'];
 
@@ -415,6 +425,8 @@ export function treeToGf(tree: StrictTree): Gf {
  *
  * The result can be tested on
  * <https://cloud.grammaticalframework.org/syntax-editor/editor.html>
+ * or submitted to
+ * <https://cloud.grammaticalframework.org/grammars/LibraryBrowser.pgf?command=linearize&tree=result+goes+here>
  */
 export function showGf(gf: Gf | string): string {
 	return typeof gf === 'string' ? gf : '(' + gf.map(showGf).join(' ') + ')';
