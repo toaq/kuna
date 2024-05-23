@@ -70,7 +70,10 @@ const conjunctions: Record<string, CovertValue> = {
 class Scope {
 	private readonly bindings: [BindingSite, number][] = [];
 
-	constructor(private newBinding: () => number) {}
+	constructor(
+		public readonly label: string,
+		private readonly newBinding: () => number,
+	) {}
 
 	/**
 	 * Add a binding site to this scope. The first site added will have the highest
@@ -178,12 +181,16 @@ class Recoverer {
 
 	constructor() {}
 
+	private newBinding(): number {
+		return this.nextBinding++;
+	}
+
 	private newCoindex(): string {
 		return String.fromCodePoint('𝑖'.codePointAt(0)! + this.nextCoindex++);
 	}
 
-	private newScope(): Scope {
-		return new Scope(() => this.nextBinding++);
+	private newScope(label: string): Scope {
+		return new Scope(label, this.newBinding.bind(this));
 	}
 
 	private fixSerial(serial: Tree, terms: Tree[]): Tree {
@@ -221,8 +228,8 @@ class Recoverer {
 			}
 
 			// Subclauses open a new scope
-			if (tree.label === 'CP' || tree.label === 'CPrel') {
-				const newScope = this.newScope();
+			if (tree.label.startsWith('CP')) {
+				const newScope = this.newScope(tree.label);
 				const right = this.recover(tree.right, newScope);
 				return {
 					label: tree.label,
@@ -233,9 +240,9 @@ class Recoverer {
 
 			// Conjoined clauses each get a new scope of their own
 			if (tree.label === '&P' && effectiveLabel(tree) !== 'DP') {
-				const leftScope = this.newScope();
+				const leftScope = this.newScope(tree.label);
 				const left = this.recover(tree.left, leftScope);
-				const rightScope = this.newScope();
+				const rightScope = this.newScope(tree.label);
 				assertBranch(tree.right);
 				const conjunction = this.recover(tree.right.left, scope);
 				const right = this.recover(tree.right.right, rightScope);
@@ -275,6 +282,16 @@ class Recoverer {
 			}
 
 			return fixed;
+		} else if (
+			scope?.label === 'CPincorp' &&
+			tree.word.covert &&
+			(tree.label === 'Ev' || tree.word.value === 'PRO')
+		) {
+			// This is a total abuse of the binding field: in an object-incorporated
+			// phrase we want the different PROs to not be unified in the denotation, so
+			// we give them different binding indices. This would be less of a hack if
+			// there were a proper index resolution phase where we could put this.
+			return { ...tree, binding: this.newBinding() };
 		} else {
 			return tree;
 		}

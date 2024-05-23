@@ -84,8 +84,9 @@ const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
 	after: 8,
 	before_near: 7,
 	after_near: 6,
-	roi: 12,
-	coevent: 11,
+	subevent: 11,
+	coevent: 12,
+	roi: 13,
 };
 
 const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
@@ -98,8 +99,9 @@ const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
 		after: false,
 		before_near: false,
 		after_near: false,
-		roi: true,
+		subevent: false,
 		coevent: false,
+		roi: true,
 	};
 
 type Quantifier = (Expr & { head: 'quantifier' })['name'] | 'lambda';
@@ -201,8 +203,9 @@ const plainText: Format<string> = {
 		after: '>',
 		before_near: '<.near',
 		after_near: '>.near',
-		roi: '&',
+		subevent: '≤',
 		coevent: 'o',
+		roi: '&',
 	}),
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
 	symbolForPolarizer: fnFromMap({
@@ -294,8 +297,9 @@ const latex: Format<string> = {
 		after: '>',
 		before_near: '<_{\\text{near}}',
 		after_near: '>_{\\text{near}}',
-		roi: '&',
+		subevent: '\\leq{}',
 		coevent: '\\operatorname{o}',
+		roi: '&',
 	}),
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
 	symbolForPolarizer: fnFromMap({

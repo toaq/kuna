@@ -1,5 +1,5 @@
 import { Impossible, Unimplemented } from '../core/error';
-import { some } from '../core/misc';
+import { find, some } from '../core/misc';
 import { Branch, StrictTree, effectiveLabel } from '../tree';
 import {
 	and,
@@ -11,7 +11,6 @@ import {
 	v,
 	λ,
 	subtype,
-	Binding,
 } from './model';
 import {
 	bindTimeIntervals,
@@ -233,6 +232,72 @@ const cRelComposition: CompositionRule = (branch, left, right) => {
 	}
 };
 
+const cIncorpComposition: CompositionRule = (branch, left, right) => {
+	if (right.denotation === null) {
+		throw new Impossible(`Cincorp composition on a null ${right.label}`);
+	} else {
+		const {
+			bindings,
+			denotation: { context },
+		} = right;
+		const event = find(
+			bindings.index,
+			([, { index }]) => context[index] === 'v',
+		);
+		if (event === undefined)
+			throw new Impossible("Can't find the event to abstract");
+		const [, { index: eventIndex }] = event;
+
+		// Each PRO (and the event variable) that we want to abstract will have
+		// created a binding; this is how we identify them.
+		const abstract = context.map(() => false);
+		for (const { index } of bindings.index.values()) abstract[index] = true;
+		// Generate a mapping from the outer context of the original expression to the
+		// inner context of the new function expression, such that the PROs become the
+		// first arguments (indices 1..bindings.index.size) and the event becomes the
+		// final argument (index 0)
+		const indexMapping = new Array<number>(context.length);
+		let nextProIndex = 1;
+		let nextIndex = bindings.index.size;
+		for (let i = 0; i < indexMapping.length; i++)
+			indexMapping[i] =
+				i === eventIndex ? 0 : abstract[i] ? nextProIndex++ : nextIndex++;
+		const innerContext = context.map((_t, i) => context[indexMapping[i]]);
+
+		// Wrap the expression in lambdas for each abstracted variable
+		let [, ...newContext] = innerContext;
+		let denotation = λ('v', newContext, c =>
+			rewriteContext(right.denotation!, c, i => indexMapping[i]),
+		);
+		for (const { index } of bindings.index.values()) {
+			if (index === eventIndex) continue;
+			let type: ExprType;
+			[type, ...newContext] = newContext;
+			denotation = λ(type, newContext, () => denotation);
+		}
+
+		const innerDepth = innerContext.length - newContext.length;
+
+		return {
+			...branch,
+			left,
+			right,
+			denotation: reduce(denotation),
+			bindings: mapBindings(bindings, b =>
+				indexMapping[b.index] < innerDepth
+					? undefined
+					: {
+							index: indexMapping[b.index] - innerDepth,
+							subordinate: true,
+							timeIntervals: b.timeIntervals.map(
+								i => indexMapping[i] - innerDepth,
+							),
+						},
+			),
+		};
+	}
+};
+
 const dComposition: CompositionRule = (branch, left, right) => {
 	if (left.denotation === null) {
 		throw new Impossible(`D composition on a null ${left.label}`);
@@ -392,6 +457,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 	switch (leftLabel) {
 		case 'V':
 		case 'VP':
+		case 'CPincorp':
 		case 'Asp':
 		case '𝘯':
 		case 'Σ':
@@ -406,6 +472,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case 'mo':
 		case 'moP':
 		case 'teoP':
+		case 'Ev':
 		case 'EvA':
 		case 'Focus':
 		case 'FocAdv':
@@ -429,6 +496,8 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 			return propositionAbstraction;
 		case 'Crel':
 			return cRelComposition;
+		case 'Cincorp':
+			return cIncorpComposition;
 		case 'D':
 			return effectiveLabel(right) === '𝘯P'
 				? dComposition

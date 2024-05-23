@@ -16,6 +16,7 @@ export type CovertValue =
 	| '∅'
 	| 'BE'
 	| 'CAUSE'
+	| 'SUB'
 	| 'PRO'
 	| '∃'
 	| '¬∃'
@@ -68,15 +69,19 @@ export type Label =
 	| 'buq'
 	| 'buqP'
 	| 'C'
+	| 'Cincorp'
 	| 'Crel'
 	| 'CP'
+	| 'CPincorp'
 	| 'CPrel'
 	| 'D'
 	| 'DP'
 	| 'Discourse'
+	| 'Ev'
 	| 'EvA'
 	| "EvA'"
 	| 'EvAP'
+	| 'EvP'
 	| 'FocAdv'
 	| 'FocAdvP'
 	| 'Focus'
@@ -173,4 +178,9 @@ export function assertLeaf(tree: Tree): asserts tree is Leaf {
 export function assertBranch(tree: Tree): asserts tree is Branch<Tree> {
 	if ('left' in tree) return;
 	throw new Impossible('Unexpected non-branch ' + tree.label);
+}
+
+export function assertRose(tree: Tree): asserts tree is Rose<Tree> {
+	if ('children' in tree) return;
+	throw new Impossible('Unexpected non-rose ' + tree.label);
 }
