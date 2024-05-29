@@ -80,9 +80,11 @@ CP -> Copt Clause<main> {% makeBranch('CP') %}
 CPsub -> Csub Clause<sub> {% makeBranch('CP') %}
 # ꝡâ hao
 CPincorp -> Cincorp Clause<sub> {% make3LCovertLeft('DP', 'D', 'CP') %}
+# (shê ꝡä hao nä) hao
+CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C') %}
 # ꝡë hao
 CPrel -> Crel Clause<sub> {% makeBranch('CPrel') %}
-# (nä) hao
+# (ráı nä) hao
 CPrelna<S> -> Clause<S> {% makeBranchCovertLeft('CPrel', 'Crel') %}
 # (sá) ∅ hao
 CPdet -> MSPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
@@ -107,7 +109,7 @@ Clause<S> -> Argument Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
 # râo fíachaq nä pu hao hóa
 Clause<S> -> AdjunctPcon Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
-Clause<S> -> ModalP Na MSP<S> {% make3L('𝘷P', "𝘷'") %}
+Clause<S> -> ModalP Na CPna<S> {% make3L('𝘷P', "𝘷'") %}
 ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
 # hao jí gö hao jí
 Clause<S> -> MSP<main> Go Clause<S> {% makeRetroactiveCleft %}

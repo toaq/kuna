@@ -413,6 +413,9 @@ test('subclauses open a new scope', () => {
 	expect(d('Gaı póq, ꝡë cho hó tú rua, rúa')).toMatchInlineSnapshot(
 		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t'''' ∧ gaı.𝘸(b, a)(𝘦) | (∃𝘦. τ(𝘦) ⊆ t''' ∧ poq.𝘸(b)(𝘦)) ∧ ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ rua.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ cho.𝘸(b, 𝘹)(𝘦) | inanimate(𝘹)) | ∃𝘦. τ(𝘦) ⊆ t ∧ rua.𝘸(a)(𝘦))) | animate(b) | inanimate(a)\"",
 	);
+	expect(d('Shê ꝡä hao súq nä hao tú raı')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. ∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t'' ∧ hao.𝘸'(súq)(𝘦). ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ raı.𝘸'(𝘹)(𝘦). ∃𝘦. τ(𝘦) ⊆ t' ∧ hao.𝘸'(𝘹)(𝘦))\"",
+	);
 });
 
 test('incorporated object scopes under other arguments', () => {
