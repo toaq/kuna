@@ -1,6 +1,5 @@
 import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
-import { Tone } from '../morphology/tone';
 import {
 	Branch,
 	Label,
@@ -304,29 +303,6 @@ function attachAdjective(VP: Tree, kivP: KivP): Tree {
 }
 
 /**
- * Determines whether an argument is an incorporated object.
- */
-function isArgIncorp(dp: Tree): boolean {
-	let head: Leaf;
-	if ('word' in dp) {
-		head = dp;
-	} else {
-		assertBranch(dp);
-		assertLeaf(dp.left);
-		if (dp.left.word.covert) {
-			const cp = dp.right;
-			assertBranch(cp);
-			assertLeaf(cp.left);
-			head = cp.left;
-		} else {
-			head = dp.left;
-		}
-	}
-
-	return !head.word.covert && head.word.tone === Tone.T4;
-}
-
-/**
  * Turn the given *Serial and terms into a proper 𝘷P, by:
  *
  * - splitting the *Serial into segments,
@@ -372,21 +348,19 @@ export function fixSerial(
 	}
 	if (0 !== end) segments.unshift(children.slice(0, end));
 
-	let earlyAdjuncts: Tree[] = [];
-	let args: Tree[] = [];
-	let argIncorp: Tree | null = null;
-	let lateAdjuncts: Tree[] = [];
+	let earlyAdjuncts = [];
+	let args = [];
+	let lateAdjuncts = [];
 	for (const term of terms) {
-		if (term.label === 'DP' && isArgIncorp(term)) {
-			argIncorp = term;
+		const label = effectiveLabel(term);
+		if (label === 'DP' || label === 'CP') {
+			args.push(term);
+		} else if (args.length) {
+			lateAdjuncts.push(term);
 		} else {
-			const label = effectiveLabel(term);
-			if (label === 'DP') args.push(term);
-			else if (args.length) lateAdjuncts.push(term);
-			else earlyAdjuncts.push(term);
+			earlyAdjuncts.push(term);
 		}
 	}
-	if (argIncorp !== null) args.push(argIncorp);
 
 	// Now the first segment is the serial verb and everything after it is serial adjectives.
 	let { ki, vP } = segmentToKivP(segments[0], args, newCoindex);

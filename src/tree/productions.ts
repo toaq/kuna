@@ -166,20 +166,14 @@ export function makeSerial(
 }
 
 export function makevP(
-	[serial, argIncorp, adjpsL, rest]: [
-		Tree,
-		Tree | null,
-		Tree[],
-		[Tree[], Tree[]] | null,
-	],
+	[serial, adjpsL, rest]: [Tree, Tree[], [Tree[], Tree[]] | null],
 	location: number,
 	reject: Object,
 	depth: 'main' | 'sub',
 ) {
-	const argsL = argIncorp === null ? [] : [argIncorp];
-	let [argsR, adjpsR] = rest ?? [[], []];
-	argsR = argsR.filter(x => x.label !== 'VocativeP');
-	const args = [...argsL, ...argsR];
+	rest ??= [[], []];
+	let [args, adjpsR] = rest;
+	args = args.filter(x => x.label !== 'VocativeP');
 
 	const arity = (serial as any).arity;
 	if (arity !== undefined) {
@@ -197,23 +191,20 @@ export function makevP(
 	// Disallow adjuncts that could have gone in a subclause:
 	if (
 		adjpsR.length &&
-		argsR.length &&
-		endsInClauseBoundary(argsR[argsR.length - 1])
+		args.length &&
+		endsInClauseBoundary(args[args.length - 1])
 	) {
-		return reject;
-	}
-	if (adjpsL.length && argIncorp !== null && endsInClauseBoundary(argIncorp)) {
 		return reject;
 	}
 
 	return {
 		label: '*𝘷P',
-		children: [serial, ...argsL, ...adjpsL, ...argsR, ...adjpsR],
+		children: [serial, ...adjpsL, ...args, ...adjpsR],
 	};
 }
 
 export function makevP_main(
-	args: [Tree, Tree | null, Tree[], [Tree[], Tree[]] | null],
+	args: [Tree, Tree[], [Tree[], Tree[]] | null],
 	location: number,
 	reject: Object,
 ) {
@@ -221,28 +212,21 @@ export function makevP_main(
 }
 
 export function makevP_sub(
-	args: [Tree, Tree | null, Tree[], [Tree[], Tree[]] | null],
+	args: [Tree, Tree[], [Tree[], Tree[]] | null],
 	location: number,
 	reject: Object,
 ) {
 	return makevP(args, location, reject, 'sub');
 }
 
-export function makevPdet(
-	[serial, argIncorp]: [Tree, Tree | null],
-	location: number,
-	reject: Object,
-) {
+export function makevPdet([serial]: [Tree], location: number, reject: Object) {
 	const arity = (serial as any).arity;
-	if (arity < (argIncorp === null ? 1 : 2)) return reject;
-
+	if (arity === 0) {
+		return reject;
+	}
 	return {
 		label: '*𝘷P',
-		children: [
-			serial,
-			...(argIncorp === null ? [] : [argIncorp]),
-			{ label: 'DP', word: { covert: true, value: 'PRO' } },
-		],
+		children: [serial, { label: 'DP', word: { covert: true, value: 'PRO' } }],
 	};
 }
 
