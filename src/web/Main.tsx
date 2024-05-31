@@ -27,6 +27,7 @@ import { Tokens } from './Tokens';
 import { TreeBrowser } from './TreeBrowser';
 import { themes } from '../tree/theme';
 import { showGf, treeToGf } from '../gf';
+import GfResult from './GfResult';
 
 type TreeMode =
 	| 'syntax-tree'
@@ -65,29 +66,6 @@ export interface MainProps {
 	mode?: Mode;
 }
 
-interface Linearization {
-	to: string;
-	text: string;
-}
-
-export function ShowLinearization({
-	linearization: { to, text },
-}: {
-	linearization: Linearization;
-}) {
-	if (to === 'LibraryBrowserAPI') {
-		return undefined;
-	} else {
-		const lang = to.replace(/^ResourceDemo/, '').toLowerCase();
-		return (
-			<div className="linearization">
-				<dd>{lang}:&nbsp;</dd>
-				<dt lang={lang}>{text}</dt>
-			</div>
-		);
-	}
-}
-
 export function Main(props: MainProps) {
 	const darkMode = useDarkMode();
 	const [parseCount, setParseCount] = useState(0);
@@ -106,7 +84,6 @@ export function Main(props: MainProps) {
 	const [latestOutput, setLatestOutput] = useState<ReactElement>(
 		<>Output will appear here.</>,
 	);
-	const [linearizations, setLinearizations] = useState<Linearization[]>([]);
 	const math = latestMode?.startsWith('logical-form');
 	const treeImg = useRef<HTMLImageElement>(null);
 	const [meaningCompact, setMeaningCompact] = useState(false);
@@ -246,11 +223,7 @@ export function Main(props: MainProps) {
 		const tree = parseInput();
 		const recovered = recover(tree);
 		const gf = showGf(treeToGf(recovered));
-		fetch(
-			'https://cloud.grammaticalframework.org/grammars/ResourceDemo.pgf?command=linearize&tree=' +
-				encodeURIComponent(gf),
-		).then(x => x.json().then(j => setLinearizations(j)));
-		return <>{showGf(treeToGf(recovered))}</>;
+		return <GfResult gf={gf} />;
 	}
 
 	function getTokens(): ReactElement {
@@ -467,13 +440,6 @@ export function Main(props: MainProps) {
 			) : (
 				<div className={classNames('card', 'output', { math })}>
 					{latestOutput}
-					{latestMode === 'gf' && (
-						<ul>
-							{linearizations.map((l, i) => (
-								<ShowLinearization linearization={l} key={i} />
-							))}
-						</ul>
-					)}
 				</div>
 			)}
 		</>
