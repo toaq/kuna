@@ -8,7 +8,7 @@ import {
 	constantAlphabets,
 	variableAlphabets,
 } from './format/base';
-import { plainText, latex, json, JsonExpr } from './format';
+import { plainText, latex, json, JsonExpr, mathml } from './format';
 
 const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
 	and: 4,
@@ -307,6 +307,12 @@ export function toPlainText(e: CompactExpr): string {
 
 export function toLatex(e: CompactExpr): string {
 	return renderFull(e, latex);
+}
+
+export function toMathml(e: CompactExpr): string {
+	return (
+		'<math display=block><mrow>' + renderFull(e, mathml) + '</mrow></math>'
+	);
 }
 
 export function toJson(e: CompactExpr): JsonExpr {

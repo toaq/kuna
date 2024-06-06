@@ -172,8 +172,10 @@ export function Main(props: MainProps) {
 				return (
 					<TreeBrowser
 						tree={tree}
+						key={new Date().toString()}
 						compactDenotations={mode === 'semantics-tree-compact'}
 						theme={themes[themeName]}
+						truncateLabels={truncateLabels.trim().split(/[\s,]+/)}
 					/>
 				);
 			}
