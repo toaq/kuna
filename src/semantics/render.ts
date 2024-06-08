@@ -1,27 +1,43 @@
-import { values } from 'lodash';
 import { Impossible } from '../core/error';
 import { CompactExpr } from './compact';
 import { Expr, ExprType } from './model';
+import {
+	Format,
+	NameType,
+	Names,
+	constantAlphabets,
+	variableAlphabets,
+} from './format/base';
+import { plainText, latex, json, JsonExpr, mathml } from './format';
 
-type NameType = 'e' | 'v' | 'i' | 's' | 'fn';
+const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
+	and: 4,
+	or: 3,
+	equals: 5,
+	subinterval: 10,
+	before: 9,
+	after: 8,
+	before_near: 7,
+	after_near: 6,
+	subevent: 11,
+	coevent: 12,
+	roi: 13,
+};
 
-/**
- * Represents the 'id'th name available for variables/constants of type 'type'.
- */
-interface Name {
-	readonly id: number;
-	readonly type: NameType;
-	readonly constant: boolean;
-}
-
-/**
- * A naming context to use when rendering an expression.
- */
-interface Names {
-	readonly context: Name[];
-	readonly nextVariableIds: Record<NameType, number>;
-	readonly nextConstantIds: Record<NameType, number>;
-}
+const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
+	{
+		and: true,
+		or: true,
+		equals: false,
+		subinterval: false,
+		before: false,
+		after: false,
+		before_near: false,
+		after_near: false,
+		subevent: false,
+		coevent: false,
+		roi: true,
+	};
 
 const noNames: Names = {
 	context: [],
@@ -44,399 +60,6 @@ const noNames: Names = {
 function getNameType(type: ExprType): NameType {
 	return typeof type === 'string' && type !== 't' && type !== 'a' ? type : 'fn';
 }
-
-function mathematicalSansSerifItalic(name: string) {
-	const letter = name[0];
-	const primes = name.slice(1);
-	if ('a' <= letter && letter <= 'z') {
-		return String.fromCodePoint(120257 + letter.codePointAt(0)!) + primes;
-	} else if ('A' <= letter && letter <= 'Z') {
-		return String.fromCodePoint(120263 + letter.codePointAt(0)!) + primes;
-	} else {
-		throw new Impossible('invalid letter');
-	}
-}
-
-type Alphabets = Record<NameType, string[]>;
-
-const constantAlphabets: Alphabets = {
-	e: ['a', 'b', 'c', 'd'],
-	v: ['e'],
-	i: ['t'],
-	s: ['w'],
-	fn: ['F', 'G', 'H'],
-};
-
-const variableAlphabets: Alphabets = {
-	e: ['x', 'y', 'z'],
-	v: ['e'],
-	i: ['t'],
-	s: ['w'],
-	fn: ['P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
-};
-
-const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
-	and: 4,
-	or: 3,
-	equals: 5,
-	subinterval: 10,
-	before: 9,
-	after: 8,
-	before_near: 7,
-	after_near: 6,
-	roi: 12,
-	coevent: 11,
-};
-
-const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
-	{
-		and: true,
-		or: true,
-		equals: false,
-		subinterval: false,
-		before: false,
-		after: false,
-		before_near: false,
-		after_near: false,
-		roi: true,
-		coevent: false,
-	};
-
-type Quantifier = (Expr & { head: 'quantifier' })['name'] | 'lambda';
-type Infix = (Expr & { head: 'infix' })['name'];
-type Polarizer = (Expr & { head: 'polarizer' })['name'];
-type Constant = (Expr & { head: 'constant' })['name'];
-
-/**
- * Specification of a rendering format, such as plain text or LaTeX.
- */
-interface Format<T> {
-	bracket: (e: T) => T;
-	name: (name: Name) => T;
-	verb: (name: string, args: T[], event: T, world: T) => T;
-	symbolForQuantifier: (symbol: Quantifier) => T;
-	quantifier: (symbol: T, name: T, body: T) => T;
-	restrictedQuantifier: (symbol: T, name: T, restriction: T, body: T) => T;
-	aspect: (infix: T, right: T) => T;
-	eventCompound: (
-		symbol: T,
-		verbName: string,
-		event: T,
-		world: T,
-		aspect: T,
-		agent: T | undefined,
-		args: T[],
-		body: T | undefined,
-	) => T;
-	apply: (fn: T, argument: T) => T;
-	presuppose: (body: T, presupposition: T) => T;
-	symbolForInfix: (symbol: Infix) => T;
-	infix: (symbol: T, left: T, right: T) => T;
-	symbolForPolarizer: (symbol: Polarizer) => T;
-	polarizer: (symbol: T, body: T) => T;
-	symbolForConstant: (symbol: Constant) => T;
-	quote: (text: string) => T;
-}
-
-const formatName = (name: Name) => {
-	const alphabets = name.constant ? constantAlphabets : variableAlphabets;
-	const alphabet = alphabets[name.type];
-	return (
-		alphabet[name.id % alphabet.length] + "'".repeat(name.id / alphabet.length)
-	);
-};
-
-const fnFromMap =
-	<const T extends string, U>(extension: Record<T, U>) =>
-	(t: T): U =>
-		extension[t];
-
-const plainText: Format<string> = {
-	bracket: e => `(${e})`,
-	name: name => {
-		const base = formatName(name);
-		return name.constant ? base : mathematicalSansSerifItalic(base);
-	},
-	verb: (name, args, event, world) =>
-		args.length === 0
-			? `${name}.${world}(${event})`
-			: `${name}.${world}(${args.join(', ')})(${event})`,
-	symbolForQuantifier: fnFromMap({
-		some: '∃',
-		every: '∀',
-		every_sing: '∀.SING ',
-		every_cuml: '∀.CUML ',
-		gen: 'GEN ',
-		lambda: 'λ',
-	}),
-	quantifier: (symbol, name, body) => `${symbol}${name}. ${body}`,
-	restrictedQuantifier: (symbol, name, restriction, body) =>
-		`${symbol}${name} : ${restriction}. ${body}`,
-	aspect: (infix, right) => infix + right,
-	eventCompound: (
-		symbol,
-		verbName,
-		event,
-		world,
-		aspect,
-		agent,
-		args,
-		body,
-	) => {
-		const argList =
-			args.length > 0 || agent !== undefined
-				? `(${agent ? agent + '; ' : ''}${args.join(', ')})`
-				: '';
-		const bod = body ? '. ' + body : '';
-		return `${symbol}${verbName}[${aspect},${event},${world}]${argList}${bod}`;
-	},
-	apply: (fn, argument) => `${fn}(${argument})`,
-	presuppose: (body, presupposition) => `${body} | ${presupposition}`,
-	symbolForInfix: fnFromMap({
-		and: '∧',
-		or: '∨',
-		equals: '=',
-		subinterval: '⊆',
-		before: '<',
-		after: '>',
-		before_near: '<.near',
-		after_near: '>.near',
-		roi: '&',
-		coevent: 'o',
-	}),
-	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
-	symbolForPolarizer: fnFromMap({
-		not: '¬',
-		indeed: '†',
-	}),
-	polarizer: (symbol, body) => `${symbol}${body}`,
-	symbolForConstant: fnFromMap({
-		ji: 'jí',
-		suq: 'súq',
-		nhao: 'nháo',
-		suna: 'súna',
-		nhana: 'nhána',
-		umo: 'úmo',
-		ime: 'íme',
-		suo: 'súo',
-		ama: 'áma',
-		agent: 'AGENT',
-		subject: 'SUBJ',
-		she: 'SHE',
-		animate: 'animate',
-		inanimate: 'inanimate',
-		abstract: 'abstract',
-		real_world: 'w',
-		inertia_worlds: 'IW',
-		alternative: 'A',
-		temporal_trace: 'τ',
-		expected_start: 'ExpStart',
-		expected_end: 'ExpEnd',
-		speech_time: 't0',
-		content: 'Cont',
-		assert: 'ASSERT',
-		perform: 'PERFORM',
-		wish: 'WISH',
-		promise: 'PROMISE',
-		permit: 'PERMIT',
-		warn: 'WARN',
-	}),
-	quote: text => `“${text}”`,
-};
-
-const latex: Format<string> = {
-	bracket: e => `\\left(${e}\\right)`,
-	name: name => {
-		const base = formatName(name);
-		return name.constant ? `\\mathrm{${base}}` : base;
-	},
-	verb: (name, args, event, world) =>
-		args.length === 0
-			? `\\mathrm{${name}}_{${world}}(${event})`
-			: `\\mathrm{${name}}_{${world}}(${args.join(', ')})(${event})`,
-	symbolForQuantifier: fnFromMap({
-		some: '\\exists',
-		every: '\\forall',
-		every_sing: '\\forall_{\\mathrm{\\large SING}}',
-		every_cuml: '\\forall_{\\mathrm{\\large CUML}}',
-		gen: '\\mathrm{\\large GEN}\\ ',
-		lambda: '\\lambda',
-	}),
-	quantifier: (symbol, name, body) => `${symbol} ${name}.\\ ${body}`,
-	restrictedQuantifier: (symbol, name, restriction, body) =>
-		`${symbol} ${name} : ${restriction}.\\ ${body}`,
-	aspect: (infix, right) => infix + right,
-	eventCompound: (
-		symbol,
-		verbName,
-		event,
-		world,
-		aspect,
-		agent,
-		args,
-		body,
-	) => {
-		const argList =
-			args.length > 0 || agent !== undefined
-				? `\\left(${agent ? agent + '; ' : ''}${args.join(', ')}\\right)`
-				: '';
-		const bod = body ? '. ' + body : '';
-		return `${symbol} \\mathop{\\text{${verbName}}}\\limits_{${aspect}}{}^{${event}}_{${world}}${argList}${bod}`;
-	},
-	apply: (fn, argument) => `${fn}(${argument})`,
-	presuppose: (body, presupposition) => `${body}\\ |\\ ${presupposition}`,
-	symbolForInfix: fnFromMap({
-		and: '\\land{}',
-		or: '\\lor{}',
-		equals: '=',
-		subinterval: '\\subseteq{}',
-		before: '<',
-		after: '>',
-		before_near: '<_{\\text{near}}',
-		after_near: '>_{\\text{near}}',
-		roi: '&',
-		coevent: '\\operatorname{o}',
-	}),
-	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
-	symbolForPolarizer: fnFromMap({
-		not: '\\neg',
-		indeed: '\\dagger',
-	}),
-	polarizer: (symbol, body) => `${symbol} ${body}`,
-	symbolForConstant: fnFromMap({
-		ji: '\\text{jí}',
-		suq: '\\text{súq}',
-		nhao: '\\text{nháo}',
-		suna: '\\text{súna}',
-		nhana: '\\text{nhána}',
-		umo: '\\text{úmo}',
-		ime: '\\text{íme}',
-		suo: '\\text{súo}',
-		ama: '\\text{áma}',
-		agent: '\\mathrm{A\\large GENT}',
-		subject: '\\mathrm{S\\large UBJ}',
-		she: '\\text{She}',
-		animate: '\\text{animate}',
-		inanimate: '\\text{inanimate}',
-		abstract: '\\text{abstract}',
-		real_world: '\\mathrm{w}',
-		inertia_worlds: '\\mathrm{I\\large W}',
-		alternative: '\\mathrm{A}',
-		temporal_trace: '\\tau',
-		expected_start: '\\text{ExpStart}',
-		expected_end: '\\text{ExpEnd}',
-		speech_time: '\\mathrm{t_0}',
-		content: '\\text{Cont}',
-		assert: '\\mathrm{A\\large SSERT}',
-		perform: '\\mathrm{P\\large ERFORM}',
-		wish: '\\mathrm{W\\large ISH}',
-		promise: '\\mathrm{P\\large ROMISE}',
-		permit: '\\mathrm{P\\large ERMIT}',
-		warn: '\\mathrm{W\\large ARN}',
-	}),
-	quote: text => `“${text}”`,
-};
-
-// TypeScript won't allow { ['a' | 'b']: 'c' } for { a: 'c' } | { b: 'c' }, but it
-// will happily split a union type case-by-case in a mapped type and as a map index.
-type OneKeyAmong<Keys extends string, Value> = {
-	[key in Keys]: { [_ in key]: Value };
-}[Keys];
-
-type JsonAspect = { infix: string; right: JsonExpr };
-
-export type JsonExpr =
-	| { variable: string }
-	| { constant: string }
-	| { quote: string }
-	| { verb: string; event: JsonExpr; world: JsonExpr; args: JsonExpr[] }
-	| JsonQuantifierExpr
-	| {
-			compound: string;
-			event: JsonExpr;
-			world: JsonExpr;
-			aspect: JsonAspect;
-			agent?: JsonExpr;
-			args: JsonExpr[];
-			body?: JsonExpr;
-	  }
-	| { apply: JsonExpr; to: JsonExpr }
-	| { claim: JsonExpr; presupposing: JsonExpr }
-	| { infix: Infix; left: JsonExpr; right: JsonExpr }
-	| JsonPolarizerExpr;
-
-type JsonQuantifierExpr = OneKeyAmong<Quantifier, string> & {
-	restriction?: JsonExpr;
-	body: JsonExpr;
-};
-
-// TypeScript will complain about a circular type definition if we use
-// OneKeyAmong here (possibly because there's no &-intersection-type
-// refinement).
-type JsonPolarizerExpr = {
-	[polarizer in Polarizer]: { [_ in polarizer]: JsonExpr };
-}[Polarizer];
-
-type JsonExprIntermediate = JsonExpr | JsonAspect | string;
-
-const json: Format<JsonExprIntermediate> = {
-	bracket: expr => expr,
-	name: ({ id, type }: Name) => ({ variable: `${type}${id}` }),
-	verb: (verb, args, event, world) => ({
-		verb,
-		args: args as JsonExpr[],
-		event: event as JsonExpr,
-		world: world as JsonExpr,
-	}),
-	symbolForQuantifier: quantifier => quantifier,
-	quantifier: (symbol, name, body) =>
-		({
-			[symbol as Quantifier]: (name as { variable: string }).variable,
-			body: body as JsonExpr,
-		}) as JsonQuantifierExpr,
-	restrictedQuantifier: (symbol, name, restriction, body) =>
-		Object.assign(json.quantifier(symbol, name, body), {
-			restriction: restriction as JsonExpr,
-		}),
-	aspect: (infix, right) => ({
-		infix: infix as string,
-		right: right as JsonExpr,
-	}),
-	eventCompound: (
-		_symbol,
-		verbName,
-		event,
-		world,
-		aspect,
-		agent,
-		args,
-		body,
-	) => ({
-		compound: verbName,
-		event: event as JsonExpr,
-		world: world as JsonExpr,
-		aspect: aspect as JsonAspect,
-		args: args as JsonExpr[],
-		...(agent && { agent: agent as JsonExpr }),
-		...(body && { body: body as JsonExpr }),
-	}),
-	apply: (apply, to) => ({ apply: apply as JsonExpr, to: to as JsonExpr }),
-	presuppose: (claim, presupposing) => ({
-		claim: claim as JsonExpr,
-		presupposing: presupposing as JsonExpr,
-	}),
-	symbolForInfix: infix => infix,
-	infix: (infix, left, right) => ({
-		infix: infix as Infix,
-		left: left as JsonExpr,
-		right: right as JsonExpr,
-	}),
-	symbolForPolarizer: polarizer => polarizer,
-	polarizer: (polarizer, body) =>
-		({ [polarizer as Polarizer]: body as JsonExpr }) as JsonPolarizerExpr,
-	symbolForConstant: constant => ({ constant }),
-	quote: quote => ({ quote }),
-};
 
 /**
  * Adds a new name of type 'type' to the given naming context.
@@ -684,6 +307,12 @@ export function toPlainText(e: CompactExpr): string {
 
 export function toLatex(e: CompactExpr): string {
 	return renderFull(e, latex);
+}
+
+export function toMathml(e: CompactExpr): string {
+	return (
+		'<math display=block><mrow>' + renderFull(e, mathml) + '</mrow></math>'
+	);
 }
 
 export function toJson(e: CompactExpr): JsonExpr {

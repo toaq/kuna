@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { DTree } from '../semantics/model';
 import { Tree } from '../tree';
-import { PlacedTree, TreePlacer, get_mathjax_svg } from '../tree/place';
-import { toLatex } from '../semantics/render';
+import { PlacedTree, TreePlacer } from '../tree/place';
+import { toMathml } from '../semantics/render';
 import './TreeBrowser.css';
-import { MathJax } from 'better-react-mathjax';
 import { CompactExpr, compact } from '../semantics/compact';
 import { Theme } from '../tree/theme';
 
@@ -15,13 +14,10 @@ export function Denotation(props: {
 }) {
 	const expr = props.compact ? compact(props.denotation) : props.denotation;
 	return (
-		<MathJax
-			className="tree-formula"
-			hideUntilTypeset="every"
+		<div
 			style={{ color: props.theme.denotationColor }}
-		>
-			{'$$\\LARGE ' + toLatex(expr) + '$$'}
-		</MathJax>
+			dangerouslySetInnerHTML={{ __html: toMathml(expr) }}
+		></div>
 	);
 }
 
@@ -62,14 +58,19 @@ type Ctx = { measureText: (text: string) => { width: number } };
 
 export function Subtree(props: {
 	tree: PlacedTree<Ctx>;
-	width: number;
+	width: number | string;
 	compactDenotations: boolean;
 	theme: Theme;
+	truncateLabels: string[];
 	lineDx?: number;
 }) {
-	const [expanded, setExpanded] = useState(false);
+	const shouldTruncate = props.truncateLabels.some(x =>
+		props.tree.label.startsWith(x + ' '),
+	);
+	console.log(props, shouldTruncate);
+	const [expanded, setExpanded] = useState(!shouldTruncate);
 
-	const { tree, width, compactDenotations, theme } = props;
+	const { tree, width, compactDenotations, theme, truncateLabels } = props;
 	const children = 'children' in tree ? tree.children : [];
 	const d = 'children' in tree ? tree.distanceBetweenChildren : 0;
 
@@ -109,6 +110,7 @@ export function Subtree(props: {
 							key={c.label + i}
 							compactDenotations={compactDenotations}
 							theme={theme}
+							truncateLabels={truncateLabels}
 						/>
 					))}
 				</div>
@@ -133,8 +135,9 @@ export function TreeBrowser(props: {
 	tree: Tree | DTree;
 	compactDenotations: boolean;
 	theme: Theme;
+	truncateLabels: string[];
 }) {
-	const { tree, compactDenotations, theme } = props;
+	const { tree, compactDenotations, theme, truncateLabels } = props;
 	const canvas = document.createElement('canvas');
 	const canvasCtx = canvas.getContext('2d');
 	const ctx: Ctx = {
@@ -143,25 +146,31 @@ export function TreeBrowser(props: {
 		},
 	};
 
-	const denotationRenderer = (denotation: CompactExpr, theme: Theme) => ({
-		draw: async () => {},
-		width: (ctx: Ctx) =>
-			Number(
-				get_mathjax_svg(
-					toLatex(compactDenotations ? compact(denotation) : denotation),
-				).width.replace(/ex$/, ''),
-			) * 6,
-		height: (ctx: Ctx) => 1,
-		denotation,
-	});
+	const denotationRenderer = (denotation: CompactExpr, theme: Theme) => {
+		const expr = props.compactDenotations ? compact(denotation) : denotation;
+		const div = document.createElement('div');
+		div.innerHTML = toMathml(expr);
+		div.style.position = 'absolute';
+		document.body.appendChild(div);
+		const width = div.clientWidth;
+		const height = div.clientHeight;
+		document.body.removeChild(div);
+		return {
+			draw: async () => {},
+			width: () => width,
+			height: () => height,
+			denotation,
+		};
+	};
 	const placer = new TreePlacer(ctx, denotationRenderer, { theme });
 	const placed = placer.placeTree(tree);
 	return (
 		<Subtree
-			width={placed.width}
+			width="95vw"
 			tree={placed}
 			compactDenotations={compactDenotations}
 			theme={theme}
+			truncateLabels={truncateLabels}
 		/>
 	);
 }

@@ -28,6 +28,7 @@ import {
 	covertV,
 	defaultTense,
 	dps,
+	eventSub,
 	eventAccessor,
 	modals,
 	nameVerbs,
@@ -114,6 +115,10 @@ function getVerbWord(vp: StrictTree): Word | CovertWord {
 				return verb.word;
 			case 'VP':
 				return getVerbWord(verb);
+			case 'CPincorp':
+				const innerVp = findVp(verb);
+				if (innerVp === null) throw new Impossible('CPincorp without VP');
+				return getVerbWord(innerVp);
 			case 'shuP':
 			case 'mıP':
 				if ('word' in verb || !('word' in verb.left))
@@ -160,7 +165,15 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	} else if (leaf.label === 'DP') {
 		if (leaf.word.covert) {
 			[denotation] = dps.hóa;
-			bindings = covertHoaBindings;
+			bindings =
+				leaf.binding === undefined
+					? covertHoaBindings
+					: {
+							...noBindings,
+							index: new Map([
+								[leaf.binding, covertHoaBindings.covertResumptive!],
+							]),
+						};
 		} else if (leaf.word.entry === undefined) {
 			throw new Unrecognized(`DP: ${leaf.word.text}`);
 		} else {
@@ -370,6 +383,19 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	} else if (leaf.label === 'word' || leaf.label === 'text') {
 		if (leaf.word.covert) throw new Impossible(`Covert ${leaf.label}`);
 		denotation = quote(leaf.word.text, []);
+	} else if (leaf.label === 'Ev') {
+		if (leaf.binding === undefined) throw new Impossible('Ev without binding');
+		if (!leaf.word.covert) throw new Impossible('Overt Ev');
+		if (leaf.word.value !== 'SUB')
+			throw new Unrecognized(`Ev: ${leaf.word.value}`);
+
+		denotation = eventSub;
+		bindings = {
+			...noBindings,
+			index: new Map([
+				[leaf.binding, { index: 0, subordinate: false, timeIntervals: [] }],
+			]),
+		};
 	} else if (leaf.label === 'EvA') {
 		denotation = eventAccessor;
 	} else if (leaf.label === 'Focus') {
@@ -405,6 +431,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 	} else if (
 		leaf.label === 'C' ||
 		leaf.label === 'Crel' ||
+		leaf.label === 'Cincorp' ||
 		leaf.label === 'teo'
 	) {
 		denotation = null;

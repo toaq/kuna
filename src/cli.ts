@@ -23,12 +23,13 @@ import {
 	toJson,
 	jsonStringifyCompact,
 } from './semantics/render';
+import { compact } from './semantics/compact';
 
 function getTrees(argv: {
 	sentence: string | undefined;
 	surface: boolean | undefined;
 	semantics: boolean | undefined;
-	compact: boolean | undefined;
+	trim: boolean | undefined;
 }): Tree[] {
 	let trees = parse(argv.sentence!);
 	if (argv.semantics) {
@@ -36,7 +37,7 @@ function getTrees(argv: {
 	} else if (!argv.surface) {
 		trees = trees.map(t => recover(t));
 	}
-	if (argv.compact) {
+	if (argv.trim) {
 		trees = trees.map(trimTree);
 	}
 	return trees;
@@ -64,9 +65,14 @@ yargs
 		describe: 'Show effects of syntactic movement',
 		default: false,
 	})
-	.option('compact', {
+	.option('trim', {
 		type: 'boolean',
 		describe: 'Remove empty phrases with null heads',
+		default: false,
+	})
+	.option('compact', {
+		type: 'boolean',
+		describe: 'Use a more compact notation for events',
 		default: false,
 	})
 	.option('easy', {
@@ -149,6 +155,7 @@ yargs
 				tree: trees[0],
 				renderer: denotationRenderText,
 				showMovement: argv.movement,
+				compact: argv.compact,
 				truncateLabels: [],
 			});
 			const png = canvas.toBuffer('image/png');
@@ -225,21 +232,23 @@ yargs
 		function (argv) {
 			const dtrees = getTrees({ ...argv, semantics: true }) as DTree[];
 			const format = argv.format as 'text' | 'latex' | 'json';
+			const getDenotation = ({ denotation: d }: DTree) =>
+				argv.compact ? compact(d!) : d!;
 			switch (format) {
 				case 'text':
 					for (const dtree of dtrees) {
-						console.log(toPlainText(dtree.denotation!));
+						console.log(toPlainText(getDenotation(dtree)));
 					}
 					break;
 				case 'latex':
 					for (const dtree of dtrees) {
-						console.log(toLatex(dtree.denotation!));
+						console.log(toLatex(getDenotation(dtree)));
 					}
 					break;
 				case 'json':
 					console.log(
 						jsonStringifyCompact(
-							dtrees.map(({ denotation }) => toJson(denotation!)),
+							dtrees.map(dtree => toJson(getDenotation(dtree))),
 						),
 					);
 					break;

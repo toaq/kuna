@@ -2,7 +2,12 @@ import { dictionary, underscoredWordTypes } from './dictionary';
 import { Impossible, Ungrammatical } from '../core/error';
 import { Tone } from './tone';
 
-// Vyái → ꝡáı
+/**
+ * Cleans up a Toaq word or string by normalizing ı, ꝡ, apostrophes,
+ * case, and diacritics.
+ *
+ * For example, `Vye\u0301` becomes `ꝡé`.
+ */
 export function clean(word: string): string {
 	return word
 		.toLowerCase()
@@ -12,7 +17,11 @@ export function clean(word: string): string {
 		.normalize();
 }
 
-// Vyái → ꝡaı
+/**
+ * "Bares" a Toaq word, by calling `clean` and removing diacritics.
+ *
+ * For example, `Vyé` becomes `ꝡe`.
+ */
 export function bare(word: string): string {
 	return clean(word)
 		.normalize('NFKD')
@@ -21,9 +30,12 @@ export function bare(word: string): string {
 		.replace(/i/gu, 'ı');
 }
 
-// hâo → hao
-// dâ → dâ
-// vyé → ꝡë
+/**
+ * Returns the base dictionary form of a Toaq word, by calling `clean`
+ * and then restoring the inherent tone.
+ *
+ * For example, `hâo → hao`, `Dâ → dâ`, `vyé → ꝡë`.
+ */
 export function baseForm(word: string): string {
 	const cleanForm = clean(word);
 	if (dictionary.has(cleanForm)) return cleanForm;
@@ -33,10 +45,18 @@ export function baseForm(word: string): string {
 	return bareForm;
 }
 
+/**
+ * Return the combining diacritic character for the given tone.
+ */
 export function diacriticForTone(tone: Tone): string {
 	return ['', '', '\u0301', '\u0308', '\u0302'][tone];
 }
 
+/**
+ * Change a word to have the given tone.
+ *
+ * For example, `inTone('Suao', Tone.T2)` is `'Súao'`.
+ */
 export function inTone(word: string, tone: Tone): string {
 	return word
 		.normalize('NFKD')
@@ -46,23 +66,29 @@ export function inTone(word: string, tone: Tone): string {
 		.replace(/i/gu, 'ı');
 }
 
+/**
+ * Repair tones in a given string, replacing substrings like `'◌́ hao'` with `'háo'`.
+ */
 export function repairTones(text: string): string {
 	return text.replace(/◌(.) (\S+)/g, (m, diacritic, word) => {
-		const tone = diacritic.charCodeAt() === 0x301 ? Tone.T2 : Tone.T4;
-		return inTone(word, tone).normalize();
+		const tone = diacritic === '\u0301' ? Tone.T2 : Tone.T4;
+		return inTone(word, tone);
 	});
 }
 
+/**
+ * Detect what tone a word is in.
+ */
 export function tone(word: string): Tone {
-	const norm = word.normalize('NFKD').match(/[\u0301\u0308\u0302]/);
-	if (!norm) {
-		return Tone.T1;
-	}
-	return {
-		'\u0301': Tone.T2,
-		'\u0308': Tone.T3,
-		'\u0302': Tone.T4,
-	}[norm[0]]!;
+	// This is faster than regex:
+	const norm = word.normalize('NFKD');
+	return norm.includes('\u0301')
+		? Tone.T2
+		: norm.includes('\u0308')
+			? Tone.T3
+			: norm.includes('\u0302')
+				? Tone.T4
+				: Tone.T1;
 }
 
 /**
@@ -92,6 +118,9 @@ export function splitIntoRaku(word: string): string[] {
 	}
 }
 
+/**
+ * Split a Toaq word into a list of prefixes and a root.
+ */
 export function splitPrefixes(word: string): {
 	prefixes: string[];
 	root: string;
@@ -120,12 +149,19 @@ export function splitPrefixes(word: string): {
 	return { prefixes, root };
 }
 
+/**
+ * A Toaq word tagged with a token type and its index in the input string.
+ * For example: `{type: "determiner", value: "sá", index: 8}`
+ */
 export interface ToaqToken {
 	type: string;
 	value: string;
 	index: number | undefined;
 }
 
+/**
+ * A range of positions in the input string, used by the tokenizer to keep track of quotations.
+ */
 interface Range {
 	start: number;
 	end: number;
@@ -299,11 +335,4 @@ export class ToaqTokenizer {
 			tokenType === 'text'
 		);
 	}
-}
-
-export function tokenString(sentence: string): string {
-	const tokenizer = new ToaqTokenizer();
-	tokenizer.reset(sentence);
-	const tokens = tokenizer.tokens.map(t => t.value);
-	return tokens.join(' ');
 }

@@ -22,6 +22,7 @@ interface TreeDrawerOptions {
 	theme: Theme;
 	layerHeight: number;
 	showMovement: boolean;
+	compact: boolean;
 	truncateLabels: string[];
 }
 
@@ -236,6 +237,7 @@ class TreeDrawer {
 	): Promise<Canvas> {
 		const placer = new TreePlacer(this.ctx, renderer, {
 			theme: this.theme,
+			compact: this.options.compact,
 			truncateLabels: this.options.truncateLabels,
 		});
 		const placed = placer.placeTree(tree);
@@ -256,6 +258,7 @@ export function drawTreeToCanvas(options: {
 		theme: Theme,
 	) => RenderedDenotation<CanvasRenderingContext2D>;
 	showMovement: boolean;
+	compact: boolean;
 	truncateLabels: string[];
 }): Promise<Canvas> {
 	const layerHeight = options.tall ? 150 : 100;
@@ -263,6 +266,7 @@ export function drawTreeToCanvas(options: {
 		theme: themes[options.themeName],
 		layerHeight,
 		showMovement: options.showMovement,
+		compact: options.compact,
 		truncateLabels: options.truncateLabels,
 	});
 	return drawer.drawToCanvas(options.tree, options.renderer);

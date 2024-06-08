@@ -146,7 +146,10 @@ test('it denotes tense and aspect prefixes', () => {
 
 test('it denotes object incorporation', () => {
 	expect(d('Maı tû paı jî jí')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ paı.𝘸(𝘹, jí)(𝘦). (∃𝘦. τ(𝘦) ⊆ t\' ∧ maı.𝘸(jí, 𝘹)(𝘦) | animate(𝘹)))"',
+		"\"ASSERT(λ𝘸. ∃𝘦. τ(𝘦) ⊆ t' ∧ ∀.SING 𝘹 : ∃𝘦'. τ(𝘦') ⊆ t ∧ ∃𝘦'' : 𝘦'' ≤ 𝘦'. paı.𝘸(𝘹, jí)(𝘦''). (∃𝘦' : 𝘦' ≤ 𝘦. maı.𝘸(jí, 𝘹)(𝘦') | animate(𝘹)))\"",
+	);
+	expect(d('Tú poq nä do sâ juqgı lô poq súq póq ba')).toMatchInlineSnapshot(
+		"\"WISH(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t'' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t' ∧ ∃𝘺 : ∃𝘦'. τ(𝘦') ⊆ t ∧ ∃𝘦'' : 𝘦'' ≤ 𝘦'. juqgı.𝘸(𝘺, 𝘹)(𝘦''). ∃𝘦' : 𝘦' ≤ 𝘦. AGENT(𝘦')(𝘸) = súq ∧ do.𝘸(𝘹, 𝘺)(𝘦') | animate(𝘹)))\"",
 	);
 });
 
@@ -395,7 +398,7 @@ test('it removes redundant presuppositions from binding sites', () => {
 
 test('it skolemizes exophoric DPs that depend on other variables', () => {
 	expect(d('Nıe tú poq búe hô')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ nıe.𝘸(𝘹, F(𝘹))(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ bue.𝘸(F(𝘹), 𝘹)(𝘦) | inanimate(F(𝘹)) | animate(𝘹)))\"",
+		"\"ASSERT(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ nıe.𝘸(𝘹, F(𝘹))(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ ∃𝘦' : 𝘦' ≤ 𝘦. bue.𝘸(F(𝘹), 𝘹)(𝘦') | inanimate(F(𝘹)) | animate(𝘹)))\"",
 	);
 	expect(d('Ní leache nä moaq tú poq é geq hó léache')).toMatchInlineSnapshot(
 		"\"ASSERT(λ𝘸. (∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t' ∧ AGENT(𝘦)(𝘸) = 𝘹 ∧ moaq.𝘸(F(a)(𝘹))(𝘦) | ∃𝘦 : 𝘦 = F(a)(𝘹). geq.𝘸(𝘹, a)(𝘦) | animate(𝘹)) | ∃𝘦. τ(𝘦) ⊆ t'' ∧ leache.𝘸(a)(𝘦))) | animate(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
@@ -413,5 +416,14 @@ test('subclauses open a new scope', () => {
 	);
 	expect(d('Gaı póq, ꝡë cho hó tú rua, rúa')).toMatchInlineSnapshot(
 		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t'''' ∧ gaı.𝘸(b, a)(𝘦) | (∃𝘦. τ(𝘦) ⊆ t''' ∧ poq.𝘸(b)(𝘦)) ∧ ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ rua.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ cho.𝘸(b, 𝘹)(𝘦) | inanimate(𝘹)) | ∃𝘦. τ(𝘦) ⊆ t ∧ rua.𝘸(a)(𝘦))) | animate(b) | inanimate(a)\"",
+	);
+	expect(d('Shê ꝡä hao súq nä hao tú raı')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. ∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t'' ∧ hao.𝘸'(súq)(𝘦). ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ raı.𝘸'(𝘹)(𝘦). ∃𝘦. τ(𝘦) ⊆ t' ∧ hao.𝘸'(𝘹)(𝘦))\"",
+	);
+});
+
+test('object incorporation opens a new scope', () => {
+	expect(d('Joe tû raı sía poq')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. ¬∃𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ ∀.SING 𝘺 : ∃𝘦'. τ(𝘦') ⊆ t ∧ raı.𝘸(𝘺)(𝘦'). ∃𝘦' : 𝘦' ≤ 𝘦. joe.𝘸(𝘹, 𝘺)(𝘦') | animate(𝘹)))\"",
 	);
 });

@@ -40,6 +40,7 @@ const {
     makeEmptySerial,
 	makeEvAP,
 	makeEvAPdet,
+	makeIncorp,
 	makeLeaf,
 	makeOptLeaf,
 	makePrefixLeaf,
@@ -80,9 +81,11 @@ CP -> Copt Clause<main> {% makeBranch('CP') %}
 CPsub -> Csub Clause<sub> {% makeBranch('CP') %}
 # ꝡâ hao
 CPincorp -> Cincorp Clause<sub> {% make3LCovertLeft('DP', 'D', 'CP') %}
+# (shê ꝡä hao nä) hao
+CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C') %}
 # ꝡë hao
 CPrel -> Crel Clause<sub> {% makeBranch('CPrel') %}
-# (nä) hao
+# (ráı nä) hao
 CPrelna<S> -> Clause<S> {% makeBranchCovertLeft('CPrel', 'Crel') %}
 # (sá) ∅ hao
 CPdet -> MSPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
@@ -107,7 +110,7 @@ Clause<S> -> Argument Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
 # râo fíachaq nä pu hao hóa
 Clause<S> -> AdjunctPcon Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
-Clause<S> -> ModalP Na MSP<S> {% make3L('𝘷P', "𝘷'") %}
+Clause<S> -> ModalP Na CPna<S> {% make3L('𝘷P', "𝘷'") %}
 ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
 # hao jí gö hao jí
 Clause<S> -> MSP<main> Go Clause<S> {% makeRetroactiveCleft %}
@@ -169,17 +172,17 @@ Serialdet -> Serial {% id %}
 Serialdet -> null {% makeEmptySerial() %}
 
 # hao sâ ...
-VPincorp -> V DPincorp {% makeBranch('VP') %}
+VPincorp -> V DPincorp {% makeIncorp %}
 # hao ꝡâ ...
-VPincorp -> V CPincorp {% makeBranch('VP') %}
+VPincorp -> V CPincorp {% makeIncorp %}
+# po sá ...
+VPincorp -> Voiv DPcon {% makeIncorp %}
 # jî
 DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
 # hụ̂ꝡa
 DPincorp -> Huincorp Word {% makeBranch('DP') %}
 # sâ ...
 DPincorp -> Dincorp nP {% makeBranch('DP') %}
-# po sá ...
-VPoiv -> Voiv DPcon {% makeBranch('VP') %}
 
 Argument -> DPcon {% id %}
 Argument -> CPargcon {% id %}
@@ -214,7 +217,6 @@ AdjunctPcon -> AdjunctPfoc Conjunction AdjunctPcon {% makeConn %}
 AdjunctPfoc -> AdjunctP {% id %}
 AdjunctPfoc -> Focus AdjunctP {% makeBranch('FocusP') %}
 Vlast -> VPincorp {% id %}
-Vlast -> VPoiv {% id %}
 Vlast -> Verb ConjunctionT1 Vlast {% makeConn %}
 Vlast -> Verb {% id %}
 V1 -> Verb {% id %}
