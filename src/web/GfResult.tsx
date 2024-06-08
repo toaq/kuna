@@ -34,7 +34,7 @@ export default (props: GfResultProps) => {
 		fetch(
 			'https://cloud.grammaticalframework.org/grammars/ResourceDemo.pgf?command=linearize&tree=' +
 				encodeURIComponent(gf),
-		).then(x => x.json().then(j => setLinearizations(j)));
+		).then(response => response.json().then(json => setLinearizations(json)));
 	}, [gf]);
 	return (
 		<div>
