@@ -1,4 +1,4 @@
-import { Unimplemented } from '../core/error';
+import { Impossible, Unimplemented } from '../core/error';
 import { baseForm } from '../morphology/tokenize';
 import { Branch, Leaf, StrictTree, assertBranch, assertLabel } from '../tree';
 import { leafText as actualLeafText } from '../tree';
@@ -17,7 +17,8 @@ type G_NP =
 	| ['UsePron', G_Pron]
 	| ['UsePN', G_PN]
 	| ['DetCN', G_Det, G_CN]
-	| ['ConjNP', G_Conj, G_ListNP];
+	| ['ConjNP', G_Conj, G_ListNP]
+	| ['RConjNP', G_Conj, G_NP, G_NP];
 type G_Temp = ['TTAnt', G_Tense, G_Ant];
 type G_AP = ['PositA', G_A];
 type G_Comp = ['CompCN', G_CN] | ['CompAP', G_AP];
@@ -36,7 +37,7 @@ type G_Cl =
 	| ['PredSCVP', G_SC, G_VP]
 	| ['ImpersCl', G_VP];
 type G_RCl = ['RelCl', G_Cl];
-type G_S = ['UseCl', G_Temp, G_Pol, G_Cl];
+type G_S = ['UseCl', G_Temp, G_Pol, G_Cl] | ['RConjS', G_Conj, G_S, G_S];
 type G_RS = ['UseRCl', G_Temp, G_Pol, G_RCl];
 type G_Utt = ['UttS', G_S];
 type G_Conj = 'and_Conj' | 'or_Conj';
@@ -190,7 +191,7 @@ function dToGf(tree: StrictTree): G_Det {
 	const text = leafText(tree);
 	switch (text) {
 		case 'sá':
-			return 'aSg_Det'; // ['DetQuant', 'IndefArt', 'NumSg'];
+			return 'a_Det'; // ['DetQuant', 'IndefArt', 'NumSg'];
 		case 'báq':
 			return 'aPl_Det'; // ['DetQuant', 'IndefArt', 'NumPl'];
 		case 'tú':
@@ -202,7 +203,7 @@ function dToGf(tree: StrictTree): G_Det {
 		case 'ké':
 		case 'ló':
 		case '◌́':
-			return 'theSg_Det'; // ['DetQuant', 'DefArt', 'NumSg'];
+			return 'the_Det'; // ['DetQuant', 'DefArt', 'NumSg'];
 
 		default:
 			throw new Unimplemented('dToGf: ' + text);
@@ -244,14 +245,14 @@ function dpToGf(tree: StrictTree): G_NP | G_SC {
 		assertBranch(tree.right);
 		assertLabel(tree.right, "&'");
 		assertLabel(tree.right.left, '&');
-		assertLabel(tree.right.right, 'DP');
 		const np1 = dpToGf(tree.left);
 		const conj = conjToGf(tree.right.left);
 		const np2 = dpToGf(tree.right.right);
 		if (isSc(np1) || isSc(np2)) {
 			throw new Unimplemented('CP&CP');
 		}
-		return ['ConjNP', conj, ['BaseNP', np1, np2]];
+		// return ['ConjNP', conj, ['BaseNP', np1, np2]];
+		return ['RConjNP', conj, np1, np2];
 	}
 	assertLabel(tree, 'DP');
 	if ('word' in tree) {
@@ -363,7 +364,7 @@ function vpToGf(tree: StrictTree): G_Cl {
 		if ('right' in VP) {
 			// intransitive like "nuo" or "gı" or "poq"
 			assertLabel(VP.left, 'V');
-			assertLabel(VP.right, 'DP');
+			// assertLabel(VP.right, 'DP');
 			const gvp: G_VP = vToGf(VP.left);
 			const subject = dpToGf(VP.right);
 			if (isSc(subject)) {
@@ -442,6 +443,7 @@ function declarativeTpToGf(tree: StrictTree): G_S {
 	assertBranch(tree);
 	assertLabel(tree, 'TP');
 	const s = declarativeAsppToGf(tree.right);
+	if (s[0] === 'RConjS') throw new Impossible();
 	s[1][1] = tenseToGf(tree.left);
 	return s;
 }
@@ -541,6 +543,8 @@ export function treeToGf(tree: StrictTree): Gf {
 		return dpToGf(tree);
 	} else if (tree.label === 'SAP') {
 		return sapToGf(tree);
+	} else if (tree.label === 'CP') {
+		return declarativeCpToGf(tree);
 	} else {
 		throw new Unimplemented('treeToGf');
 	}
@@ -552,7 +556,7 @@ export function treeToGf(tree: StrictTree): Gf {
  * The result can be tested on
  * <https://cloud.grammaticalframework.org/syntax-editor/editor.html>
  * or submitted to
- * <https://cloud.grammaticalframework.org/grammars/LibraryBrowser.pgf?command=linearize&tree=result+goes+here>
+ * <https://cloud.grammaticalframework.org/grammars/ResourceDemo.pgf?command=linearize&tree=result+goes+here>
  */
 export function showGf(gf: Gf | string): string {
 	return typeof gf === 'string' ? gf : '(' + gf.map(showGf).join(' ') + ')';
