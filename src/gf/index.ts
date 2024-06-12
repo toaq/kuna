@@ -453,6 +453,18 @@ function declarativeTpToGf(tree: StrictTree): G_S {
  */
 function declarativeΣpToGf(tree: StrictTree): G_S {
 	assertBranch(tree);
+	if (tree.label === '&P') {
+		assertBranch(tree);
+		assertLabel(tree.left, 'ΣP');
+		assertBranch(tree.right);
+		assertLabel(tree.right, "&'");
+		assertLabel(tree.right.left, '&');
+		const s1 = declarativeΣpToGf(tree.left);
+		const conj = conjToGf(tree.right.left);
+		const s2 = declarativeΣpToGf(tree.right.right);
+		return ['RConjS', conj, s1, s2];
+	}
+
 	assertLabel(tree, 'ΣP');
 	while (tree.left.label === 'QP' || tree.left.label === '&QP') {
 		tree = tree.right;
