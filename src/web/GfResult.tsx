@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { GfTarget } from '../gf';
 
 interface Linearization {
 	to: string;
@@ -13,7 +14,7 @@ export function ShowLinearization({
 	if (to === 'LibraryBrowserAPI') {
 		return undefined;
 	} else {
-		const lang = to.replace(/^ResourceDemo/, '').toLowerCase();
+		const lang = to.replace(/^(ResourceDemo|LibraryBrowser)/, '').toLowerCase();
 		return (
 			<div className="linearization">
 				<dd>{lang}:&nbsp;</dd>
@@ -25,15 +26,22 @@ export function ShowLinearization({
 
 export interface GfResultProps {
 	gf: string;
+	target: GfTarget;
 }
 
 export default (props: GfResultProps) => {
 	const [linearizations, setLinearizations] = useState<Linearization[]>([]);
 	const [error, setError] = useState('');
 	const { gf } = props;
+	const resource =
+		props.target === GfTarget.LibraryBrowser
+			? 'LibraryBrowser.pgf'
+			: 'ResourceDemo.pgf';
 	useEffect(() => {
 		fetch(
-			'https://cloud.grammaticalframework.org/grammars/ResourceDemo.pgf?command=linearize&tree=' +
+			'https://cloud.grammaticalframework.org/grammars/' +
+				resource +
+				'?command=linearize&tree=' +
 				encodeURIComponent(gf),
 		).then(response => {
 			if (response.status >= 400) {

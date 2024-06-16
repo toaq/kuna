@@ -25,7 +25,7 @@ import { Boxes } from './Boxes';
 import { Tokens } from './Tokens';
 import { TreeBrowser } from './TreeBrowser';
 import { themes } from '../tree/theme';
-import { showGf, treeToGf } from '../gf';
+import { GfTarget, GfTranslator } from '../gf';
 import GfResult from './GfResult';
 
 type TreeMode =
@@ -43,7 +43,8 @@ export type Mode =
 	| 'logical-form'
 	| 'logical-form-latex'
 	| 'english'
-	| 'gf'
+	| 'gf1'
+	| 'gf2'
 	| 'tokens';
 type TreeFormat = 'png-latex' | 'png-text' | 'textual' | 'json' | 'react';
 
@@ -214,11 +215,12 @@ export function Main(props: MainProps) {
 		return <>{treeToEnglish(tree).text}</>;
 	}
 
-	function getGf(): ReactElement {
+	function getGf(target: GfTarget): ReactElement {
 		const tree = parseInput();
 		const recovered = recover(tree);
-		const gf = showGf(treeToGf(recovered));
-		return <GfResult gf={gf} />;
+		const translator = new GfTranslator(target);
+		const gf = translator.showGf(translator.treeToGf(recovered));
+		return <GfResult gf={gf} target={target} />;
 	}
 
 	function getTokens(): ReactElement {
@@ -251,8 +253,10 @@ export function Main(props: MainProps) {
 				return getLogicalForm(toLatex, meaningCompact);
 			case 'english':
 				return getEnglish();
-			case 'gf':
-				return getGf();
+			case 'gf1':
+				return getGf(GfTarget.ResourceDemo);
+			case 'gf2':
+				return getGf(GfTarget.LibraryBrowser);
 			case 'tokens':
 				return getTokens();
 		}
@@ -392,7 +396,13 @@ export function Main(props: MainProps) {
 						<div className="button-group">
 							<div className="button-group-name">Translate</div>
 							<button onClick={() => generate('english')}>English</button>
-							<button onClick={() => generate('gf')}>GF</button>
+							{advanced && (
+								<button onClick={() => generate('gf1')}>GF (Demo)</button>
+							)}
+							{advanced && (
+								<button onClick={() => generate('gf2')}>GF (Browser)</button>
+							)}
+							{!advanced && <button onClick={() => generate('gf2')}>GF</button>}
 						</div>
 						{advanced && (
 							<div className="button-group">

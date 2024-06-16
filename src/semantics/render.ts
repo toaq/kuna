@@ -8,7 +8,8 @@ import {
 	constantAlphabets,
 	variableAlphabets,
 } from './format/base';
-import { plainText, latex, json, JsonExpr, mathml } from './format';
+import { JsonExpr } from './format/json';
+import { plainText, latex, json, mathml } from './format';
 
 const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
 	and: 4,
