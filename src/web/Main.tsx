@@ -397,10 +397,10 @@ export function Main(props: MainProps) {
 							<div className="button-group-name">Translate</div>
 							<button onClick={() => generate('english')}>English</button>
 							{advanced && (
-								<button onClick={() => generate('gf1')}>GF (Demo)</button>
+								<button onClick={() => generate('gf1')}>GF (Quantity)</button>
 							)}
 							{advanced && (
-								<button onClick={() => generate('gf2')}>GF (Browser)</button>
+								<button onClick={() => generate('gf2')}>GF (Quality)</button>
 							)}
 							{!advanced && <button onClick={() => generate('gf2')}>GF</button>}
 						</div>
