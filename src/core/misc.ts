@@ -28,17 +28,6 @@ export function splitNonEmpty(s: string, separator: string | RegExp): string[] {
 }
 
 /**
- * Finds the first item in a collection that satisfies the given predicate.
- */
-export function find<A>(
-	as: Iterable<A>,
-	predicate: (a: A) => boolean,
-): A | undefined {
-	for (const a of as) if (predicate(a)) return a;
-	return undefined;
-}
-
-/**
  * Determines whether some item in a collection satisfies the given predicate.
  */
 export function some<A>(

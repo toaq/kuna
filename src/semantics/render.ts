@@ -20,9 +20,8 @@ const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
 	after: 8,
 	before_near: 7,
 	after_near: 6,
-	subevent: 11,
-	coevent: 12,
-	roi: 13,
+	roi: 12,
+	coevent: 11,
 };
 
 const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
@@ -35,9 +34,8 @@ const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
 		after: false,
 		before_near: false,
 		after_near: false,
-		subevent: false,
-		coevent: false,
 		roi: true,
+		coevent: false,
 	};
 
 const noNames: Names = {

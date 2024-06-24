@@ -9,7 +9,6 @@ import {
 	skipFree,
 } from './functions';
 import { Label, Leaf, Tree, Word } from './types';
-import { splitNonEmpty } from '../core/misc';
 
 /**
  * Make a null leaf with the given label.
@@ -147,7 +146,7 @@ export function makeSerial(
 	const frame = frames[frames.length - 1];
 	let arity: number | undefined;
 	if (!frames.includes('?')) {
-		arity = splitNonEmpty(frame, ' ').length;
+		arity = frame === '' ? 0 : frame.split(' ').length;
 		for (let i = frames.length - 2; i >= 0; i--) {
 			const frame = frames[i].split(' ');
 			const last = frame.at(-1)![0];
@@ -228,36 +227,6 @@ export function makevPdet([serial]: [Tree], location: number, reject: Object) {
 	return {
 		label: '*𝘷P',
 		children: [serial, { label: 'DP', word: { covert: true, value: 'PRO' } }],
-	};
-}
-
-export function makeIncorp(
-	[verb, object]: [Tree, Tree],
-	location: number,
-	reject: Object,
-) {
-	const arity = splitNonEmpty(getFrame(verb), ' ').length;
-	// Verb must have an object place
-	if (arity < 2) return reject;
-
-	return {
-		label: 'CPincorp',
-		left: makeNull('Cincorp'),
-		right: {
-			label: 'EvP',
-			left: { label: 'Ev', word: { covert: true, value: 'SUB' } },
-			right: {
-				label: '*𝘷P',
-				children: [
-					{ label: '*Serial', children: [verb] },
-					...new Array<Tree>(arity - 1).fill({
-						label: 'DP',
-						word: { covert: true, value: 'PRO' },
-					}),
-					object,
-				],
-			},
-		},
 	};
 }
 

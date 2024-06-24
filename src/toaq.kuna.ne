@@ -40,7 +40,6 @@ const {
     makeEmptySerial,
 	makeEvAP,
 	makeEvAPdet,
-	makeIncorp,
 	makeLeaf,
 	makeOptLeaf,
 	makePrefixLeaf,
@@ -172,17 +171,17 @@ Serialdet -> Serial {% id %}
 Serialdet -> null {% makeEmptySerial() %}
 
 # hao sâ ...
-VPincorp -> V DPincorp {% makeIncorp %}
+VPincorp -> V DPincorp {% makeBranch('VP') %}
 # hao ꝡâ ...
-VPincorp -> V CPincorp {% makeIncorp %}
-# po sá ...
-VPincorp -> Voiv DPcon {% makeIncorp %}
+VPincorp -> V CPincorp {% makeBranch('VP') %}
 # jî
 DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
 # hụ̂ꝡa
 DPincorp -> Huincorp Word {% makeBranch('DP') %}
 # sâ ...
 DPincorp -> Dincorp nP {% makeBranch('DP') %}
+# po sá ...
+VPoiv -> Voiv DPcon {% makeBranch('VP') %}
 
 Argument -> DPcon {% id %}
 Argument -> CPargcon {% id %}
@@ -217,6 +216,7 @@ AdjunctPcon -> AdjunctPfoc Conjunction AdjunctPcon {% makeConn %}
 AdjunctPfoc -> AdjunctP {% id %}
 AdjunctPfoc -> Focus AdjunctP {% makeBranch('FocusP') %}
 Vlast -> VPincorp {% id %}
+Vlast -> VPoiv {% id %}
 Vlast -> Verb ConjunctionT1 Vlast {% makeConn %}
 Vlast -> Verb {% id %}
 V1 -> Verb {% id %}

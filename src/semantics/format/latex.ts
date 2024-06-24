@@ -50,7 +50,6 @@ export const latex: Format<string> = {
 		after: '>',
 		before_near: '<_{\\text{near}}',
 		after_near: '>_{\\text{near}}',
-		subevent: '\\leq{}',
 		coevent: '\\operatorname{o}',
 		roi: '&',
 	}),

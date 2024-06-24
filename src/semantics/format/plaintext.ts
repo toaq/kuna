@@ -63,7 +63,6 @@ export const plainText: Format<string> = {
 		after: '>',
 		before_near: '<.near',
 		after_near: '>.near',
-		subevent: '≤',
 		coevent: 'o',
 		roi: '&',
 	}),

@@ -89,7 +89,9 @@ interface Infix<Name extends string, Output extends ExprType> {
 	right: Expr;
 }
 
-type InfixRelation<Name extends string> = Infix<Name, 't'>;
+type Conjunction<Name extends string> = Infix<Name, 't'>;
+
+type TimeRelation<Name extends string> = Infix<Name, 't'>;
 
 interface Constant<Name extends string, T extends ExprType> {
 	head: 'constant';
@@ -127,6 +129,8 @@ export type Expr =
 	| Lambda
 	| Apply
 	| Presuppose
+	| Conjunction<'and'>
+	| Conjunction<'or'>
 	| Polarizer<'not'>
 	| Polarizer<'indeed'>
 	| Quantifier<'some'>
@@ -134,17 +138,14 @@ export type Expr =
 	| Quantifier<'every_sing'>
 	| Quantifier<'every_cuml'>
 	| Quantifier<'gen'>
-	| InfixRelation<'and'>
-	| InfixRelation<'or'>
-	| InfixRelation<'equals'>
-	| InfixRelation<'subinterval'>
-	| InfixRelation<'before'>
-	| InfixRelation<'after'>
-	| InfixRelation<'before_near'>
-	| InfixRelation<'after_near'>
-	| InfixRelation<'subevent'>
-	| InfixRelation<'coevent'>
+	| Infix<'equals', 't'>
+	| TimeRelation<'subinterval'>
+	| TimeRelation<'before'>
+	| TimeRelation<'after'>
+	| TimeRelation<'before_near'>
+	| TimeRelation<'after_near'>
 	| Infix<'roi', 'e'>
+	| Infix<'coevent', 't'>
 	| Pronoun<'ji'>
 	| Pronoun<'suq'>
 	| Pronoun<'nhao'>
@@ -436,6 +437,38 @@ export function presuppose(
 	};
 }
 
+export function infix(
+	name: (Expr & { head: 'infix' })['name'],
+	type: (Expr & { head: 'infix' })['type'],
+	left: Expr,
+	right: Expr,
+): Expr {
+	assertContextsEqual(left.context, right.context);
+
+	return {
+		head: 'infix',
+		type,
+		context: left.context,
+		name,
+		left,
+		right,
+	} as Expr;
+}
+
+function conjunction(name: 'and' | 'or', left: Expr, right: Expr): Expr {
+	assertSubtype(left.type, 't');
+	assertSubtype(right.type, 't');
+	return infix(name, 't', left, right);
+}
+
+export function and(left: Expr, right: Expr): Expr {
+	return conjunction('and', left, right);
+}
+
+export function or(left: Expr, right: Expr): Expr {
+	return conjunction('or', left, right);
+}
+
 export function polarizer(
 	name: (Expr & { head: 'polarizer' })['name'],
 	body: Expr,
@@ -527,80 +560,60 @@ export function gen(
 	return quantifier('gen', domain, context, body, restriction);
 }
 
-export function infix(
-	name: (Expr & { head: 'infix' })['name'],
-	type: (Expr & { head: 'infix' })['type'],
-	left: Expr,
-	right: Expr,
-): Expr {
+export function equals(left: Expr, right: Expr): Expr {
+	assertTypesCompatible(left.type, right.type);
 	assertContextsEqual(left.context, right.context);
 
 	return {
 		head: 'infix',
-		type,
+		type: 't',
 		context: left.context,
-		name,
+		name: 'equals',
 		left,
 		right,
-	} as Expr;
+	};
 }
 
-function infixRelation(
-	name: (Expr & { head: 'infix' })['name'],
-	inputType: ExprType,
+function timeRelation(
+	name: 'subinterval' | 'before' | 'after' | 'before_near' | 'after_near',
 	left: Expr,
 	right: Expr,
 ): Expr {
-	assertSubtype(left.type, inputType);
-	assertSubtype(right.type, inputType);
+	assertSubtype(left.type, 'i');
+	assertSubtype(right.type, 'i');
 	return infix(name, 't', left, right);
 }
 
-export function and(left: Expr, right: Expr): Expr {
-	return infixRelation('and', 't', left, right);
-}
-
-export function or(left: Expr, right: Expr): Expr {
-	return infixRelation('or', 't', left, right);
-}
-
-export function equals(left: Expr, right: Expr): Expr {
-	assertTypesCompatible(left.type, right.type);
-	return infix('equals', 't', left, right);
-}
-
 export function subinterval(left: Expr, right: Expr): Expr {
-	return infixRelation('subinterval', 'i', left, right);
+	return timeRelation('subinterval', left, right);
 }
 
 export function before(left: Expr, right: Expr): Expr {
-	return infixRelation('before', 'i', left, right);
+	return timeRelation('before', left, right);
 }
 
 export function after(left: Expr, right: Expr): Expr {
-	return infixRelation('after', 'i', left, right);
+	return timeRelation('after', left, right);
 }
 
 export function beforeNear(left: Expr, right: Expr): Expr {
-	return infixRelation('before_near', 'i', left, right);
+	return timeRelation('before_near', left, right);
 }
 
 export function afterNear(left: Expr, right: Expr): Expr {
-	return infixRelation('after_near', 'i', left, right);
-}
-
-export function subevent(left: Expr, right: Expr): Expr {
-	return infixRelation('subevent', 'v', left, right);
-}
-
-export function coevent(left: Expr, right: Expr): Expr {
-	return infixRelation('coevent', 'v', left, right);
+	return timeRelation('after_near', left, right);
 }
 
 export function roi(left: Expr, right: Expr): Expr {
 	assertSubtype(left.type, 'e');
 	assertSubtype(right.type, 'e');
 	return infix('roi', 'e', left, right);
+}
+
+export function coevent(left: Expr, right: Expr): Expr {
+	assertSubtype(left.type, 'v');
+	assertSubtype(right.type, 'v');
+	return infix('coevent', 't', left, right);
 }
 
 export function constant(

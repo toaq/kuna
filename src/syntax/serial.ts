@@ -7,7 +7,6 @@ import {
 	Tree,
 	assertBranch,
 	assertLeaf,
-	assertRose,
 	effectiveLabel,
 	makeNull,
 } from '../tree';
@@ -50,18 +49,6 @@ export function pro(): Leaf {
 	return { label: 'DP', word: { covert: true, value: 'PRO' } };
 }
 
-function findLeftmostV(tree: Tree): Tree | undefined {
-	if (tree.label === 'V') return tree;
-	if ('left' in tree)
-		return findLeftmostV(tree.left) ?? findLeftmostV(tree.right);
-	if ('children' in tree)
-		for (const child of tree.children) {
-			const v = findLeftmostV(child);
-			if (v !== undefined) return v;
-		}
-	return undefined;
-}
-
 /**
  * Get a frame string like "c" or "c c 1j" for this verbal subtree.
  *
@@ -88,14 +75,9 @@ export function getFrame(verb: Tree): string {
 		verb.label === 'teoP'
 	) {
 		return 'c';
-	} else if (verb.label === 'CPincorp') {
-		const v = findLeftmostV(verb);
-		if (v === undefined) throw new Impossible('CPincorp without V');
-		const frame = getFrame(v);
-		// Remove the object place from the frame
-		const i = frame.lastIndexOf(' ');
-		if (i === -1) throw new Impossible("Verb doesn't take an object");
-		return frame.substring(0, i);
+	} else if (verb.label === 'VP') {
+		// object incorporation... check that the verb is transitive?
+		return 'c';
 	} else if (verb.label === 'EvAP') {
 		return 'c';
 	} else if (verb.label === 'haP') {

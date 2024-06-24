@@ -57,7 +57,6 @@ import {
 	permit,
 	warn,
 	content,
-	subevent,
 } from './model';
 import { lift, reduce } from './operations';
 
@@ -660,16 +659,6 @@ export const nameVerbs: Record<string, Expr> = Object.fromEntries(
 export const quoteVerb = λ('e', ['s'], c =>
 	λ('e', c, c =>
 		λ('v', c, c => verb('eq', [v(1, c), v(2, c)], v(0, c), v(3, c))),
-	),
-);
-
-// λ𝘗. ∃𝘦 : 𝘦 ≤ e. 𝘗(𝘦)
-export const eventSub = λ(['v', 't'], ['v'], c =>
-	some(
-		'v',
-		c,
-		c => app(v(1, c), v(0, c)),
-		c => subevent(v(0, c), v(2, c)),
 	),
 );
 

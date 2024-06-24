@@ -59,7 +59,6 @@ export const mathml: Format<string> = {
 		after: '<mo>&gt;</mo>',
 		before_near: '<msub><mo>&lt;</mo><mi>near</mi></sub>',
 		after_near: '<msub><mo>&gt;</mo><mi>near</mi></sub>',
-		subevent: '<mo>≤</mo>',
 		coevent: '<mo>o</mo>',
 		roi: '<mo>&</mo>',
 	}),
