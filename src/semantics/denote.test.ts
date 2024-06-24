@@ -2,7 +2,6 @@ import { test, expect } from 'vitest';
 import { parse } from '../modes/parse';
 import { recover } from '../syntax/recover';
 import { denote } from './denote';
-import { Expr } from './model';
 import { toPlainText } from './render';
 import { Impossible } from '../core/error';
 import { freeVariableUsages } from './operations';
@@ -416,5 +415,14 @@ test('subclauses open a new scope', () => {
 	);
 	expect(d('Shê ꝡä hao súq nä hao tú raı')).toMatchInlineSnapshot(
 		"\"ASSERT(λ𝘸. ∀𝘸' : SHE(𝘸)(𝘸') ∧ ∃𝘦. τ(𝘦) ⊆ t'' ∧ hao.𝘸'(súq)(𝘦). ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ raı.𝘸'(𝘹)(𝘦). ∃𝘦. τ(𝘦) ⊆ t' ∧ hao.𝘸'(𝘹)(𝘦))\"",
+	);
+});
+
+test('incorporated object scopes under other arguments', () => {
+	expect(d('Joe tû raı sía poq')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. ¬∃𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∀.SING 𝘺 : ∃𝘦. τ(𝘦) ⊆ t ∧ raı.𝘸(𝘺)(𝘦). ∃𝘦. τ(𝘦) ⊆ t'' ∧ joe.𝘸(𝘹, 𝘺)(𝘦) | animate(𝘹)))\"",
+	);
+	expect(d('Do sâ kue sá poq jí')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. ∃𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘺 : ∃𝘦. τ(𝘦) ⊆ t ∧ kue.𝘸(𝘺)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ AGENT(𝘦)(𝘸) = 𝘹 ∧ do.𝘸(jí, 𝘺)(𝘦) | inanimate(𝘺)) | animate(𝘹)))\"",
 	);
 });
