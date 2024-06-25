@@ -57,6 +57,7 @@ import {
 	permit,
 	warn,
 	content,
+	topic as topicWorld,
 } from './model';
 import { lift, reduce } from './operations';
 
@@ -709,3 +710,8 @@ export const focusAdverbs: Partial<Record<CovertValue, Expr>> = {
 		),
 	),
 };
+
+// λ𝘗. λ𝘹. 𝘗(Topic(𝘹)(𝘸))
+export const topic = λ(['s', 't'], ['s'], c =>
+	λ('e', c, c => app(v(1, c), app(app(topicWorld(c), v(0, c)), v(2, c)))),
+);

@@ -83,6 +83,7 @@ export const latex: Format<string> = {
 		expected_end: '\\text{ExpEnd}',
 		speech_time: '\\mathrm{t_0}',
 		content: '\\text{Cont}',
+		topic: '\\text{Topic}',
 		assert: '\\mathrm{A\\large SSERT}',
 		perform: '\\mathrm{P\\large ERFORM}',
 		wish: '\\mathrm{W\\large ISH}',

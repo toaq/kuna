@@ -92,6 +92,7 @@ export const mathml: Format<string> = {
 		expected_end: '<mi>ExpEnd</mi>',
 		speech_time: '<mi>t0</mi>',
 		content: '<mi>Cont</mi>',
+		topic: '<mi>Topic</mi>',
 		assert: '<mi>ASSERT</mi>',
 		perform: '<mi>PERFORM</mi>',
 		wish: '<mi>WISH</mi>',

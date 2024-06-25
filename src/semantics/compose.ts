@@ -399,6 +399,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case '&Q':
 		case 'Modal':
 		case 'ModalP':
+		case 'Topic':
 		case 'mı':
 		case 'mıP':
 		case 'shu':
@@ -452,6 +453,7 @@ function getCompositionRule(left: DTree, right: DTree): CompositionRule {
 		case "&'":
 		case "&Q'":
 		case "EvA'":
+		case "Topic'":
 			return reverseFunctionalApplication;
 		case 'CPrel':
 		case 'AdjunctP':

@@ -220,8 +220,12 @@ class Recoverer {
 				return this.recover(vP.right.right, undefined);
 			}
 
-			// Subclauses open a new scope
-			if (tree.label === 'CP' || tree.label === 'CPrel') {
+			// Subclauses and topics open a new scope
+			if (
+				tree.label === 'CP' ||
+				tree.label === 'CPrel' ||
+				tree.label === "Topic'"
+			) {
 				const newScope = this.newScope();
 				const right = this.recover(tree.right, newScope);
 				return {

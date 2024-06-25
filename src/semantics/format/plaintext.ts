@@ -96,6 +96,7 @@ export const plainText: Format<string> = {
 		expected_end: 'ExpEnd',
 		speech_time: 't0',
 		content: 'Cont',
+		topic: 'Topic',
 		assert: 'ASSERT',
 		perform: 'PERFORM',
 		wish: 'WISH',

@@ -426,3 +426,9 @@ test('incorporated object scopes under other arguments', () => {
 		"\"ASSERT(λ𝘸. ∃𝘹 : ∃𝘦. τ(𝘦) ⊆ t' ∧ poq.𝘸(𝘹)(𝘦). (∃𝘺 : ∃𝘦. τ(𝘦) ⊆ t ∧ kue.𝘸(𝘺)(𝘦). (∃𝘦. τ(𝘦) ⊆ t'' ∧ AGENT(𝘦)(𝘸) = 𝘹 ∧ do.𝘸(jí, 𝘺)(𝘦) | inanimate(𝘺)) | animate(𝘹)))\"",
 	);
 });
+
+test('it denotes topics', () => {
+	expect(d('Jí bï gı tú')).toMatchInlineSnapshot(
+		'"ASSERT(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ raı.Topic(jí)(𝘸)(𝘹)(𝘦). ∃𝘦. τ(𝘦) ⊆ t\' ∧ gı.Topic(jí)(𝘸)(𝘹)(𝘦))"',
+	);
+});
