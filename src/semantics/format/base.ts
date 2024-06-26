@@ -1,4 +1,4 @@
-import { Expr, KnownConstant, KnownInfix } from '../model';
+import { Expr, KnownConstant, KnownInfix, KnownPolarizer } from '../model';
 
 export type NameType = 'e' | 'v' | 'i' | 's' | 'fn';
 
@@ -40,7 +40,7 @@ export interface Names {
 
 export type Quantifier = (Expr & { head: 'quantifier' })['name'] | 'lambda';
 export type Infix = KnownInfix['name'];
-export type Polarizer = (Expr & { head: 'polarizer' })['name'];
+export type Polarizer = KnownPolarizer['name'];
 export type Constant = KnownConstant['name'];
 
 /**
@@ -69,7 +69,6 @@ export interface Format<T> {
 	let: (name: T, value: T, body: T) => T;
 	symbolForInfix: (symbol: Infix) => T;
 	infix: (symbol: T, left: T, right: T) => T;
-	symbolForPolarizer: (symbol: Polarizer) => T;
 	polarizer: (symbol: T, body: T) => T;
 	symbolForConstant: (symbol: Constant) => T;
 	quote: (text: string) => T;

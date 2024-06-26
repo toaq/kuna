@@ -56,12 +56,10 @@ export const latex: Format<string> = {
 		roi: '&',
 	}),
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
-	symbolForPolarizer: fnFromMap({
-		not: '\\neg',
-		indeed: '\\dagger',
-	}),
 	polarizer: (symbol, body) => `${symbol} ${body}`,
 	symbolForConstant: fnFromMap({
+		not: '\\neg',
+		indeed: '\\dagger',
 		ji: '\\text{jí}',
 		suq: '\\text{súq}',
 		nhao: '\\text{nháo}',

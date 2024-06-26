@@ -1,6 +1,12 @@
 import { Impossible } from '../core/error';
 import { CompactExpr } from './compact';
-import { Expr, ExprType, KnownConstant, KnownInfix } from './model';
+import {
+	Expr,
+	ExprType,
+	KnownConstant,
+	KnownInfix,
+	KnownPolarizer,
+} from './model';
 import {
 	Format,
 	NameType,
@@ -37,6 +43,11 @@ const infixAssociativity: Record<KnownInfix['name'], boolean> = {
 	after_near: false,
 	roi: true,
 	coevent: false,
+};
+
+const polarizerPrecedence: Record<KnownPolarizer['name'], number> = {
+	not: 14,
+	indeed: 14,
 };
 
 const noNames: Names = {
@@ -179,6 +190,15 @@ function render<T>(
 				const right = render(e.argument, names, fmt, p, rp);
 				const content = fmt.infix(symbol, left, right);
 				return bracket ? fmt.bracket(content) : content;
+			} else if (e.fn.head === 'constant' && e.fn.name in polarizerPrecedence) {
+				const name = e.fn.name as KnownPolarizer['name'];
+				const symbol = fmt.symbolForConstant(name);
+				const p = polarizerPrecedence[name];
+				const bracket = rightPrecedence > p;
+				const rp = bracket ? 0 : rightPrecedence;
+				const body = render(e.argument, names, fmt, p, rp);
+				const content = fmt.polarizer(symbol, body);
+				return bracket ? fmt.bracket(content) : content;
 			} else {
 				const p = 14;
 				const bracket = leftPrecedence > p;
@@ -200,14 +220,6 @@ function render<T>(
 				bracket ? 0 : rightPrecedence,
 			);
 			const content = fmt.presuppose(body, presupposition);
-			return bracket ? fmt.bracket(content) : content;
-		}
-		case 'polarizer': {
-			const symbol = fmt.symbolForPolarizer(e.name);
-			const p = 14;
-			const bracket = rightPrecedence > p;
-			const body = render(e.body, names, fmt, p, bracket ? 0 : rightPrecedence);
-			const content = fmt.polarizer(symbol, body);
 			return bracket ? fmt.bracket(content) : content;
 		}
 		case 'quantifier': {

@@ -68,9 +68,6 @@ function mapVariables(
 				e.defines === undefined ? undefined : mapDefines(e.defines),
 			);
 		}
-		case 'polarizer': {
-			return polarizer(e.name, sub(e.body));
-		}
 		case 'quantifier': {
 			return quantifier(
 				e.name,
@@ -319,10 +316,6 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 			if (!isPremise(presupposition))
 				addPresupposition(presupposition, e.defines);
 			body = withPremise(presupposition, () => reduceAndIsolate(e.body));
-			break;
-		}
-		case 'polarizer': {
-			body = polarizer(e.name, reduceAndIsolate(e.body));
 			break;
 		}
 		case 'quantifier': {
@@ -740,9 +733,6 @@ function* subexprsShallow(e: Expr): Generator<Expr, void, unknown> {
 		case 'presuppose':
 			yield* subexprsShallow(e.body);
 			yield* subexprsShallow(e.presupposition);
-			break;
-		case 'polarizer':
-			yield* subexprsShallow(e.body);
 			break;
 		default:
 			e satisfies never; // This switch statement should be exhaustive

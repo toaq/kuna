@@ -66,12 +66,10 @@ export const mathml: Format<string> = {
 		roi: '<mo>&</mo>',
 	}),
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
-	symbolForPolarizer: fnFromMap({
-		not: '<mo>¬</mo>',
-		indeed: '<mo>†</mo>',
-	}),
 	polarizer: (symbol, body) => `${symbol} ${body}`,
 	symbolForConstant: fnFromMap({
+		not: '<mo>¬</mo>',
+		indeed: '<mo>†</mo>',
 		ji: '<mi>jí</mi>',
 		suq: '<mi>súq</mi>',
 		nhao: '<mi>nháo</mi>',

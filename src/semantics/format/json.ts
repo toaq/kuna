@@ -101,7 +101,6 @@ export const json: Format<JsonExprIntermediate> = {
 		left: left as JsonExpr,
 		right: right as JsonExpr,
 	}),
-	symbolForPolarizer: polarizer => polarizer,
 	polarizer: (polarizer, body) =>
 		({ [polarizer as Polarizer]: body as JsonExpr }) as JsonPolarizerExpr,
 	symbolForConstant: constant => ({ constant }),

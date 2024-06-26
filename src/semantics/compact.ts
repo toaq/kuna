@@ -171,8 +171,6 @@ export function compact(expr: CompactExpr): CompactExpr {
 				fn: compact(expr.fn) as Expr,
 				argument: compact(expr.argument) as Expr,
 			};
-		case 'polarizer':
-			return { ...expr, body: compact(expr.body) as Expr };
 		case 'presuppose':
 			return {
 				...expr,

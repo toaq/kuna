@@ -69,12 +69,10 @@ export const plainText: Format<string> = {
 		roi: '&',
 	}),
 	infix: (symbol, left, right) => `${left} ${symbol} ${right}`,
-	symbolForPolarizer: fnFromMap({
-		not: '¬',
-		indeed: '†',
-	}),
 	polarizer: (symbol, body) => `${symbol}${body}`,
 	symbolForConstant: fnFromMap({
+		not: '¬',
+		indeed: '†',
 		ji: 'jí',
 		suq: 'súq',
 		nhao: 'nháo',

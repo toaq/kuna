@@ -63,14 +63,6 @@ interface Presuppose {
 	defines?: number;
 }
 
-type Polarizer<Name extends string> = {
-	head: 'polarizer';
-	type: 't';
-	context: ExprType[];
-	name: Name;
-	body: Expr;
-};
-
 interface Quantifier<Name extends string> {
 	head: 'quantifier';
 	type: 't';
@@ -122,7 +114,12 @@ export type KnownInfix =
 	| Constant<'roi', ['e', ['e', 'e']]>
 	| Constant<'coevent', ['v', ['v', 't']]>;
 
+export type KnownPolarizer =
+	| Constant<'not', ['t', 't']>
+	| Constant<'indeed', ['t', 't']>;
+
 export type KnownConstant =
+	| KnownPolarizer
 	| Pronoun<'ji'>
 	| Pronoun<'suq'>
 	| Pronoun<'nhao'>
@@ -169,8 +166,6 @@ export type Expr =
 	| Presuppose
 	| KnownInfix
 	| KnownConstant
-	| Polarizer<'not'>
-	| Polarizer<'indeed'>
 	| Quantifier<'some'>
 	| Quantifier<'every'>
 	| Quantifier<'every_sing'>
@@ -476,13 +471,16 @@ export function implies(left: Expr, right: Expr): Expr {
 	return conjunction('implies', left, right);
 }
 
-export function polarizer(
-	name: (Expr & { head: 'polarizer' })['name'],
-	body: Expr,
-): Expr {
+export function polarizer(name: KnownPolarizer['name'], body: Expr): Expr {
 	assertSubtype(body.type, 't');
 
-	return { head: 'polarizer', type: 't', context: body.context, name, body };
+	const operator: Expr = {
+		head: 'constant',
+		type: ['t', 't'],
+		context: body.context,
+		name,
+	};
+	return app(operator, body);
 }
 
 export function not(body: Expr): Expr {
