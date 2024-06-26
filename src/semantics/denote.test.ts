@@ -438,6 +438,6 @@ test('incorporated object scopes under other arguments', () => {
 
 test('it denotes topics', () => {
 	expect(d('Jí bï gı tú')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ raı.Topic(jí)(𝘸)(𝘹)(𝘦). ∃𝘦. τ(𝘦) ⊆ t\' ∧ gı.Topic(jí)(𝘸)(𝘹)(𝘦))"',
+		"\"ASSERT(λ𝘸. let 𝘸' = Topic(jí)(𝘸) in ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ raı.𝘸'(𝘹)(𝘦). ∃𝘦. τ(𝘦) ⊆ t' ∧ gı.𝘸'(𝘹)(𝘦))\"",
 	);
 });

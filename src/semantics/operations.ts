@@ -186,17 +186,16 @@ function isSmallExpr(e: Expr): boolean {
 function varOccurrences(e: Expr, index: number): number {
 	let count = 0;
 	function walk(e: Expr, ctx: ExprType[], index: number) {
-		if (index >= 0)
-			mapVariables(
-				e,
-				e.context,
-				i => {
-					if (i === index) ++count;
-					return v(i, ctx);
-				},
-				i => i,
-				(body, c) => walk(body, c, index - 1),
-			);
+		mapVariables(
+			e,
+			e.context,
+			i => {
+				if (i === index) ++count;
+				return v(i, ctx);
+			},
+			i => i,
+			(body, c) => walk(body, c, index + 1),
+		);
 		return e;
 	}
 	walk(e, e.context, index);
