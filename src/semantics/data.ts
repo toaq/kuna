@@ -58,6 +58,8 @@ import {
 	warn,
 	content,
 	topic as topicWorld,
+	le,
+	implies,
 } from './model';
 import { lift, reduce } from './operations';
 
@@ -679,6 +681,28 @@ export const eventAccessor = λ(['v', 't'], [], c =>
 export const focus = λ('e', ['e'], c => v(1, c));
 
 export const focusAdverbs: Partial<Record<CovertValue, Expr>> = {
+	// λ𝘹. λ𝘗 : ∃𝘺. 𝘗(𝘺). 𝘗(𝘹)
+	'[focus]': λ('e', ['e'], c =>
+		λ(
+			['e', 't'],
+			c,
+			c => app(v(0, c), v(1, c)),
+			c => some('e', c, c => app(v(1, c), v(0, c))),
+		),
+	),
+	// λ𝘹. λ𝘗 : A(a)(𝘹)(𝘸) ∧ ∃𝘺. 𝘗(𝘺). 𝘗(𝘹) ∧ ¬𝘗(a)
+	'[focus+c]': λ('e', ['e', 'e', 's'], c =>
+		λ(
+			['e', 't'],
+			c,
+			c => and(app(v(0, c), v(1, c)), not(app(v(0, c), v(3, c)))),
+			c =>
+				and(
+					app(app(app(alternative(c), v(3, c)), v(1, c)), v(4, c)),
+					some('e', c, c => app(v(1, c), v(0, c))),
+				),
+		),
+	),
 	// λ𝘢. λ𝘗 : 𝘗(𝘢). ∀𝘣 : A(𝘣)(𝘢)(𝘸). ¬𝘗(𝘣)
 	'[only]': λ('e', ['e', 's'], c =>
 		λ(
@@ -705,6 +729,50 @@ export const focusAdverbs: Partial<Record<CovertValue, Expr>> = {
 					'e',
 					c,
 					c => app(v(1, c), v(0, c)),
+					c => app(app(app(alternative(c), v(0, c)), v(2, c)), v(4, c)),
+				),
+		),
+	),
+	// λ𝘹. λ𝘗 : ∀𝘺 : A(𝘺)(𝘹)(𝘸). (∀𝘸' : LE(𝘸)(𝘸'). 𝘗(𝘹)(𝘸') → 𝘗(𝘺)(𝘸')) ∧ ¬∀𝘸' : LE(𝘸)(𝘸'). 𝘗(𝘺)(𝘸') → 𝘗(𝘹)(𝘸'). 𝘗(𝘹)(𝘸)
+	'[even]': λ('e', ['e', 's'], c =>
+		λ(
+			['e', ['s', 't']],
+			c,
+			c => app(app(v(0, c), v(1, c)), v(3, c)),
+			c =>
+				every(
+					'e',
+					c,
+					// We want to express that the focus is less likely to satisfy the
+					// predicate than any of its alternatives. □(A → B) says that the worlds in
+					// which A holds are a subset of the worlds in which B holds, and we can
+					// make them be a proper subset by adding the claim ¬□(B → A). So if □
+					// refers to likelihood, we end up with "A is less likely than B".
+					c =>
+						and(
+							every(
+								's',
+								c,
+								c =>
+									implies(
+										app(app(v(2, c), v(3, c)), v(0, c)),
+										app(app(v(2, c), v(1, c)), v(0, c)),
+									),
+								c => app(app(le(c), v(5, c)), v(0, c)),
+							),
+							not(
+								every(
+									's',
+									c,
+									c =>
+										implies(
+											app(app(v(2, c), v(1, c)), v(0, c)),
+											app(app(v(2, c), v(3, c)), v(0, c)),
+										),
+									c => app(app(le(c), v(5, c)), v(0, c)),
+								),
+							),
+						),
 					c => app(app(app(alternative(c), v(0, c)), v(2, c)), v(4, c)),
 				),
 		),

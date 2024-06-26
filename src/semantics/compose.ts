@@ -46,7 +46,7 @@ function functionalApplication_(
 	} else if (argument.denotation === null) {
 		({ denotation, bindings } = fn);
 	} else {
-		const compatibleArgument = subtype(
+		const compatArgument = subtype(
 			argument.denotation.type,
 			(fn.denotation.type as [ExprType, ExprType])[0],
 		)
@@ -54,8 +54,8 @@ function functionalApplication_(
 			: makeWorldExplicit(argument);
 		const [l, r, b] =
 			fn === left
-				? unifyDenotations(fn, compatibleArgument)
-				: unifyDenotations(compatibleArgument, fn);
+				? unifyDenotations(fn, compatArgument)
+				: unifyDenotations(compatArgument, fn);
 		denotation = reduce(fn === left ? app(l, r) : app(r, l));
 		bindings = b;
 	}
@@ -319,16 +319,26 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 				throw new Impossible("Can't identify the variable to be abstracted");
 			index = bindings.covertResumptive.index;
 		} else {
-			const rightBinding = right.bindings.index.get(left.binding);
+			const compatRight = subtype(
+				['e', right.denotation.type],
+				(left.denotation.type as [ExprType, ExprType])[0],
+			)
+				? right
+				: makeWorldExplicit(right);
+
+			const rightBinding = compatRight.bindings.index.get(left.binding);
 			if (rightBinding === undefined)
 				throw new Impossible("Can't identify the variable to be abstracted");
 			// Skolemize all variables that are defined in terms of the variable to be
 			// abstracted
-			const [skm, skmMapping] = skolemize(right.denotation, rightBinding.index);
+			const [skm, skmMapping] = skolemize(
+				compatRight.denotation!,
+				rightBinding.index,
+			);
 			const skmRight: DTree = {
-				...right,
+				...compatRight,
 				denotation: skm,
-				bindings: mapBindings(right.bindings, b => {
+				bindings: mapBindings(compatRight.bindings, b => {
 					const index = skmMapping[b.index];
 					return index === null
 						? undefined

@@ -57,6 +57,7 @@ export const plainText: Format<string> = {
 	symbolForInfix: fnFromMap({
 		and: '∧',
 		or: '∨',
+		implies: '→',
 		equals: '=',
 		subinterval: '⊆',
 		before: '<',
@@ -85,6 +86,7 @@ export const plainText: Format<string> = {
 		agent: 'AGENT',
 		subject: 'SUBJ',
 		she: 'SHE',
+		le: 'LE',
 		animate: 'animate',
 		inanimate: 'inanimate',
 		abstract: 'abstract',

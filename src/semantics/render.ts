@@ -12,22 +12,24 @@ import { JsonExpr } from './format/json';
 import { plainText, latex, json, mathml } from './format';
 
 const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
-	and: 4,
-	or: 3,
-	equals: 5,
-	subinterval: 10,
-	before: 9,
-	after: 8,
-	before_near: 7,
-	after_near: 6,
-	roi: 12,
-	coevent: 11,
+	and: 5,
+	or: 4,
+	implies: 3,
+	equals: 6,
+	subinterval: 11,
+	before: 10,
+	after: 9,
+	before_near: 8,
+	after_near: 7,
+	roi: 13,
+	coevent: 12,
 };
 
 const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
 	{
 		and: true,
 		or: true,
+		implies: false,
 		equals: false,
 		subinterval: false,
 		before: false,
@@ -149,7 +151,7 @@ function render<T>(
 			return bracket ? fmt.bracket(content) : content;
 		}
 		case 'apply': {
-			const p = 13;
+			const p = 14;
 			const bracket = leftPrecedence > p;
 			const fn = render(e.fn, names, fmt, bracket ? 0 : leftPrecedence, p);
 			const argument = render(e.argument, names, fmt, 0, 0);
@@ -191,7 +193,7 @@ function render<T>(
 		}
 		case 'polarizer': {
 			const symbol = fmt.symbolForPolarizer(e.name);
-			const p = 12;
+			const p = 14;
 			const bracket = rightPrecedence > p;
 			const body = render(e.body, names, fmt, p, bracket ? 0 : rightPrecedence);
 			const content = fmt.polarizer(symbol, body);

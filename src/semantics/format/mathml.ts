@@ -53,6 +53,7 @@ export const mathml: Format<string> = {
 	symbolForInfix: fnFromMap({
 		and: '<mo>∧</mo>',
 		or: '<mo>∨</mo>',
+		implies: '<mo>→</mo>',
 		equals: '<mo>=</mo>',
 		subinterval: '<mo>⊆</mo>',
 		before: '<mo>&lt;</mo>',
@@ -81,6 +82,7 @@ export const mathml: Format<string> = {
 		agent: '<mi>AGENT</mi>',
 		subject: '<mi>SUBJ</mi>',
 		she: '<mi>SHE</mi>',
+		le: '<mi>LE</mi>',
 		animate: '<mi>animate</mi>',
 		inanimate: '<mi>inanimate</mi>',
 		abstract: '<mi>abstract</mi>',

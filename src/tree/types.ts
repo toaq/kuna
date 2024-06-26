@@ -28,6 +28,8 @@ export type CovertValue =
 	| 'DEM'
 	| 'PROX'
 	| 'DIST'
+	| '[focus]'
+	| '[focus+c]'
 	| '[only]'
 	| '[also]'
 	| '[even]'

@@ -44,6 +44,7 @@ export const latex: Format<string> = {
 	symbolForInfix: fnFromMap({
 		and: '\\land{}',
 		or: '\\lor{}',
+		implies: '\\rightarrow{}',
 		equals: '=',
 		subinterval: '\\subseteq{}',
 		before: '<',
@@ -72,6 +73,7 @@ export const latex: Format<string> = {
 		agent: '\\mathrm{A\\large GENT}',
 		subject: '\\mathrm{S\\large UBJ}',
 		she: '\\text{She}',
+		le: '\\text{Le}',
 		animate: '\\text{animate}',
 		inanimate: '\\text{inanimate}',
 		abstract: '\\text{abstract}',

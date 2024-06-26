@@ -373,11 +373,20 @@ test('it denotes the event accessor', () => {
 });
 
 test('it denotes focus adverbs', () => {
+	expect(d('Shıe kú jí')).toMatchInlineSnapshot(
+		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(jí)(𝘦) | ∃𝘹. ∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(𝘹)(𝘦)))"',
+	);
+	expect(d('Shıe béı jí')).toMatchInlineSnapshot(
+		'"ASSERT(λ𝘸. ((∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(jí)(𝘦)) ∧ ¬∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(a)(𝘦) | A(a)(jí)(𝘸) ∧ ∃𝘹. ∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(𝘹)(𝘦)))"',
+	);
 	expect(d('Shıe tó jí')).toMatchInlineSnapshot(
 		'"ASSERT(λ𝘸. (∀𝘹 : A(𝘹)(jí)(𝘸). ¬∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(𝘹)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(jí)(𝘦)))"',
 	);
 	expect(d('Shıe máo jí')).toMatchInlineSnapshot(
 		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(jí)(𝘦) | ∃𝘹 : A(𝘹)(jí)(𝘸). ∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(𝘹)(𝘦)))"',
+	);
+	expect(d('Shıe júaq jí')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(jí)(𝘦) | ∀𝘹 : A(𝘹)(jí)(𝘸). (∀𝘸' : LE(𝘸)(𝘸'). (∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸'(jí)(𝘦)) → ∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸'(𝘹)(𝘦)) ∧ ¬∀𝘸' : LE(𝘸)(𝘸'). (∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸'(𝘹)(𝘦)) → ∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸'(jí)(𝘦)))\"",
 	);
 });
 

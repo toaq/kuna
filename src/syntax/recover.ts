@@ -51,6 +51,8 @@ const quantifiers: Record<string, CovertValue> = {
 };
 
 const focusAdverbs: Record<string, CovertValue> = {
+	kú: '[focus]',
+	béı: '[focus+c]',
 	tó: '[only]',
 	máo: '[also]',
 	júaq: '[even]',

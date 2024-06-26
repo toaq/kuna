@@ -131,6 +131,7 @@ export type Expr =
 	| Presuppose
 	| Conjunction<'and'>
 	| Conjunction<'or'>
+	| Conjunction<'implies'>
 	| Polarizer<'not'>
 	| Polarizer<'indeed'>
 	| Quantifier<'some'>
@@ -158,6 +159,7 @@ export type Expr =
 	| Role<'agent'>
 	| Role<'subject'>
 	| Accessibility<'she'>
+	| Accessibility<'le'>
 	| Animacy<'animate'>
 	| Animacy<'inanimate'>
 	| Animacy<'abstract'>
@@ -456,7 +458,11 @@ export function infix(
 	} as Expr;
 }
 
-function conjunction(name: 'and' | 'or', left: Expr, right: Expr): Expr {
+function conjunction(
+	name: 'and' | 'or' | 'implies',
+	left: Expr,
+	right: Expr,
+): Expr {
 	assertSubtype(left.type, 't');
 	assertSubtype(right.type, 't');
 	return infix(name, 't', left, right);
@@ -468,6 +474,10 @@ export function and(left: Expr, right: Expr): Expr {
 
 export function or(left: Expr, right: Expr): Expr {
 	return conjunction('or', left, right);
+}
+
+export function implies(left: Expr, right: Expr): Expr {
+	return conjunction('implies', left, right);
 }
 
 export function polarizer(
@@ -692,6 +702,10 @@ function accessibility(
 
 export function she(context: ExprType[]): Expr {
 	return accessibility('she', context);
+}
+
+export function le(context: ExprType[]): Expr {
+	return accessibility('le', context);
 }
 
 function animacy(
