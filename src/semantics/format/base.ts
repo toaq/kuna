@@ -66,6 +66,7 @@ export interface Format<T> {
 	) => T;
 	apply: (fn: T, argument: T) => T;
 	presuppose: (body: T, presupposition: T) => T;
+	let: (name: T, value: T, body: T) => T;
 	symbolForInfix: (symbol: Infix) => T;
 	infix: (symbol: T, left: T, right: T) => T;
 	symbolForPolarizer: (symbol: Polarizer) => T;

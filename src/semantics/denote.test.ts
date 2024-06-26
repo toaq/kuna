@@ -178,7 +178,7 @@ test('it denotes anaphora of focused phrases', () => {
 
 test('it denoted anaphora of clausally coordinated phrases', () => {
 	expect(d('Súna rú nhána nä haı zao jí hụ́ru')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. t ⊆ τ(𝘦) ∧ t < ExpStart(𝘦) ∧ zao.𝘸(jí, súna)(𝘦)) ∧ ∃𝘦. t ⊆ τ(𝘦) ∧ t < ExpStart(𝘦) ∧ zao.𝘸(jí, nhána)(𝘦))"',
+		'"ASSERT(λ𝘸. let 𝘗 = λ𝘹. ∃𝘦. t ⊆ τ(𝘦) ∧ t < ExpStart(𝘦) ∧ zao.𝘸(jí, 𝘹)(𝘦) in 𝘗(súna) ∧ 𝘗(nhána))"',
 	);
 });
 
@@ -302,10 +302,10 @@ test('it denotes adjunct coordination', () => {
 
 test('it denotes argument coordination', () => {
 	expect(d('Nuo súq rú jí')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t ∧ nuo.𝘸(súq)(𝘦)) ∧ ∃𝘦. τ(𝘦) ⊆ t ∧ nuo.𝘸(jí)(𝘦))"',
+		'"ASSERT(λ𝘸. let 𝘗 = λ𝘹. ∃𝘦. τ(𝘦) ⊆ t ∧ nuo.𝘸(𝘹)(𝘦) in 𝘗(súq) ∧ 𝘗(jí))"',
 	);
 	expect(d('Nuo súq rá jí')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t ∧ nuo.𝘸(súq)(𝘦)) ∨ ∃𝘦. τ(𝘦) ⊆ t ∧ nuo.𝘸(jí)(𝘦))"',
+		'"ASSERT(λ𝘸. let 𝘗 = λ𝘹. ∃𝘦. τ(𝘦) ⊆ t ∧ nuo.𝘸(𝘹)(𝘦) in 𝘗(súq) ∨ 𝘗(jí))"',
 	);
 });
 
@@ -377,7 +377,7 @@ test('it denotes focus adverbs', () => {
 		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(jí)(𝘦) | ∃𝘹. ∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(𝘹)(𝘦)))"',
 	);
 	expect(d('Shıe béı jí')).toMatchInlineSnapshot(
-		'"ASSERT(λ𝘸. ((∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(jí)(𝘦)) ∧ ¬∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(a)(𝘦) | A(a)(jí)(𝘸) ∧ ∃𝘹. ∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(𝘹)(𝘦)))"',
+		'"ASSERT(λ𝘸. (λ𝘗 : A(a)(jí)(𝘸) ∧ ∃𝘹. 𝘗(𝘹). 𝘗(jí) ∧ ¬𝘗(a))(λ𝘹. ∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(𝘹)(𝘦)))"',
 	);
 	expect(d('Shıe tó jí')).toMatchInlineSnapshot(
 		'"ASSERT(λ𝘸. (∀𝘹 : A(𝘹)(jí)(𝘸). ¬∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(𝘹)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ shıe.𝘸(jí)(𝘦)))"',
@@ -397,7 +397,7 @@ test('it removes redundant presuppositions from binding sites', () => {
 	);
 	// Likewise, there should be only one set of presuppositions for each conjunct
 	expect(d('Shıe gúobe rú óguı')).toMatchInlineSnapshot(
-		"\"ASSERT(λ𝘸. ((∃𝘦. τ(𝘦) ⊆ t'' ∧ shıe.𝘸(b)(𝘦)) ∧ ∃𝘦. τ(𝘦) ⊆ t'' ∧ shıe.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t' ∧ guobe.𝘸(b)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ oguı.𝘸(a)(𝘦))) | animate(b) | animate(a)\"",
+		"\"ASSERT(λ𝘸. (let 𝘗 = λ𝘹. ∃𝘦. τ(𝘦) ⊆ t'' ∧ shıe.𝘸(𝘹)(𝘦) in 𝘗(b) ∧ 𝘗(a) | ∃𝘦. τ(𝘦) ⊆ t' ∧ guobe.𝘸(b)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ oguı.𝘸(a)(𝘦))) | animate(b) | animate(a)\"",
 	);
 });
 

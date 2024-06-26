@@ -167,6 +167,43 @@ function betaReduce(e: Expr): Expr {
 }
 
 /**
+ * Determine whether an Expr is small enough to always β-reduce it.
+ */
+function isSmallExpr(e: Expr): boolean {
+	switch (e.head) {
+		case 'variable':
+		case 'constant':
+		case 'quote':
+			return true;
+		default:
+			return false;
+	}
+}
+
+/**
+ * Count occurrences of a variable in an expression.
+ */
+function varOccurrences(e: Expr, index: number): number {
+	let count = 0;
+	function walk(e: Expr, ctx: ExprType[], index: number) {
+		if (index >= 0)
+			mapVariables(
+				e,
+				e.context,
+				i => {
+					if (i === index) ++count;
+					return v(i, ctx);
+				},
+				i => i,
+				(body, c) => walk(body, c, index - 1),
+			);
+		return e;
+	}
+	walk(e, e.context, index);
+	return count;
+}
+
+/**
  * Reduces a subexpression to normal form.
  * @param premises The plain-text representations of all premises in scope.
  */
@@ -268,16 +305,18 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 		case 'apply': {
 			// Reduce each subexpression before attempting a β-reduction, in case this
 			// reveals a new β-reduction opportunity
-			const subexprsReduced = app(
+			const reduced = app(
 				reduceAndIsolate(e.fn),
 				reduceAndIsolate(e.argument),
 			) as Expr & {
 				head: 'apply';
 			};
+			const rfn = reduced.fn;
 			body =
-				subexprsReduced.fn.head === 'lambda'
-					? reduceAndIsolate(betaReduce(subexprsReduced))
-					: subexprsReduced;
+				rfn.head === 'lambda' &&
+				(isSmallExpr(reduced.argument) || varOccurrences(rfn.body, 0) < 2)
+					? reduceAndIsolate(betaReduce(reduced))
+					: reduced;
 			break;
 		}
 		case 'presuppose': {

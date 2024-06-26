@@ -151,12 +151,24 @@ function render<T>(
 			return bracket ? fmt.bracket(content) : content;
 		}
 		case 'apply': {
-			const p = 14;
-			const bracket = leftPrecedence > p;
-			const fn = render(e.fn, names, fmt, bracket ? 0 : leftPrecedence, p);
-			const argument = render(e.argument, names, fmt, 0, 0);
-			const content = fmt.apply(fn, argument);
-			return bracket ? fmt.bracket(content) : content;
+			if (e.fn.head === 'lambda' && e.fn.restriction === undefined) {
+				// Turn (λx. ϕ)(c) into "let x = c in ϕ".
+				const p = 2;
+				const bracket = leftPrecedence > p;
+				const innerNames = addName(e.argument.type, names);
+				const name = getName(0, innerNames, fmt);
+				const value = render(e.argument, names, fmt, 0, 0);
+				const body = render(e.fn.body, innerNames, fmt, 0, 0);
+				const content = fmt.let(name, value, body);
+				return bracket ? fmt.bracket(content) : content;
+			} else {
+				const p = 14;
+				const bracket = leftPrecedence > p;
+				const fn = render(e.fn, names, fmt, bracket ? 0 : leftPrecedence, p);
+				const argument = render(e.argument, names, fmt, 0, 0);
+				const content = fmt.apply(fn, argument);
+				return bracket ? fmt.bracket(content) : content;
+			}
 		}
 		case 'presuppose': {
 			const p = 1;

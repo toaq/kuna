@@ -41,6 +41,7 @@ export const latex: Format<string> = {
 	},
 	apply: (fn, argument) => `${fn}(${argument})`,
 	presuppose: (body, presupposition) => `${body}\\ |\\ ${presupposition}`,
+	let: (name, value, body) => `\\text{let }${name}=${value}\\text{ in }${body}`,
 	symbolForInfix: fnFromMap({
 		and: '\\land{}',
 		or: '\\lor{}',

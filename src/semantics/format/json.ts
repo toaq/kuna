@@ -25,6 +25,7 @@ export type JsonExpr =
 			body?: JsonExpr;
 	  }
 	| { apply: JsonExpr; to: JsonExpr }
+	| { let: JsonExpr; value: JsonExpr; in: JsonExpr }
 	| { claim: JsonExpr; presupposing: JsonExpr }
 	| { infix: Infix; left: JsonExpr; right: JsonExpr }
 	| JsonPolarizerExpr;
@@ -88,6 +89,11 @@ export const json: Format<JsonExprIntermediate> = {
 	presuppose: (claim, presupposing) => ({
 		claim: claim as JsonExpr,
 		presupposing: presupposing as JsonExpr,
+	}),
+	let: (name, value, body) => ({
+		let: name as JsonExpr,
+		value: value as JsonExpr,
+		in: body as JsonExpr,
 	}),
 	symbolForInfix: infix => infix,
 	infix: (infix, left, right) => ({

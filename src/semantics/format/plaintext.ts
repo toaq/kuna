@@ -54,6 +54,7 @@ export const plainText: Format<string> = {
 	},
 	apply: (fn, argument) => `${fn}(${argument})`,
 	presuppose: (body, presupposition) => `${body} | ${presupposition}`,
+	let: (name, value, body) => `let ${name} = ${value} in ${body}`,
 	symbolForInfix: fnFromMap({
 		and: '∧',
 		or: '∨',

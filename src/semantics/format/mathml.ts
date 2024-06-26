@@ -50,6 +50,8 @@ export const mathml: Format<string> = {
 		`${fn}<mo stretchy=false>(</mo>${argument}<mo stretchy=false>)</mo>`,
 	presuppose: (body, presupposition) =>
 		`<mfrac><mrow>${body}</mrow><mrow>${presupposition}</mrow></mfrac>`,
+	let: (name, value, body) =>
+		`<mrow><mi>let</mi><mspace width="1pt" /><mrow>${name}<mo>=</mo>${value}</mrow><mspace width="1pt" /><mi>in</mi><mspace width="1pt" /><mrow>${body}</mrow></mrow>`,
 	symbolForInfix: fnFromMap({
 		and: '<mo>∧</mo>',
 		or: '<mo>∨</mo>',
