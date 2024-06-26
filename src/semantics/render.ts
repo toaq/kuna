@@ -1,6 +1,6 @@
 import { Impossible } from '../core/error';
 import { CompactExpr } from './compact';
-import { Expr, ExprType } from './model';
+import { Expr, ExprType, KnownConstant, KnownInfix } from './model';
 import {
 	Format,
 	NameType,
@@ -11,7 +11,7 @@ import {
 import { JsonExpr } from './format/json';
 import { plainText, latex, json, mathml } from './format';
 
-const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
+const infixPrecedence: Record<KnownInfix['name'], number> = {
 	and: 5,
 	or: 4,
 	implies: 3,
@@ -25,20 +25,19 @@ const infixPrecedence: Record<(Expr & { head: 'infix' })['name'], number> = {
 	coevent: 12,
 };
 
-const infixAssociativity: Record<(Expr & { head: 'infix' })['name'], boolean> =
-	{
-		and: true,
-		or: true,
-		implies: false,
-		equals: false,
-		subinterval: false,
-		before: false,
-		after: false,
-		before_near: false,
-		after_near: false,
-		roi: true,
-		coevent: false,
-	};
+const infixAssociativity: Record<KnownInfix['name'], boolean> = {
+	and: true,
+	or: true,
+	implies: false,
+	equals: false,
+	subinterval: false,
+	before: false,
+	after: false,
+	before_near: false,
+	after_near: false,
+	roi: true,
+	coevent: false,
+};
 
 const noNames: Names = {
 	context: [],
@@ -161,6 +160,25 @@ function render<T>(
 				const body = render(e.fn.body, innerNames, fmt, 0, 0);
 				const content = fmt.let(name, value, body);
 				return bracket ? fmt.bracket(content) : content;
+			} else if (
+				e.fn.head === 'apply' &&
+				e.fn.fn.head === 'constant' &&
+				e.fn.fn.name in infixPrecedence
+			) {
+				const name = e.fn.fn.name as KnownInfix['name'];
+				const symbol = fmt.symbolForInfix(name);
+				const p = infixPrecedence[name];
+				const associative = infixAssociativity[name];
+				const bracket =
+					(leftPrecedence > p || rightPrecedence > p) &&
+					!(associative && (leftPrecedence === p || rightPrecedence === p));
+
+				const lp = bracket ? 0 : leftPrecedence;
+				const rp = bracket ? 0 : rightPrecedence;
+				const left = render(e.fn.argument, names, fmt, lp, p);
+				const right = render(e.argument, names, fmt, p, rp);
+				const content = fmt.infix(symbol, left, right);
+				return bracket ? fmt.bracket(content) : content;
 			} else {
 				const p = 14;
 				const bracket = leftPrecedence > p;
@@ -182,25 +200,6 @@ function render<T>(
 				bracket ? 0 : rightPrecedence,
 			);
 			const content = fmt.presuppose(body, presupposition);
-			return bracket ? fmt.bracket(content) : content;
-		}
-		case 'infix': {
-			const symbol = fmt.symbolForInfix(e.name);
-			const p = infixPrecedence[e.name];
-			const associative = infixAssociativity[e.name];
-			const bracket =
-				(leftPrecedence > p || rightPrecedence > p) &&
-				!(associative && (leftPrecedence === p || rightPrecedence === p));
-
-			const left = render(e.left, names, fmt, bracket ? 0 : leftPrecedence, p);
-			const right = render(
-				e.right,
-				names,
-				fmt,
-				p,
-				bracket ? 0 : rightPrecedence,
-			);
-			const content = fmt.infix(symbol, left, right);
 			return bracket ? fmt.bracket(content) : content;
 		}
 		case 'polarizer': {
@@ -242,7 +241,7 @@ function render<T>(
 			return bracket ? fmt.bracket(content) : content;
 		}
 		case 'constant': {
-			return fmt.symbolForConstant(e.name);
+			return fmt.symbolForConstant(e.name as KnownConstant['name']);
 		}
 		case 'quote': {
 			return fmt.quote(e.text);
@@ -264,10 +263,15 @@ function render<T>(
 				);
 			}
 			const world = render(e.world, innerNames, fmt, 0, 0);
-			if (e.aspect.head !== 'infix') throw new Impossible('Non-infix aspect');
+			if (
+				e.aspect.head !== 'apply' ||
+				e.aspect.fn.head !== 'apply' ||
+				e.aspect.fn.fn.head !== 'constant'
+			)
+				throw new Impossible('Non-infix aspect');
 			const aspect = fmt.aspect(
-				fmt.symbolForInfix(e.aspect.name),
-				render(e.aspect.right, innerNames, fmt, 0, 0),
+				fmt.symbolForInfix(e.aspect.fn.fn.name as KnownInfix['name']),
+				render(e.aspect.argument, innerNames, fmt, 0, 0),
 			);
 			const agent = e.agent
 				? render(e.agent, innerNames, fmt, 0, 0)

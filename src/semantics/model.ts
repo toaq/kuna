@@ -80,18 +80,9 @@ interface Quantifier<Name extends string> {
 	restriction?: Expr;
 }
 
-interface Infix<Name extends string, Output extends ExprType> {
-	head: 'infix';
-	type: Output;
-	context: ExprType[];
-	name: Name;
-	left: Expr;
-	right: Expr;
-}
+type Conjunction<Name extends string> = Constant<Name, ['t', ['t', 't']]>;
 
-type Conjunction<Name extends string> = Infix<Name, 't'>;
-
-type TimeRelation<Name extends string> = Infix<Name, 't'>;
+type TimeRelation<Name extends string> = Constant<Name, ['i', ['i', 't']]>;
 
 interface Constant<Name extends string, T extends ExprType> {
 	head: 'constant';
@@ -118,35 +109,20 @@ interface Quote {
 	text: string;
 }
 
-/**
- * A semantic expression. The field 'type' represents the expression's type,
- * while the field 'context' represents the types of variables in scope, ordered
- * by De Bruijn indexing.
- */
-export type Expr =
-	| Variable
-	| Verb
-	| Lambda
-	| Apply
-	| Presuppose
+export type KnownInfix =
 	| Conjunction<'and'>
 	| Conjunction<'or'>
 	| Conjunction<'implies'>
-	| Polarizer<'not'>
-	| Polarizer<'indeed'>
-	| Quantifier<'some'>
-	| Quantifier<'every'>
-	| Quantifier<'every_sing'>
-	| Quantifier<'every_cuml'>
-	| Quantifier<'gen'>
-	| Infix<'equals', 't'>
+	| Constant<'equals', [ExprType, [ExprType, 't']]>
 	| TimeRelation<'subinterval'>
 	| TimeRelation<'before'>
 	| TimeRelation<'after'>
 	| TimeRelation<'before_near'>
 	| TimeRelation<'after_near'>
-	| Infix<'roi', 'e'>
-	| Infix<'coevent', 't'>
+	| Constant<'roi', ['e', ['e', 'e']]>
+	| Constant<'coevent', ['v', ['v', 't']]>;
+
+export type KnownConstant =
 	| Pronoun<'ji'>
 	| Pronoun<'suq'>
 	| Pronoun<'nhao'>
@@ -163,6 +139,12 @@ export type Expr =
 	| Animacy<'animate'>
 	| Animacy<'inanimate'>
 	| Animacy<'abstract'>
+	| PropSpeechAct<'assert'>
+	| PropSpeechAct<'perform'>
+	| PropSpeechAct<'wish'>
+	| PropSpeechAct<'promise'>
+	| PropSpeechAct<'permit'>
+	| PropSpeechAct<'warn'>
 	| Constant<'real_world', 's'>
 	| Constant<'inertia_worlds', ['s', ['s', ['i', 't']]]>
 	| Constant<'alternative', ['e', ['e', ['s', 't']]]>
@@ -172,13 +154,28 @@ export type Expr =
 	| Constant<'expected_end', ['v', 'i']>
 	| Constant<'speech_time', 'i'>
 	| Constant<'content', ['e', ['s', ['s', 't']]]>
-	| Constant<'topic', ['e', ['s', 's']]>
-	| PropSpeechAct<'assert'>
-	| PropSpeechAct<'perform'>
-	| PropSpeechAct<'wish'>
-	| PropSpeechAct<'promise'>
-	| PropSpeechAct<'permit'>
-	| PropSpeechAct<'warn'>
+	| Constant<'topic', ['e', ['s', 's']]>;
+
+/**
+ * A semantic expression. The field 'type' represents the expression's type,
+ * while the field 'context' represents the types of variables in scope, ordered
+ * by De Bruijn indexing.
+ */
+export type Expr =
+	| Variable
+	| Verb
+	| Lambda
+	| Apply
+	| Presuppose
+	| KnownInfix
+	| KnownConstant
+	| Polarizer<'not'>
+	| Polarizer<'indeed'>
+	| Quantifier<'some'>
+	| Quantifier<'every'>
+	| Quantifier<'every_sing'>
+	| Quantifier<'every_cuml'>
+	| Quantifier<'gen'>
 	| Quote;
 
 export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
@@ -441,21 +438,20 @@ export function presuppose(
 }
 
 export function infix(
-	name: (Expr & { head: 'infix' })['name'],
-	type: (Expr & { head: 'infix' })['type'],
+	name: KnownInfix['name'],
+	type: ExprType,
 	left: Expr,
 	right: Expr,
 ): Expr {
 	assertContextsEqual(left.context, right.context);
 
-	return {
-		head: 'infix',
-		type,
+	const operator: Expr = {
+		head: 'constant',
+		type: [left.type, [right.type, type]],
 		context: left.context,
 		name,
-		left,
-		right,
 	} as Expr;
+	return app(app(operator, left), right);
 }
 
 function conjunction(
@@ -575,14 +571,7 @@ export function equals(left: Expr, right: Expr): Expr {
 	assertTypesCompatible(left.type, right.type);
 	assertContextsEqual(left.context, right.context);
 
-	return {
-		head: 'infix',
-		type: 't',
-		context: left.context,
-		name: 'equals',
-		left,
-		right,
-	};
+	return infix('equals', 't', left, right);
 }
 
 function timeRelation(

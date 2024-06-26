@@ -9,7 +9,6 @@ import {
 	DTree,
 	Expr,
 	ExprType,
-	infix,
 	polarizer,
 	presuppose,
 	quantifier,
@@ -68,9 +67,6 @@ function mapVariables(
 				sub(e.presupposition),
 				e.defines === undefined ? undefined : mapDefines(e.defines),
 			);
-		}
-		case 'infix': {
-			return infix(e.name, e.type, sub(e.left), sub(e.right));
 		}
 		case 'polarizer': {
 			return polarizer(e.name, sub(e.body));
@@ -323,15 +319,6 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 			if (!isPremise(presupposition))
 				addPresupposition(presupposition, e.defines);
 			body = withPremise(presupposition, () => reduceAndIsolate(e.body));
-			break;
-		}
-		case 'infix': {
-			body = infix(
-				e.name,
-				e.type,
-				reduceAndIsolate(e.left),
-				reduceAndIsolate(e.right),
-			);
 			break;
 		}
 		case 'polarizer': {
@@ -753,10 +740,6 @@ function* subexprsShallow(e: Expr): Generator<Expr, void, unknown> {
 		case 'presuppose':
 			yield* subexprsShallow(e.body);
 			yield* subexprsShallow(e.presupposition);
-			break;
-		case 'infix':
-			yield* subexprsShallow(e.left);
-			yield* subexprsShallow(e.right);
 			break;
 		case 'polarizer':
 			yield* subexprsShallow(e.body);

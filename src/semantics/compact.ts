@@ -1,4 +1,10 @@
-import { Expr, ExprType, assertContextsEqual, assertSubtype } from './model';
+import {
+	Expr,
+	ExprType,
+	and,
+	assertContextsEqual,
+	assertSubtype,
+} from './model';
 
 /**
  * Compact notation for saying events exist.
@@ -59,55 +65,56 @@ function detectCompound(
 	// We're only interested in "∃e. τ(e) ... t ∧ blah":
 	if (
 		expr.body.context[0] !== 'v' ||
-		expr.body.head !== 'infix' ||
-		expr.body.name !== 'and' ||
-		expr.body.left.head !== 'infix'
+		expr.body.head !== 'apply' ||
+		expr.body.fn.head !== 'apply' ||
+		expr.body.fn.fn.head !== 'constant' ||
+		expr.body.fn.fn.name !== 'and'
 	) {
 		return undefined;
 	}
-	const aspect = expr.body.left;
-	let rest = expr.body.right;
+	const aspect = expr.body.fn.argument;
+	let rest = expr.body.argument;
 	let agent: Expr | undefined;
 
 	// We might have to turn (x ∧ y) ∧ z into x ∧ (y ∧ z):
 	while (
-		rest.head === 'infix' &&
-		rest.name === 'and' &&
-		rest.left.head === 'infix' &&
-		rest.left.name === 'and'
+		rest.head === 'apply' &&
+		rest.fn.head === 'apply' &&
+		rest.fn.fn.head === 'constant' &&
+		rest.fn.fn.name === 'and' &&
+		rest.fn.argument.head === 'apply' &&
+		rest.fn.argument.fn.head === 'apply' &&
+		rest.fn.argument.fn.fn.head === 'constant' &&
+		rest.fn.argument.fn.fn.name === 'and'
 	) {
-		rest = {
-			...rest,
-			left: rest.left.left,
-			right: {
-				head: 'infix',
-				type: rest.left.type,
-				context: rest.left.context,
-				name: 'and',
-				left: rest.left.right,
-				right: rest.right,
-			},
-		};
+		rest = and(
+			rest.fn.argument.fn.argument,
+			and(rest.fn.argument.argument, rest.argument),
+		);
 	}
 
-	// There might be an AGENT(e)(w) = x:
+	// There might be an AGENT(e)(w) = x. Extract x then skip ahead.
 	if (
-		rest.head === 'infix' &&
-		rest.name === 'and' &&
-		rest.left.head === 'infix' &&
-		rest.left.name === 'equals' &&
-		rest.left.left.head === 'apply' &&
-		rest.left.left.argument.type === 's' &&
-		rest.left.left.fn.head === 'apply' &&
-		rest.left.left.fn.argument.type === 'v' &&
-		rest.left.left.fn.fn.head === 'constant' &&
-		rest.left.left.fn.fn.name === 'agent'
+		rest.head === 'apply' &&
+		rest.fn.head === 'apply' &&
+		rest.fn.fn.head === 'constant' &&
+		rest.fn.fn.name === 'and' &&
+		rest.fn.argument.head === 'apply' &&
+		rest.fn.argument.fn.head === 'apply' &&
+		rest.fn.argument.fn.fn.head === 'constant' &&
+		rest.fn.argument.fn.fn.name === 'equals' &&
+		rest.fn.argument.fn.argument.head === 'apply' &&
+		rest.fn.argument.fn.argument.argument.type === 's' &&
+		rest.fn.argument.fn.argument.fn.head === 'apply' &&
+		rest.fn.argument.fn.argument.fn.argument.type === 'v' &&
+		rest.fn.argument.fn.argument.fn.fn.head === 'constant' &&
+		rest.fn.argument.fn.argument.fn.fn.name === 'agent'
 	) {
-		agent = rest.left.right;
-		rest = rest.right;
+		agent = rest.fn.argument.argument;
+		rest = rest.argument;
 	}
 
-	// Now we expect a verb, or a verb with some stuff attached.
+	// Now we expect a verb, or a verb AND some other statement.
 	if (rest.head === 'verb') {
 		return eventCompound(
 			expr.context,
@@ -121,18 +128,20 @@ function detectCompound(
 	}
 
 	if (
-		rest.head === 'infix' &&
-		rest.name === 'and' &&
-		rest.left.head === 'verb'
+		rest.head === 'apply' &&
+		rest.fn.head === 'apply' &&
+		rest.fn.fn.head === 'constant' &&
+		rest.fn.fn.name === 'and' &&
+		rest.fn.argument.head === 'verb'
 	) {
 		return eventCompound(
 			expr.context,
-			rest.left.name,
-			rest.left.world,
+			rest.fn.argument.name,
+			rest.fn.argument.world,
 			aspect,
 			agent,
-			rest.left.args,
-			rest.right,
+			rest.fn.argument.args,
+			rest.argument,
 		);
 	}
 
@@ -161,12 +170,6 @@ export function compact(expr: CompactExpr): CompactExpr {
 				...expr,
 				fn: compact(expr.fn) as Expr,
 				argument: compact(expr.argument) as Expr,
-			};
-		case 'infix':
-			return {
-				...expr,
-				left: compact(expr.left) as Expr,
-				right: compact(expr.right) as Expr,
 			};
 		case 'polarizer':
 			return { ...expr, body: compact(expr.body) as Expr };

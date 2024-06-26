@@ -1,4 +1,4 @@
-import { Expr } from '../model';
+import { Expr, KnownConstant, KnownInfix } from '../model';
 
 export type NameType = 'e' | 'v' | 'i' | 's' | 'fn';
 
@@ -39,9 +39,9 @@ export interface Names {
 }
 
 export type Quantifier = (Expr & { head: 'quantifier' })['name'] | 'lambda';
-export type Infix = (Expr & { head: 'infix' })['name'];
+export type Infix = KnownInfix['name'];
 export type Polarizer = (Expr & { head: 'polarizer' })['name'];
-export type Constant = (Expr & { head: 'constant' })['name'];
+export type Constant = KnownConstant['name'];
 
 /**
  * Specification of a rendering format, such as plain text or LaTeX.
