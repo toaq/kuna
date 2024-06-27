@@ -1,4 +1,10 @@
-import { Expr, KnownConstant, KnownInfix, KnownPolarizer } from '../model';
+import {
+	Expr,
+	KnownConstant,
+	KnownInfix,
+	KnownPolarizer,
+	KnownQuantifier,
+} from '../model';
 
 export type NameType = 'e' | 'v' | 'i' | 's' | 'fn';
 
@@ -38,7 +44,7 @@ export interface Names {
 	readonly nextConstantIds: Record<NameType, number>;
 }
 
-export type Quantifier = (Expr & { head: 'quantifier' })['name'] | 'lambda';
+export type Quantifier = KnownQuantifier['name'] | 'lambda';
 export type Infix = KnownInfix['name'];
 export type Polarizer = KnownPolarizer['name'];
 export type Constant = KnownConstant['name'];

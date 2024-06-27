@@ -63,14 +63,7 @@ interface Presuppose {
 	defines?: number;
 }
 
-interface Quantifier<Name extends string> {
-	head: 'quantifier';
-	type: 't';
-	context: ExprType[];
-	name: Name;
-	body: Expr;
-	restriction?: Expr;
-}
+type Quantifier<Name extends string> = Constant<Name, [[ExprType, 't'], 't']>;
 
 type Conjunction<Name extends string> = Constant<Name, ['t', ['t', 't']]>;
 
@@ -153,6 +146,13 @@ export type KnownConstant =
 	| Constant<'content', ['e', ['s', ['s', 't']]]>
 	| Constant<'topic', ['e', ['s', 's']]>;
 
+export type KnownQuantifier =
+	| Quantifier<'some'>
+	| Quantifier<'every'>
+	| Quantifier<'every_sing'>
+	| Quantifier<'every_cuml'>
+	| Quantifier<'gen'>;
+
 /**
  * A semantic expression. The field 'type' represents the expression's type,
  * while the field 'context' represents the types of variables in scope, ordered
@@ -166,11 +166,7 @@ export type Expr =
 	| Presuppose
 	| KnownInfix
 	| KnownConstant
-	| Quantifier<'some'>
-	| Quantifier<'every'>
-	| Quantifier<'every_sing'>
-	| Quantifier<'every_cuml'>
-	| Quantifier<'gen'>
+	| KnownQuantifier
 	| Quote;
 
 export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
@@ -492,32 +488,20 @@ export function indeed(body: Expr): Expr {
 }
 
 export function quantifier(
-	name: (Expr & { head: 'quantifier' })['name'],
+	name: KnownQuantifier['name'],
 	domain: ExprType,
 	context: ExprType[],
 	body: (context: ExprType[]) => Expr,
 	restriction?: (context: ExprType[]) => Expr,
 ): Expr {
-	const innerContext = [domain, ...context];
-	const bodyResult = body(innerContext);
-	assertSubtype(bodyResult.type, 't');
-	assertContextsEqual(bodyResult.context, innerContext);
-
-	let restrictionResult = undefined;
-	if (restriction !== undefined) {
-		restrictionResult = restriction(innerContext);
-		assertSubtype(restrictionResult.type, 't');
-		assertContextsEqual(restrictionResult.context, innerContext);
-	}
-
-	return {
-		head: 'quantifier',
-		type: 't',
-		context,
+	const operator: Expr = {
+		head: 'constant',
+		type: [[domain, 't'], 't'],
 		name,
-		body: bodyResult,
-		restriction: restrictionResult,
+		context,
 	};
+
+	return app(operator, λ(domain, context, body, restriction));
 }
 
 export function some(

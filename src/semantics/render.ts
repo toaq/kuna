@@ -6,11 +6,16 @@ import {
 	KnownConstant,
 	KnownInfix,
 	KnownPolarizer,
+	KnownQuantifier,
+	app,
+	v,
+	λ,
 } from './model';
 import {
 	Format,
 	NameType,
 	Names,
+	Quantifier,
 	constantAlphabets,
 	variableAlphabets,
 } from './format/base';
@@ -48,6 +53,14 @@ const infixAssociativity: Record<KnownInfix['name'], boolean> = {
 const polarizerPrecedence: Record<KnownPolarizer['name'], number> = {
 	not: 14,
 	indeed: 14,
+};
+
+const quantifiers: Record<KnownQuantifier['name'], {}> = {
+	some: {},
+	every: {},
+	every_sing: {},
+	every_cuml: {},
+	gen: {},
 };
 
 const noNames: Names = {
@@ -103,6 +116,87 @@ function getName<T>(index: number, names: Names, fmt: Format<T>): T {
 	return fmt.name(names.context[index]);
 }
 
+function renderQuantifier<T>(
+	e: CompactExpr & { head: 'lambda' },
+	q: Quantifier,
+	names: Names,
+	fmt: Format<T>,
+	rightPrecedence: number,
+): T {
+	const symbol = fmt.symbolForQuantifier(q);
+	const p = 2;
+	const bracket = rightPrecedence > p;
+	const innerNames = addName(e.type[0], names);
+	const name = getName(0, innerNames, fmt);
+	const body = render(
+		e.body as Expr,
+		innerNames,
+		fmt,
+		p,
+		bracket ? 0 : rightPrecedence,
+	);
+
+	let content: T;
+	if (e.restriction === undefined) {
+		content = fmt.quantifier(symbol, name, body);
+	} else {
+		const restriction = render(e.restriction as Expr, innerNames, fmt, 0, 0);
+		content = fmt.restrictedQuantifier(symbol, name, restriction, body);
+	}
+
+	return bracket ? fmt.bracket(content) : content;
+}
+
+function renderEventCompound<T>(
+	e: CompactExpr & { head: 'event_compound' },
+	q: Quantifier,
+	names: Names,
+	fmt: Format<T>,
+	leftPrecedence: number,
+	rightPrecedence: number,
+): T {
+	const symbol = fmt.symbolForQuantifier(q);
+	const p = 2;
+	const bracket = rightPrecedence > p;
+	let body: T | undefined;
+	const innerNames = addName('v', names);
+	const eventName = getName(0, innerNames, fmt);
+	if (e.body) {
+		body = render(
+			e.body as Expr,
+			innerNames,
+			fmt,
+			p,
+			bracket ? 0 : rightPrecedence,
+		);
+	}
+	const world = render(e.world, innerNames, fmt, 0, 0);
+	if (
+		e.aspect.head !== 'apply' ||
+		e.aspect.fn.head !== 'apply' ||
+		e.aspect.fn.fn.head !== 'constant'
+	)
+		throw new Impossible('Non-infix aspect');
+	const aspect = fmt.aspect(
+		fmt.symbolForInfix(e.aspect.fn.fn.name as KnownInfix['name']),
+		render(e.aspect.argument, innerNames, fmt, 0, 0),
+	);
+	const agent = e.agent ? render(e.agent, innerNames, fmt, 0, 0) : undefined;
+	const args = e.args.map(arg => render(arg, innerNames, fmt, 0, 0));
+	const content = fmt.eventCompound(
+		symbol,
+		e.verbName,
+		eventName,
+		world,
+		aspect,
+		agent,
+		args,
+		body,
+	);
+
+	return bracket ? fmt.bracket(content) : content;
+}
+
 /**
  * @param e The (sub)expression to be rendered.
  * @param names The naming context for the variables and constants currently in
@@ -131,34 +225,7 @@ function render<T>(
 			return fmt.verb(e.name, args, event, world);
 		}
 		case 'lambda': {
-			const symbol = fmt.symbolForQuantifier('lambda');
-			const p = 2;
-			const bracket = rightPrecedence > p;
-			const innerNames = addName(e.type[0], names);
-			const name = getName(0, innerNames, fmt);
-			const body = render(
-				e.body as Expr,
-				innerNames,
-				fmt,
-				p,
-				bracket ? 0 : rightPrecedence,
-			);
-
-			let content: T;
-			if (e.restriction === undefined) {
-				content = fmt.quantifier(symbol, name, body);
-			} else {
-				const restriction = render(
-					e.restriction as Expr,
-					innerNames,
-					fmt,
-					0,
-					0,
-				);
-				content = fmt.restrictedQuantifier(symbol, name, restriction, body);
-			}
-
-			return bracket ? fmt.bracket(content) : content;
+			return renderQuantifier(e, 'lambda', names, fmt, rightPrecedence);
 		}
 		case 'apply': {
 			if (e.fn.head === 'lambda' && e.fn.restriction === undefined) {
@@ -199,6 +266,22 @@ function render<T>(
 				const body = render(e.argument, names, fmt, p, rp);
 				const content = fmt.polarizer(symbol, body);
 				return bracket ? fmt.bracket(content) : content;
+			} else if (e.fn.head === 'constant' && e.fn.name in quantifiers) {
+				const q = e.fn.name as KnownQuantifier['name'];
+				if (e.argument.head === 'lambda') {
+					return renderQuantifier(e.argument, q, names, fmt, rightPrecedence);
+				} else if ((e.argument as CompactExpr).head === 'event_compound') {
+					return renderEventCompound(
+						e.argument as any,
+						q,
+						names,
+						fmt,
+						leftPrecedence,
+						rightPrecedence,
+					);
+				} else {
+					throw new Impossible('sdlfkjds');
+				}
 			} else {
 				const p = 14;
 				const bracket = leftPrecedence > p;
@@ -222,36 +305,6 @@ function render<T>(
 			const content = fmt.presuppose(body, presupposition);
 			return bracket ? fmt.bracket(content) : content;
 		}
-		case 'quantifier': {
-			const symbol = fmt.symbolForQuantifier(e.name);
-			const p = 2;
-			const bracket = rightPrecedence > p;
-			const innerNames = addName(e.body.context[0], names);
-			const name = getName(0, innerNames, fmt);
-			const body = render(
-				e.body as Expr,
-				innerNames,
-				fmt,
-				p,
-				bracket ? 0 : rightPrecedence,
-			);
-
-			let content: T;
-			if (e.restriction === undefined) {
-				content = fmt.quantifier(symbol, name, body);
-			} else {
-				const restriction = render(
-					e.restriction as Expr,
-					innerNames,
-					fmt,
-					0,
-					0,
-				);
-				content = fmt.restrictedQuantifier(symbol, name, restriction, body);
-			}
-
-			return bracket ? fmt.bracket(content) : content;
-		}
 		case 'constant': {
 			return fmt.symbolForConstant(e.name as KnownConstant['name']);
 		}
@@ -259,48 +312,14 @@ function render<T>(
 			return fmt.quote(e.text);
 		}
 		case 'event_compound': {
-			const symbol = fmt.symbolForQuantifier('some');
-			const p = 2;
-			const bracket = rightPrecedence > p;
-			let body: T | undefined;
-			const innerNames = addName('v', names);
-			const eventName = getName(0, innerNames, fmt);
-			if (e.body) {
-				body = render(
-					e.body as Expr,
-					innerNames,
-					fmt,
-					p,
-					bracket ? 0 : rightPrecedence,
-				);
-			}
-			const world = render(e.world, innerNames, fmt, 0, 0);
-			if (
-				e.aspect.head !== 'apply' ||
-				e.aspect.fn.head !== 'apply' ||
-				e.aspect.fn.fn.head !== 'constant'
-			)
-				throw new Impossible('Non-infix aspect');
-			const aspect = fmt.aspect(
-				fmt.symbolForInfix(e.aspect.fn.fn.name as KnownInfix['name']),
-				render(e.aspect.argument, innerNames, fmt, 0, 0),
+			return renderEventCompound(
+				e,
+				'some',
+				names,
+				fmt,
+				leftPrecedence,
+				rightPrecedence,
 			);
-			const agent = e.agent
-				? render(e.agent, innerNames, fmt, 0, 0)
-				: undefined;
-			const args = e.args.map(arg => render(arg, innerNames, fmt, 0, 0));
-			const content = fmt.eventCompound(
-				symbol,
-				e.verbName,
-				eventName,
-				world,
-				aspect,
-				agent,
-				args,
-				body,
-			);
-
-			return bracket ? fmt.bracket(content) : content;
 		}
 	}
 }

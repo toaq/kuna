@@ -68,17 +68,6 @@ function mapVariables(
 				e.defines === undefined ? undefined : mapDefines(e.defines),
 			);
 		}
-		case 'quantifier': {
-			return quantifier(
-				e.name,
-				e.body.context[0] as 'e' | 'v' | 's',
-				newContext,
-				c => mapQuantifierBody(e.body, c),
-				e.restriction === undefined
-					? undefined
-					: c => mapQuantifierBody(e.restriction!, c),
-			);
-		}
 		case 'constant': {
 			return constant(e.name, e.type, newContext);
 		}
@@ -316,21 +305,6 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 			if (!isPremise(presupposition))
 				addPresupposition(presupposition, e.defines);
 			body = withPremise(presupposition, () => reduceAndIsolate(e.body));
-			break;
-		}
-		case 'quantifier': {
-			const restriction =
-				e.restriction === undefined
-					? undefined
-					: quantifierReduceAndIsolate(e.restriction);
-			body = quantifier(
-				e.name,
-				e.body.context[0] as 'e' | 's' | 'v',
-				e.context,
-				() =>
-					withPremise(restriction, () => quantifierReduceAndIsolate(e.body)),
-				restriction === undefined ? undefined : () => restriction,
-			);
 			break;
 		}
 	}
@@ -717,7 +691,6 @@ function* subexprsShallow(e: Expr): Generator<Expr, void, unknown> {
 	switch (e.head) {
 		case 'variable':
 		case 'lambda':
-		case 'quantifier':
 		case 'constant':
 		case 'quote':
 			break;
@@ -749,7 +722,6 @@ export function* freeVariableUsages(e: Expr): Generator<number, void, unknown> {
 				yield sub.index;
 				break;
 			case 'lambda':
-			case 'quantifier':
 				for (const i of freeVariableUsages(sub.body)) if (i !== 0) yield i - 1;
 				if (sub.restriction !== undefined)
 					for (const i of freeVariableUsages(sub.restriction))
@@ -778,7 +750,6 @@ function* relativeDefinitions(
 					yield sub.defines;
 				break;
 			case 'lambda':
-			case 'quantifier':
 				for (const i of relativeDefinitions(sub.body, index + 1))
 					if (i !== 0) yield i - 1;
 				if (sub.restriction !== undefined)

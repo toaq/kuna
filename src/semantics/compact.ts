@@ -15,7 +15,7 @@ import {
  */
 interface EventCompound {
 	head: 'event_compound';
-	type: 't';
+	type: ['v', 't'];
 	context: ExprType[];
 	verbName: string;
 	world: Expr;
@@ -42,7 +42,7 @@ export function eventCompound(
 
 	return {
 		head: 'event_compound',
-		type: 't',
+		type: ['v', 't'],
 		context,
 		verbName,
 		world,
@@ -56,13 +56,13 @@ export function eventCompound(
 export type CompactExpr = Expr | EventCompound;
 
 /**
- * If the given "∃e." expression can be turned into compound event notation, do
+ * If the given "λe." expression can be turned into compound event notation, do
  * so. Otherwise, return `undefined`.
  */
 function detectCompound(
-	expr: Expr & { head: 'quantifier' },
+	expr: Expr & { head: 'lambda' },
 ): EventCompound | undefined {
-	// We're only interested in "∃e. τ(e) ... t ∧ blah":
+	// We're only interested in "λe. τ(e) ... t ∧ blah":
 	if (
 		expr.body.context[0] !== 'v' ||
 		expr.body.head !== 'apply' ||
@@ -163,8 +163,6 @@ export function compact(expr: CompactExpr): CompactExpr {
 				...expr,
 				args: expr.args.map(x => compact(x)) as [] | [Expr] | [Expr, Expr],
 			};
-		case 'lambda':
-			return { ...expr, body: compact(expr.body) as Expr };
 		case 'apply':
 			return {
 				...expr,
@@ -177,7 +175,7 @@ export function compact(expr: CompactExpr): CompactExpr {
 				presupposition: compact(expr.presupposition) as Expr,
 				body: compact(expr.body) as Expr,
 			};
-		case 'quantifier':
+		case 'lambda':
 			const compound = detectCompound(expr);
 			if (compound) return compact(compound) as Expr;
 			return {
