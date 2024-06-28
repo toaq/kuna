@@ -45,6 +45,7 @@ type JsonPolarizerExpr = {
 type JsonExprIntermediate = JsonExpr | JsonAspect | string;
 
 export const json: Format<JsonExprIntermediate> = {
+	formatName: 'json',
 	bracket: expr => expr,
 	name: ({ id, type }: Name) => ({ variable: `${type}${id}` }),
 	verb: (verb, args, event, world) => ({

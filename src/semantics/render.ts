@@ -1,5 +1,4 @@
 import { Impossible } from '../core/error';
-import { CompactExpr } from './compact';
 import {
 	Expr,
 	ExprType,
@@ -7,9 +6,6 @@ import {
 	KnownInfix,
 	KnownPolarizer,
 	KnownQuantifier,
-	app,
-	v,
-	λ,
 } from './model';
 import {
 	Format,
@@ -21,6 +17,7 @@ import {
 } from './format/base';
 import { JsonExpr } from './format/json';
 import { plainText, latex, json, mathml } from './format';
+import { EventCompound, detectCompound } from './compact';
 
 const infixPrecedence: Record<KnownInfix['name'], number> = {
 	and: 5,
@@ -113,19 +110,28 @@ function addName(type: ExprType, names: Names, constant = false): Names {
 }
 
 class Renderer<T> {
-	private cache: WeakMap<CompactExpr, unknown> = new WeakMap();
-	constructor(private fmt: Format<T>) {}
+	private cache: WeakMap<Expr, unknown> = new WeakMap();
+	constructor(
+		private fmt: Format<T>,
+		private compact: boolean,
+	) {}
 
 	private getName(index: number, names: Names): T {
 		return this.fmt.name(names.context[index]);
 	}
 
 	private renderQuantifier(
-		e: CompactExpr & { head: 'lambda' },
+		e: Expr & { head: 'lambda' },
 		q: Quantifier,
 		names: Names,
 		rightPrecedence: number,
 	): T {
+		if (this.compact) {
+			const compound = detectCompound(e);
+			if (compound) {
+				return this.renderEventCompound(compound, q, names, rightPrecedence);
+			}
+		}
 		const symbol = this.fmt.symbolForQuantifier(q);
 		const p = 2;
 		const bracket = rightPrecedence > p;
@@ -150,7 +156,7 @@ class Renderer<T> {
 	}
 
 	private renderEventCompound(
-		e: CompactExpr & { head: 'event_compound' },
+		e: EventCompound,
 		q: Quantifier,
 		names: Names,
 		rightPrecedence: number,
@@ -207,7 +213,7 @@ class Renderer<T> {
 	 *   this subexpression that could affect its bracketing.
 	 */
 	private render(
-		e: CompactExpr,
+		e: Expr,
 		names: Names,
 		leftPrecedence: number,
 		rightPrecedence: number,
@@ -271,13 +277,6 @@ class Renderer<T> {
 					const q = e.fn.name as KnownQuantifier['name'];
 					if (e.argument.head === 'lambda') {
 						return this.renderQuantifier(e.argument, q, names, rightPrecedence);
-					} else if ((e.argument as CompactExpr).head === 'event_compound') {
-						return this.renderEventCompound(
-							e.argument as any,
-							q,
-							names,
-							rightPrecedence,
-						);
 					} else {
 						throw new Impossible('sdlfkjds');
 					}
@@ -314,13 +313,10 @@ class Renderer<T> {
 			case 'quote': {
 				return this.fmt.quote(e.text);
 			}
-			case 'event_compound': {
-				return this.renderEventCompound(e, 'some', names, rightPrecedence);
-			}
 		}
 	}
 
-	renderFull(e: CompactExpr) {
+	public renderFull(e: Expr) {
 		const cachedResult = this.cache.get(e) as T;
 		if (cachedResult !== undefined) return cachedResult;
 
@@ -339,34 +335,37 @@ class Renderer<T> {
 	}
 }
 
-const rendererCache = new Map<Format<any>, Renderer<any>>();
+const rendererCache = new Map<string, Renderer<any>>();
 
-function renderFull<T>(e: CompactExpr, fmt: Format<T>): T {
-	let renderer = rendererCache.get(fmt) as Renderer<T> | undefined;
+function renderFull<T>(e: Expr, fmt: Format<T>, compact?: boolean): T {
+	const spec = fmt.formatName + (compact ? '-compact' : '');
+	let renderer = rendererCache.get(spec) as Renderer<T> | undefined;
 	if (renderer === undefined) {
-		renderer = new Renderer<T>(fmt);
-		rendererCache.set(fmt, renderer);
+		renderer = new Renderer<T>(fmt, compact ?? false);
+		rendererCache.set(spec, renderer);
 	}
 
 	return renderer.renderFull(e);
 }
 
-export function toPlainText(e: CompactExpr): string {
-	return renderFull(e, plainText);
+export function toPlainText(e: Expr, compact?: boolean): string {
+	return renderFull(e, plainText, compact);
 }
 
-export function toLatex(e: CompactExpr): string {
-	return renderFull(e, latex);
+export function toLatex(e: Expr, compact?: boolean): string {
+	return renderFull(e, latex, compact);
 }
 
-export function toMathml(e: CompactExpr): string {
+export function toMathml(e: Expr, compact?: boolean): string {
 	return (
-		'<math display=block><mrow>' + renderFull(e, mathml) + '</mrow></math>'
+		'<math display=block><mrow>' +
+		renderFull(e, mathml, compact) +
+		'</mrow></math>'
 	);
 }
 
-export function toJson(e: CompactExpr): JsonExpr {
-	return renderFull(e, json) as JsonExpr;
+export function toJson(e: Expr, compact?: boolean): JsonExpr {
+	return renderFull(e, json, compact) as JsonExpr;
 }
 
 // A replacement for JSON.stringify that uses less linebreaks, à la Haskell coding style.

@@ -1,6 +1,7 @@
 import { Format, fnFromMap, formatName } from './base';
 
 export const latex: Format<string> = {
+	formatName: 'latex',
 	bracket: e => `\\left(${e}\\right)`,
 	name: name => {
 		const base = formatName(name);

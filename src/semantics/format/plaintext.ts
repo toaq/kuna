@@ -14,6 +14,7 @@ function mathematicalSansSerifItalic(name: string) {
 }
 
 export const plainText: Format<string> = {
+	formatName: 'plaintext',
 	bracket: e => `(${e})`,
 	name: name => {
 		const base = formatName(name);

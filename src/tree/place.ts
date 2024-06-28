@@ -2,7 +2,6 @@ import { CanvasRenderingContext2D } from 'canvas';
 import { DTree, Expr } from '../semantics/model';
 import { toPlainText, toLatex, typeToPlainText } from '../semantics/render';
 import { Branch, Leaf, Rose, Tree, treeText } from '../tree';
-import { CompactExpr, compact } from '../semantics/compact';
 
 import { mathjax } from 'mathjax-full/js/mathjax';
 import { TeX } from 'mathjax-full/js/input/tex';
@@ -48,7 +47,7 @@ export interface RenderedDenotation<C extends DrawContext> {
 	) => Promise<void>;
 	width(ctx: C): number;
 	height(ctx: C): number;
-	denotation: CompactExpr;
+	denotation: Expr;
 }
 
 interface PlacedLeafBase<C extends DrawContext> {
@@ -90,10 +89,11 @@ export function getLabel(tree: Tree | DTree): string {
 }
 
 export function denotationRenderText(
-	denotation: CompactExpr,
+	denotation: Expr,
 	theme: Theme,
+	compact?: boolean,
 ): RenderedDenotation<CanvasRenderingContext2D> {
-	const text = toPlainText(denotation);
+	const text = toPlainText(denotation, compact);
 	return {
 		async draw(ctx, centerX, bottomY, color) {
 			ctx.fillStyle = color;
@@ -110,10 +110,11 @@ export function denotationRenderText(
 }
 
 export function denotationRenderLatex(
-	denotation: CompactExpr,
+	denotation: Expr,
 	theme: Theme,
+	compact?: boolean,
 ): RenderedDenotation<CanvasRenderingContext2D> {
-	const latex = toLatex(denotation);
+	const latex = toLatex(denotation, compact);
 	let { width, height, svg } = get_mathjax_svg('\\LARGE ' + latex);
 	svg = svg.replace(/currentColor/g, theme.denotationColor);
 	const pxWidth = Number(width.replace(/ex$/, '')) * 7;
@@ -205,8 +206,9 @@ export class TreePlacer<C extends DrawContext> {
 	constructor(
 		private ctx: C,
 		private denotationRenderer: (
-			denotation: CompactExpr,
+			denotation: Expr,
 			theme: Theme,
+			compact?: boolean,
 		) => RenderedDenotation<C>,
 		options: Partial<TreePlacerOptions> = {},
 	) {
@@ -217,10 +219,11 @@ export class TreePlacer<C extends DrawContext> {
 		tree: Tree | DTree,
 	): RenderedDenotation<C> | undefined {
 		if (!('denotation' in tree) || tree.denotation === null) return undefined;
-		const expr = this.options.compact
-			? compact(tree.denotation)
-			: tree.denotation;
-		return this.denotationRenderer(expr, this.options.theme);
+		return this.denotationRenderer(
+			tree.denotation,
+			this.options.theme,
+			this.options.compact,
+		);
 	}
 
 	private placeLeaf(

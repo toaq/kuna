@@ -1,6 +1,7 @@
 import { Format, fnFromMap, formatName } from './base';
 
 export const mathml: Format<string> = {
+	formatName: 'mathml',
 	bracket: e => `<mo>(</mo>${e}<mo>)</mo>`,
 	name: name => {
 		const base = formatName(name);

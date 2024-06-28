@@ -15,10 +15,6 @@ import { textual_tree_from_json } from '../modes/textual-tree';
 import { Tree } from '../tree';
 import { drawTreeToCanvas } from '../tree/draw';
 
-import {
-	compact as compactDenotation,
-	CompactExpr,
-} from '../semantics/compact';
 import { ToaqTokenizer } from '../morphology/tokenize';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
 import { Boxes } from './Boxes';
@@ -27,6 +23,7 @@ import { TreeBrowser } from './TreeBrowser';
 import { themes } from '../tree/theme';
 import { GfTarget, GfTranslator } from '../gf';
 import GfResult from './GfResult';
+import { Expr } from '../semantics/model';
 
 type TreeMode =
 	| 'syntax-tree'
@@ -201,12 +198,11 @@ export function Main(props: MainProps) {
 	}
 
 	function getLogicalForm(
-		renderer: (e: CompactExpr) => string,
+		renderer: (e: Expr, compact?: boolean) => string,
 		compact: boolean,
 	): ReactElement {
 		let expr: any = denote(recover(parseInput())).denotation;
 		if (!expr) return <>No denotation</>;
-		if (compact) expr = compactDenotation(expr);
 		return <>{renderer(expr)}</>;
 	}
 

@@ -53,6 +53,7 @@ export type Constant = KnownConstant['name'];
  * Specification of a rendering format, such as plain text or LaTeX.
  */
 export interface Format<T> {
+	formatName: string;
 	bracket: (e: T) => T;
 	name: (name: Name) => T;
 	verb: (name: string, args: T[], event: T, world: T) => T;

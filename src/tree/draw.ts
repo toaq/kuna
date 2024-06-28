@@ -1,6 +1,5 @@
 import { Canvas, CanvasRenderingContext2D, createCanvas } from 'canvas';
-import { CompactExpr } from '../semantics/compact';
-import { DTree } from '../semantics/model';
+import { DTree, Expr } from '../semantics/model';
 import { Tree } from '../tree';
 import {
 	PlacedBranch,
@@ -231,8 +230,9 @@ class TreeDrawer {
 	public async drawToCanvas(
 		tree: Tree | DTree,
 		renderer: (
-			denotation: CompactExpr,
+			denotation: Expr,
 			theme: Theme,
+			compact?: boolean,
 		) => RenderedDenotation<CanvasRenderingContext2D>,
 	): Promise<Canvas> {
 		const placer = new TreePlacer(this.ctx, renderer, {
@@ -254,8 +254,9 @@ export function drawTreeToCanvas(options: {
 	tall: boolean;
 	tree: Tree | DTree;
 	renderer: (
-		denotation: CompactExpr,
+		denotation: Expr,
 		theme: Theme,
+		compact?: boolean,
 	) => RenderedDenotation<CanvasRenderingContext2D>;
 	showMovement: boolean;
 	compact: boolean;

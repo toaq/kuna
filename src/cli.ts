@@ -23,7 +23,6 @@ import {
 	toJson,
 	jsonStringifyCompact,
 } from './semantics/render';
-import { compact } from './semantics/compact';
 
 function getTrees(argv: {
 	sentence: string | undefined;
@@ -232,23 +231,22 @@ yargs
 		function (argv) {
 			const dtrees = getTrees({ ...argv, semantics: true }) as DTree[];
 			const format = argv.format as 'text' | 'latex' | 'json';
-			const getDenotation = ({ denotation: d }: DTree) =>
-				argv.compact ? compact(d!) : d!;
+			const getDenotation = ({ denotation: d }: DTree) => d!;
 			switch (format) {
 				case 'text':
 					for (const dtree of dtrees) {
-						console.log(toPlainText(getDenotation(dtree)));
+						console.log(toPlainText(getDenotation(dtree), argv.compact));
 					}
 					break;
 				case 'latex':
 					for (const dtree of dtrees) {
-						console.log(toLatex(getDenotation(dtree)));
+						console.log(toLatex(getDenotation(dtree), argv.compact));
 					}
 					break;
 				case 'json':
 					console.log(
 						jsonStringifyCompact(
-							dtrees.map(dtree => toJson(getDenotation(dtree))),
+							dtrees.map(dtree => toJson(getDenotation(dtree), argv.compact)),
 						),
 					);
 					break;

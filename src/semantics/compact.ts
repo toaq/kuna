@@ -13,8 +13,7 @@ import {
  * means
  * ∃e. asp(e) ∧ hao_w(y,z)(e) ∧ AGENT(e)=x ∧ Body(e)
  */
-interface EventCompound {
-	head: 'event_compound';
+export interface EventCompound {
 	type: ['v', 't'];
 	context: ExprType[];
 	verbName: string;
@@ -41,7 +40,6 @@ export function eventCompound(
 	assertContextsEqual(['v', ...context], world.context);
 
 	return {
-		head: 'event_compound',
 		type: ['v', 't'],
 		context,
 		verbName,
@@ -53,13 +51,11 @@ export function eventCompound(
 	};
 }
 
-export type CompactExpr = Expr | EventCompound;
-
 /**
  * If the given "λe." expression can be turned into compound event notation, do
  * so. Otherwise, return `undefined`.
  */
-function detectCompound(
+export function detectCompound(
 	expr: Expr & { head: 'lambda' },
 ): EventCompound | undefined {
 	// We're only interested in "λe. τ(e) ... t ∧ blah":
@@ -146,50 +142,4 @@ function detectCompound(
 	}
 
 	return undefined;
-}
-
-/**
- * Walk the expression, compacting event notation everywhere it detects an
- * opportunity to do so.
- */
-export function compact(expr: CompactExpr): CompactExpr {
-	switch (expr.head) {
-		case 'variable':
-		case 'constant':
-		case 'quote':
-			return expr;
-		case 'verb':
-			return {
-				...expr,
-				args: expr.args.map(x => compact(x)) as [] | [Expr] | [Expr, Expr],
-			};
-		case 'apply':
-			return {
-				...expr,
-				fn: compact(expr.fn) as Expr,
-				argument: compact(expr.argument) as Expr,
-			};
-		case 'presuppose':
-			return {
-				...expr,
-				presupposition: compact(expr.presupposition) as Expr,
-				body: compact(expr.body) as Expr,
-			};
-		case 'lambda':
-			const compound = detectCompound(expr);
-			if (compound) return compact(compound) as Expr;
-			return {
-				...expr,
-				restriction: expr.restriction
-					? (compact(expr.restriction) as Expr)
-					: undefined,
-				body: compact(expr.body) as Expr,
-			};
-		case 'event_compound':
-			return {
-				...expr,
-				args: expr.args.map(x => compact(x)) as [] | [Expr] | [Expr, Expr],
-				body: expr.body ? (compact(expr.body) as Expr) : undefined,
-			};
-	}
 }

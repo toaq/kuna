@@ -1,22 +1,21 @@
 import { useState } from 'react';
-import { DTree } from '../semantics/model';
+import { DTree, Expr } from '../semantics/model';
 import { Tree } from '../tree';
 import { PlacedTree, TreePlacer } from '../tree/place';
 import { toMathml } from '../semantics/render';
 import './TreeBrowser.css';
-import { CompactExpr, compact } from '../semantics/compact';
 import { Theme } from '../tree/theme';
 
 export function Denotation(props: {
-	denotation: CompactExpr;
+	denotation: Expr;
 	compact: boolean;
 	theme: Theme;
 }) {
-	const expr = props.compact ? compact(props.denotation) : props.denotation;
+	const mathml = toMathml(props.denotation, props.compact);
 	return (
 		<div
 			style={{ color: props.theme.denotationColor }}
-			dangerouslySetInnerHTML={{ __html: toMathml(expr) }}
+			dangerouslySetInnerHTML={{ __html: mathml }}
 		></div>
 	);
 }
@@ -146,10 +145,14 @@ export function TreeBrowser(props: {
 		},
 	};
 
-	const denotationRenderer = (denotation: CompactExpr, theme: Theme) => {
-		const expr = props.compactDenotations ? compact(denotation) : denotation;
+	const denotationRenderer = (
+		denotation: Expr,
+		theme: Theme,
+		compact?: boolean,
+	) => {
+		const expr = denotation;
 		const div = document.createElement('div');
-		div.innerHTML = toMathml(expr);
+		div.innerHTML = toMathml(expr, compact ?? false);
 		div.style.position = 'absolute';
 		document.body.appendChild(div);
 		const width = div.clientWidth;
