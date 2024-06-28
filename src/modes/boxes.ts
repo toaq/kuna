@@ -1,5 +1,12 @@
 import { inTone } from '../morphology/tokenize';
-import { Tree, assertBranch, skipFree, treeChildren, treeText } from '../tree';
+import {
+	Tree,
+	assertBranch,
+	catSource,
+	skipFree,
+	treeChildren,
+	treeText,
+} from '../tree';
 import { Tone } from '../morphology/tone';
 import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 
@@ -127,7 +134,12 @@ class Boxifier {
 						break;
 					case "Topic'":
 						// Not really a legit TopicP...
-						topic = { label: 'TopicP', left: topic!, right: node.left };
+						topic = {
+							label: 'TopicP',
+							left: topic!,
+							right: node.left,
+							source: topic!.source,
+						};
 						node = node.right;
 						break;
 					case '𝘷P':
@@ -168,6 +180,7 @@ class Boxifier {
 		const verbalComplex: Tree = {
 			label: '*Serial',
 			children: verbalComplexWords,
+			source: catSource(...verbalComplexWords),
 		};
 		return {
 			complementizer,

@@ -8,6 +8,7 @@ import {
 	Tree,
 	assertBranch,
 	assertLeaf,
+	catSource,
 	effectiveLabel,
 	makeNull,
 } from '../tree';
@@ -47,7 +48,7 @@ const arityPreservingVerbPrefixes: Label[] = [
 ];
 
 export function pro(): Leaf {
-	return { label: 'DP', word: { covert: true, value: 'PRO' } };
+	return { label: 'DP', word: { covert: true, value: 'PRO' }, source: '' };
 }
 
 /**
@@ -104,6 +105,7 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 	const v: Leaf = {
 		label: '𝘷',
 		word: { covert: true, value: agent ? 'CAUSE' : 'BE' },
+		source: '',
 	};
 
 	if ('word' in verb) {
@@ -119,6 +121,7 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 				label: '𝘷P',
 				left: v,
 				right: { ...verb, label: 'VP' },
+				source: verb.source,
 			};
 		}
 		case 1: {
@@ -133,30 +136,56 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 						label: "𝘷'",
 						left: v,
 						right: { ...verb, label: 'VP' },
+						source: verb.source,
 					},
+					source: verb.source + ' ' + subject.source,
 				};
 			} else {
+				const source = verb.source + ' ' + subject.source;
 				return {
 					label: '𝘷P',
 					left: v,
-					right: { label: 'VP', left: verb, right: subject },
+					right: { label: 'VP', left: verb, right: subject, source },
+					source,
 				};
 			}
 		}
 		case 2: {
 			const [subject, directObject] = args;
+			const voSource = verb.source + ' … ' + directObject.source;
+			const vsoSource =
+				verb.source + ' ' + subject.source + ' ' + directObject.source;
+
 			return {
 				label: '𝘷P',
 				left: subject,
 				right: {
 					label: "𝘷'",
 					left: v,
-					right: { label: 'VP', left: verb, right: directObject },
+					right: {
+						label: 'VP',
+						left: verb,
+						right: directObject,
+						source: voSource,
+					},
+					source: voSource,
 				},
+				source: vsoSource,
 			};
 		}
 		case 3: {
 			const [subject, indirectObject, directObject] = args;
+			const voSource = verb.source + ' … ' + directObject.source;
+			const vooSource =
+				verb.source + ' … ' + indirectObject.source + ' ' + directObject.source;
+			const vsooSource =
+				verb.source +
+				' ' +
+				subject.source +
+				' ' +
+				indirectObject.source +
+				' ' +
+				directObject.source;
 			return {
 				label: '𝘷P',
 				left: subject,
@@ -170,9 +199,13 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 							label: "V'",
 							left: verb,
 							right: directObject,
+							source: voSource,
 						},
+						source: vooSource,
 					},
+					source: vooSource,
 				},
+				source: vsooSource,
 			};
 		}
 		default:
@@ -296,10 +329,15 @@ function attachAdjective(VP: Tree, kivP: KivP): Tree {
 						label: 'AspP',
 						left: makeNull('Asp'),
 						right: vP,
+						source: vP.source,
 					},
+					source: vP.source,
 				},
+				source: vP.source,
 			},
+			source: catSource(ki, vP),
 		},
+		source: catSource(VP, ki, vP),
 	};
 }
 
@@ -408,10 +446,10 @@ export function fixSerial(
 
 	// Attach AdjunctPs to 𝘷P
 	for (const a of lateAdjuncts) {
-		vP = { label: '𝘷P', left: vP, right: a };
+		vP = { label: '𝘷P', left: vP, right: a, source: catSource(vP, a) };
 	}
 	for (const a of earlyAdjuncts.reverse()) {
-		vP = { label: '𝘷P', left: a, right: vP };
+		vP = { label: '𝘷P', left: a, right: vP, source: catSource(a, vP) };
 	}
 
 	return vP;

@@ -28,11 +28,13 @@ export function Node(props: {
 	theme: Theme;
 }) {
 	const { tree, compactDenotations, theme } = props;
-	const id = String(Math.random());
 	const mathml =
-		'denotation' in tree && tree.denotation
+		`<pre style="color:${theme.wordColor};font-family:inherit; margin: 0">` +
+		(tree.source.trim() || '∅') +
+		'</pre>' +
+		('denotation' in tree && tree.denotation
 			? toMathml(tree.denotation.denotation, compactDenotations)
-			: '';
+			: '');
 	return (
 		<>
 			<div
@@ -191,7 +193,14 @@ export function TreeBrowser(props: {
 
 			<Tooltip
 				id="denotation"
-				style={{ background: 'white', color: 'red' }}
+				delayHide={0}
+				delayShow={0}
+				style={{
+					background: theme.backgroundColor,
+					color: theme.textColor,
+					textAlign: 'center',
+					transition: 'none',
+				}}
 				border="1px solid black"
 				opacity="1"
 			/>

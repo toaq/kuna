@@ -173,3 +173,12 @@ export function skipFree(tree: Tree): Tree {
 	// parentheticals) in the tree.
 	return tree;
 }
+
+export function catSource(...args: (Tree | string | undefined | null)[]) {
+	return repairTones(
+		args
+			.map(x => (typeof x === 'string' ? x : x ? x.source : undefined))
+			.filter(x => x)
+			.join(' '),
+	);
+}

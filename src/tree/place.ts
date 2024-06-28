@@ -1,7 +1,7 @@
 import { CanvasRenderingContext2D } from 'canvas';
 import { DTree, Expr } from '../semantics/model';
 import { toPlainText, toLatex, typeToPlainText } from '../semantics/render';
-import { Branch, Leaf, Rose, Tree, treeText } from '../tree';
+import { Branch, Leaf, Rose, Tree } from '../tree';
 
 import { mathjax } from 'mathjax-full/js/mathjax';
 import { TeX } from 'mathjax-full/js/input/tex';
@@ -57,6 +57,7 @@ interface PlacedLeafBase<C extends DrawContext> {
 	movement?: Movement;
 	coindex?: string;
 	roof?: boolean;
+	source: string;
 }
 
 interface HasWord {
@@ -78,6 +79,7 @@ export interface PlacedBranch<C extends DrawContext> {
 	distanceBetweenChildren: number;
 	children: PlacedTree<C>[];
 	coindex?: string;
+	source: string;
 }
 
 export type PlacedTree<C extends DrawContext> = PlacedLeaf<C> | PlacedBranch<C>;
@@ -195,6 +197,7 @@ function layerExtents<C extends DrawContext>(
 						children: [],
 						label: e.tree.label,
 						distanceBetweenChildren: 0,
+						source: e.tree.source,
 					},
 				});
 				continue;
@@ -272,13 +275,14 @@ export class TreePlacer<C extends DrawContext> {
 			gloss,
 			denotation,
 			movement: leaf.movement,
+			source: leaf.source,
 		};
 	}
 
 	private placeRoof(tree: Tree | DTree): PlacedLeaf<C> {
 		const label = getLabel(tree);
 		const denotation = this.renderDenotation(tree);
-		const text = treeText(tree);
+		const text = tree.source;
 
 		const width = Math.max(
 			this.ctx.measureText(label).width,
@@ -292,6 +296,7 @@ export class TreePlacer<C extends DrawContext> {
 			gloss: undefined,
 			denotation,
 			roof: true,
+			source: tree.source,
 		};
 	}
 
@@ -299,6 +304,7 @@ export class TreePlacer<C extends DrawContext> {
 		label: string,
 		denotation: RenderedDenotation<C> | undefined,
 		children: PlacedTree<C>[],
+		source: string,
 	): PlacedBranch<C> {
 		const width = Math.max(
 			this.ctx.measureText(label).width,
@@ -322,6 +328,7 @@ export class TreePlacer<C extends DrawContext> {
 			denotation,
 			distanceBetweenChildren,
 			children,
+			source,
 		};
 	}
 
@@ -333,12 +340,17 @@ export class TreePlacer<C extends DrawContext> {
 			this.placeTree(branch.left),
 			this.placeTree(branch.right),
 		];
-		return this.makePlacedBranch(getLabel(branch), denotation, children);
+		return this.makePlacedBranch(
+			getLabel(branch),
+			denotation,
+			children,
+			branch.source,
+		);
 	}
 
 	private placeRose(rose: Rose<Tree>): PlacedBranch<C> {
 		const children = rose.children.map(c => this.placeTree(c));
-		return this.makePlacedBranch(rose.label, undefined, children);
+		return this.makePlacedBranch(rose.label, undefined, children, rose.source);
 	}
 
 	public placeTree(tree: Tree | DTree): PlacedTree<C> {

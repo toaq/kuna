@@ -131,8 +131,10 @@ class Scope {
 							label: 'Q',
 							word: { covert: true, value: b.quantifier },
 							binding: index,
+							source: '',
 						},
 						right: b.nP,
+						source: '',
 					};
 					break;
 				case 'focus':
@@ -142,8 +144,10 @@ class Scope {
 							label: 'FocAdv',
 							word: { covert: true, value: b.focusAdverb },
 							binding: index,
+							source: '',
 						},
 						right: b.focus,
+						source: '',
 					};
 					break;
 				case 'conjunction':
@@ -156,14 +160,17 @@ class Scope {
 								label: '&Q',
 								word: { covert: true, value: b.conjunction },
 								binding: index,
+								source: '',
 							},
 							right: b.right,
+							source: '',
 						},
+						source: '',
 					};
 			}
 
 			left.binding = index;
-			tree = { label: tree.label, left, right: tree };
+			tree = { label: tree.label, left, right: tree, source: '' };
 		}
 
 		return tree;
@@ -234,6 +241,7 @@ class Recoverer {
 					label: tree.label,
 					left: this.recover(tree.left, scope),
 					right: newScope.wrap(right),
+					source: tree.source,
 				};
 			}
 
@@ -252,13 +260,15 @@ class Recoverer {
 						label: tree.right.label,
 						left: conjunction,
 						right: rightScope.wrap(right),
+						source: tree.right.source,
 					},
+					source: tree.source,
 				};
 			}
 
 			const left = this.recover(tree.left, scope);
 			const right = this.recover(tree.right, scope);
-			const fixed = { label: tree.label, left, right };
+			const fixed = { label: tree.label, left, right, source: tree.source };
 
 			if (scope !== undefined && effectiveLabel(tree) === 'DP') {
 				if (tree.label === 'DP') {

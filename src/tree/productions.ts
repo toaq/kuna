@@ -3,6 +3,7 @@ import { getFrame } from '../syntax/serial';
 import { toadua } from '../morphology/toadua';
 import { bare, ToaqToken, tone } from '../morphology/tokenize';
 import {
+	catSource,
 	endsInClauseBoundary,
 	endsInDP,
 	labelForPrefix,
@@ -14,7 +15,7 @@ import { Label, Leaf, Tree, Word } from './types';
  * Make a null leaf with the given label.
  */
 export function makeNull(label: Label): Leaf {
-	return { label, word: { covert: true, value: '∅' } };
+	return { label, word: { covert: true, value: '∅' }, source: '' };
 }
 
 export function makeWord([token]: [ToaqToken]): Word {
@@ -45,6 +46,7 @@ export function makeLeaf(label: Label) {
 	return ([token, _free]: [ToaqToken, Tree[]]) => ({
 		label,
 		word: makeWord([token]),
+		source: token.value,
 	});
 }
 
@@ -56,6 +58,7 @@ export function makeEmptySerial() {
 	return () => ({
 		label: '*Serial',
 		children: [makeNull('V')],
+		source: '',
 	});
 }
 
@@ -65,6 +68,7 @@ export function makeBranch(label: Label) {
 			label,
 			left,
 			right,
+			source: catSource(left, right),
 		};
 	};
 }
@@ -75,6 +79,7 @@ export function makeBranchCovertLeft(label: Label, covertLabel: Label) {
 			label,
 			left: makeNull(covertLabel),
 			right,
+			source: right.source,
 		};
 	};
 }
@@ -84,7 +89,8 @@ export function make3L(label: Label, labelR: Label) {
 		return {
 			label,
 			left,
-			right: { label: labelR, left: rl, right: rr },
+			right: { label: labelR, left: rl, right: rr, source: catSource(rl, rr) },
+			source: catSource(left, rl, rr),
 		};
 	};
 }
@@ -99,6 +105,7 @@ export function make3LCovertLeft(
 			label,
 			left: makeNull(covertLabel),
 			right: { label: labelR, left: rl, right: rr },
+			source: catSource(rl, rr),
 		};
 	};
 }
@@ -108,6 +115,7 @@ export function makeRose(label: Label) {
 		return {
 			label,
 			children,
+			source: catSource(...children),
 		};
 	};
 }
@@ -117,6 +125,7 @@ export function makeRose2(label: Label) {
 		return {
 			label,
 			children: [left, ...rights],
+			source: catSource(left, ...rights),
 		};
 	};
 }
@@ -126,6 +135,7 @@ export function makeSingleChild(label: Label) {
 		return {
 			label,
 			children: [left],
+			source: left.source,
 		};
 	};
 }
@@ -162,6 +172,7 @@ export function makeSerial(
 		label: '*Serial',
 		arity,
 		children,
+		source: catSource(...verbs, vlast),
 	};
 }
 
@@ -209,6 +220,7 @@ export function makevP(
 	return {
 		label: '*𝘷P',
 		children: [serial, ...argsL, ...adjpsL, ...argsR, ...adjpsR],
+		source: catSource(serial, ...argsL, ...adjpsL, ...argsR, ...adjpsR),
 	};
 }
 
@@ -241,8 +253,9 @@ export function makevPdet(
 		children: [
 			serial,
 			...(argIncorp === null ? [] : [argIncorp]),
-			{ label: 'DP', word: { covert: true, value: 'PRO' } },
+			{ label: 'DP', word: { covert: true, value: 'PRO' }, source: '' },
 		],
+		source: catSource(serial, argIncorp),
 	};
 }
 
@@ -251,14 +264,16 @@ export function makeEvAP([rl, rr, left]: [Tree, Tree, Tree]) {
 		label: 'EvAP',
 		left,
 		right: { label: "EvA'", left: rl, right: rr },
+		source: catSource(left, rl, rr),
 	};
 }
 
 export function makeEvAPdet([rl, rr]: [Tree, Tree]) {
 	return {
 		label: 'EvAP',
-		left: { label: 'DP', word: { covert: true, value: 'PRO' } },
+		left: { label: 'DP', word: { covert: true, value: 'PRO' }, source: '' },
 		right: { label: "EvA'", left: rl, right: rr },
+		source: catSource(rl, rr),
 	};
 }
 
@@ -278,7 +293,8 @@ export function makeConn(
 	return {
 		label: '&P',
 		left,
-		right: { label: "&'", left: c, right },
+		right: { label: "&'", left: c, right, source: catSource(c, right) },
+		source: catSource(left, c, right),
 	};
 }
 
@@ -297,8 +313,13 @@ export function makeAdjunctPI(
 		left: adjunct,
 		right: {
 			label: '*𝘷P',
-			children: [serial, { label: 'DP', word: { covert: true, value: 'PRO' } }],
+			children: [
+				serial,
+				{ label: 'DP', word: { covert: true, value: 'PRO' }, source: '' },
+			],
+			source: catSource(serial),
 		},
+		source: catSource(adjunct, serial),
 	};
 }
 
@@ -319,10 +340,12 @@ export function makeAdjunctPT(
 			label: '*𝘷P',
 			children: [
 				serial,
-				{ label: 'DP', word: { covert: true, value: 'PRO' } },
+				{ label: 'DP', word: { covert: true, value: 'PRO' }, source: '' },
 				obj,
 			],
+			source: catSource(serial, obj),
 		},
+		source: catSource(adjunct, serial, obj),
 	};
 }
 
@@ -333,15 +356,18 @@ export function makeT1ModalvP([modal, tp]: [Tree, Tree]) {
 			label: 'ModalP',
 			left: modal,
 			right: makeNull('CP'),
+			source: modal.source,
 		},
 		right: {
 			label: "𝘷'",
 			left: {
 				label: '𝘷',
-				word: { covert: true, value: 'BE' },
+				word: { covert: true, value: 'BE', source: '' },
 			},
 			right: tp,
+			source: tp.source,
 		},
+		source: catSource(modal, tp),
 	};
 }
 
@@ -350,6 +376,7 @@ export function makeSigmaT1ModalvP([sigma, modal, tp]: [Tree, Tree, Tree]) {
 		label: 'ΣP',
 		left: sigma,
 		right: makeT1ModalvP([modal, tp]),
+		source: catSource(sigma, modal, tp),
 	};
 }
 
@@ -358,6 +385,7 @@ export function makePrefixLeaf([token]: [ToaqToken]) {
 	return {
 		label,
 		word: makeWord([token]),
+		source: token.value,
 	};
 }
 
@@ -366,6 +394,7 @@ export function makePrefixP([prefix, verb]: [Tree, Tree]) {
 		label: prefix.label + 'P',
 		left: prefix,
 		right: verb,
+		source: catSource(prefix, verb),
 	};
 }
 
@@ -376,6 +405,7 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 			label: 'CP',
 			left: makeNull('C'),
 			right: tp,
+			source: tp.source,
 		},
 		right: {
 			label: "𝘷'",
@@ -384,8 +414,11 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 				label: 'CPrel',
 				left: makeNull('C'),
 				right: clause,
+				source: clause.source,
 			},
+			source: catSource(vgo, clause),
 		},
+		source: catSource(tp, vgo, clause),
 	};
 }
 
@@ -418,5 +451,5 @@ export function makeDiscourse(
 	// If both are covert, the sentence fence is invalid.
 	if (leftSA.word.covert && rightC.word.covert) return reject;
 
-	return { label: 'Discourse', left, right };
+	return { label: 'Discourse', left, right, source: catSource(left, right) };
 }

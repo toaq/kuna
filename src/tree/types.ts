@@ -147,6 +147,10 @@ interface TreeBase {
 	 * verb.
 	 */
 	coindex?: string;
+	/**
+	 * The source text for this subtree. This is always "surface Toaq" even if the tree represents a deep structure.
+	 */
+	source: string;
 }
 
 export interface Leaf extends TreeBase {
