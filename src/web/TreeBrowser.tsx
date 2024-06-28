@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { DTree, Expr } from '../semantics/model';
 import { Tree } from '../tree';
-import { PlacedTree, TreePlacer } from '../tree/place';
+import { PlacedTree, TreePlacer, boundingRect } from '../tree/place';
 import { toMathml } from '../semantics/render';
 import './TreeBrowser.css';
 import { Theme } from '../tree/theme';
+import { Tooltip } from 'react-tooltip';
 
 export function Denotation(props: {
 	denotation: Expr;
@@ -27,29 +28,40 @@ export function Node(props: {
 	theme: Theme;
 }) {
 	const { tree, compactDenotations, theme } = props;
+	const id = String(Math.random());
+	const mathml =
+		'denotation' in tree && tree.denotation
+			? toMathml(tree.denotation.denotation, compactDenotations)
+			: '';
 	return (
-		<div className="tree-node">
-			<div className="tree-node-contents">
-				<div className="tree-label">{tree.label}</div>
-				{'denotation' in tree && tree.denotation && (
-					<Denotation
-						denotation={tree.denotation.denotation}
-						compact={compactDenotations}
-						theme={theme}
-					/>
-				)}
-				{'word' in tree && (
-					<>
-						<div className="tree-word" style={{ color: theme.wordColor }}>
-							{tree.word}
-						</div>
-						{tree.word && tree.gloss ? (
-							<div className="tree-gloss">{tree.gloss}</div>
-						) : undefined}
-					</>
-				)}
+		<>
+			<div
+				className="tree-node"
+				style={{
+					display: 'inline-block',
+					transform: 'translateX(-50%)',
+					textAlign: 'center',
+				}}
+			>
+				<div
+					className="tree-node-contents"
+					data-tooltip-id="denotation"
+					data-tooltip-html={mathml}
+				>
+					<div className="tree-label">{tree.label}</div>
+					{'word' in tree && (
+						<>
+							<div className="tree-word" style={{ color: theme.wordColor }}>
+								{tree.word}
+							</div>
+							{tree.word && tree.gloss ? (
+								<div className="tree-gloss">{tree.gloss}</div>
+							) : undefined}
+						</>
+					)}
+				</div>
 			</div>
-		</div>
+		</>
 	);
 }
 
@@ -66,7 +78,6 @@ export function Subtree(props: {
 	const shouldTruncate = props.truncateLabels.some(x =>
 		props.tree.label.startsWith(x + ' '),
 	);
-	console.log(props, shouldTruncate);
 	const [expanded, setExpanded] = useState(!shouldTruncate);
 
 	const { tree, width, compactDenotations, theme, truncateLabels } = props;
@@ -76,7 +87,11 @@ export function Subtree(props: {
 	return (
 		<div
 			className="tree-subtree"
-			style={{ minWidth: width, maxWidth: width, position: 'relative' }}
+			style={{
+				width: width,
+				position: 'absolute',
+				left: props.lineDx + 'px',
+			}}
 		>
 			{props.lineDx && (
 				<div
@@ -145,35 +160,41 @@ export function TreeBrowser(props: {
 		},
 	};
 
-	const denotationRenderer = (
-		denotation: Expr,
-		theme: Theme,
-		compact?: boolean,
-	) => {
-		const expr = denotation;
-		const div = document.createElement('div');
-		div.innerHTML = toMathml(expr, compact ?? false);
-		div.style.position = 'absolute';
-		document.body.appendChild(div);
-		const width = div.clientWidth;
-		const height = div.clientHeight;
-		document.body.removeChild(div);
+	const denotationRenderer = (denotation: Expr) => {
 		return {
 			draw: async () => {},
-			width: () => width,
-			height: () => height,
+			width: () => 0,
+			height: () => 0,
 			denotation,
 		};
 	};
 	const placer = new TreePlacer(ctx, denotationRenderer, { theme });
 	const placed = placer.placeTree(tree);
+	const rect = boundingRect(placed);
 	return (
-		<Subtree
-			width="95vw"
-			tree={placed}
-			compactDenotations={compactDenotations}
-			theme={theme}
-			truncateLabels={truncateLabels}
-		/>
+		<div
+			style={{
+				width: rect.right - rect.left + 40,
+				height: rect.layers * 40 + 40,
+				position: 'relative',
+			}}
+		>
+			<div style={{ transform: 'translateX(' + (-rect.left + 40) + 'px)' }}>
+				<Subtree
+					width={rect.right - rect.left + 'px'}
+					tree={placed}
+					compactDenotations={compactDenotations}
+					theme={theme}
+					truncateLabels={truncateLabels}
+				/>
+			</div>
+
+			<Tooltip
+				id="denotation"
+				style={{ background: 'white', color: 'red' }}
+				border="1px solid black"
+				opacity="1"
+			/>
+		</div>
 	);
 }

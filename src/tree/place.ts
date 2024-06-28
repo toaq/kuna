@@ -82,6 +82,31 @@ export interface PlacedBranch<C extends DrawContext> {
 
 export type PlacedTree<C extends DrawContext> = PlacedLeaf<C> | PlacedBranch<C>;
 
+export function boundingRect<C extends DrawContext>(
+	placedTree: PlacedTree<C>,
+): { left: number; right: number; layers: number } {
+	if ('children' in placedTree) {
+		let left = 0;
+		let right = 0;
+		let layers = 0;
+		const n = placedTree.children.length;
+		for (let i = 0; i < n; i++) {
+			const dx = (i - (n - 1) / 2) * placedTree.distanceBetweenChildren;
+			const subRect = boundingRect(placedTree.children[i]);
+			left = Math.min(left, subRect.left + dx);
+			right = Math.max(right, subRect.right + dx);
+			layers = Math.max(layers, subRect.layers + 1);
+		}
+		return { left, right, layers };
+	} else {
+		return {
+			left: placedTree.width / 2,
+			right: placedTree.width / 2,
+			layers: 1,
+		};
+	}
+}
+
 export function getLabel(tree: Tree | DTree): string {
 	return 'denotation' in tree && tree.denotation !== null
 		? `${tree.label} : ${typeToPlainText(tree.denotation.type)}`
