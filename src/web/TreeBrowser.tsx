@@ -33,18 +33,13 @@ export function Node(props: {
 		(tree.source.trim() || '∅') +
 		'</pre>' +
 		('denotation' in tree && tree.denotation
-			? toMathml(tree.denotation.denotation, compactDenotations)
+			? `<div style="color:${theme.denotationColor};margin-top:0.5em">` +
+				toMathml(tree.denotation.denotation, compactDenotations) +
+				'</div>'
 			: '');
 	return (
 		<>
-			<div
-				className="tree-node"
-				style={{
-					display: 'inline-block',
-					transform: 'translateX(-50%)',
-					textAlign: 'center',
-				}}
-			>
+			<div className="tree-node">
 				<div
 					className="tree-node-contents"
 					data-tooltip-id="denotation"
@@ -99,6 +94,7 @@ export function Subtree(props: {
 				<div
 					className="tree-line"
 					style={{
+						pointerEvents: 'none',
 						position: 'absolute',
 						background: theme.textColor,
 						width: 1,
@@ -108,7 +104,7 @@ export function Subtree(props: {
 					}}
 				></div>
 			)}
-			<div style={{ cursor: 'pointer' }} onClick={() => setExpanded(false)}>
+			<div>
 				<Node
 					tree={tree}
 					expanded={expanded}
@@ -131,7 +127,7 @@ export function Subtree(props: {
 					))}
 				</div>
 			) : children.length ? (
-				<div className="tree-roof" onClick={() => setExpanded(true)}>
+				<div className="tree-roof">
 					<svg
 						height="8"
 						width="100%"

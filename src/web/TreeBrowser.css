@@ -1,5 +1,12 @@
 .tree-node {
 	padding-bottom: 20px;
+	display: inline-block;
+	transform: translateX(-50%);
+	text-align: center;
+}
+
+.tree-node-contents {
+	cursor: pointer;
 }
 
 .tree-roof {
