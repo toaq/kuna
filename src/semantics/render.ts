@@ -112,241 +112,243 @@ function addName(type: ExprType, names: Names, constant = false): Names {
 	};
 }
 
-function getName<T>(index: number, names: Names, fmt: Format<T>): T {
-	return fmt.name(names.context[index]);
-}
+class Renderer<T> {
+	private cache: WeakMap<CompactExpr, unknown> = new WeakMap();
+	constructor(private fmt: Format<T>) {}
 
-function renderQuantifier<T>(
-	e: CompactExpr & { head: 'lambda' },
-	q: Quantifier,
-	names: Names,
-	fmt: Format<T>,
-	rightPrecedence: number,
-): T {
-	const symbol = fmt.symbolForQuantifier(q);
-	const p = 2;
-	const bracket = rightPrecedence > p;
-	const innerNames = addName(e.type[0], names);
-	const name = getName(0, innerNames, fmt);
-	const body = render(
-		e.body as Expr,
-		innerNames,
-		fmt,
-		p,
-		bracket ? 0 : rightPrecedence,
-	);
-
-	let content: T;
-	if (e.restriction === undefined) {
-		content = fmt.quantifier(symbol, name, body);
-	} else {
-		const restriction = render(e.restriction as Expr, innerNames, fmt, 0, 0);
-		content = fmt.restrictedQuantifier(symbol, name, restriction, body);
+	private getName(index: number, names: Names): T {
+		return this.fmt.name(names.context[index]);
 	}
 
-	return bracket ? fmt.bracket(content) : content;
-}
-
-function renderEventCompound<T>(
-	e: CompactExpr & { head: 'event_compound' },
-	q: Quantifier,
-	names: Names,
-	fmt: Format<T>,
-	leftPrecedence: number,
-	rightPrecedence: number,
-): T {
-	const symbol = fmt.symbolForQuantifier(q);
-	const p = 2;
-	const bracket = rightPrecedence > p;
-	let body: T | undefined;
-	const innerNames = addName('v', names);
-	const eventName = getName(0, innerNames, fmt);
-	if (e.body) {
-		body = render(
+	private renderQuantifier(
+		e: CompactExpr & { head: 'lambda' },
+		q: Quantifier,
+		names: Names,
+		rightPrecedence: number,
+	): T {
+		const symbol = this.fmt.symbolForQuantifier(q);
+		const p = 2;
+		const bracket = rightPrecedence > p;
+		const innerNames = addName(e.type[0], names);
+		const name = this.getName(0, innerNames);
+		const body = this.render(
 			e.body as Expr,
 			innerNames,
-			fmt,
 			p,
 			bracket ? 0 : rightPrecedence,
 		);
+
+		let content: T;
+		if (e.restriction === undefined) {
+			content = this.fmt.quantifier(symbol, name, body);
+		} else {
+			const restriction = this.render(e.restriction as Expr, innerNames, 0, 0);
+			content = this.fmt.restrictedQuantifier(symbol, name, restriction, body);
+		}
+
+		return bracket ? this.fmt.bracket(content) : content;
 	}
-	const world = render(e.world, innerNames, fmt, 0, 0);
-	if (
-		e.aspect.head !== 'apply' ||
-		e.aspect.fn.head !== 'apply' ||
-		e.aspect.fn.fn.head !== 'constant'
-	)
-		throw new Impossible('Non-infix aspect');
-	const aspect = fmt.aspect(
-		fmt.symbolForInfix(e.aspect.fn.fn.name as KnownInfix['name']),
-		render(e.aspect.argument, innerNames, fmt, 0, 0),
-	);
-	const agent = e.agent ? render(e.agent, innerNames, fmt, 0, 0) : undefined;
-	const args = e.args.map(arg => render(arg, innerNames, fmt, 0, 0));
-	const content = fmt.eventCompound(
-		symbol,
-		e.verbName,
-		eventName,
-		world,
-		aspect,
-		agent,
-		args,
-		body,
-	);
 
-	return bracket ? fmt.bracket(content) : content;
-}
-
-/**
- * @param e The (sub)expression to be rendered.
- * @param names The naming context for the variables and constants currently in
- *   scope.
- * @param fmt The rendering format specification.
- * @param leftPrecedence The precedence of the closest operator to the right of
- *   this subexpression that could affect its bracketing.
- * @param rightPrecedence The precedence of the closest operator to the left of
- *   this subexpression that could affect its bracketing.
- */
-function render<T>(
-	e: CompactExpr,
-	names: Names,
-	fmt: Format<T>,
-	leftPrecedence: number,
-	rightPrecedence: number,
-): T {
-	switch (e.head) {
-		case 'variable': {
-			return getName(e.index, names, fmt);
-		}
-		case 'verb': {
-			const args = e.args.map(arg => render(arg, names, fmt, 0, 0));
-			const event = render(e.event, names, fmt, 0, 0);
-			const world = render(e.world, names, fmt, 0, 0);
-			return fmt.verb(e.name, args, event, world);
-		}
-		case 'lambda': {
-			return renderQuantifier(e, 'lambda', names, fmt, rightPrecedence);
-		}
-		case 'apply': {
-			if (e.fn.head === 'lambda' && e.fn.restriction === undefined) {
-				// Turn (λx. ϕ)(c) into "let x = c in ϕ".
-				const p = 2;
-				const bracket = leftPrecedence > p;
-				const innerNames = addName(e.argument.type, names);
-				const name = getName(0, innerNames, fmt);
-				const value = render(e.argument, names, fmt, 0, 0);
-				const body = render(e.fn.body, innerNames, fmt, 0, 0);
-				const content = fmt.let(name, value, body);
-				return bracket ? fmt.bracket(content) : content;
-			} else if (
-				e.fn.head === 'apply' &&
-				e.fn.fn.head === 'constant' &&
-				e.fn.fn.name in infixPrecedence
-			) {
-				const name = e.fn.fn.name as KnownInfix['name'];
-				const symbol = fmt.symbolForInfix(name);
-				const p = infixPrecedence[name];
-				const associative = infixAssociativity[name];
-				const bracket =
-					(leftPrecedence > p || rightPrecedence > p) &&
-					!(associative && (leftPrecedence === p || rightPrecedence === p));
-
-				const lp = bracket ? 0 : leftPrecedence;
-				const rp = bracket ? 0 : rightPrecedence;
-				const left = render(e.fn.argument, names, fmt, lp, p);
-				const right = render(e.argument, names, fmt, p, rp);
-				const content = fmt.infix(symbol, left, right);
-				return bracket ? fmt.bracket(content) : content;
-			} else if (e.fn.head === 'constant' && e.fn.name in polarizerPrecedence) {
-				const name = e.fn.name as KnownPolarizer['name'];
-				const symbol = fmt.symbolForConstant(name);
-				const p = polarizerPrecedence[name];
-				const bracket = rightPrecedence > p;
-				const rp = bracket ? 0 : rightPrecedence;
-				const body = render(e.argument, names, fmt, p, rp);
-				const content = fmt.polarizer(symbol, body);
-				return bracket ? fmt.bracket(content) : content;
-			} else if (e.fn.head === 'constant' && e.fn.name in quantifiers) {
-				const q = e.fn.name as KnownQuantifier['name'];
-				if (e.argument.head === 'lambda') {
-					return renderQuantifier(e.argument, q, names, fmt, rightPrecedence);
-				} else if ((e.argument as CompactExpr).head === 'event_compound') {
-					return renderEventCompound(
-						e.argument as any,
-						q,
-						names,
-						fmt,
-						leftPrecedence,
-						rightPrecedence,
-					);
-				} else {
-					throw new Impossible('sdlfkjds');
-				}
-			} else {
-				const p = 14;
-				const bracket = leftPrecedence > p;
-				const fn = render(e.fn, names, fmt, bracket ? 0 : leftPrecedence, p);
-				const argument = render(e.argument, names, fmt, 0, 0);
-				const content = fmt.apply(fn, argument);
-				return bracket ? fmt.bracket(content) : content;
-			}
-		}
-		case 'presuppose': {
-			const p = 1;
-			const bracket = leftPrecedence >= p || rightPrecedence > p;
-			const body = render(e.body, names, fmt, bracket ? 0 : leftPrecedence, p);
-			const presupposition = render(
-				e.presupposition,
-				names,
-				fmt,
+	private renderEventCompound(
+		e: CompactExpr & { head: 'event_compound' },
+		q: Quantifier,
+		names: Names,
+		rightPrecedence: number,
+	): T {
+		const symbol = this.fmt.symbolForQuantifier(q);
+		const p = 2;
+		const bracket = rightPrecedence > p;
+		let body: T | undefined;
+		const innerNames = addName('v', names);
+		const eventName = this.getName(0, innerNames);
+		if (e.body) {
+			body = this.render(
+				e.body as Expr,
+				innerNames,
 				p,
 				bracket ? 0 : rightPrecedence,
 			);
-			const content = fmt.presuppose(body, presupposition);
-			return bracket ? fmt.bracket(content) : content;
 		}
-		case 'constant': {
-			return fmt.symbolForConstant(e.name as KnownConstant['name']);
+		const world = this.render(e.world, innerNames, 0, 0);
+		if (
+			e.aspect.head !== 'apply' ||
+			e.aspect.fn.head !== 'apply' ||
+			e.aspect.fn.fn.head !== 'constant'
+		)
+			throw new Impossible('Non-infix aspect');
+		const aspect = this.fmt.aspect(
+			this.fmt.symbolForInfix(e.aspect.fn.fn.name as KnownInfix['name']),
+			this.render(e.aspect.argument, innerNames, 0, 0),
+		);
+		const agent = e.agent ? this.render(e.agent, innerNames, 0, 0) : undefined;
+		const args = e.args.map(arg => this.render(arg, innerNames, 0, 0));
+		const content = this.fmt.eventCompound(
+			symbol,
+			e.verbName,
+			eventName,
+			world,
+			aspect,
+			agent,
+			args,
+			body,
+		);
+
+		return bracket ? this.fmt.bracket(content) : content;
+	}
+
+	/**
+	 * @param e The (sub)expression to be rendered.
+	 * @param names The naming context for the variables and constants currently in
+	 *   scope.
+	 * @param fmt The rendering format specification.
+	 * @param leftPrecedence The precedence of the closest operator to the right of
+	 *   this subexpression that could affect its bracketing.
+	 * @param rightPrecedence The precedence of the closest operator to the left of
+	 *   this subexpression that could affect its bracketing.
+	 */
+	private render(
+		e: CompactExpr,
+		names: Names,
+		leftPrecedence: number,
+		rightPrecedence: number,
+	): T {
+		switch (e.head) {
+			case 'variable': {
+				return this.getName(e.index, names);
+			}
+			case 'verb': {
+				const args = e.args.map(arg => this.render(arg, names, 0, 0));
+				const event = this.render(e.event, names, 0, 0);
+				const world = this.render(e.world, names, 0, 0);
+				return this.fmt.verb(e.name, args, event, world);
+			}
+			case 'lambda': {
+				return this.renderQuantifier(e, 'lambda', names, rightPrecedence);
+			}
+			case 'apply': {
+				if (e.fn.head === 'lambda' && e.fn.restriction === undefined) {
+					// Turn (λx. ϕ)(c) into "let x = c in ϕ".
+					const p = 2;
+					const bracket = leftPrecedence > p;
+					const innerNames = addName(e.argument.type, names);
+					const name = this.getName(0, innerNames);
+					const value = this.render(e.argument, names, 0, 0);
+					const body = this.render(e.fn.body, innerNames, 0, 0);
+					const content = this.fmt.let(name, value, body);
+					return bracket ? this.fmt.bracket(content) : content;
+				} else if (
+					e.fn.head === 'apply' &&
+					e.fn.fn.head === 'constant' &&
+					e.fn.fn.name in infixPrecedence
+				) {
+					const name = e.fn.fn.name as KnownInfix['name'];
+					const symbol = this.fmt.symbolForInfix(name);
+					const p = infixPrecedence[name];
+					const associative = infixAssociativity[name];
+					const bracket =
+						(leftPrecedence > p || rightPrecedence > p) &&
+						!(associative && (leftPrecedence === p || rightPrecedence === p));
+
+					const lp = bracket ? 0 : leftPrecedence;
+					const rp = bracket ? 0 : rightPrecedence;
+					const left = this.render(e.fn.argument, names, lp, p);
+					const right = this.render(e.argument, names, p, rp);
+					const content = this.fmt.infix(symbol, left, right);
+					return bracket ? this.fmt.bracket(content) : content;
+				} else if (
+					e.fn.head === 'constant' &&
+					e.fn.name in polarizerPrecedence
+				) {
+					const name = e.fn.name as KnownPolarizer['name'];
+					const symbol = this.fmt.symbolForConstant(name);
+					const p = polarizerPrecedence[name];
+					const bracket = rightPrecedence > p;
+					const rp = bracket ? 0 : rightPrecedence;
+					const body = this.render(e.argument, names, p, rp);
+					const content = this.fmt.polarizer(symbol, body);
+					return bracket ? this.fmt.bracket(content) : content;
+				} else if (e.fn.head === 'constant' && e.fn.name in quantifiers) {
+					const q = e.fn.name as KnownQuantifier['name'];
+					if (e.argument.head === 'lambda') {
+						return this.renderQuantifier(e.argument, q, names, rightPrecedence);
+					} else if ((e.argument as CompactExpr).head === 'event_compound') {
+						return this.renderEventCompound(
+							e.argument as any,
+							q,
+							names,
+							rightPrecedence,
+						);
+					} else {
+						throw new Impossible('sdlfkjds');
+					}
+				} else {
+					const p = 14;
+					const bracket = leftPrecedence > p;
+					const fn = this.render(e.fn, names, bracket ? 0 : leftPrecedence, p);
+					const argument = this.render(e.argument, names, 0, 0);
+					const content = this.fmt.apply(fn, argument);
+					return bracket ? this.fmt.bracket(content) : content;
+				}
+			}
+			case 'presuppose': {
+				const p = 1;
+				const bracket = leftPrecedence >= p || rightPrecedence > p;
+				const body = this.render(
+					e.body,
+					names,
+					bracket ? 0 : leftPrecedence,
+					p,
+				);
+				const presupposition = this.render(
+					e.presupposition,
+					names,
+					p,
+					bracket ? 0 : rightPrecedence,
+				);
+				const content = this.fmt.presuppose(body, presupposition);
+				return bracket ? this.fmt.bracket(content) : content;
+			}
+			case 'constant': {
+				return this.fmt.symbolForConstant(e.name as KnownConstant['name']);
+			}
+			case 'quote': {
+				return this.fmt.quote(e.text);
+			}
+			case 'event_compound': {
+				return this.renderEventCompound(e, 'some', names, rightPrecedence);
+			}
 		}
-		case 'quote': {
-			return fmt.quote(e.text);
+	}
+
+	renderFull(e: CompactExpr) {
+		const cachedResult = this.cache.get(e) as T;
+		if (cachedResult !== undefined) return cachedResult;
+
+		let names = noNames;
+		// Create ad hoc constants for all free variables
+		for (let i = e.context.length - 1; i >= 0; i--) {
+			const type = e.context[i];
+			// Free variables of type s should be rendered like variables rather than
+			// constants to avoid conflict with the 'real world' symbol
+			names = addName(e.context[i], names, type !== 's');
 		}
-		case 'event_compound': {
-			return renderEventCompound(
-				e,
-				'some',
-				names,
-				fmt,
-				leftPrecedence,
-				rightPrecedence,
-			);
-		}
+
+		const result = this.render(e, names, 0, 0);
+		this.cache.set(e, result);
+		return result;
 	}
 }
 
-const renderCache = new Map<Format<any>, WeakMap<CompactExpr, unknown>>();
+const rendererCache = new Map<Format<any>, Renderer<any>>();
 
 function renderFull<T>(e: CompactExpr, fmt: Format<T>): T {
-	let cache = renderCache.get(fmt);
-	if (cache === undefined) {
-		cache = new WeakMap();
-		renderCache.set(fmt, cache);
-	}
-	const cachedResult = cache.get(e) as T;
-	if (cachedResult !== undefined) return cachedResult;
-
-	let names = noNames;
-	// Create ad hoc constants for all free variables
-	for (let i = e.context.length - 1; i >= 0; i--) {
-		const type = e.context[i];
-		// Free variables of type s should be rendered like variables rather than
-		// constants to avoid conflict with the 'real world' symbol
-		names = addName(e.context[i], names, type !== 's');
+	let renderer = rendererCache.get(fmt) as Renderer<T> | undefined;
+	if (renderer === undefined) {
+		renderer = new Renderer<T>(fmt);
+		rendererCache.set(fmt, renderer);
 	}
 
-	const result = render(e, names, fmt, 0, 0);
-	cache.set(e, result);
-	return result;
+	return renderer.renderFull(e);
 }
 
 export function toPlainText(e: CompactExpr): string {
