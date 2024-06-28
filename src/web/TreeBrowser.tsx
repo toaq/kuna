@@ -172,12 +172,18 @@ export function TreeBrowser(props: {
 	return (
 		<div
 			style={{
-				width: rect.right - rect.left + 40,
-				height: rect.layers * 40 + 40,
+				background: theme.backgroundColor,
+				width: rect.right - rect.left + 80,
+				height: rect.layers * 40 + 80,
+				padding: '40px',
 				position: 'relative',
 			}}
 		>
-			<div style={{ transform: 'translateX(' + (-rect.left + 40) + 'px)' }}>
+			<div
+				style={{
+					transform: 'translateX(' + -rect.left + 'px)',
+				}}
+			>
 				<Subtree
 					width={rect.right - rect.left + 'px'}
 					tree={placed}
@@ -197,7 +203,7 @@ export function TreeBrowser(props: {
 					textAlign: 'center',
 					transition: 'none',
 				}}
-				border="1px solid black"
+				border={`1px solid ${theme.textColor}`}
 				opacity="1"
 			/>
 		</div>
