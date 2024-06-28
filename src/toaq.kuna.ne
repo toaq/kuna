@@ -11,7 +11,7 @@
 #     #endif
 #
 # It is converted into plain nearleyjs syntax by src/grammar-preprocessor.ts,
-# which runs as part of the "npm run codegen" step defined in package.json:
+# which runs as part of the "pnpm run codegen" step defined in package.json:
 #
 #     CP -> wa Clause_main
 #     CPsub -> wä Clause_sub

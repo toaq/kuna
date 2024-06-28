@@ -24,7 +24,7 @@ commands. It even has a few minigames!
 You can check out this repository using git (or
 [download a zip file from GitHub](https://github.com/toaq/kuna/archive/refs/heads/main.zip))
 and run the code on your computer using
-[Node.js](https://nodejs.org/en/download/).
+[Node.js](https://nodejs.org/en/download/) and [pnpm](https://pnpm.io/).
 
 For proper PNG rendering, install
 [Noto Sans Math](https://fonts.google.com/noto/specimen/Noto+Sans+Math).
@@ -33,17 +33,17 @@ To run as a web app (at <http://localhost:5173/>), run these commands in a
 terminal:
 
 ```sh
-npm install
-npm run web -- --port 5173
+pnpm install
+pnpm run web -- --port 5173
 ```
 
 To run as a CLI app:
 
 ```sh
-npm install
-npm run cli
+pnpm install
+pnpm run cli
 # e.g.
-npm run cli -- tree-text --sentence "Jaı jí"
+pnpm run cli -- tree-text --sentence "Jaı jí"
 ```
 
 To run as a Discord bot:
@@ -51,8 +51,8 @@ To run as a Discord bot:
 ```sh
 export KUNA_CLIENT_ID=your.discord.client.id
 export KUNA_TOKEN=your.discord.bot.token
-npm install
-npm run bot
+pnpm install
+pnpm run bot
 ```
 
 ## How Kuna works
@@ -74,9 +74,9 @@ npm run bot
 
 ## Useful commands
 
-- `npm run data:build` downloads all English definitions from Toadua and guesses
-  glosses and frames, storing the result in `data/toadua/toadua.json`.
+- `pnpm run data:build` downloads all English definitions from Toadua and
+  guesses glosses and frames, storing the result in `data/toadua/toadua.json`.
   - The result is checked into version control for convenience, but we can run
     this every once in a while to teach Kuna new words.
-- `npm run codegen` converts `src/toaq.kuna.ne` to `src/toaq.ne`. This runs
-  automatically after `npm install`.
+- `pnpm run codegen` converts `src/toaq.kuna.ne` to `src/toaq.ne`. This runs
+  automatically after `pnpm install`.
