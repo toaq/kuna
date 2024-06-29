@@ -7,20 +7,6 @@ import './TreeBrowser.css';
 import { Theme } from '../tree/theme';
 import { Tooltip } from 'react-tooltip';
 
-export function Denotation(props: {
-	denotation: Expr;
-	compact: boolean;
-	theme: Theme;
-}) {
-	const mathml = toMathml(props.denotation, props.compact);
-	return (
-		<div
-			style={{ color: props.theme.denotationColor }}
-			dangerouslySetInnerHTML={{ __html: mathml }}
-		></div>
-	);
-}
-
 export function Node(props: {
 	tree: PlacedTree<Ctx>;
 	expanded: boolean;
@@ -33,7 +19,7 @@ export function Node(props: {
 		(tree.source.trim() || '∅') +
 		'</pre>' +
 		('denotation' in tree && tree.denotation
-			? `<div style="color:${theme.denotationColor};margin-top:0.5em">` +
+			? `<hr style="border:1px solid #8884";/><div style="margin-top:0.5em">` +
 				toMathml(tree.denotation.denotation, compactDenotations) +
 				'</div>'
 			: '');
@@ -198,7 +184,7 @@ export function TreeBrowser(props: {
 				delayHide={0}
 				delayShow={0}
 				style={{
-					background: theme.backgroundColor,
+					background: theme.tipBackgroundColor,
 					color: theme.textColor,
 					textAlign: 'center',
 					transition: 'none',

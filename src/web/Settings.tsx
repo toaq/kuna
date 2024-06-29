@@ -56,10 +56,10 @@ export function Settings(props: SettingsProps) {
 	const [showMovement, setShowMovement] = useState(false);
 	const [meaningCompact, setMeaningCompact] = useState(false);
 	const [lastMode, setLastMode] = useState<Mode>();
-
 	const darkMode = useDarkMode();
-	useEffect(() => {
-		if (lastMode) {
+
+	function submit(mode: Mode) {
+		if (mode) {
 			props.onSubmit({
 				text: test,
 				treeFormat,
@@ -67,18 +67,27 @@ export function Settings(props: SettingsProps) {
 				trimNulls,
 				showMovement,
 				meaningCompact,
-				mode: lastMode,
+				mode,
 			});
 		}
-	}, [
-		treeFormat,
-		roofLabels,
-		trimNulls,
-		showMovement,
-		meaningCompact,
-		lastMode,
-		darkMode.isDarkMode,
-	]);
+	}
+
+	function render(mode: Mode) {
+		setLastMode(mode);
+		submit(mode);
+	}
+	useEffect(
+		() => lastMode && submit(lastMode),
+		[
+			treeFormat,
+			roofLabels,
+			trimNulls,
+			showMovement,
+			meaningCompact,
+			lastMode,
+			darkMode.isDarkMode,
+		],
+	);
 
 	return (
 		<div className="card settings" style={{ width: '30em' }}>
@@ -150,17 +159,17 @@ export function Settings(props: SettingsProps) {
 				{advanced && (
 					<div className="button-group">
 						<div className="button-group-name">Debug</div>
-						<button onClick={() => setLastMode('tokens')}>Tokens</button>
-						<button onClick={() => setLastMode('raw-tree')}>Raw tree</button>
+						<button onClick={() => render('tokens')}>Tokens</button>
+						<button onClick={() => render('raw-tree')}>Raw tree</button>
 					</div>
 				)}
 				<div className="button-group">
 					<div className="button-group-name">Tree</div>
-					<button onClick={() => setLastMode('syntax-tree')}>Syntax</button>
-					<button onClick={() => setLastMode('semantics-tree')}>Denoted</button>
+					<button onClick={() => render('syntax-tree')}>Syntax</button>
+					<button onClick={() => render('semantics-tree')}>Denoted</button>
 					{advanced && (
 						<>
-							<button onClick={() => setLastMode('semantics-tree-compact')}>
+							<button onClick={() => render('semantics-tree-compact')}>
 								Compact
 							</button>
 						</>
@@ -168,35 +177,31 @@ export function Settings(props: SettingsProps) {
 				</div>
 				<div className="button-group">
 					<div className="button-group-name">Boxes</div>
-					<button onClick={() => setLastMode('boxes-flat')}>Flat</button>
-					<button onClick={() => setLastMode('boxes-nest')}>Nested</button>
-					<button onClick={() => setLastMode('boxes-split')}>Split</button>
+					<button onClick={() => render('boxes-flat')}>Flat</button>
+					<button onClick={() => render('boxes-nest')}>Nested</button>
+					<button onClick={() => render('boxes-split')}>Split</button>
 				</div>
 				<div className="button-group">
 					<div className="button-group-name">Gloss</div>
-					<button onClick={() => setLastMode('gloss')}>Friendly</button>
-					<button onClick={() => setLastMode('technical-gloss')}>
-						Technical
-					</button>
+					<button onClick={() => render('gloss')}>Friendly</button>
+					<button onClick={() => render('technical-gloss')}>Technical</button>
 				</div>
 				<div className="button-group">
 					<div className="button-group-name">Translate</div>
-					<button onClick={() => setLastMode('english')}>English</button>
+					<button onClick={() => render('english')}>English</button>
 					{advanced && (
-						<button onClick={() => setLastMode('gf1')}>GF (Quantity)</button>
+						<button onClick={() => render('gf1')}>GF (Quantity)</button>
 					)}
 					{advanced && (
-						<button onClick={() => setLastMode('gf2')}>GF (Quality)</button>
+						<button onClick={() => render('gf2')}>GF (Quality)</button>
 					)}
-					{!advanced && <button onClick={() => setLastMode('gf2')}>GF</button>}
+					{!advanced && <button onClick={() => render('gf2')}>GF</button>}
 				</div>
 				{advanced && (
 					<div className="button-group">
 						<div className="button-group-name">Meaning</div>
-						<button onClick={() => setLastMode('logical-form')}>Text</button>
-						<button onClick={() => setLastMode('logical-form-latex')}>
-							LaTeX
-						</button>
+						<button onClick={() => render('logical-form')}>Text</button>
+						<button onClick={() => render('logical-form-latex')}>LaTeX</button>
 						<label>
 							<input
 								type="checkbox"

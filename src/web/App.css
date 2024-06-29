@@ -258,3 +258,11 @@ h1 {
 .linearization dt {
 	display: inline;
 }
+
+.dark-mode math .kuna-const {
+	color: #ff8888;
+}
+
+.dark-mode math .kuna-verb {
+	color: #99eeff;
+}
