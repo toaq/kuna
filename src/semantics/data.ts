@@ -279,6 +279,34 @@ export const polarities: Record<string, Expr> = {
 	bu: λ('t', [], c => not(v(0, c))),
 	// λ𝘗. †𝘗
 	jeo: λ('t', [], c => indeed(v(0, c))),
+	// λ𝘗 : A(F)(λ𝘸'. ¬𝘗(𝘸'))(𝘸) ∧ (F(𝘸) → 𝘗(𝘸)). ¬𝘗(𝘸)
+	aımu: λ(
+		['s', 't'],
+		[['s', 't'], 's'],
+		c => not(app(v(0, c), v(2, c))),
+		c =>
+			and(
+				app(
+					app(
+						app(alternative(['s', 't'], c), v(1, c)),
+						λ('s', c, c => not(app(v(1, c), v(0, c)))),
+					),
+					v(2, c),
+				),
+				implies(app(v(1, c), v(2, c)), app(v(0, c), v(2, c))),
+			),
+	),
+	// λ𝘗 : A(F)(𝘗)(𝘸) ∧ ¬(F(𝘸) ∧ 𝘗(𝘸)). †𝘗(𝘸)
+	jeha: λ(
+		['s', 't'],
+		[['s', 't'], 's'],
+		c => indeed(app(v(0, c), v(2, c))),
+		c =>
+			and(
+				app(app(app(alternative(['s', 't'], c), v(1, c)), v(0, c)), v(2, c)),
+				not(and(app(v(1, c), v(2, c)), app(v(0, c), v(2, c)))),
+			),
+	),
 };
 
 export const speechActs: Record<string, Expr> = {

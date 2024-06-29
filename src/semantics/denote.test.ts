@@ -262,6 +262,12 @@ test('it denotes polarizers', () => {
 	expect(d('Jeo jela choaq jí súna nha')).toMatchInlineSnapshot(
 		'"PROMISE(λ𝘸. †∃𝘵 : 𝘵 > t0. ∃𝘦. τ(𝘦) ⊆ 𝘵 ∧ choaq.𝘸(jí, súna)(𝘦))"',
 	);
+	expect(d('Aımu foıge ní fafuaq')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. (¬∃𝘦. τ(𝘦) ⊆ t ∧ foıge.𝘸(a)(𝘦) | A(F)(λ𝘸'. (¬∃𝘦. τ(𝘦) ⊆ t ∧ foıge.𝘸'(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t' ∧ fafuaq.𝘸'(a)(𝘦)))(𝘸) ∧ (F(𝘸) → ∃𝘦. τ(𝘦) ⊆ t ∧ foıge.𝘸(a)(𝘦)) | ∃𝘦. τ(𝘦) ⊆ t' ∧ fafuaq.𝘸(a)(𝘦))) | abstract(a) | ∃𝘦. τ(𝘦) ⊆ t0 ∧ AGENT(𝘦)(w) = jí ∧ nıka.w(a)(𝘦)\"",
+	);
+	expect(d('Jeha zao jí Tóaqzu')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. (†∃𝘦. τ(𝘦) ⊆ t ∧ zao.𝘸(jí, a)(𝘦) | A(F)(λ𝘸'. (∃𝘦. τ(𝘦) ⊆ t ∧ zao.𝘸'(jí, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t' ∧ Toaqzu.𝘸'(a)(𝘦)))(𝘸) ∧ ¬(F(𝘸) ∧ ∃𝘦. τ(𝘦) ⊆ t ∧ zao.𝘸(jí, a)(𝘦)) | ∃𝘦. τ(𝘦) ⊆ t' ∧ Toaqzu.𝘸(a)(𝘦))) | abstract(a)\"",
+	);
 	// Now try putting a polarizer in a DP
 	expect(d('Gaı jí bú jara')).toMatchInlineSnapshot(
 		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ gaı.𝘸(jí, a)(𝘦) | ¬∃𝘦. τ(𝘦) ⊆ t ∧ AGENT(𝘦)(𝘸) = a ∧ jara.𝘸(𝘦))) | animate(a)"',
