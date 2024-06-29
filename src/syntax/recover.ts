@@ -170,7 +170,7 @@ class Scope {
 			}
 
 			left.binding = index;
-			tree = { label: tree.label, left, right: tree, source: '' };
+			tree = { label: tree.label, left, right: tree, source: tree.source };
 		}
 
 		return tree;

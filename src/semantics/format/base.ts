@@ -72,7 +72,7 @@ export interface Format<T> {
 		body: T | undefined,
 	) => T;
 	apply: (fn: T, argument: T) => T;
-	presuppose: (body: T, presupposition: T) => T;
+	presuppose: (body: T, presuppositions: T[]) => T;
 	let: (name: T, value: T, body: T) => T;
 	symbolForInfix: (symbol: Infix) => T;
 	infix: (symbol: T, left: T, right: T) => T;

@@ -49,8 +49,8 @@ export const mathml: Format<string> = {
 	},
 	apply: (fn, argument) =>
 		`${fn}<mo stretchy=false>(</mo>${argument}<mo stretchy=false>)</mo>`,
-	presuppose: (body, presupposition) =>
-		`<mrow>${body}</mrow><mo>|</mo><mrow>${presupposition}</mrow>`,
+	presuppose: (body, presuppositions) =>
+		`<mrow>${body}</mrow><mo stretchy=true>|</mo><mrow><mtable columnalign=left>${presuppositions.map(x => '<mtr><mtd>' + x + '</mtd></mtr>').join('')}</mtable></mrow>`,
 	let: (name, value, body) =>
 		`<mrow><mi>let</mi><mspace width="1pt" /><mrow>${name}<mo>=</mo>${value}</mrow><mspace width="1pt" /><mi>in</mi><mspace width="1pt" /><mrow>${body}</mrow></mrow>`,
 	symbolForInfix: fnFromMap({

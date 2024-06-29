@@ -54,7 +54,8 @@ export const plainText: Format<string> = {
 		return `${symbol}${verbName}[${aspect},${event},${world}]${argList}${bod}`;
 	},
 	apply: (fn, argument) => `${fn}(${argument})`,
-	presuppose: (body, presupposition) => `${body} | ${presupposition}`,
+	presuppose: (body, presuppositions) =>
+		`${body} | ${presuppositions.join(' | ')}`,
 	let: (name, value, body) => `let ${name} = ${value} in ${body}`,
 	symbolForInfix: fnFromMap({
 		and: '∧',

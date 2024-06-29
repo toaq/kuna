@@ -41,7 +41,8 @@ export const latex: Format<string> = {
 		return `${symbol} \\mathop{\\text{${verbName}}}\\limits_{${aspect}}{}^{${event}}_{${world}}${argList}${bod}`;
 	},
 	apply: (fn, argument) => `${fn}(${argument})`,
-	presuppose: (body, presupposition) => `${body}\\ |\\ ${presupposition}`,
+	presuppose: (body, presuppositions) =>
+		`${body}\\ |\\ ${presuppositions.join('\\ |\\ ')}`,
 	let: (name, value, body) => `\\text{let }${name}=${value}\\text{ in }${body}`,
 	symbolForInfix: fnFromMap({
 		and: '\\land{}',

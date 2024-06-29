@@ -292,19 +292,14 @@ class Renderer<T> {
 			case 'presuppose': {
 				const p = 1;
 				const bracket = leftPrecedence >= p || rightPrecedence > p;
-				const body = this.render(
-					e.body,
-					names,
-					bracket ? 0 : leftPrecedence,
-					p,
-				);
-				const presupposition = this.render(
-					e.presupposition,
-					names,
-					p,
-					bracket ? 0 : rightPrecedence,
-				);
-				const content = this.fmt.presuppose(body, presupposition);
+				let presuppositions = [];
+				while (e.head === 'presuppose') {
+					presuppositions.push(this.render(e.presupposition, names, p, 0));
+					e = e.body;
+				}
+				presuppositions.reverse();
+				const body = this.render(e, names, bracket ? 0 : leftPrecedence, p);
+				const content = this.fmt.presuppose(body, presuppositions);
 				return bracket ? this.fmt.bracket(content) : content;
 			}
 			case 'constant': {

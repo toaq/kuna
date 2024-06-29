@@ -62,6 +62,14 @@ export function Output(props: OutputProps) {
 		if (parseIndex >= parseCount) setParseIndex(0);
 	}, [parseIndex, setParseIndex, parseCount]);
 
+	const needsParse =
+		mode !== 'tokens' && mode !== 'gloss' && mode !== 'technical-gloss';
+	if (needsParse && parseCount === 0) {
+		return (
+			<div className={classNames('card', 'output', 'error')}>No parse</div>
+		);
+	}
+
 	function getBoxes(strategy: 'flat' | 'nest' | 'split'): ReactElement {
 		const tree = trees[parseIndex];
 		const outputs = boxify(tree);
