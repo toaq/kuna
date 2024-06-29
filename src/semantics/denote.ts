@@ -379,7 +379,10 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		if (leaf.word.covert) throw new Impossible('Covert Focus');
 		if (cCommand === null)
 			throw new Impossible("Can't denote a Focus in isolation");
-		denotation = focus;
+
+		const data = focus[cCommand.label];
+		if (data === undefined) throw new Unrecognized(`Focus(${cCommand.label})`);
+		denotation = data;
 		const binding = { index: 0, subordinate: false, timeIntervals: [] };
 		if (leaf.binding !== undefined)
 			bindings = {
@@ -396,9 +399,12 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			throw new Impossible('FocAdv without binding');
 
 		const value = leaf.word.value;
-		const data = focusAdverbs[value];
-		if (data === undefined) throw new Unrecognized(`FocAdv: ${value}`);
-		denotation = data;
+		const data1 = focusAdverbs[cCommand.label];
+		if (data1 === undefined)
+			throw new Unrecognized(`FocAdv(${cCommand.label})`);
+		const data2 = data1[value];
+		if (data2 === undefined) throw new Unrecognized(`FocAdv: ${value}`);
+		denotation = data2;
 		bindings = {
 			...noBindings,
 			index: new Map([

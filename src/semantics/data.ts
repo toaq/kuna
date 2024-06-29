@@ -677,71 +677,89 @@ export const eventAccessor = λ(['v', 't'], [], c =>
 	),
 );
 
-// λ𝘗. a
-export const focus = λ('e', ['e'], c => v(1, c));
+const focusTypes: Partial<Record<Label, ExprType>> = {
+	DP: 'e',
+	AdjunctP: ['v', 't'],
+};
 
-export const focusAdverbs: Partial<Record<CovertValue, Expr>> = {
+export const focus: Partial<Record<Label, Expr>> = Object.fromEntries(
+	Object.entries(focusTypes).map(([label, type]) => [
+		label,
+		// λ𝘗. a
+		λ(type, [type], c => v(1, c)),
+	]),
+);
+
+const nonContrastiveFocus = (type: ExprType) =>
 	// λ𝘹. λ𝘗 : ∃𝘺. 𝘗(𝘺). 𝘗(𝘹)
-	'[focus]': λ('e', ['e'], c =>
+	λ(type, [type], c =>
 		λ(
-			['e', 't'],
+			[type, 't'],
 			c,
 			c => app(v(0, c), v(1, c)),
-			c => some('e', c, c => app(v(1, c), v(0, c))),
+			c => some(type, c, c => app(v(1, c), v(0, c))),
 		),
-	),
+	);
+
+const contrastiveFocus = (type: ExprType) =>
 	// λ𝘹. λ𝘗 : A(a)(𝘹)(𝘸) ∧ ∃𝘺. 𝘗(𝘺). 𝘗(𝘹) ∧ ¬𝘗(a)
-	'[focus+c]': λ('e', ['e', 'e', 's'], c =>
+	λ(type, [type, type, 's'], c =>
 		λ(
-			['e', 't'],
+			[type, 't'],
 			c,
 			c => and(app(v(0, c), v(1, c)), not(app(v(0, c), v(3, c)))),
 			c =>
 				and(
-					app(app(app(alternative(c), v(3, c)), v(1, c)), v(4, c)),
-					some('e', c, c => app(v(1, c), v(0, c))),
+					app(app(app(alternative(type, c), v(3, c)), v(1, c)), v(4, c)),
+					some(type, c, c => app(v(1, c), v(0, c))),
 				),
 		),
-	),
+	);
+
+const only = (type: ExprType) =>
 	// λ𝘢. λ𝘗 : 𝘗(𝘢). ∀𝘣 : A(𝘣)(𝘢)(𝘸). ¬𝘗(𝘣)
-	'[only]': λ('e', ['e', 's'], c =>
+	λ(type, [type, 's'], c =>
 		λ(
-			['e', 't'],
+			[type, 't'],
 			c,
 			c =>
 				every(
-					'e',
+					type,
 					c,
 					c => not(app(v(1, c), v(0, c))),
-					c => app(app(app(alternative(c), v(0, c)), v(2, c)), v(4, c)),
+					c => app(app(app(alternative(type, c), v(0, c)), v(2, c)), v(4, c)),
 				),
 			c => app(v(0, c), v(1, c)),
 		),
-	),
+	);
+
+const also = (type: ExprType) =>
 	// λ𝘢. λ𝘗 : ∃𝘣 : A(𝘣)(𝘢)(𝘸). 𝘗(𝘣). 𝘗(𝘢)
-	'[also]': λ('e', ['e', 's'], c =>
+	λ(type, [type, 's'], c =>
 		λ(
-			['e', 't'],
+			[type, 't'],
 			c,
 			c => app(v(0, c), v(1, c)),
 			c =>
 				some(
-					'e',
+					type,
 					c,
 					c => app(v(1, c), v(0, c)),
-					c => app(app(app(alternative(c), v(0, c)), v(2, c)), v(4, c)),
+					c => app(app(app(alternative(type, c), v(0, c)), v(2, c)), v(4, c)),
 				),
 		),
-	),
+	);
+
+const even = (type: ExprType) =>
 	// λ𝘹. λ𝘗 : ∀𝘺 : A(𝘺)(𝘹)(𝘸). (∀𝘸' : LE(𝘸)(𝘸'). 𝘗(𝘹)(𝘸') → 𝘗(𝘺)(𝘸')) ∧ ¬∀𝘸' : LE(𝘸)(𝘸'). 𝘗(𝘺)(𝘸') → 𝘗(𝘹)(𝘸'). 𝘗(𝘹)(𝘸)
-	'[even]': λ('e', ['e', 's'], c =>
+	λ(type, [type, 's'], c =>
 		λ(
-			['e', ['s', 't']],
+			[type, ['s', 't']],
 			c,
 			c => app(app(v(0, c), v(1, c)), v(3, c)),
 			c =>
 				every(
-					'e',
+					type,
 					c,
 					// We want to express that the focus is less likely to satisfy the
 					// predicate than any of its alternatives. □(A → B) says that the worlds in
@@ -773,11 +791,25 @@ export const focusAdverbs: Partial<Record<CovertValue, Expr>> = {
 								),
 							),
 						),
-					c => app(app(app(alternative(c), v(0, c)), v(2, c)), v(4, c)),
+					c => app(app(app(alternative(type, c), v(0, c)), v(2, c)), v(4, c)),
 				),
 		),
-	),
-};
+	);
+
+export const focusAdverbs: Partial<
+	Record<Label, Partial<Record<CovertValue, Expr>>>
+> = Object.fromEntries(
+	Object.entries(focusTypes).map(([label, type]) => [
+		label,
+		{
+			'[focus]': nonContrastiveFocus(type),
+			'[focus+c]': contrastiveFocus(type),
+			'[only]': only(type),
+			'[also]': also(type),
+			'[even]': even(type),
+		},
+	]),
+);
 
 // λ𝘗. λ𝘹. 𝘗(Topic(𝘹)(𝘸))
 export const topic = λ(['s', 't'], ['s'], c =>

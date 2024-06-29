@@ -390,6 +390,12 @@ test('it denotes focus adverbs', () => {
 	);
 });
 
+test('it focuses adjuncts', () => {
+	expect(d('Aona kú râo díosıao jí súq')).toMatchInlineSnapshot(
+		"\"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t' ∧ (∃𝘦'. rao.𝘸(𝘦, a)(𝘦')) ∧ aona.𝘸(jí, súq)(𝘦) | ∃𝘗. ∃𝘦. τ(𝘦) ⊆ t' ∧ 𝘗(𝘦) ∧ aona.𝘸(jí, súq)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ dıosıao.𝘸(a)(𝘦))) | abstract(a)\"",
+	);
+});
+
 test('it removes redundant presuppositions from binding sites', () => {
 	// There should be only one set of presuppositions for the focused DP
 	expect(d('Shıe tó gúobe')).toMatchInlineSnapshot(

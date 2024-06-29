@@ -309,6 +309,9 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 	} else if (right.denotation === null) {
 		throw new Impossible(`Predicate abstraction on a null ${right.label}`);
 	} else {
+		const predicate = (
+			left.denotation.type as [[ExprType, ExprType], ExprType]
+		)[0];
 		let l: Expr;
 		let r: Expr;
 		let bindings: Bindings;
@@ -320,8 +323,8 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 			index = bindings.covertResumptive.index;
 		} else {
 			const compatRight = subtype(
-				['e', right.denotation.type],
-				(left.denotation.type as [ExprType, ExprType])[0],
+				[predicate[0], right.denotation.type],
+				predicate,
 			)
 				? right
 				: makeWorldExplicit(right);
@@ -377,7 +380,7 @@ const predicateAbstraction: CompositionRule = (branch, left, right) => {
 			denotation: reduce(
 				app(
 					rewriteContext(l, newContext, indexMapping),
-					λ('e', newContext, c =>
+					λ(predicate[0], newContext, c =>
 						rewriteContext(r, c, i =>
 							i === index ? 0 : i > index ? i : i + 1,
 						),

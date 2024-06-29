@@ -270,12 +270,12 @@ class Recoverer {
 			const right = this.recover(tree.right, scope);
 			const fixed = { label: tree.label, left, right, source: tree.source };
 
-			if (scope !== undefined && effectiveLabel(tree) === 'DP') {
+			if (scope !== undefined) {
 				if (tree.label === 'DP') {
 					scope.quantify(fixed);
 				} else if (tree.label === 'FocusP') {
 					scope.focus(fixed);
-				} else if (tree.label === '&P') {
+				} else if (tree.label === '&P' && effectiveLabel(tree) !== 'ΣP') {
 					scope.conjoin(fixed);
 				}
 			}
