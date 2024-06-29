@@ -10,7 +10,7 @@ import { recover } from '../syntax/recover';
 import { Glosser } from '../morphology/gloss';
 import { parse } from '../modes/parse';
 import { denote } from '../semantics/denote';
-import { toLatex, toPlainText } from '../semantics/render';
+import { toLatex, toMathml, toPlainText } from '../semantics/render';
 import { textual_tree_from_json } from '../modes/textual-tree';
 import { drawTreeToCanvas } from '../tree/draw';
 
@@ -24,6 +24,7 @@ import { GfTarget, GfTranslator } from '../gf';
 import GfResult from './GfResult';
 import { Expr } from '../semantics/model';
 import { Configuration, Mode, Settings } from './Settings';
+import { Tree } from '../tree';
 
 function errorString(e: any): string {
 	const string = String(e);
@@ -42,6 +43,10 @@ export interface OutputProps {
 	configuration: Configuration;
 }
 
+export function RenderMathml(props: { mathml: string }) {
+	return <div dangerouslySetInnerHTML={{ __html: props.mathml }} />;
+}
+
 export function Output(props: OutputProps) {
 	const darkMode = useDarkMode();
 	const [parseIndex, setParseIndex] = useState(0);
@@ -56,7 +61,12 @@ export function Output(props: OutputProps) {
 	} = props.configuration;
 	const math = props.configuration.mode.startsWith('logical-form');
 	const treeImg = useRef<HTMLImageElement>(null);
-	const trees = parse(text);
+	let trees: Tree[];
+	try {
+		trees = parse(text);
+	} catch (e) {
+		trees = [];
+	}
 	const parseCount = trees.length;
 	useEffect(() => {
 		if (parseIndex >= parseCount) setParseIndex(0);
@@ -152,10 +162,10 @@ export function Output(props: OutputProps) {
 
 	function getLogicalForm(
 		renderer: (e: Expr, compact?: boolean) => string,
-	): ReactElement {
+	): string {
 		let expr: any = denote(recover(trees[parseIndex])).denotation;
-		if (!expr) return <>No denotation</>;
-		return <>{renderer(expr, meaningCompact)}</>;
+		if (!expr) return 'No denotation';
+		return renderer(expr, meaningCompact);
 	}
 
 	function getEnglish(): ReactElement {
@@ -194,10 +204,12 @@ export function Output(props: OutputProps) {
 				return getGloss(true);
 			case 'technical-gloss':
 				return getGloss(false);
+			case 'logical-form-mathml':
+				return <RenderMathml mathml={getLogicalForm(toMathml)} />;
 			case 'logical-form':
-				return getLogicalForm(toPlainText);
+				return <>{getLogicalForm(toPlainText)}</>;
 			case 'logical-form-latex':
-				return getLogicalForm(toLatex);
+				return <>{getLogicalForm(toLatex)}</>;
 			case 'english':
 				return getEnglish();
 			case 'gf1':

@@ -122,5 +122,5 @@ export const mathml: Format<string> = {
 		permit: '<mi class="kuna-builtin">PERMIT</mi>',
 		warn: '<mi class="kuna-builtin">WARN</mi>',
 	}),
-	quote: text => `<mtext>“${text}”</mtext>`,
+	quote: text => `<mtext class="kuna-quote">“${text}”</mtext>`,
 };

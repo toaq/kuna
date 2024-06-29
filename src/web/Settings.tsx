@@ -15,6 +15,7 @@ export type Mode =
 	| TreeMode
 	| 'gloss'
 	| 'technical-gloss'
+	| 'logical-form-mathml'
 	| 'logical-form'
 	| 'logical-form-latex'
 	| 'english'
@@ -46,7 +47,7 @@ export interface SettingsProps {
 
 export function Settings(props: SettingsProps) {
 	const [advanced, setAdvanced] = useLocalStorage('advanced', false);
-	const [test, setText] = useLocalStorage<string>('input', 'De cháq da.');
+	const [text, setText] = useLocalStorage<string>('input', 'De cháq da.');
 	const [treeFormat, setTreeFormat] = useLocalStorage<TreeFormat>(
 		'tree-format',
 		'png-latex',
@@ -61,7 +62,7 @@ export function Settings(props: SettingsProps) {
 	function submit(mode: Mode) {
 		if (mode) {
 			props.onSubmit({
-				text: test,
+				text: text,
 				treeFormat,
 				roofLabels,
 				trimNulls,
@@ -86,6 +87,7 @@ export function Settings(props: SettingsProps) {
 			meaningCompact,
 			lastMode,
 			darkMode.isDarkMode,
+			text,
 		],
 	);
 
@@ -93,7 +95,7 @@ export function Settings(props: SettingsProps) {
 		<div className="card settings" style={{ width: '30em' }}>
 			<textarea
 				rows={3}
-				value={test}
+				value={text}
 				onChange={e => {
 					setText(e.target.value);
 					props.dismissExplanation();
@@ -200,8 +202,11 @@ export function Settings(props: SettingsProps) {
 				{advanced && (
 					<div className="button-group">
 						<div className="button-group-name">Meaning</div>
+						<button onClick={() => render('logical-form-mathml')}>Math</button>
 						<button onClick={() => render('logical-form')}>Text</button>
-						<button onClick={() => render('logical-form-latex')}>LaTeX</button>
+						<button onClick={() => render('logical-form-latex')}>
+							LaTeX code
+						</button>
 						<label>
 							<input
 								type="checkbox"
