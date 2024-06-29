@@ -1,6 +1,11 @@
 build/
 node_modules/
-output.*
+output.aux
+output.log
+output.pdf
+output.png
+output.synctex.gz
+output.tex
 /*.png
 !pipeline.png
 dist

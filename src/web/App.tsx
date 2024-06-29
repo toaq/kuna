@@ -1,5 +1,5 @@
 import { useDarkMode } from 'usehooks-ts';
-import { Main } from './Main';
+import { Interactive } from './Interactive';
 import { Sentences } from './Sentences';
 import './App.css';
 import { NavLink, Route, Routes } from 'react-router-dom';
@@ -21,7 +21,7 @@ export function App() {
 				</button>
 			</header>
 			<Routes>
-				<Route path="/" element={<Main />} />
+				<Route path="/" element={<Interactive />} />
 				<Route path="/sentences" element={<Sentences />} />
 			</Routes>
 		</div>

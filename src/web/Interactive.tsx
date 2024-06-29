@@ -1,0 +1,41 @@
+import _ from 'lodash';
+import { useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
+
+import { Configuration, Mode, Settings } from './Settings';
+import { Output } from './Output';
+
+export function Interactive() {
+	const [dismissed, setDismissed] = useLocalStorage(
+		'explanationDismissed',
+		false,
+	);
+
+	const [configuration, setConfiguration] = useState<Configuration>();
+
+	return (
+		<>
+			{!dismissed && (
+				<div className="card explanation">
+					<p>
+						This is a parser for the constructed language{' '}
+						<a href="https://toaq.net/">Toaq</a>. It can interpret Toaq
+						sentences and convert them to a variety of output formats.
+					</p>
+					<p>
+						Write some Toaq in the textbox below, then click one of the buttons
+						to see the output.
+					</p>
+					<button className="dismiss" onClick={() => setDismissed(true)}>
+						Dismiss
+					</button>
+				</div>
+			)}
+			<Settings
+				onSubmit={config => setConfiguration(config)}
+				dismissExplanation={() => setDismissed(true)}
+			/>
+			{configuration && <Output configuration={configuration} />}
+		</>
+	);
+}

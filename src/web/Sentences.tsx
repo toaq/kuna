@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import { useMemo, useState } from 'react';
 import { parse } from '../modes/parse';
-import { Main, Mode } from './Main';
 import './Sentences.css';
 import { useInView } from 'react-intersection-observer';
 
@@ -11,6 +10,8 @@ import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
 import aSentencesTxt from '../../sentences/a.txt?raw';
 import { recover } from '../syntax/recover';
 import { denote } from '../semantics/denote';
+import { Output } from './Output';
+import { Mode } from './Settings';
 
 const rSentences: string[] = refgramSentencesTxt.split('\n');
 const aSentences: string[] = aSentencesTxt.split('\n');
@@ -189,7 +190,17 @@ export function Sentences() {
 				</div>
 				{selected && (
 					<div className="sentences-output">
-						<Main input={selected} mode={outputMode} />
+						<Output
+							configuration={{
+								text: selected,
+								treeFormat: 'png-latex',
+								roofLabels: '',
+								trimNulls: false,
+								showMovement: true,
+								meaningCompact: true,
+								mode: outputMode,
+							}}
+						/>
 					</div>
 				)}
 			</main>
