@@ -9,7 +9,7 @@ import {
 	labelForPrefix,
 	skipFree,
 } from './functions';
-import { Label, Leaf, Tree, Word } from './types';
+import { Label, Leaf, Rose, SerialTree, Tree, Word } from './types';
 
 /**
  * Make a null leaf with the given label.
@@ -17,6 +17,12 @@ import { Label, Leaf, Tree, Word } from './types';
 export function makeNull(label: Label): Leaf {
 	return { label, word: { covert: true, value: '∅' }, source: '' };
 }
+
+export const PRO: Leaf = {
+	label: 'DP',
+	word: { covert: true, value: 'PRO' },
+	source: '',
+};
 
 export function makeWord([token]: [ToaqToken]): Word {
 	const lemmaForm = token.value.toLowerCase().normalize();
@@ -43,7 +49,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 }
 
 export function makeLeaf(label: Label) {
-	return ([token, _free]: [ToaqToken, Tree[]]) => ({
+	return ([token, _free]: [ToaqToken, Tree[]]): Leaf => ({
 		label,
 		word: makeWord([token]),
 		source: token.value,
@@ -55,10 +61,11 @@ export function makeCovertLeaf(label: Label) {
 }
 
 export function makeEmptySerial() {
-	return () => ({
+	return (): SerialTree => ({
 		label: '*Serial',
 		children: [makeNull('V')],
 		source: '',
+		arity: 1,
 	});
 }
 
@@ -146,12 +153,7 @@ export function makeOptLeaf(label: Label) {
 	};
 }
 
-export function makeSerial(
-	[verbs, vlast]: [Tree[], Tree],
-	location: number,
-	reject: Object,
-) {
-	const children = verbs.concat([vlast]);
+export function serialArity(children: Tree[]): number | undefined {
 	const frames = children.map(getFrame);
 	const frame = frames[frames.length - 1];
 	let arity: number | undefined;
@@ -168,9 +170,18 @@ export function makeSerial(
 			}
 		}
 	}
+	return arity;
+}
+
+export function makeSerial(
+	[verbs, vlast]: [Tree[], Tree],
+	location: number,
+	reject: Object,
+) {
+	const children = verbs.concat([vlast]);
 	return {
 		label: '*Serial',
-		arity,
+		arity: serialArity(children),
 		children,
 		source: catSource(...verbs, vlast),
 	};
@@ -250,29 +261,25 @@ export function makevPdet(
 
 	return {
 		label: '*𝘷P',
-		children: [
-			serial,
-			...(argIncorp === null ? [] : [argIncorp]),
-			{ label: 'DP', word: { covert: true, value: 'PRO' }, source: '' },
-		],
+		children: [serial, ...(argIncorp === null ? [] : [argIncorp]), PRO],
 		source: catSource(serial, argIncorp),
 	};
 }
 
-export function makeEvAP([rl, rr, left]: [Tree, Tree, Tree]) {
+export function makeEvAP([rl, rr, left]: [Tree, Tree, Tree]): Tree {
 	return {
 		label: 'EvAP',
 		left,
-		right: { label: "EvA'", left: rl, right: rr },
+		right: { label: "EvA'", left: rl, right: rr, source: catSource(rl, rr) },
 		source: catSource(left, rl, rr),
 	};
 }
 
-export function makeEvAPdet([rl, rr]: [Tree, Tree]) {
+export function makeEvAPdet([rl, rr]: [Tree, Tree]): Tree {
 	return {
 		label: 'EvAP',
-		left: { label: 'DP', word: { covert: true, value: 'PRO' }, source: '' },
-		right: { label: "EvA'", left: rl, right: rr },
+		left: PRO,
+		right: { label: "EvA'", left: rl, right: rr, source: catSource(rl, rr) },
 		source: catSource(rl, rr),
 	};
 }
@@ -313,10 +320,7 @@ export function makeAdjunctPI(
 		left: adjunct,
 		right: {
 			label: '*𝘷P',
-			children: [
-				serial,
-				{ label: 'DP', word: { covert: true, value: 'PRO' }, source: '' },
-			],
+			children: [serial, PRO],
 			source: catSource(serial),
 		},
 		source: catSource(adjunct, serial),
@@ -338,11 +342,7 @@ export function makeAdjunctPT(
 		left: adjunct,
 		right: {
 			label: '*𝘷P',
-			children: [
-				serial,
-				{ label: 'DP', word: { covert: true, value: 'PRO' }, source: '' },
-				obj,
-			],
+			children: [serial, PRO, obj],
 			source: catSource(serial, obj),
 		},
 		source: catSource(adjunct, serial, obj),
@@ -362,7 +362,8 @@ export function makeT1ModalvP([modal, tp]: [Tree, Tree]) {
 			label: "𝘷'",
 			left: {
 				label: '𝘷',
-				word: { covert: true, value: 'BE', source: '' },
+				word: { covert: true, value: 'BE' },
+				source: '',
 			},
 			right: tp,
 			source: tp.source,
@@ -389,16 +390,20 @@ export function makePrefixLeaf([token]: [ToaqToken]) {
 	};
 }
 
-export function makePrefixP([prefix, verb]: [Tree, Tree]) {
+export function makePrefixP([prefix, verb]: [Tree, Tree]): Tree {
 	return {
-		label: prefix.label + 'P',
+		label: (prefix.label + 'P') as Label,
 		left: prefix,
 		right: verb,
 		source: catSource(prefix, verb),
 	};
 }
 
-export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
+export function makeRetroactiveCleft([tp, vgo, clause]: [
+	Tree,
+	Tree,
+	Tree,
+]): Tree {
 	return {
 		label: '𝘷P',
 		left: {

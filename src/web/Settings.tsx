@@ -6,7 +6,8 @@ export type TreeMode =
 	| 'syntax-tree'
 	| 'semantics-tree'
 	| 'semantics-tree-compact'
-	| 'raw-tree';
+	| 'raw-tree'
+	| 'hand-parsed';
 
 export type Mode =
 	| 'boxes-flat'
@@ -163,6 +164,7 @@ export function Settings(props: SettingsProps) {
 						<div className="button-group-name">Debug</div>
 						<button onClick={() => render('tokens')}>Tokens</button>
 						<button onClick={() => render('raw-tree')}>Raw tree</button>
+						<button onClick={() => render('hand-parsed')}>Hand-parsed</button>
 					</div>
 				)}
 				<div className="button-group">

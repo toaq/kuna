@@ -88,6 +88,7 @@ export type Label =
 	| 'ha'
 	| 'haP'
 	| 'haoP'
+	| 'Interjection'
 	| 'kı'
 	| 'mı'
 	| 'mıP'
@@ -191,3 +192,8 @@ export function assertLabel(tree: Tree, label: Label): void {
 		throw new Impossible(`Expected ${label} but found ${tree.label}`);
 	}
 }
+
+export type SerialTree = Rose<Tree> & {
+	incorporatedObject?: Tree | undefined;
+	arity: number | undefined;
+};

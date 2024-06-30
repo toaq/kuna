@@ -12,6 +12,9 @@ import { recover } from '../syntax/recover';
 import { denote } from '../semantics/denote';
 import { Output } from './Output';
 import { Mode } from './Settings';
+import { HandwrittenParser } from '../handwritten-parser';
+import { ToaqTokenizer } from '../morphology/tokenize';
+import { Tree } from '../tree';
 
 const rSentences: string[] = refgramSentencesTxt.split('\n');
 const aSentences: string[] = aSentencesTxt.split('\n');
@@ -23,6 +26,7 @@ const allSentences: { id: string; sentence: string }[] = [
 type ParseStatus =
 	| { status: 'no parse' }
 	| { status: 'ambiguous'; count: number }
+	| { status: "doesn't match hand-parse" }
 	| { status: 'fix failed' }
 	| { status: 'denote failed' }
 	| { status: 'ok' };
@@ -31,10 +35,22 @@ function parseStatusScore(status: ParseStatus): number {
 	return {
 		'no parse': 0,
 		ambiguous: 1,
+		"doesn't match hand-parse": 2,
 		'fix failed': 2,
 		'denote failed': 3,
 		ok: 4,
 	}[status.status];
+}
+
+function handParse(sentence: string): Tree | undefined {
+	const tokenizer = new ToaqTokenizer();
+	tokenizer.reset(sentence);
+	const parser = new HandwrittenParser(tokenizer.tokens);
+	try {
+		return parser.expectFragment();
+	} catch (e) {
+		return undefined;
+	}
 }
 
 function checkParse(sentence: string): ParseStatus {
@@ -43,6 +59,14 @@ function checkParse(sentence: string): ParseStatus {
 		const n = trees.length;
 		if (n > 1) return { status: 'ambiguous', count: n };
 		if (n === 0) return { status: 'no parse' };
+
+		const hp = handParse(sentence);
+		const j = (x: any) => JSON.stringify(x, Object.keys(x).sort());
+		if (!_.isEqual(j(trees[0]), j(hp))) {
+			console.log(j(trees[0]), j(hp));
+			return { status: 'fix failed' };
+		}
+
 		try {
 			const deepStructure = recover(trees[0]);
 			try {
@@ -71,6 +95,7 @@ function ShowParseStatus({ status }: { status: ParseStatus }) {
 		ok: [GREEN, GREEN, GREEN],
 		'denote failed': [ORANGE, ORANGE, BLANK],
 		'fix failed': [RED, BLANK, BLANK],
+		"doesn't match hand-parse": [RED, RED, RED],
 		ambiguous: [],
 		'no parse': [BLANK, BLANK, BLANK],
 	}[status.status];
@@ -141,6 +166,7 @@ export function Sentences() {
 				>
 					<option value="tokens">Tokens</option>
 					<option value="raw-tree">Raw tree</option>
+					<option value="hand-parsed">Hand-parsed</option>
 					<option value="syntax-tree">Syntax tree</option>
 					<option value="trimmed-tree">Trimmed tree</option>
 					<option value="semantics-tree">Denoted tree</option>

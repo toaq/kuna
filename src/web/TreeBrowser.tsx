@@ -16,7 +16,7 @@ export function Node(props: {
 	const { tree, compactDenotations, theme } = props;
 	const mathml =
 		`<pre style="color:${theme.wordColor};font-family:inherit; margin: 0">` +
-		(tree.source.trim() || '∅') +
+		(tree.source?.trim() || '∅') +
 		'</pre>' +
 		('denotation' in tree && tree.denotation
 			? `<hr style="border:1px solid #8884";/><div style="margin-top:0.5em">` +

@@ -25,6 +25,7 @@ import GfResult from './GfResult';
 import { Expr } from '../semantics/model';
 import { Configuration, Mode, Settings } from './Settings';
 import { Tree } from '../tree';
+import { HandwrittenParser } from '../handwritten-parser';
 
 function errorString(e: any): string {
 	const string = String(e);
@@ -73,7 +74,10 @@ export function Output(props: OutputProps) {
 	}, [parseIndex, setParseIndex, parseCount]);
 
 	const needsParse =
-		mode !== 'tokens' && mode !== 'gloss' && mode !== 'technical-gloss';
+		mode !== 'tokens' &&
+		mode !== 'gloss' &&
+		mode !== 'technical-gloss' &&
+		mode !== 'hand-parsed';
 	if (needsParse && parseCount === 0) {
 		return (
 			<div className={classNames('card', 'output', 'error')}>No parse</div>
@@ -187,6 +191,27 @@ export function Output(props: OutputProps) {
 		return <Tokens tokens={tokenizer.tokens} />;
 	}
 
+	function getHandParsed(): ReactElement {
+		const tokenizer = new ToaqTokenizer();
+		tokenizer.reset(text);
+		const parser = new HandwrittenParser(tokenizer.tokens);
+		try {
+			const tree = parser.expectFragment();
+			const themeName = darkMode.isDarkMode ? 'dark' : 'light';
+			return (
+				<TreeBrowser
+					tree={tree}
+					key={new Date().toString()}
+					compactDenotations={false}
+					theme={themes[themeName]}
+					truncateLabels={roofLabels.trim().split(/[\s,]+/)}
+				/>
+			);
+		} catch (e) {
+			return <span className="error">{String(e)}</span>;
+		}
+	}
+
 	function getOutput(): ReactElement {
 		switch (mode) {
 			case 'boxes-flat':
@@ -200,6 +225,8 @@ export function Output(props: OutputProps) {
 			case 'semantics-tree-compact':
 			case 'raw-tree':
 				return getTree();
+			case 'hand-parsed':
+				return getHandParsed();
 			case 'gloss':
 				return getGloss(true);
 			case 'technical-gloss':
