@@ -1,9 +1,8 @@
-import _ from 'lodash';
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
-import { Configuration, Mode, Settings } from './Settings';
 import { Output } from './Output';
+import { type Configuration, Settings } from './Settings';
 
 export function Interactive() {
 	const [dismissed, setDismissed] = useLocalStorage(
@@ -26,7 +25,11 @@ export function Interactive() {
 						Write some Toaq in the textbox below, then click one of the buttons
 						to see the output.
 					</p>
-					<button className="dismiss" onClick={() => setDismissed(true)}>
+					<button
+						className="dismiss"
+						type="button"
+						onClick={() => setDismissed(true)}
+					>
 						Dismiss
 					</button>
 				</div>

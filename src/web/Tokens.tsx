@@ -1,5 +1,6 @@
+import { keyFor } from '../core/misc';
 import { Glosser } from '../morphology/gloss';
-import { ToaqToken } from '../morphology/tokenize';
+import type { ToaqToken } from '../morphology/tokenize';
 import './Tokens.css';
 
 function Token(props: { token: ToaqToken }) {
@@ -27,8 +28,8 @@ export function Tokens(props: { tokens: ToaqToken[] }) {
 				</tr>
 			</thead>
 			<tbody>
-				{props.tokens.map((token, i) => (
-					<Token key={i} token={token} />
+				{props.tokens.map(token => (
+					<Token key={keyFor(token)} token={token} />
 				))}
 			</tbody>
 		</table>

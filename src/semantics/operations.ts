@@ -1,17 +1,15 @@
 import { Impossible } from '../core/error';
 import { enumerate, reverse, some, zip } from '../core/misc';
 import {
+	type Binding,
+	type Bindings,
+	type DTree,
+	type Expr,
+	type ExprType,
 	app,
-	Binding,
-	Bindings,
 	cloneBindings,
 	constant,
-	DTree,
-	Expr,
-	ExprType,
-	polarizer,
 	presuppose,
-	quantifier,
 	quote,
 	typesEqual,
 	v,
@@ -143,9 +141,8 @@ function betaReduce(e: Expr): Expr {
 		return e.fn.restriction === undefined
 			? body
 			: presuppose(body, substitute(0, e.argument, e.fn.restriction));
-	} else {
-		return e;
 	}
+	return e;
 }
 
 /**
@@ -225,7 +222,7 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 					),
 					reduced.defines === undefined ? undefined : mapping(reduced.defines),
 				);
-			} catch (e) {
+			} catch (_e) {
 				// This presupposition evidently uses the quantified variable and cannot be
 				// lifted
 				innerPresuppositions.push([reduced.presupposition, reduced.defines]);
@@ -348,16 +345,27 @@ function forEachBinding(
 		fn(
 			bs.resumptive,
 			bs => bs.resumptive,
-			(bs, b) => (b === undefined ? delete bs.resumptive : (bs.resumptive = b)),
+			(bs, b) => {
+				if (b === undefined) {
+					bs.resumptive = undefined;
+					return undefined;
+				}
+				bs.resumptive = b;
+				return b;
+			},
 		);
 	if (bs.covertResumptive !== undefined)
 		fn(
 			bs.covertResumptive,
 			bs => bs.covertResumptive,
-			(bs, b) =>
-				b === undefined
-					? delete bs.covertResumptive
-					: (bs.covertResumptive = b),
+			(bs, b) => {
+				if (b === undefined) {
+					bs.covertResumptive = undefined;
+					return undefined;
+				}
+				bs.covertResumptive = b;
+				return b;
+			},
 		);
 }
 
@@ -406,10 +414,9 @@ export function unifyDenotations(
 			context.push(right.denotation!.context[rIndex]);
 			rightMapping[rIndex] = context.length - 1;
 			return context.length - 1;
-		} else {
-			rightMapping[rIndex] = lIndex;
-			return lIndex;
 		}
+		rightMapping[rIndex] = lIndex;
+		return lIndex;
 	};
 
 	// TODO: implement the 'Cho máma hó/áq' rule using the subordinate field
@@ -607,9 +614,8 @@ export function filterPresuppositions(
 		return predicate(e.presupposition)
 			? presuppose(body, e.presupposition, e.defines)
 			: body;
-	} else {
-		return e;
 	}
+	return e;
 }
 
 class LiftError extends Error {
@@ -781,21 +787,23 @@ export function skolemize(e: Expr, index: number): [Expr, (number | null)[]] {
 		),
 	];
 	const newToOld = e.context.map((_t, i) => i);
-	e = rewriteContext(e, [...c], i => i);
+	let newE = e;
+	let newIndex = index;
+	newE = rewriteContext(newE, [...c], i => i);
 
 	// Substitute each entity in turn with its skolemized form
 	for (const [d, i] of enumerate(dependents)) {
 		const d_ = d - i;
 		c.splice(d_, 1);
 		newToOld.splice(d_, 1);
-		if (index > d_) index--;
+		if (newIndex > d_) newIndex--;
 		const fn = c.length - dependents.length + i;
-		e = substitute(d_, app(v(fn, c), v(index, c)), e, fn);
+		newE = substitute(d_, app(v(fn, c), v(newIndex, c)), newE, fn);
 	}
 
 	// Invert the new → old mapping
-	const oldToNew = e.context.map<number | null>(() => null);
+	const oldToNew = newE.context.map<number | null>(() => null);
 	for (const [old, new_] of enumerate(newToOld)) oldToNew[old] = new_;
 
-	return [e, oldToNew];
+	return [newE, oldToNew];
 }

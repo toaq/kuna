@@ -1,8 +1,7 @@
-import { Entry } from '../morphology/dictionary';
 import { Impossible } from '../core/error';
-import { Tone } from '../morphology/tone';
-import { Movement } from './movement';
-import { Position } from '../morphology/tokenize';
+import type { Position } from '../morphology/tokenize';
+import type { Tone } from '../morphology/tone';
+import type { Movement } from './movement';
 
 export interface Word {
 	covert: false;
@@ -175,17 +174,17 @@ export type StrictTree = Leaf | Branch<StrictTree>;
 
 export function assertLeaf(tree: Tree): asserts tree is Leaf {
 	if ('word' in tree) return;
-	throw new Impossible('Unexpected non-leaf ' + tree.label);
+	throw new Impossible(`Unexpected non-leaf ${tree.label}`);
 }
 
 export function assertBranch(tree: Tree): asserts tree is Branch<Tree> {
 	if ('left' in tree) return;
-	throw new Impossible('Unexpected non-branch ' + tree.label);
+	throw new Impossible(`Unexpected non-branch ${tree.label}`);
 }
 
 export function assertRose(tree: Tree): asserts tree is Rose<Tree> {
 	if ('children' in tree) return;
-	throw new Impossible('Unexpected non-rose ' + tree.label);
+	throw new Impossible(`Unexpected non-rose ${tree.label}`);
 }
 
 export function assertLabel(tree: Tree, label: Label): void {

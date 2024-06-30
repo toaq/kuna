@@ -10,13 +10,18 @@ export function App() {
 	return (
 		<div className={darkMode.isDarkMode ? 'kuna dark-mode' : 'kuna'}>
 			<header>
-				<img src="./favicon.ico" height="24" />
+				{/* biome-ignore lint/a11y/useAltText: https://github.com/biomejs/biome/issues/3316 */}
+				<img src="./favicon.ico" height="24" aria-hidden />
 				<h1>kuna</h1>
 				<nav style={{ marginLeft: 10 }}>
 					<NavLink to="/">Interactive</NavLink>
 					<NavLink to="/sentences">Sentences</NavLink>
 				</nav>
-				<button style={{ marginLeft: 'auto' }} onClick={darkMode.toggle}>
+				<button
+					style={{ marginLeft: 'auto' }}
+					type="button"
+					onClick={darkMode.toggle}
+				>
 					Theme
 				</button>
 			</header>

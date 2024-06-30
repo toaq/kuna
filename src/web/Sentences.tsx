@@ -1,26 +1,23 @@
-import _ from 'lodash';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { parse } from '../modes/parse';
 import './Sentences.css';
 import { useInView } from 'react-intersection-observer';
 
 // @ts-ignore
-import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
-// @ts-ignore
 import aSentencesTxt from '../../sentences/a.txt?raw';
-import { recover } from '../syntax/recover';
-import { denote } from '../semantics/denote';
-import { Output } from './Output';
-import { Mode } from './Settings';
+// @ts-ignore
+import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
 import { HandwrittenParser } from '../handwritten-parser';
-import { ToaqTokenizer } from '../morphology/tokenize';
-import { Tree } from '../tree';
+import { denote } from '../semantics/denote';
+import { recover } from '../syntax/recover';
+import { Output } from './Output';
+import type { Mode } from './Settings';
 
 const rSentences: string[] = refgramSentencesTxt.split('\n');
 const aSentences: string[] = aSentencesTxt.split('\n');
 const allSentences: { id: string; sentence: string }[] = [
-	...rSentences.map((sentence, i) => ({ id: 'R' + (i + 1), sentence })),
-	...aSentences.map((sentence, i) => ({ id: 'A' + (i + 1), sentence })),
+	...rSentences.map((sentence, i) => ({ id: `R${i + 1}`, sentence })),
+	...aSentences.map((sentence, i) => ({ id: `A${i + 1}`, sentence })),
 ];
 
 type ParseStatus =
@@ -46,7 +43,7 @@ function handParse(sentence: string): Tree | undefined {
 	const parser = new HandwrittenParser(sentence);
 	try {
 		return parser.expectFragment();
-	} catch (e) {
+	} catch (_e) {
 		return undefined;
 	}
 }
@@ -103,6 +100,7 @@ function ShowParseStatus({ status }: { status: ParseStatus }) {
 			<span style={{ color: RED }}>{errorText}</span>
 			<span className="bullets">
 				{bullets.map((color, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: order is stable
 					<span key={i} style={{ color }}>
 						{BULLET}
 					</span>
@@ -125,20 +123,30 @@ function SentenceRow(props: {
 		if (inView) {
 			setParseStatus(checkParse(props.sentence));
 		}
-	}, [inView]);
+	}, [inView, props.sentence]);
 
 	if (
 		parseStatus &&
 		!props.showScores.includes(parseStatusScore(parseStatus).toString())
 	)
 		return <></>;
+
+	const select = useCallback(() => {
+		navigator.clipboard.writeText(props.sentence);
+		props.setSelected(props.sentence);
+	}, [props.sentence, props.setSelected]);
+
 	return (
 		<tr
 			ref={ref}
 			className={props.sentence === props.selected ? ' selected' : ''}
-			onClick={() => {
-				navigator.clipboard.writeText(props.sentence);
-				props.setSelected(props.sentence);
+			tabIndex={0}
+			onClick={select}
+			onKeyUp={e => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					select();
+				}
 			}}
 		>
 			<td className="sentence-number">{props.id}</td>

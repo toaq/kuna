@@ -1,14 +1,12 @@
-import { inTone } from '../morphology/tokenize';
+import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 import {
-	Tree,
+	type Tree,
 	assertBranch,
 	catSource,
 	skipFree,
 	treeChildren,
 	treeText,
 } from '../tree';
-import { Tone } from '../morphology/tone';
-import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 
 export interface PostField {
 	earlyAdjuncts: Tree[];
@@ -38,12 +36,11 @@ export interface BoxSentence {
 }
 
 function isArgument(tree: Tree): boolean {
-	while (
+	if (
 		'right' in tree &&
 		(tree.label === 'FocusP' || tree.label === '&P' || tree.label === "&'")
-	) {
-		tree = tree.right;
-	}
+	)
+		return isArgument(tree.right);
 	return tree.label === 'DP' || tree.label === 'CP';
 }
 
@@ -88,9 +85,9 @@ class Boxifier {
 
 	private boxifyPostField(trees: Tree[]): PostField {
 		let sawArgument = false;
-		let earlyAdjuncts: Tree[] = [];
-		let arguments_: Tree[] = [];
-		let lateAdjuncts: Tree[] = [];
+		const earlyAdjuncts: Tree[] = [];
+		const arguments_: Tree[] = [];
+		const lateAdjuncts: Tree[] = [];
 		for (const tree of trees) {
 			if (isArgument(tree)) {
 				arguments_.push(tree);
@@ -112,7 +109,7 @@ class Boxifier {
 	private boxifyClause(cp: Tree): BoxClause {
 		let topic: Tree | undefined = undefined;
 		let subject: Tree | undefined = undefined;
-		let verbalComplexWords = [];
+		const verbalComplexWords = [];
 		let postField: PostField | undefined = undefined;
 		let conjunction: AndClause | undefined = undefined;
 		if (!('left' in cp)) throw new Impossible('bad CP?');
@@ -126,7 +123,8 @@ class Boxifier {
 				verbalComplexWords.push(serial);
 				postField = this.boxifyPostField(node.children.slice(1));
 				break;
-			} else if ('left' in node) {
+			}
+			if ('left' in node) {
 				switch (node.label) {
 					case 'TopicP':
 						topic = node.left;
@@ -142,25 +140,32 @@ class Boxifier {
 						};
 						node = node.right;
 						break;
-					case '𝘷P':
+					case '𝘷P': {
 						if ('left' in node.right && this.words(node.right.left) === 'nä') {
 							subject = node.left;
 							node = node.right;
 							break;
 						}
-					// fall through
-					case 'ΣP':
-					case 'ModalP':
-					case 'TP':
-					case 'AspP':
-					case 'CPrel':
-					case "𝘷'":
 						const w = node.left;
 						if (this.words(w)) {
 							verbalComplexWords.push(w);
 						}
 						node = node.right;
 						break;
+					}
+					case 'ΣP':
+					case 'ModalP':
+					case 'TP':
+					case 'AspP':
+					case 'CPrel':
+					case "𝘷'": {
+						const w = node.left;
+						if (this.words(w)) {
+							verbalComplexWords.push(w);
+						}
+						node = node.right;
+						break;
+					}
 					case '&P':
 						assertBranch(node.right);
 						conjunction = {
@@ -171,7 +176,7 @@ class Boxifier {
 						break;
 					default:
 						console.log(node);
-						throw new Unimplemented('in boxifyClause: ' + node.label);
+						throw new Unimplemented(`in boxifyClause: ${node.label}`);
 				}
 			} else {
 				throw new Impossible('hit leaf in boxifyClause');
@@ -193,15 +198,15 @@ class Boxifier {
 	}
 
 	public boxifySentence(tree: Tree): SplitBoxes {
-		tree = skipFree(tree);
-		if (tree.label !== 'SAP')
+		const sap = skipFree(tree);
+		if (sap.label !== 'SAP')
 			throw new Impossible('boxifySentence of non-sentence');
-		if (!('left' in tree)) throw new Impossible('bad SAP?');
-		const sa = tree.right;
+		if (!('left' in sap)) throw new Impossible('bad SAP?');
+		const sa = sap.right;
 		if (sa.label !== 'SA') throw new Impossible('SAP without SA?');
 		if (!('word' in sa)) throw new Impossible('SA without word?');
 		const speechAct = sa;
-		const cp = skipFree(tree.left);
+		const cp = skipFree(sap.left);
 		this.harvestCps(cp);
 		const clause = this.boxifyClause(cp);
 		return {
@@ -212,24 +217,24 @@ class Boxifier {
 	}
 
 	public boxify(tree: Tree): SplitBoxes[] {
-		tree = skipFree(tree);
-		if (tree.label === 'SAP') {
-			return [this.boxifySentence(tree)];
-		} else if ('left' in tree && tree.label === 'Discourse') {
-			return [this.boxifySentence(tree.left), ...this.boxify(tree.right)];
-		} else {
-			throw new Ungrammatical("Can't boxify " + tree.label);
+		const saps = skipFree(tree);
+		if (saps.label === 'SAP') {
+			return [this.boxifySentence(saps)];
 		}
+		if ('left' in saps && saps.label === 'Discourse') {
+			return [this.boxifySentence(saps.left), ...this.boxify(saps.right)];
+		}
+		throw new Ungrammatical(`Can't boxify ${saps.label}`);
 	}
 }
 
 export function boxify(tree: Tree): SplitBoxes[] {
-	tree = skipFree(tree);
-	if (tree.label === 'SAP') {
-		return [new Boxifier().boxifySentence(tree)];
-	} else if ('left' in tree && tree.label === 'Discourse') {
-		return [new Boxifier().boxifySentence(tree.left), ...boxify(tree.right)];
-	} else {
-		throw new Ungrammatical("Can't boxify " + tree.label);
+	const saps = skipFree(tree);
+	if (saps.label === 'SAP') {
+		return [new Boxifier().boxifySentence(saps)];
 	}
+	if ('left' in saps && saps.label === 'Discourse') {
+		return [new Boxifier().boxifySentence(saps.left), ...boxify(saps.right)];
+	}
+	throw new Ungrammatical(`Can't boxify ${saps.label}`);
 }

@@ -1,28 +1,28 @@
-import { toDocument } from './modes/latex';
-import * as fs from 'fs';
-import { Glosser } from './morphology/gloss';
-import yargs from 'yargs';
-import { pngGlossSentence } from './modes/png-gloss';
-import { Tree } from './tree';
-import { recover } from './syntax/recover';
-import { trimTree } from './tree/trim';
-import { drawTreeToCanvas } from './tree/draw';
-import { parse } from './modes/parse';
-import { textual_tree_from_json } from './modes/textual-tree';
+import * as fs from 'node:fs';
 import KDL from 'kdljs';
-import { formatTreeAsKdl } from './modes/kdl';
-import { testSentences } from './modes/test-sentences';
-import { denote } from './semantics/denote';
-import { ToaqTokenizer } from './morphology/tokenize';
+import yargs from 'yargs';
 import { toEnglish } from './english/tree';
-import { denotationRenderText } from './tree/place';
-import { DTree } from './semantics/model';
+import { formatTreeAsKdl } from './modes/kdl';
+import { toDocument } from './modes/latex';
+import { parse } from './modes/parse';
+import { pngGlossSentence } from './modes/png-gloss';
+import { testSentences } from './modes/test-sentences';
+import { textual_tree_from_json } from './modes/textual-tree';
+import { Glosser } from './morphology/gloss';
+import { ToaqTokenizer } from './morphology/tokenize';
+import { denote } from './semantics/denote';
+import type { DTree } from './semantics/model';
 import {
-	toPlainText,
-	toLatex,
-	toJson,
 	jsonStringifyCompact,
+	toJson,
+	toLatex,
+	toPlainText,
 } from './semantics/render';
+import { recover } from './syntax/recover';
+import type { Tree } from './tree';
+import { drawTreeToCanvas } from './tree/draw';
+import { denotationRenderText } from './tree/place';
+import { trimTree } from './tree/trim';
 
 function getTrees(argv: {
 	sentence: string | undefined;
@@ -86,7 +86,7 @@ yargs
 			yargs.demandOption('sentence');
 		},
 
-		function (argv) {
+		argv => {
 			const tokenizer = new ToaqTokenizer();
 			tokenizer.reset(argv.sentence as string);
 			console.log(JSON.stringify(tokenizer.tokens));
@@ -98,7 +98,7 @@ yargs
 		yargs => {
 			yargs.demandOption('sentence');
 		},
-		function (argv) {
+		argv => {
 			const glosser = new Glosser(argv.easy);
 			console.log(glosser.alignGlossSentence(argv.sentence!));
 		},
@@ -115,7 +115,7 @@ yargs
 			});
 		},
 
-		function (argv) {
+		argv => {
 			const imgBuffer = pngGlossSentence(argv.sentence!, { easy: argv.easy });
 			fs.writeFileSync(argv.output as string, imgBuffer);
 		},
@@ -136,7 +136,7 @@ yargs
 			});
 		},
 
-		async function (argv) {
+		async argv => {
 			const trees = getTrees(argv);
 			if (trees.length === 0) {
 				console.error('No parse.');
@@ -168,7 +168,7 @@ yargs
 			yargs.demandOption('sentence');
 		},
 
-		function (argv) {
+		argv => {
 			const trees = getTrees(argv);
 			console.log(JSON.stringify(trees));
 		},
@@ -180,7 +180,7 @@ yargs
 			yargs.demandOption('sentence');
 		},
 
-		function (argv) {
+		argv => {
 			const trees = getTrees(argv);
 			console.log(KDL.format(trees.map(formatTreeAsKdl)));
 		},
@@ -192,7 +192,7 @@ yargs
 			yargs.demandOption('sentence');
 		},
 
-		function (argv) {
+		argv => {
 			const trees = getTrees(argv);
 			for (const v of trees) {
 				console.log(textual_tree_from_json(v));
@@ -210,9 +210,9 @@ yargs
 				default: 'output.tex',
 			});
 		},
-		function (argv) {
+		argv => {
 			const trees = getTrees(argv);
-			console.log(trees.length + ' parses');
+			console.log(`${trees.length} parses`);
 			fs.writeFileSync(argv.output as string, toDocument(trees));
 		},
 	)
@@ -228,7 +228,7 @@ yargs
 			});
 		},
 
-		function (argv) {
+		argv => {
 			const dtrees = getTrees({ ...argv, semantics: true }) as DTree[];
 			const format = argv.format as 'text' | 'latex' | 'json';
 			const getDenotation = ({ denotation: d }: DTree) => d!;
@@ -264,7 +264,7 @@ yargs
 				describe: 'Only print failures',
 			});
 		},
-		function (argv) {
+		argv => {
 			testSentences((argv as any).failures as boolean, toEnglish);
 		},
 	)
@@ -274,7 +274,7 @@ yargs
 		yargs => {
 			yargs.demandOption('sentence');
 		},
-		function (argv) {
+		argv => {
 			console.log(toEnglish(argv.sentence!));
 		},
 	)

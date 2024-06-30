@@ -1,31 +1,38 @@
 import classNames from 'classnames';
 import _ from 'lodash';
-import { ReactElement, useEffect, useRef, useState } from 'react';
+import {
+	type ReactElement,
+	type ReactNode,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import { useDarkMode } from 'usehooks-ts';
 
-import { boxify } from '../modes/boxes';
-import { trimTree } from '../tree/trim';
 import { treeToEnglish } from '../english/tree';
-import { recover } from '../syntax/recover';
-import { Glosser } from '../morphology/gloss';
+import { boxify } from '../modes/boxes';
 import { parse } from '../modes/parse';
+import { textual_tree_from_json } from '../modes/textual-tree';
+import { Glosser } from '../morphology/gloss';
 import { denote } from '../semantics/denote';
 import { toLatex, toMathml, toPlainText } from '../semantics/render';
-import { textual_tree_from_json } from '../modes/textual-tree';
+import { recover } from '../syntax/recover';
 import { drawTreeToCanvas } from '../tree/draw';
+import { trimTree } from '../tree/trim';
 
+import { keyFor } from '../core/misc';
+import { GfTarget, GfTranslator } from '../gf';
+import { HandwrittenParser } from '../handwritten-parser';
 import { ToaqTokenizer } from '../morphology/tokenize';
+import type { Expr } from '../semantics/model';
+import type { Tree } from '../tree';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
+import { themes } from '../tree/theme';
 import { Boxes } from './Boxes';
+import GfResult from './GfResult';
+import type { Configuration } from './Settings';
 import { Tokens } from './Tokens';
 import { TreeBrowser } from './TreeBrowser';
-import { themes } from '../tree/theme';
-import { GfTarget, GfTranslator } from '../gf';
-import GfResult from './GfResult';
-import { Expr } from '../semantics/model';
-import { Configuration, Mode, Settings } from './Settings';
-import { Tree } from '../tree';
-import { HandwrittenParser } from '../handwritten-parser';
 
 function errorString(e: any): string {
 	const string = String(e);
@@ -45,6 +52,8 @@ export interface OutputProps {
 }
 
 export function RenderMathml(props: { mathml: string }) {
+	// TODO: This is totally vulnerable to XSS!
+	// biome-ignore lint/security/noDangerouslySetInnerHtml: known bug
 	return <div dangerouslySetInnerHTML={{ __html: props.mathml }} />;
 }
 
@@ -65,13 +74,13 @@ export function Output(props: OutputProps) {
 	let trees: Tree[];
 	try {
 		trees = parse(text);
-	} catch (e) {
+	} catch (_e) {
 		trees = [];
 	}
 	const parseCount = trees.length;
 	useEffect(() => {
 		if (parseIndex >= parseCount) setParseIndex(0);
-	}, [parseIndex, setParseIndex, parseCount]);
+	}, [parseIndex, parseCount]);
 
 	const needsParse =
 		mode !== 'tokens' &&
@@ -87,8 +96,8 @@ export function Output(props: OutputProps) {
 	function getBoxes(strategy: 'flat' | 'nest' | 'split'): ReactElement {
 		const tree = trees[parseIndex];
 		const outputs = boxify(tree);
-		const divs = outputs.map((b, i) => (
-			<Boxes key={i} {...b} cpStrategy={strategy} />
+		const divs = outputs.map(b => (
+			<Boxes key={keyFor(b)} {...b} cpStrategy={strategy} />
 		));
 		return <>{divs}</>;
 	}
@@ -101,6 +110,7 @@ export function Output(props: OutputProps) {
 		switch (treeFormat) {
 			case 'textual':
 				return (
+					// biome-ignore lint/suspicious/noControlCharactersInRegex: they do actually occur in the output
 					<pre>{textual_tree_from_json(tree).replace(/\x1b\[\d+m/g, '')}</pre>
 				);
 			case 'png-latex':
@@ -132,6 +142,7 @@ export function Output(props: OutputProps) {
 							objectFit: 'contain',
 						}}
 						src={''}
+						aria-label="Tree diagram"
 					/>
 				);
 			case 'json':
@@ -155,8 +166,9 @@ export function Output(props: OutputProps) {
 		return (
 			<div className="gloss-output">
 				{new Glosser(easy).glossSentence(text).map((g, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: order is stable
 					<div className="gloss-item" key={i}>
-						<div className="gloss-toaq">{g.toaq}</div>
+						// <div className="gloss-toaq">{g.toaq}</div>
 						<div className="gloss-english">{g.english}</div>
 					</div>
 				))}
@@ -167,7 +179,7 @@ export function Output(props: OutputProps) {
 	function getLogicalForm(
 		renderer: (e: Expr, compact?: boolean) => string,
 	): string {
-		let expr: any = denote(recover(trees[parseIndex])).denotation;
+		const expr: any = denote(recover(trees[parseIndex])).denotation;
 		if (!expr) return 'No denotation';
 		return renderer(expr, meaningCompact);
 	}
@@ -246,7 +258,7 @@ export function Output(props: OutputProps) {
 		}
 	}
 
-	let latestOutput;
+	let latestOutput: ReactNode;
 	try {
 		latestOutput = getOutput();
 	} catch (e) {
@@ -265,6 +277,7 @@ export function Output(props: OutputProps) {
 							<button
 								key={i}
 								className={parseIndex === i ? 'current' : ''}
+								type="button"
 								onClick={() => setParseIndex(i)}
 							>
 								{i + 1}

@@ -1,8 +1,8 @@
-import { describe, test, expect } from 'vitest';
-import * as fs from 'fs';
-import { parse } from './modes/parse';
+import * as fs from 'node:fs';
+import { describe, expect, test } from 'vitest';
 import { HandwrittenParser } from './handwritten-parser';
-import { Tree } from './tree';
+import { parse } from './modes/parse';
+import type { Tree } from './tree';
 
 function handParse(sentence: string): Tree | string {
 	const parser = new HandwrittenParser(sentence);
@@ -25,7 +25,7 @@ describe('handwritten parser matches Nearley parser', () => {
 			let trees: Tree[] = [];
 			try {
 				trees = parse(sentence);
-			} catch (e) {
+			} catch (_e) {
 				// whatever
 			}
 			if (trees.length === 1) {

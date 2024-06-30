@@ -1,4 +1,4 @@
-import { Format, fnFromMap, formatName } from './base';
+import { type Format, fnFromMap, formatName } from './base';
 
 export const latex: Format<string> = {
 	formatName: 'latex',
@@ -35,9 +35,9 @@ export const latex: Format<string> = {
 	) => {
 		const argList =
 			args.length > 0 || agent !== undefined
-				? `\\left(${agent ? agent + '; ' : ''}${args.join(', ')}\\right)`
+				? `\\left(${agent ? `${agent}; ` : ''}${args.join(', ')}\\right)`
 				: '';
-		const bod = body ? '. ' + body : '';
+		const bod = body ? `. ${body}` : '';
 		return `${symbol} \\mathop{\\text{${verbName}}}\\limits_{${aspect}}{}^{${event}}_{${world}}${argList}${bod}`;
 	},
 	apply: (fn, argument) => `${fn}(${argument})`,

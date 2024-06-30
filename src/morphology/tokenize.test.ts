@@ -1,13 +1,13 @@
-import { test, expect } from 'vitest';
+import { expect, test } from 'vitest';
 import {
-	clean,
+	ToaqTokenizer,
 	bare,
 	baseForm,
+	clean,
 	inTone,
-	tone,
 	splitIntoRaku,
 	splitPrefixes,
-	ToaqTokenizer,
+	tone,
 } from './tokenize';
 import { Tone } from './tone';
 

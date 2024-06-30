@@ -1,10 +1,10 @@
-import { ToaqToken, ToaqTokenizer } from './morphology/tokenize';
+import { type ToaqToken, ToaqTokenizer } from './morphology/tokenize';
 import {
-	Label,
-	Leaf,
+	type Label,
+	type Leaf,
 	PRO,
-	SerialTree,
-	Tree,
+	type SerialTree,
+	type Tree,
 	catSource,
 	makeEmptySerial,
 	makeEvAP,
@@ -19,20 +19,20 @@ import {
 } from './tree';
 
 export class ParseError extends Error {
-	constructor(token: ToaqToken | undefined, message?: string, line?: string) {
+	constructor(
+		token: ToaqToken | undefined,
+		baseMessage?: string,
+		line?: string,
+	) {
+		let message = baseMessage;
 		if (token) {
-			message =
-				`on line ${token.position.line + 1} column ${token.position.column + 1}: ` +
-				message;
+			message = `on line ${token.position.line + 1} column ${token.position.column + 1}: ${message}`;
 			if (line) {
-				message += '\n\n    ' + line;
-				message +=
-					'\n    ' +
-					' '.repeat(token.position.column) +
-					'^'.repeat(token.value.length);
+				message += `\n\n    ${line}`;
+				message += `\n    ${' '.repeat(token.position.column)}${'^'.repeat(token.value.length)}`;
 			}
 		} else {
-			message += ` (at EOF)`;
+			message += ' (at EOF)';
 		}
 		super(message);
 		this.name = 'ParseError';
@@ -41,10 +41,10 @@ export class ParseError extends Error {
 }
 
 enum ClauseType {
-	Main,
-	Sub,
-	Det,
-	Incorp,
+	Main = 0,
+	Sub = 1,
+	Det = 2,
+	Incorp = 3,
 }
 
 export class HandwrittenParser {
@@ -61,17 +61,17 @@ export class HandwrittenParser {
 	//#region Basic API
 
 	private error(
-		message: string,
+		baseMessage: string,
 		hints: Record<string, string> = {},
 	): ParseError {
+		let message = baseMessage;
 		const token = this.peek();
 		if (token) {
 			const hint = hints[token.type];
 			if (hint) message += `\n(Hint: ${hint})`;
 			return new ParseError(token, message, this.lines[token.position.line]);
-		} else {
-			return new ParseError(undefined, message);
 		}
+		return new ParseError(undefined, message);
 	}
 
 	private peek(): ToaqToken | undefined {
@@ -104,15 +104,15 @@ export class HandwrittenParser {
 	}
 
 	private eatLeaf(tokenType: string, label: Label): Leaf | undefined {
-		let token: ToaqToken | undefined;
-		if ((token = this.eat(tokenType))) {
+		const token = this.eat(tokenType);
+		if (token) {
 			return makeLeaf(label)([token, []]);
 		}
 	}
 
 	private eatPrefixLeaf(tokenType: string): Leaf | undefined {
-		let token: ToaqToken | undefined;
-		if ((token = this.eat(tokenType))) {
+		const token = this.eat(tokenType);
+		if (token) {
 			return makePrefixLeaf([token]);
 		}
 	}
@@ -128,9 +128,9 @@ export class HandwrittenParser {
 	private conjoined(
 		what: string,
 		eat: () => Tree | undefined,
-		eatConj?: () => Tree | undefined,
+		eatConj_?: () => Tree | undefined,
 	): Tree | undefined {
-		eatConj ??= () => this.eatConjunction();
+		const eatConj = eatConj_ ?? (() => this.eatConjunction());
 		const left = eat();
 		if (!left) return undefined;
 		const preConj = this.tokenIndex;
@@ -145,9 +145,8 @@ export class HandwrittenParser {
 				return left;
 			}
 			return this.makeBranch('&P', left, this.makeBranch("&'", conj, right));
-		} else {
-			return left;
 		}
+		return left;
 	}
 
 	private focusable(eat: () => Tree | undefined): Tree | undefined {
@@ -160,9 +159,8 @@ export class HandwrittenParser {
 				return undefined;
 			}
 			return this.makeBranch('FocusP', focus, right);
-		} else {
-			return eat();
 		}
+		return eat();
 	}
 
 	// #endregion Combinators
@@ -176,7 +174,7 @@ export class HandwrittenParser {
 
 	public expectFragment(): Tree {
 		// We can't tell DPs from SAPs without backtracking because of fronted subjects.
-		let index = this.tokenIndex;
+		const index = this.tokenIndex;
 		const DP = this.eatDPcon();
 		if (DP) {
 			if (this.eatEOF()) {
@@ -267,7 +265,7 @@ export class HandwrittenParser {
 		);
 	}
 
-	private eatHuPronoun(tokenType: string): Tree | undefined {
+	private eatHuPronoun(_tokenType: string): Tree | undefined {
 		const Hu = this.eatLeaf('prefix_pronoun', 'D');
 		if (!Hu) return undefined;
 		const word = this.eatWord();
@@ -293,9 +291,8 @@ export class HandwrittenParser {
 		const CPrelcon = this.eatCPrelcon();
 		if (CPrelcon) {
 			return this.makeBranch('𝘯P', inner, CPrelcon);
-		} else {
-			return inner;
 		}
+		return inner;
 	}
 
 	// # ní bï pu hao
@@ -369,9 +366,8 @@ export class HandwrittenParser {
 		const go = this.eatGo();
 		if (go) {
 			return makeRetroactiveCleft([MSP, go, this.expectClause(clauseType)]);
-		} else {
-			return MSP;
 		}
+		return MSP;
 	}
 
 	// ModalP -> ModalT4 CPsub {% makeBranch('ModalP') %}
@@ -487,25 +483,28 @@ export class HandwrittenParser {
 	// vPdet -> Serialdet<oiv> Argument {% makevPdet %}
 
 	private eatvP(clauseType: ClauseType): Tree | undefined {
-		let serial =
+		const serial =
 			this.eatSerial() ??
 			(clauseType === ClauseType.Det ? makeEmptySerial()() : undefined);
 		if (!serial) return undefined;
 
-		let children: Tree[] = [serial as Tree];
+		const children: Tree[] = [serial as Tree];
 		if (serial.incorporatedObject) {
 			children.push(serial.incorporatedObject);
 		}
-		delete serial.incorporatedObject;
+		serial.incorporatedObject = undefined;
 		if (clauseType === ClauseType.Det) {
 			children.push(PRO);
 		} else {
-			let arg: Tree | undefined;
-			while ((arg = this.eatAdjunctPcon())) {
+			for (;;) {
+				const arg = this.eatAdjunctPcon();
+				if (!arg) break;
 				children.push(arg);
 			}
 			let numArgs = 0;
-			while ((arg = this.eatVocArgument())) {
+			for (;;) {
+				const arg = this.eatVocArgument();
+				if (!arg) break;
 				children.push(arg);
 				if (arg.label !== 'VocativeP') {
 					numArgs++;
@@ -524,7 +523,9 @@ export class HandwrittenParser {
 				);
 			}
 			if (numArgs > 0) {
-				while ((arg = this.eatAdjunctPcon())) {
+				for (;;) {
+					const arg = this.eatAdjunctPcon();
+					if (!arg) break;
 					children.push(arg);
 				}
 			}
@@ -573,7 +574,8 @@ export class HandwrittenParser {
 				source: catSource(serial, object),
 			};
 			return this.makeBranch('AdjunctP', Adjunct, vP);
-		} else if (serial.arity === 1) {
+		}
+		if (serial.arity === 1) {
 			const vP: Tree = {
 				label: '*𝘷P',
 				children: [serial, PRO],
@@ -595,7 +597,7 @@ export class HandwrittenParser {
 	private eatSerial(): SerialTree | undefined {
 		let eaten = this.eatSerialItem();
 		if (!eaten) return undefined;
-		let verbTrees = [];
+		const verbTrees = [];
 		let incorporatedObject: Tree | undefined;
 		do {
 			verbTrees.push(eaten[1]);
@@ -609,7 +611,8 @@ export class HandwrittenParser {
 				}
 				break;
 			}
-		} while ((eaten = this.eatSerialItem()));
+			eaten = this.eatSerialItem();
+		} while (eaten);
 
 		incorporatedObject ??= this.eatArgincorp();
 		return {
@@ -646,9 +649,8 @@ export class HandwrittenParser {
 				flavor,
 				this.makeBranch('&P', left, this.makeBranch("&'", conj, right)),
 			];
-		} else {
-			return ['plain', left];
 		}
+		return ['plain', left];
 	}
 
 	// # jî
@@ -677,9 +679,8 @@ export class HandwrittenParser {
 		if (this.peek()?.type === 'incorporated_complementizer') {
 			const cp = this.expectCP(ClauseType.Incorp);
 			return this.makeBranch('DP', makeNull('D'), cp);
-		} else {
-			return this.eatDPincorp();
 		}
+		return this.eatDPincorp();
 	}
 
 	// DPcon -> DProi {% id %}
@@ -688,7 +689,7 @@ export class HandwrittenParser {
 	private eatDPcon(): Tree | undefined {
 		const left = this.eatDProi();
 		if (!left) return undefined;
-		let preConj = this.tokenIndex;
+		const preConj = this.tokenIndex;
 		const conj = this.eatConjunction();
 		if (conj) {
 			const right = this.eatDPcon();
@@ -746,9 +747,8 @@ export class HandwrittenParser {
 		if (this.peek()?.type === 'subordinating_complementizer') {
 			const CP = this.expectCP(ClauseType.Sub);
 			return this.makeBranch('DP', makeNull('D'), CP);
-		} else {
-			return undefined;
 		}
+		return undefined;
 	}
 
 	// Sigmacon -> null {% makeCovertLeaf('Σ') %}
@@ -814,8 +814,8 @@ export class HandwrittenParser {
 	// MoP -> Mo Text {% makeBranch('moP') %}
 	// MiP -> Mi Word {% makeBranch('mıP') %}
 	private eatVerb(): Tree | undefined {
-		let prefix: Tree | undefined;
-		if ((prefix = this.eatPrefix())) {
+		const prefix = this.eatPrefix();
+		if (prefix) {
 			const inner = this.eatVerb();
 			if (!inner) {
 				throw this.error(
@@ -823,9 +823,8 @@ export class HandwrittenParser {
 				);
 			}
 			return makePrefixP([prefix, inner]);
-		} else {
-			return this.eatTeoP() ?? this.eatShuP() ?? this.eatMiP() ?? this.eatV();
 		}
+		return this.eatTeoP() ?? this.eatShuP() ?? this.eatMiP() ?? this.eatV();
 	}
 
 	private eatTeoP(): Tree | undefined {

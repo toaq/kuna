@@ -10,5 +10,6 @@ export interface ToaduaEntry {
 let _toadua: Record<string, ToaduaEntry>;
 
 export function toadua(): Record<string, ToaduaEntry> {
-	return (_toadua ??= require('../../data/toadua/toadua.json'));
+	_toadua ??= require('../../data/toadua/toadua.json');
+	return _toadua;
 }

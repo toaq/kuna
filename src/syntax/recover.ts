@@ -1,19 +1,19 @@
-import { fixSerial, pro } from './serial';
+import { Impossible } from '../core/error';
+import { reverse } from '../core/misc';
+import { inTone } from '../morphology/tokenize';
+import { Tone } from '../morphology/tone';
 import {
-	Branch,
-	CovertValue,
-	StrictTree,
-	Tree,
+	type Branch,
+	type CovertValue,
+	type StrictTree,
+	type Tree,
 	assertBranch,
 	assertLeaf,
 	effectiveLabel,
 	findHead,
 } from '../tree';
-import { Impossible } from '../core/error';
-import { reverse } from '../core/misc';
-import { inTone } from '../morphology/tokenize';
-import { Tone } from '../morphology/tone';
 import { moveUp } from '../tree/movement';
+import { fixSerial, pro } from './serial';
 
 interface Quantification {
 	type: 'quantification';
@@ -121,6 +121,7 @@ class Scope {
 	 * Wrap the given CompCP (probably ΣP) in the binding sites for this scope.
 	 */
 	wrap(tree: StrictTree): StrictTree {
+		let result = tree;
 		for (const [b, index] of reverse(this.bindings)) {
 			let left: StrictTree;
 			switch (b.type) {
@@ -170,10 +171,15 @@ class Scope {
 			}
 
 			left.binding = index;
-			tree = { label: tree.label, left, right: tree, source: tree.source };
+			result = {
+				label: result.label,
+				left,
+				right: result,
+				source: result.source,
+			};
 		}
 
-		return tree;
+		return result;
 	}
 }
 
@@ -183,8 +189,6 @@ class Scope {
 class Recoverer {
 	private nextBinding = 0;
 	private nextCoindex = 0;
-
-	constructor() {}
 
 	private newCoindex(): string {
 		return String.fromCodePoint('𝑖'.codePointAt(0)! + this.nextCoindex++);
@@ -210,16 +214,16 @@ class Recoverer {
 				const serial = tree.children[0];
 				if (!serial) throw new Impossible('*𝘷P without children');
 				if (serial.label !== '*Serial') {
-					throw new Impossible('*𝘷P without *Serial, instead: ' + serial.label);
+					throw new Impossible(`*𝘷P without *Serial, instead: ${serial.label}`);
 				}
 				if (!('children' in serial)) throw new Impossible('strange *Serial');
 
 				const vP = this.fixSerial(serial, tree.children.slice(1));
 				return this.recover(vP, scope);
-			} else {
-				throw new Impossible('unexpected non-binary tree: ' + tree.label);
 			}
-		} else if ('left' in tree) {
+			throw new Impossible(`unexpected non-binary tree: ${tree.label}`);
+		}
+		if ('left' in tree) {
 			if (tree.label === 'VP' && tree.left.label === '*Serial') {
 				// Tiny hack to extract a VP from fixSerial:
 				const vP = this.fixSerial(tree.left, [pro(), tree.right]);
@@ -290,9 +294,8 @@ class Recoverer {
 			}
 
 			return fixed;
-		} else {
-			return tree;
 		}
+		return tree;
 	}
 }
 
