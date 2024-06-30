@@ -64,6 +64,8 @@ export function getFrame(verb: Tree): string {
 		}
 		if (verb.word.entry?.type === 'predicate') {
 			return verb.word.entry.frame;
+		} else if (verb.word.entry?.type === 'predicatizer') {
+			return `${verb.word.entry.frame} c`;
 		} else if (verb.word.entry?.type === 'adjective marker') {
 			return 'kı';
 		} else {
@@ -365,6 +367,18 @@ function isArgIncorp(dp: Tree): boolean {
 }
 
 /**
+ * Determines whether a *Serial is a predicatizer.
+ */
+function isPredicatizer(serial: Tree[]): boolean {
+	const last = serial[serial.length - 1];
+	return (
+		'word' in last &&
+		'entry' in last.word &&
+		last.word.entry?.type === 'predicatizer'
+	);
+}
+
+/**
  * Turn the given *Serial and terms into a proper 𝘷P, by:
  *
  * - splitting the *Serial into segments,
@@ -412,19 +426,24 @@ export function fixSerial(
 
 	let earlyAdjuncts: Tree[] = [];
 	let args: Tree[] = [];
-	let argIncorp: Tree | null = null;
+	let argIncorp: Tree | null | undefined = undefined;
 	let lateAdjuncts: Tree[] = [];
 	for (const term of terms) {
-		if (term.label === 'DP' && isArgIncorp(term)) {
+		if (
+			argIncorp === undefined &&
+			term.label === 'DP' &&
+			(isArgIncorp(term) || isPredicatizer(children))
+		) {
 			argIncorp = term;
 		} else {
+			argIncorp ??= null;
 			const label = effectiveLabel(term);
 			if (label === 'DP') args.push(term);
 			else if (args.length) lateAdjuncts.push(term);
 			else earlyAdjuncts.push(term);
 		}
 	}
-	if (argIncorp !== null) args.push(argIncorp);
+	if (argIncorp != null) args.push(argIncorp);
 
 	// Now the first segment is the serial verb and everything after it is serial adjectives.
 	let { ki, vP } = segmentToKivP(segments[0], args, newCoindex);

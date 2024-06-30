@@ -58,6 +58,7 @@ import {
 	quote,
 	cloneBindings,
 } from './model';
+import { getFrame } from '../syntax/serial';
 
 function denoteVerb(toaq: string, arity: number): Expr {
 	switch (arity) {
@@ -148,9 +149,10 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 		} else {
 			const entry = leaf.word.entry;
 			if (!entry) throw new Unrecognized('verb: ' + leaf.word.text);
-			if (entry.type !== 'predicate') throw new Impossible('non-predicate V');
+			if (entry.type !== 'predicate' && entry.type !== 'predicatizer')
+				throw new Impossible('non-predicate V');
 
-			let arity = splitNonEmpty(entry.frame, ' ').length;
+			let arity = splitNonEmpty(getFrame(leaf), ' ').length;
 			// Agents are external to the verb, so not counted in the arity
 			if (entry.subject === 'agent') arity--;
 			// In case we don't have lexical data on this word, make sure we're at least

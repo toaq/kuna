@@ -11,7 +11,7 @@ import {
 } from '../tree';
 import { Impossible } from '../core/error';
 import { reverse } from '../core/misc';
-import { inTone, repairTones } from '../morphology/tokenize';
+import { inTone } from '../morphology/tokenize';
 import { Tone } from '../morphology/tone';
 import { moveUp } from '../tree/movement';
 
@@ -183,7 +183,6 @@ class Scope {
 class Recoverer {
 	private nextBinding = 0;
 	private nextCoindex = 0;
-	private nextMovementId = 0;
 
 	constructor() {}
 

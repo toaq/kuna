@@ -32,33 +32,42 @@ function d(sentence: string): string {
 	}
 }
 
-test('it denotes a nullary verb', () => {
+test('it denotes nullary verbs', () => {
 	expect(d('Ruqshua')).toMatchInlineSnapshot(
 		'"ASSERT(λ𝘸. ∃𝘦. τ(𝘦) ⊆ t ∧ ruqshua.𝘸(𝘦))"',
 	);
 });
 
-test('it denotes an unaccusative verb', () => {
+test('it denotes unaccusative verbs', () => {
 	expect(d('Nuo páqda')).toMatchInlineSnapshot(
 		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ nuo.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ paqda.𝘸(a)(𝘦))) | animate(a)"',
 	);
 });
 
-test('it denotes an unergative verb', () => {
+test('it denotes unergative verbs', () => {
 	expect(d('Marao páqda')).toMatchInlineSnapshot(
 		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = a ∧ marao.𝘸(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ paqda.𝘸(a)(𝘦))) | animate(a)"',
 	);
 });
 
-test('it denotes a transtive verb', () => {
+test('it denotes transtive verbs', () => {
 	expect(d('Chuq nháo súshı')).toMatchInlineSnapshot(
 		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = nháo ∧ chuq.𝘸(a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ sushı.𝘸(a)(𝘦))) | inanimate(a)"',
 	);
 });
 
-test('it denotes a ditranstive verb', () => {
+test('it denotes ditranstive verbs', () => {
 	expect(d('Do jí nháo súshı')).toMatchInlineSnapshot(
 		'"ASSERT(λ𝘸. (∃𝘦. τ(𝘦) ⊆ t\' ∧ AGENT(𝘦)(𝘸) = jí ∧ do.𝘸(nháo, a)(𝘦) | ∃𝘦. τ(𝘦) ⊆ t ∧ sushı.𝘸(a)(𝘦))) | inanimate(a)"',
+	);
+});
+
+test('it denotes predicatizers', () => {
+	expect(d('Mea íme nháo')).toMatchInlineSnapshot(
+		'"ASSERT(λ𝘸. ∃𝘦. τ(𝘦) ⊆ t ∧ mea.𝘸(nháo, íme)(𝘦))"',
+	);
+	expect(d('Cho jí tú mea nhána')).toMatchInlineSnapshot(
+		'"ASSERT(λ𝘸. ∀.SING 𝘹 : ∃𝘦. τ(𝘦) ⊆ t ∧ mea.𝘸(𝘹, nhána)(𝘦). ∃𝘦. τ(𝘦) ⊆ t\' ∧ cho.𝘸(jí, 𝘹)(𝘦))"',
 	);
 });
 
