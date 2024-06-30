@@ -8,12 +8,12 @@ import {
 	Interaction,
 } from 'discord.js';
 import _ from 'lodash';
+import { toEnglish } from '../english/tree';
+import { parse } from '../modes/parse';
+import { pngGlossSentence } from '../modes/png-gloss';
 import { dictionary } from '../morphology/dictionary';
 import { ToaduaEntry, toadua } from '../morphology/toadua';
 import { drawTreeToCanvas } from '../tree/draw';
-import { parse } from '../modes/parse';
-import { pngGlossSentence } from '../modes/png-gloss';
-import { toEnglish } from '../english/tree';
 import { denotationRenderText } from '../tree/place';
 
 const toaduaEntries = [...Object.values(toadua())];

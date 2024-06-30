@@ -1,4 +1,7 @@
-import { fixSerial, pro } from './serial';
+import { Impossible } from '../core/error';
+import { reverse } from '../core/misc';
+import { inTone } from '../morphology/tokenize';
+import { Tone } from '../morphology/tone';
 import {
 	Branch,
 	CovertValue,
@@ -9,11 +12,8 @@ import {
 	effectiveLabel,
 	findHead,
 } from '../tree';
-import { Impossible } from '../core/error';
-import { reverse } from '../core/misc';
-import { inTone } from '../morphology/tokenize';
-import { Tone } from '../morphology/tone';
 import { moveUp } from '../tree/movement';
+import { fixSerial, pro } from './serial';
 
 interface Quantification {
 	type: 'quantification';

@@ -1,7 +1,7 @@
 import { dictionary } from '../morphology/dictionary';
-import { getFrame } from '../syntax/serial';
 import { toadua } from '../morphology/toadua';
-import { bare, ToaqToken, tone } from '../morphology/tokenize';
+import { ToaqToken, bare, tone } from '../morphology/tokenize';
+import { getFrame } from '../syntax/serial';
 import {
 	catSource,
 	endsInClauseBoundary,

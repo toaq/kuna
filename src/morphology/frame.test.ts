@@ -1,4 +1,4 @@
-import { test, expect } from 'vitest';
+import { expect, test } from 'vitest';
 import { guessFrameFromDefinition } from './frame';
 
 test('it makes frames from Toadua definitions', () => {

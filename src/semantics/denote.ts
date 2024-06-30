@@ -1,4 +1,3 @@
-import { VerbEntry } from '../morphology/dictionary';
 import {
 	Impossible,
 	Ungrammatical,
@@ -6,7 +5,10 @@ import {
 	Unrecognized,
 } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
+import { VerbEntry } from '../morphology/dictionary';
 import { inTone } from '../morphology/tokenize';
+import { Tone } from '../morphology/tone';
+import { getFrame } from '../syntax/serial';
 import {
 	Branch,
 	CovertWord,
@@ -15,50 +17,48 @@ import {
 	Word,
 	effectiveLabel,
 } from '../tree';
-import { Tone } from '../morphology/tone';
 import { compose } from './compose';
 import {
 	adjuncts,
 	animacies,
+	argumentConjunctions,
+	argumentCoordinator,
 	aspects,
+	boundTheCp,
 	boundTheNp,
-	covertHoaBindings,
 	clausalConjunctions,
+	covertCp,
+	covertHoaBindings,
 	covertLittleVs,
 	covertV,
 	defaultTense,
 	dps,
 	eventAccessor,
+	focus,
+	focusAdverbs,
+	headAnaphor,
 	modals,
 	nameVerbs,
 	overtLittleVs,
+	pluralCoordinator,
 	polarities,
 	quantifiers,
 	quoteVerb,
 	speechActs,
 	tenses,
-	headAnaphor,
-	focus,
-	focusAdverbs,
-	pluralCoordinator,
-	argumentCoordinator,
-	argumentConjunctions,
-	covertCp,
-	boundTheCp,
 	topic,
 } from './data';
 import {
+	AnimacyClass,
 	DTree,
 	Expr,
+	cloneBindings,
 	noBindings,
+	quote,
 	v,
 	verb,
 	λ,
-	AnimacyClass,
-	quote,
-	cloneBindings,
 } from './model';
-import { getFrame } from '../syntax/serial';
 
 function denoteVerb(toaq: string, arity: number): Expr {
 	switch (arity) {

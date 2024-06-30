@@ -1,16 +1,16 @@
 import { CanvasRenderingContext2D } from 'canvas';
 import { DTree, Expr } from '../semantics/model';
-import { toPlainText, toLatex, typeToPlainText } from '../semantics/render';
+import { toLatex, toPlainText, typeToPlainText } from '../semantics/render';
 import { Branch, Leaf, Rose, Tree } from '../tree';
 
-import { mathjax } from 'mathjax-full/js/mathjax';
-import { TeX } from 'mathjax-full/js/input/tex';
-import { SVG } from 'mathjax-full/js/output/svg';
-import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
-import { Theme, themes } from './theme';
+import { TeX } from 'mathjax-full/js/input/tex';
+import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
+import { mathjax } from 'mathjax-full/js/mathjax';
+import { SVG } from 'mathjax-full/js/output/svg';
 import { Movement } from './movement';
+import { Theme, themes } from './theme';
 
 const adaptor = liteAdaptor();
 RegisterHTMLHandler(adaptor);

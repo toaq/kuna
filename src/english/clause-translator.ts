@@ -1,6 +1,7 @@
 import { Impossible, Unimplemented } from '../core/error';
 import { clean } from '../morphology/tokenize';
 import { Leaf, Tree, assertBranch } from '../tree';
+import { leafText } from '../tree/functions';
 import {
 	VerbForm,
 	conjugate,
@@ -11,7 +12,6 @@ import {
 	realizeTense,
 } from './conjugation';
 import { serialToEnglish, treeToEnglish } from './tree';
-import { leafText } from '../tree/functions';
 
 // @ts-ignore
 import { Tagger } from 'pos';

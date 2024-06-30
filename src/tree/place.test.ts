@@ -1,7 +1,7 @@
-import { test, expect } from 'vitest';
+import { expect, test } from 'vitest';
+import { parse } from '../modes/parse';
 import { DrawContext, PlacedTree, TreePlacer } from './place';
 import { themes } from './theme';
-import { parse } from '../modes/parse';
 
 /**
  * Trim irrelevant word data from PlacedTree for the snapshot.

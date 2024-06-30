@@ -2,16 +2,16 @@ import { Impossible, Unimplemented } from '../core/error';
 import { some } from '../core/misc';
 import { Branch, StrictTree, effectiveLabel } from '../tree';
 import {
-	and,
-	app,
+	Binding,
+	Bindings,
 	DTree,
 	Expr,
 	ExprType,
-	Bindings,
+	and,
+	app,
+	subtype,
 	v,
 	λ,
-	subtype,
-	Binding,
 } from './model';
 import {
 	bindTimeIntervals,

@@ -1,28 +1,28 @@
-import { toDocument } from './modes/latex';
 import * as fs from 'fs';
-import { Glosser } from './morphology/gloss';
-import yargs from 'yargs';
-import { pngGlossSentence } from './modes/png-gloss';
-import { Tree } from './tree';
-import { recover } from './syntax/recover';
-import { trimTree } from './tree/trim';
-import { drawTreeToCanvas } from './tree/draw';
-import { parse } from './modes/parse';
-import { textual_tree_from_json } from './modes/textual-tree';
 import KDL from 'kdljs';
-import { formatTreeAsKdl } from './modes/kdl';
-import { testSentences } from './modes/test-sentences';
-import { denote } from './semantics/denote';
-import { ToaqTokenizer } from './morphology/tokenize';
+import yargs from 'yargs';
 import { toEnglish } from './english/tree';
-import { denotationRenderText } from './tree/place';
+import { formatTreeAsKdl } from './modes/kdl';
+import { toDocument } from './modes/latex';
+import { parse } from './modes/parse';
+import { pngGlossSentence } from './modes/png-gloss';
+import { testSentences } from './modes/test-sentences';
+import { textual_tree_from_json } from './modes/textual-tree';
+import { Glosser } from './morphology/gloss';
+import { ToaqTokenizer } from './morphology/tokenize';
+import { denote } from './semantics/denote';
 import { DTree } from './semantics/model';
 import {
-	toPlainText,
-	toLatex,
-	toJson,
 	jsonStringifyCompact,
+	toJson,
+	toLatex,
+	toPlainText,
 } from './semantics/render';
+import { recover } from './syntax/recover';
+import { Tree } from './tree';
+import { drawTreeToCanvas } from './tree/draw';
+import { denotationRenderText } from './tree/place';
+import { trimTree } from './tree/trim';
 
 function getTrees(argv: {
 	sentence: string | undefined;

@@ -1,4 +1,6 @@
+import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 import { inTone } from '../morphology/tokenize';
+import { Tone } from '../morphology/tone';
 import {
 	Tree,
 	assertBranch,
@@ -7,8 +9,6 @@ import {
 	treeChildren,
 	treeText,
 } from '../tree';
-import { Tone } from '../morphology/tone';
-import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 
 export interface PostField {
 	earlyAdjuncts: Tree[];

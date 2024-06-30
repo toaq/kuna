@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import { guessFrameFromDefinition } from '../morphology/frame';
 import https from 'https';
+import { guessFrameFromDefinition } from '../morphology/frame';
 
 async function post(
 	hostname: string,

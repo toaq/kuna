@@ -3,28 +3,28 @@ import _ from 'lodash';
 import { ReactElement, useEffect, useRef, useState } from 'react';
 import { useDarkMode } from 'usehooks-ts';
 
-import { boxify } from '../modes/boxes';
-import { trimTree } from '../tree/trim';
 import { treeToEnglish } from '../english/tree';
-import { recover } from '../syntax/recover';
-import { Glosser } from '../morphology/gloss';
+import { boxify } from '../modes/boxes';
 import { parse } from '../modes/parse';
+import { textual_tree_from_json } from '../modes/textual-tree';
+import { Glosser } from '../morphology/gloss';
 import { denote } from '../semantics/denote';
 import { toLatex, toMathml, toPlainText } from '../semantics/render';
-import { textual_tree_from_json } from '../modes/textual-tree';
+import { recover } from '../syntax/recover';
 import { drawTreeToCanvas } from '../tree/draw';
+import { trimTree } from '../tree/trim';
 
+import { GfTarget, GfTranslator } from '../gf';
 import { ToaqTokenizer } from '../morphology/tokenize';
+import { Expr } from '../semantics/model';
+import { Tree } from '../tree';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
+import { themes } from '../tree/theme';
 import { Boxes } from './Boxes';
+import GfResult from './GfResult';
+import { Configuration, Mode, Settings } from './Settings';
 import { Tokens } from './Tokens';
 import { TreeBrowser } from './TreeBrowser';
-import { themes } from '../tree/theme';
-import { GfTarget, GfTranslator } from '../gf';
-import GfResult from './GfResult';
-import { Expr } from '../semantics/model';
-import { Configuration, Mode, Settings } from './Settings';
-import { Tree } from '../tree';
 
 function errorString(e: any): string {
 	const string = String(e);

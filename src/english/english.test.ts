@@ -1,4 +1,4 @@
-import { test, expect } from 'vitest';
+import { expect, test } from 'vitest';
 import { toEnglish } from './tree';
 
 test('it translates Toaq to English', () => {

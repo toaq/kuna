@@ -5,11 +5,11 @@ import './Sentences.css';
 import { useInView } from 'react-intersection-observer';
 
 // @ts-ignore
-import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
-// @ts-ignore
 import aSentencesTxt from '../../sentences/a.txt?raw';
-import { recover } from '../syntax/recover';
+// @ts-ignore
+import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
 import { denote } from '../semantics/denote';
+import { recover } from '../syntax/recover';
 import { Output } from './Output';
 import { Mode } from './Settings';
 

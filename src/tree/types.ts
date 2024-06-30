@@ -1,5 +1,5 @@
-import { Entry } from '../morphology/dictionary';
 import { Impossible } from '../core/error';
+import { Entry } from '../morphology/dictionary';
 import { Tone } from '../morphology/tone';
 import { Movement } from './movement';
 

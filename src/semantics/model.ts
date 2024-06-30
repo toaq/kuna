@@ -1,6 +1,6 @@
 import { Impossible } from '../core/error';
 import { Branch, Leaf } from '../tree';
-import { toPlainText, typesToPlainText, typeToPlainText } from './render';
+import { toPlainText, typeToPlainText, typesToPlainText } from './render';
 
 /**
  * The possible types of semantic expressions.

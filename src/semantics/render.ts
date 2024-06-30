@@ -1,12 +1,6 @@
 import { Impossible } from '../core/error';
-import {
-	Expr,
-	ExprType,
-	KnownConstant,
-	KnownInfix,
-	KnownPolarizer,
-	KnownQuantifier,
-} from './model';
+import { EventCompound, detectCompound } from './compact';
+import { json, latex, mathml, plainText } from './format';
 import {
 	Format,
 	NameType,
@@ -16,8 +10,14 @@ import {
 	variableAlphabets,
 } from './format/base';
 import { JsonExpr } from './format/json';
-import { plainText, latex, json, mathml } from './format';
-import { EventCompound, detectCompound } from './compact';
+import {
+	Expr,
+	ExprType,
+	KnownConstant,
+	KnownInfix,
+	KnownPolarizer,
+	KnownQuantifier,
+} from './model';
 
 const infixPrecedence: Record<KnownInfix['name'], number> = {
 	and: 5,

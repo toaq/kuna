@@ -1,5 +1,5 @@
-import { dictionary, underscoredWordTypes } from './dictionary';
 import { Impossible, Ungrammatical } from '../core/error';
+import { dictionary, underscoredWordTypes } from './dictionary';
 import { Tone } from './tone';
 
 /**

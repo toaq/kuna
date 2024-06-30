@@ -1,6 +1,7 @@
 import { Canvas, CanvasRenderingContext2D, createCanvas } from 'canvas';
 import { DTree, Expr } from '../semantics/model';
 import { Tree } from '../tree';
+import { MovementID } from './movement';
 import {
 	PlacedBranch,
 	PlacedLeaf,
@@ -9,7 +10,6 @@ import {
 	TreePlacer,
 } from './place';
 import { Theme, ThemeName, themes } from './theme';
-import { MovementID } from './movement';
 
 interface Location {
 	x: number;

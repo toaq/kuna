@@ -1,10 +1,10 @@
-import { test, expect } from 'vitest';
+import { expect, test } from 'vitest';
+import { Impossible } from '../core/error';
 import { parse } from '../modes/parse';
 import { recover } from '../syntax/recover';
 import { denote } from './denote';
-import { toPlainText } from './render';
-import { Impossible } from '../core/error';
 import { freeVariableUsages } from './operations';
+import { toPlainText } from './render';
 
 function d(sentence: string): string {
 	try {
