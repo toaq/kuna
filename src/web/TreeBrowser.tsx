@@ -76,7 +76,7 @@ export function Subtree(props: {
 				left: props.lineDx + 'px',
 			}}
 		>
-			{props.lineDx && (
+			{props.lineDx !== undefined && (
 				<div
 					className="tree-line"
 					style={{
