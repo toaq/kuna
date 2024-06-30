@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import KDL from 'kdljs';
 import yargs from 'yargs';
 import { toEnglish } from './english/tree';
@@ -212,7 +212,7 @@ yargs
 		},
 		argv => {
 			const trees = getTrees(argv);
-			console.log(trees.length + ' parses');
+			console.log(`${trees.length} parses`);
 			fs.writeFileSync(argv.output as string, toDocument(trees));
 		},
 	)

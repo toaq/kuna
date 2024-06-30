@@ -273,9 +273,8 @@ export type DTree = (Leaf | Branch<DTree>) & {
 export function subtype(t1: ExprType, t2: ExprType): boolean {
 	if (typeof t1 === 'string' || typeof t2 === 'string') {
 		return t1 === t2 || (t1 === 'v' && t2 === 'e');
-	} else {
-		return t1 === t2 || (subtype(t2[0], t1[0]) && subtype(t1[1], t2[1]));
 	}
+	return t1 === t2 || (subtype(t2[0], t1[0]) && subtype(t1[1], t2[1]));
 }
 
 export function assertSubtype(t1: ExprType, t2: ExprType): void {
@@ -293,9 +292,8 @@ export function assertSubtype(t1: ExprType, t2: ExprType): void {
 export function typesEqual(t1: ExprType, t2: ExprType): boolean {
 	if (typeof t1 === 'string' || typeof t2 === 'string') {
 		return t1 === t2;
-	} else {
-		return t1 === t2 || (typesEqual(t1[0], t2[0]) && typesEqual(t1[1], t2[1]));
 	}
+	return t1 === t2 || (typesEqual(t1[0], t2[0]) && typesEqual(t1[1], t2[1]));
 }
 
 /**

@@ -51,10 +51,10 @@ function words(tree: Tree): (string | JSX.Element)[] {
 	if ('word' in tree) {
 		if (tree.word.covert) {
 			return [];
-		} else {
-			return [tree.word.text];
 		}
-	} else if ('left' in tree) {
+		return [tree.word.text];
+	}
+	if ('left' in tree) {
 		const cpIndex = context.cpIndices.get(tree);
 		if (context.cpStrategy !== 'flat' && cpIndex !== undefined) {
 			return context.cpStrategy === 'nest'
@@ -62,9 +62,8 @@ function words(tree: Tree): (string | JSX.Element)[] {
 				: [circled(cpIndex)];
 		}
 		return [...words(tree.left), ...words(tree.right)];
-	} else {
-		return tree.children.flatMap(words);
 	}
+	return tree.children.flatMap(words);
 }
 
 function gluedWords(tree: Tree): (string | JSX.Element)[] {
@@ -76,7 +75,7 @@ function gluedWords(tree: Tree): (string | JSX.Element)[] {
 			typeof glued[glued.length - 1] === 'string'
 		) {
 			glued[glued.length - 1] = repairTones(
-				glued[glued.length - 1] + ' ' + w,
+				`${glued[glued.length - 1]} ${w}`,
 			).trim();
 		} else {
 			glued.push(w);
@@ -100,9 +99,8 @@ function Segment(props: { segment: string | JSX.Element }) {
 				</div>
 			</div>
 		);
-	} else {
-		return props.segment;
 	}
+	return props.segment;
 }
 
 function Subtree(props: { tree: Tree }) {

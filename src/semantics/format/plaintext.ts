@@ -6,11 +6,11 @@ function mathematicalSansSerifItalic(name: string) {
 	const primes = name.slice(1);
 	if ('a' <= letter && letter <= 'z') {
 		return String.fromCodePoint(120257 + letter.codePointAt(0)!) + primes;
-	} else if ('A' <= letter && letter <= 'Z') {
-		return String.fromCodePoint(120263 + letter.codePointAt(0)!) + primes;
-	} else {
-		throw new Impossible('invalid letter');
 	}
+	if ('A' <= letter && letter <= 'Z') {
+		return String.fromCodePoint(120263 + letter.codePointAt(0)!) + primes;
+	}
+	throw new Impossible('invalid letter');
 }
 
 export const plainText: Format<string> = {
@@ -48,9 +48,9 @@ export const plainText: Format<string> = {
 	) => {
 		const argList =
 			args.length > 0 || agent !== undefined
-				? `(${agent ? agent + '; ' : ''}${args.join(', ')})`
+				? `(${agent ? `${agent}; ` : ''}${args.join(', ')})`
 				: '';
-		const bod = body ? '. ' + body : '';
+		const bod = body ? `. ${body}` : '';
 		return `${symbol}${verbName}[${aspect},${event},${world}]${argList}${bod}`;
 	},
 	apply: (fn, argument) => `${fn}(${argument})`,

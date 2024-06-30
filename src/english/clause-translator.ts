@@ -106,7 +106,8 @@ export class ClauseTranslator {
 					}
 				}
 				break;
-			} else if ('word' in node) {
+			}
+			if ('word' in node) {
 				throw new Impossible('hit leaf in clause');
 			}
 			switch (node.label) {
@@ -138,7 +139,7 @@ export class ClauseTranslator {
 					if (
 						'left' in node.right &&
 						'word' in node.right.left &&
-						clean(leafText(node.right.left)) == 'nä'
+						clean(leafText(node.right.left)) === 'nä'
 					) {
 						this.hoaReferent = treeToEnglish(node.left);
 					}
@@ -154,7 +155,7 @@ export class ClauseTranslator {
 					break;
 				default:
 					console.log(node);
-					throw new Unimplemented('in processClause: ' + node.label);
+					throw new Unimplemented(`in processClause: ${node.label}`);
 			}
 		}
 	}
@@ -170,23 +171,22 @@ export class ClauseTranslator {
 		if (mode === 'DP') {
 			if (this.verb === 'something') {
 				return '';
-			} else if (pos === 'verb') {
-				return this.verb + 'er';
-			} else if (pos === 'adjective') {
-				return this.verb + ' thing';
-			} else {
-				return this.verb;
 			}
-		} else {
 			if (pos === 'verb') {
-				return conjugate(this.verb, verbForm, auxiliary ? false : past);
-			} else {
-				const be = conjugate('be', verbForm, auxiliary ? false : past);
-				const article =
-					pos === 'noun' ? (/^[aeiou]/.test(this.verb) ? ' an ' : ' a ') : ' ';
-				return be + article + this.verb;
+				return `${this.verb}er`;
 			}
+			if (pos === 'adjective') {
+				return `${this.verb} thing`;
+			}
+			return this.verb;
 		}
+		if (pos === 'verb') {
+			return conjugate(this.verb, verbForm, auxiliary ? false : past);
+		}
+		const be = conjugate('be', verbForm, auxiliary ? false : past);
+		const article =
+			pos === 'noun' ? (/^[aeiou]/.test(this.verb) ? ' an ' : ' a ') : ' ';
+		return be + article + this.verb;
 	}
 
 	public emit(mode?: 'DP'): string {
@@ -243,7 +243,7 @@ export class ClauseTranslator {
 			if (this.negative) auxiliary = negateAuxiliary(auxiliary);
 		}
 
-		const earlyAdjuncts = this.earlyAdjuncts.map(x => x + ',');
+		const earlyAdjuncts = this.earlyAdjuncts.map(x => `${x},`);
 		const text = (constituent?: Constituent) =>
 			constituent
 				? constituent.text === 'RSM' && this.hoaReferent

@@ -15,8 +15,8 @@ import type { Mode } from './Settings';
 const rSentences: string[] = refgramSentencesTxt.split('\n');
 const aSentences: string[] = aSentencesTxt.split('\n');
 const allSentences: { id: string; sentence: string }[] = [
-	...rSentences.map((sentence, i) => ({ id: 'R' + (i + 1), sentence })),
-	...aSentences.map((sentence, i) => ({ id: 'A' + (i + 1), sentence })),
+	...rSentences.map((sentence, i) => ({ id: `R${i + 1}`, sentence })),
+	...aSentences.map((sentence, i) => ({ id: `A${i + 1}`, sentence })),
 ];
 
 type ParseStatus =

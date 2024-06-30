@@ -42,7 +42,7 @@ export class KunaBot {
 				);
 			}
 		} catch (e) {
-			await interaction.reply('Error: \n```\n' + e + '\n```');
+			await interaction.reply(`Error: \n\`\`\`\n${e}\n\`\`\``);
 			return;
 		}
 	}
@@ -108,7 +108,7 @@ export class KunaBot {
 			lines.push(`* **${compound}** (${a.gloss}-${b.gloss})`);
 		}
 		await interaction.reply(
-			'Here are some random compounds:\n\n' + lines.join('\n'),
+			`Here are some random compounds:\n\n${lines.join('\n')}`,
 		);
 	}
 
@@ -133,12 +133,8 @@ export class KunaBot {
 		const authors = entries.map(e => e.user);
 		authors.sort();
 
-		const questions =
-			`Who defined which word? (${authors.join(', ')})\n\n` +
-			entries.map((e, i) => `${i + 1}. **${e.head}**`).join('\n');
-		const answers =
-			'Answers:\n\n' +
-			entries.map((e, i) => `${i + 1}. **${e.head}** ← ${e.user}`).join('\n');
+		const questions = `Who defined which word? (${authors.join(', ')})\n\n${entries.map((e, i) => `${i + 1}. **${e.head}**`).join('\n')}`;
+		const answers = `Answers:\n\n${entries.map((e, i) => `${i + 1}. **${e.head}** ← ${e.user}`).join('\n')}`;
 
 		this.hostQuiz(interaction, questions, answers);
 	}
@@ -149,15 +145,17 @@ export class KunaBot {
 	): (entry: ToaduaEntry) => boolean {
 		if (author) {
 			return entry => entry.user === author;
-		} else if (mode === 'upvoted') {
-			return entry => entry.score > 0;
-		} else if (mode === 'official_and_upvoted') {
-			return entry => entry.user === 'official' || entry.score > 0;
-		} else if (mode === 'all') {
-			return () => true;
-		} else {
-			return entry => entry.user === 'official';
 		}
+		if (mode === 'upvoted') {
+			return entry => entry.score > 0;
+		}
+		if (mode === 'official_and_upvoted') {
+			return entry => entry.user === 'official' || entry.score > 0;
+		}
+		if (mode === 'all') {
+			return () => true;
+		}
+		return entry => entry.user === 'official';
 	}
 
 	private async respondQuiz(interaction: ChatInputCommandInteraction) {
@@ -177,15 +175,11 @@ export class KunaBot {
 		}
 
 		const entries = _.sampleSize(candidates, r + p);
-		const questions =
-			`Quizzing **${
-				author ?? mode
-			}** words. Translate the following between Toaq and English:\n` +
-			entries.map((e, i) => `${i + 1}. ${i < r ? e.head : e.body}`).join('\n');
+		const questions = `Quizzing **${
+			author ?? mode
+		}** words. Translate the following between Toaq and English:\n${entries.map((e, i) => `${i + 1}. ${i < r ? e.head : e.body}`).join('\n')}`;
 
-		const answers =
-			'Answers:\n\n' +
-			entries.map((e, i) => `${i + 1}. ${i < r ? e.body : e.head}`).join('\n');
+		const answers = `Answers:\n\n${entries.map((e, i) => `${i + 1}. ${i < r ? e.body : e.head}`).join('\n')}`;
 
 		await this.hostQuiz(interaction, questions, answers);
 	}

@@ -168,7 +168,6 @@ export class GfTranslator {
 			case '':
 			case 'chum':
 				return 'ASimul';
-			case 'tam':
 			default:
 				return 'AAnter';
 			// TODO: fancy aspects
@@ -227,7 +226,7 @@ export class GfTranslator {
 				return 'the_Det'; // ['DetQuant', 'DefArt', 'NumSg'];
 
 			default:
-				throw new Unimplemented('dToGf: ' + text);
+				throw new Unimplemented(`dToGf: ${text}`);
 		}
 	}
 
@@ -244,7 +243,7 @@ export class GfTranslator {
 			case 'rá':
 				return 'or_Conj';
 			default:
-				throw new Unimplemented('conjToGf: ' + text);
+				throw new Unimplemented(`conjToGf: ${text}`);
 		}
 	}
 
@@ -278,21 +277,18 @@ export class GfTranslator {
 		assertLabel(tree, 'DP');
 		if ('word' in tree) {
 			return ['UsePron', this.pronounToGf(tree)];
-		} else {
-			const d = tree.left;
-			const complement = tree.right as Branch<StrictTree>;
-			if (complement.label === '𝘯P') {
-				const cn = this.npToGf(complement);
-				return ['DetCN', this.dToGf(tree.left), cn];
-			} else if (complement.label === 'CP') {
-				const s = this.declarativeCpToGf(complement);
-				return ['EmbedS', s];
-			} else {
-				throw new Unimplemented(
-					'Unrecognized DP complement: ' + complement.label,
-				);
-			}
 		}
+		const _d = tree.left;
+		const complement = tree.right as Branch<StrictTree>;
+		if (complement.label === '𝘯P') {
+			const cn = this.npToGf(complement);
+			return ['DetCN', this.dToGf(tree.left), cn];
+		}
+		if (complement.label === 'CP') {
+			const s = this.declarativeCpToGf(complement);
+			return ['EmbedS', s];
+		}
+		throw new Unimplemented(`Unrecognized DP complement: ${complement.label}`);
 	}
 
 	/**
@@ -302,7 +298,7 @@ export class GfTranslator {
 		const text = baseForm(leafText(tree));
 		const verb = lexicon.V0.get(text);
 		if (verb) return ['UseV', verb];
-		throw new Unimplemented('Unknown V0: ' + text);
+		throw new Unimplemented(`Unknown V0: ${text}`);
 	}
 
 	/**
@@ -321,7 +317,7 @@ export class GfTranslator {
 		const adj = lexicon.A.get(text);
 		if (adj) return useComp(['CompAP', ['PositA', adj]]);
 
-		throw new Unimplemented('Unknown V: ' + text);
+		throw new Unimplemented(`Unknown V: ${text}`);
 	}
 
 	/**
@@ -334,7 +330,7 @@ export class GfTranslator {
 		if (object[0] === 'EmbedS') {
 			if (verb) return ['ComplVS', verb, object[1]];
 		}
-		throw new Unimplemented('Unknown VS: ' + text);
+		throw new Unimplemented(`Unknown VS: ${text}`);
 	}
 
 	/**
@@ -347,7 +343,7 @@ export class GfTranslator {
 		if (DO[0] === 'EmbedS') {
 			if (verb) return ['ComplSlash', ['SlashV2S', verb, DO[1]], IO];
 		}
-		throw new Unimplemented('Unknown VS: ' + text);
+		throw new Unimplemented(`Unknown VS: ${text}`);
 	}
 
 	/**
@@ -358,7 +354,7 @@ export class GfTranslator {
 		const text = baseForm(leafText(tree));
 		const verb = lexicon.V2.get(text);
 		if (verb) return ['ComplSlash', ['SlashV2a', verb], object];
-		throw new Unimplemented('Unknown V2: ' + text);
+		throw new Unimplemented(`Unknown V2: ${text}`);
 	}
 
 	/**
@@ -369,7 +365,7 @@ export class GfTranslator {
 		const text = baseForm(leafText(tree));
 		const verb = lexicon.V3.get(text);
 		if (verb) return ['ComplSlash', ['Slash2V3', verb, IO], DO];
-		throw new Unimplemented('Unknown V3: ' + text);
+		throw new Unimplemented(`Unknown V3: ${text}`);
 	}
 
 	/**
@@ -389,62 +385,54 @@ export class GfTranslator {
 				const subject = this.dpToGf(VP.right);
 				if (this.isSc(subject)) {
 					return ['PredSCVP', subject, gvp];
-				} else {
-					return ['PredVP', subject, gvp];
 				}
-			} else {
-				// nullary like "ruqshua"
-				const gvp: G_VP = this.v0ToGf(VP);
-				return ['ImpersCl', gvp];
+				return ['PredVP', subject, gvp];
 			}
-		} else {
-			const subject = this.dpToGf(tree.left);
-			const vbar = tree.right;
-			assertBranch(vbar);
-			assertLabel(vbar, "𝘷'");
-			const v = vbar.left;
-			assertLabel(v, '𝘷');
-			const VP = vbar.right;
-			assertLabel(VP, 'VP');
-			if ('right' in VP) {
-				if (VP.right.label === "V'") {
-					// ditransitive like "do"
-					const IO = this.dpToGf(VP.left);
-					if (this.isSc(IO)) throw new Unimplemented('IO is SC');
-					const Vbar = VP.right;
-					assertBranch(Vbar);
-					const V = Vbar.left;
-					const DO = this.dpToGf(Vbar.right);
-					const gvp: G_VP = this.isSc(DO)
-						? this.v2sToGf(V, IO, DO)
-						: this.v3ToGf(V, IO, DO);
-					if (this.isSc(subject)) {
-						return ['PredSCVP', subject, gvp];
-					} else {
-						return ['PredVP', subject, gvp];
-					}
-				} else {
-					// transitive like "chuq"
-					const object = this.dpToGf(VP.right);
-					const gvp: G_VP = this.isSc(object)
-						? this.vsToGf(VP.left, object)
-						: this.v2ToGf(VP.left, object);
-					if (this.isSc(subject)) {
-						return ['PredSCVP', subject, gvp];
-					} else {
-						return ['PredVP', subject, gvp];
-					}
-				}
-			} else {
-				// agentive intransitive like "koı"
-				const gvp: G_VP = this.vToGf(VP);
+			// nullary like "ruqshua"
+			const gvp: G_VP = this.v0ToGf(VP);
+			return ['ImpersCl', gvp];
+		}
+		const subject = this.dpToGf(tree.left);
+		const vbar = tree.right;
+		assertBranch(vbar);
+		assertLabel(vbar, "𝘷'");
+		const v = vbar.left;
+		assertLabel(v, '𝘷');
+		const VP = vbar.right;
+		assertLabel(VP, 'VP');
+		if ('right' in VP) {
+			if (VP.right.label === "V'") {
+				// ditransitive like "do"
+				const IO = this.dpToGf(VP.left);
+				if (this.isSc(IO)) throw new Unimplemented('IO is SC');
+				const Vbar = VP.right;
+				assertBranch(Vbar);
+				const V = Vbar.left;
+				const DO = this.dpToGf(Vbar.right);
+				const gvp: G_VP = this.isSc(DO)
+					? this.v2sToGf(V, IO, DO)
+					: this.v3ToGf(V, IO, DO);
 				if (this.isSc(subject)) {
 					return ['PredSCVP', subject, gvp];
-				} else {
-					return ['PredVP', subject, gvp];
 				}
+				return ['PredVP', subject, gvp];
 			}
+			// transitive like "chuq"
+			const object = this.dpToGf(VP.right);
+			const gvp: G_VP = this.isSc(object)
+				? this.vsToGf(VP.left, object)
+				: this.v2ToGf(VP.left, object);
+			if (this.isSc(subject)) {
+				return ['PredSCVP', subject, gvp];
+			}
+			return ['PredVP', subject, gvp];
 		}
+		// agentive intransitive like "koı"
+		const gvp: G_VP = this.vToGf(VP);
+		if (this.isSc(subject)) {
+			return ['PredSCVP', subject, gvp];
+		}
+		return ['PredVP', subject, gvp];
 	}
 
 	/**
@@ -574,9 +562,8 @@ export class GfTranslator {
 		const cp = tree.left;
 		if (leafText(sa) === 'da' || leafText(sa) === '') {
 			return ['UttS', this.declarativeCpToGf(cp)];
-		} else {
-			throw new Unimplemented('sapToGf: ' + leafText(sa));
 		}
+		throw new Unimplemented(`sapToGf: ${leafText(sa)}`);
 	}
 
 	/**
@@ -585,13 +572,14 @@ export class GfTranslator {
 	public treeToGf(tree: StrictTree): Gf {
 		if (tree.label === 'DP') {
 			return this.dpToGf(tree);
-		} else if (tree.label === 'SAP') {
-			return this.sapToGf(tree);
-		} else if (tree.label === 'CP') {
-			return this.declarativeCpToGf(tree);
-		} else {
-			throw new Unimplemented('treeToGf');
 		}
+		if (tree.label === 'SAP') {
+			return this.sapToGf(tree);
+		}
+		if (tree.label === 'CP') {
+			return this.declarativeCpToGf(tree);
+		}
+		throw new Unimplemented('treeToGf');
 	}
 
 	/**
@@ -605,6 +593,6 @@ export class GfTranslator {
 	public showGf(gf: Gf | string): string {
 		return typeof gf === 'string'
 			? gf
-			: '(' + gf.map(x => this.showGf(x)).join(' ') + ')';
+			: `(${gf.map(x => this.showGf(x)).join(' ')})`;
 	}
 }

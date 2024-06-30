@@ -70,7 +70,7 @@ export function inTone(word: string, tone: Tone): string {
  * Repair tones in a given string, replacing substrings like `'◌́ hao'` with `'háo'`.
  */
 export function repairTones(text: string): string {
-	return text.replace(/◌(.) (\S+)/g, (m, diacritic, word) => {
+	return text.replace(/◌(.) (\S+)/g, (_m, diacritic, word) => {
 		const tone = diacritic === '\u0301' ? Tone.T2 : Tone.T4;
 		return inTone(word, tone);
 	});
@@ -113,9 +113,8 @@ export function splitIntoRaku(word: string): string[] {
 	const totalLength = raku.reduce((a, b) => a + b.length, 0);
 	if (totalLength === word.normalize('NFKD').length) {
 		return raku;
-	} else {
-		return [word];
 	}
+	return [word];
 }
 
 /**
@@ -126,7 +125,7 @@ export function splitPrefixes(word: string): {
 	root: string;
 } {
 	const raku = splitIntoRaku(word.normalize('NFKD')).map(x =>
-		x.includes('\u0323') ? x.replace(/\u0323/gu, '') + '-' : x,
+		x.includes('\u0323') ? `${x.replace(/\u0323/gu, '')}-` : x,
 	);
 	const diacriticIndex = raku.findIndex(r =>
 		/[\u0300\u0301\u0308\u0302]/.test(r),
@@ -192,9 +191,9 @@ export class ToaqTokenizer {
 			let tokenQuote = false;
 			let toneInPrefix = false;
 
-			for (const tokenText of [...prefixes.map(p => p + '-'), root]) {
+			for (const tokenText of [...prefixes.map(p => `${p}-`), root]) {
 				const lemmaForm = clean(tokenText);
-				if (!lemmaForm) throw new Impossible('empty token at ' + m.index);
+				if (!lemmaForm) throw new Impossible(`empty token at ${m.index}`);
 				const exactEntry = dictionary.get(lemmaForm);
 				const base = baseForm(tokenText);
 				const entry = dictionary.get(base);

@@ -96,46 +96,41 @@ function animacyClass(verb: VerbEntry): AnimacyClass | null {
 function findVp(tree: StrictTree): StrictTree | null {
 	if (tree.label === 'VP' || tree.label === "EvA'") {
 		return tree;
-	} else if ('word' in tree) {
-		return null;
-	} else {
-		return findVp(tree.right) ?? findVp(tree.left);
 	}
+	if ('word' in tree) {
+		return null;
+	}
+	return findVp(tree.right) ?? findVp(tree.left);
 }
 
 function getVerbWord(vp: StrictTree): Word | CovertWord {
 	if ('word' in vp) {
 		if (vp.word.covert) throw new Impossible('Covert VP');
 		return vp.word;
-	} else {
-		const verb = vp.left;
-		switch (verb.label) {
-			case 'V':
-			case 'EvA':
-				if (!('word' in verb)) throw new Unrecognized(`${verb.label} shape`);
-				return verb.word;
-			case 'VP':
-				return getVerbWord(verb);
-			case 'shuP':
-			case 'mıP':
-				if ('word' in verb || !('word' in verb.left))
-					throw new Unrecognized(`${verb.label} shape`);
-				if (verb.left.word.covert)
-					throw new Impossible(`Covert ${verb.left.label}`);
-				return verb.left.word;
-			case 'teoP':
-				if (
-					'word' in verb ||
-					'word' in verb.left ||
-					!('word' in verb.left.left)
-				)
-					throw new Unrecognized('teoP shape');
-				if (verb.left.left.word.covert)
-					throw new Impossible(`Covert ${verb.left.left.label}`);
-				return verb.left.left.word;
-			default:
-				throw new Unrecognized('VP shape');
-		}
+	}
+	const verb = vp.left;
+	switch (verb.label) {
+		case 'V':
+		case 'EvA':
+			if (!('word' in verb)) throw new Unrecognized(`${verb.label} shape`);
+			return verb.word;
+		case 'VP':
+			return getVerbWord(verb);
+		case 'shuP':
+		case 'mıP':
+			if ('word' in verb || !('word' in verb.left))
+				throw new Unrecognized(`${verb.label} shape`);
+			if (verb.left.word.covert)
+				throw new Impossible(`Covert ${verb.left.label}`);
+			return verb.left.word;
+		case 'teoP':
+			if ('word' in verb || 'word' in verb.left || !('word' in verb.left.left))
+				throw new Unrecognized('teoP shape');
+			if (verb.left.left.word.covert)
+				throw new Impossible(`Covert ${verb.left.left.label}`);
+			return verb.left.left.word;
+		default:
+			throw new Unrecognized('VP shape');
 	}
 }
 
@@ -148,7 +143,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			denotation = covertV;
 		} else {
 			const entry = leaf.word.entry;
-			if (!entry) throw new Unrecognized('verb: ' + leaf.word.text);
+			if (!entry) throw new Unrecognized(`verb: ${leaf.word.text}`);
 			if (entry.type !== 'predicate' && entry.type !== 'predicatizer')
 				throw new Impossible('non-predicate V');
 
@@ -431,19 +426,18 @@ const branchCache = new WeakMap<Branch<StrictTree>, DTree>();
 export function denote_(tree: StrictTree, cCommand: StrictTree | null): DTree {
 	if ('word' in tree) {
 		return denoteLeaf(tree, cCommand);
-	} else {
-		// Because the denotation of a branch is a pure function of the branch, and
-		// some structures like quantified nPs and focused DPs tend to appear at
-		// multiple points in the tree, we can cache their denotations
-		const cached = branchCache.get(tree);
-		if (cached !== undefined) return cached;
-
-		const left = denote_(tree.left, tree.right);
-		const right = denote_(tree.right, tree.left);
-		const denoted = compose(tree, left, right);
-		branchCache.set(tree, denoted);
-		return denoted;
 	}
+	// Because the denotation of a branch is a pure function of the branch, and
+	// some structures like quantified nPs and focused DPs tend to appear at
+	// multiple points in the tree, we can cache their denotations
+	const cached = branchCache.get(tree);
+	if (cached !== undefined) return cached;
+
+	const left = denote_(tree.left, tree.right);
+	const right = denote_(tree.right, tree.left);
+	const denoted = compose(tree, left, right);
+	branchCache.set(tree, denoted);
+	return denoted;
 }
 
 /**

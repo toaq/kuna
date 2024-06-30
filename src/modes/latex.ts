@@ -3,39 +3,32 @@ import { toLatex as exprToLatex, typeToLatex } from '../semantics/render';
 import type { Tree } from '../tree';
 
 export function latexEscape(text: string): string {
-	return '{' + text.replace(/Σ/g, '$\\Sigma$') + '}';
+	return `{${text.replace(/Σ/g, '$\\Sigma$')}}`;
 }
 
 export function toLatex(tree: Tree | DTree): string {
 	let label = latexEscape(tree.label);
 	if ('denotation' in tree && tree.denotation !== null) {
-		label =
-			'{' +
-			label +
-			'\\ :\\ ' +
-			typeToLatex(tree.denotation.type) +
-			'\\\\ \\color{den}$' +
-			exprToLatex(tree.denotation) +
-			'$}';
+		label = `{${label}\\ :\\ ${typeToLatex(tree.denotation.type)}\\\\ \\color{den}$${exprToLatex(tree.denotation)}$}`;
 	}
 	if ('left' in tree) {
 		const left = toLatex(tree.left);
 		const right = toLatex(tree.right);
 		return `[${label} ${left} ${right}]`;
-	} else if ('children' in tree) {
+	}
+	if ('children' in tree) {
 		const children = tree.children.map(toLatex).join(' ');
 		return `[${label} ${children}]`;
-	} else {
-		if (tree.word.covert) {
-			return `[${label} [$\\varnothing$]]`;
-		}
-
-		const gloss = latexEscape(tree.word.entry?.gloss ?? '?');
-		const col = tree.word.entry?.type === 'predicate' ? 'verb' : 'particle';
-		const toaq = `\\textsf{\\color{${col}}${tree.word.text}}`;
-		const eng = `\\textit{\\color{fg}${gloss}}`;
-		return `[${label} [${toaq} \\\\ ${eng}]]`;
 	}
+	if (tree.word.covert) {
+		return `[${label} [$\\varnothing$]]`;
+	}
+
+	const gloss = latexEscape(tree.word.entry?.gloss ?? '?');
+	const col = tree.word.entry?.type === 'predicate' ? 'verb' : 'particle';
+	const toaq = `\\textsf{\\color{${col}}${tree.word.text}}`;
+	const eng = `\\textit{\\color{fg}${gloss}}`;
+	return `[${label} [${toaq} \\\\ ${eng}]]`;
 }
 
 export function toEnvironment(tree: Tree | DTree): string {

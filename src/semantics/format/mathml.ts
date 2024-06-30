@@ -6,13 +6,14 @@ function mathematicalItalic(name: string) {
 	const primes = name.slice(1);
 	if (letter === 'h') {
 		return 'ℎ';
-	} else if ('a' <= letter && letter <= 'z') {
-		return String.fromCodePoint(0x1d44e - 97 + letter.codePointAt(0)!) + primes;
-	} else if ('A' <= letter && letter <= 'Z') {
-		return String.fromCodePoint(0x1d434 - 65 + letter.codePointAt(0)!) + primes;
-	} else {
-		throw new Impossible('invalid letter');
 	}
+	if ('a' <= letter && letter <= 'z') {
+		return String.fromCodePoint(0x1d44e - 97 + letter.codePointAt(0)!) + primes;
+	}
+	if ('A' <= letter && letter <= 'Z') {
+		return String.fromCodePoint(0x1d434 - 65 + letter.codePointAt(0)!) + primes;
+	}
+	throw new Impossible('invalid letter');
 }
 
 export const mathml: Format<string> = {
@@ -55,23 +56,19 @@ export const mathml: Format<string> = {
 	) => {
 		const argList =
 			args.length > 0 || agent !== undefined
-				? `<mo stretchy=false>(</mo>${agent ? agent + '<mo>;</mo>' : ''}${args.join(
+				? `<mo stretchy=false>(</mo>${agent ? `${agent}<mo>;</mo>` : ''}${args.join(
 						'<mo>,</mo>',
 					)}<mo stretchy=false>)</mo>`
 				: '';
-		const bod = body ? '<mo lspace=0>.</mo>' + body : '';
+		const bod = body ? `<mo lspace=0>.</mo>${body}` : '';
 		return `${symbol} <munder><msubsup><mi class="kuna-verb">${verbName}</mi>${world}${event}</msubsup><mrow>${aspect}</mrow></munder>${argList}${bod}`;
 	},
 	apply: (fn, argument) =>
 		`${fn}<mo stretchy=false>(</mo>${argument}<mo stretchy=false>)</mo>`,
 	presuppose: (body, presuppositions) =>
-		`<mrow>${body}</mrow><mo stretchy=true>|</mo><mrow><mtable columnalign=left>` +
-		presuppositions.map(x => '<mtr><mtd>' + x + '</mtd></mtr>').join('') +
-		`</mtable></mrow>`,
+		`<mrow>${body}</mrow><mo stretchy=true>|</mo><mrow><mtable columnalign=left>${presuppositions.map(x => `<mtr><mtd>${x}</mtd></mtr>`).join('')}</mtable></mrow>`,
 	let: (name, value, body) =>
-		`<mrow><mi>let</mi><mspace width="1pt" /><mrow>${name}<mo>=</mo>` +
-		value +
-		`</mrow><mspace width="1pt" /><mi>in</mi><mspace width="1pt" /><mrow>${body}</mrow></mrow>`,
+		`<mrow><mi>let</mi><mspace width="1pt" /><mrow>${name}<mo>=</mo>${value}</mrow><mspace width="1pt" /><mi>in</mi><mspace width="1pt" /><mrow>${body}</mrow></mrow>`,
 	symbolForInfix: fnFromMap({
 		and: '<mo>∧</mo>',
 		or: '<mo>∨</mo>',

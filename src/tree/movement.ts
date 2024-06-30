@@ -41,7 +41,7 @@ export function moveUp(source: Leaf, target: Leaf) {
 	target.movement ??= makeMovement();
 	const sourceText = source.movement.text ?? leafText(source);
 	source.movement.movedTo = target.movement.id;
-	const text = (leafText(target) + ' ' + sourceText).trim();
+	const text = `${leafText(target)} ${sourceText}`.trim();
 	target.movement.text = repairTones(text);
 	source.movement.text = undefined;
 }

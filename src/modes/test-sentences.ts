@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 import { parse } from './parse';
 
 export function testSentences(
@@ -35,7 +35,7 @@ export function testSentences(
 			}
 		} catch (e) {
 			status = '\x1b[91m[fail]\x1b[0m';
-			error = '\x1b[2m' + String(e).split('\n')[0] + '\x1b[0m';
+			error = `\x1b[2m${String(e).split('\n')[0]}\x1b[0m`;
 			failure = true;
 		}
 
@@ -47,11 +47,11 @@ export function testSentences(
 			} catch (e) {
 				console.log(e);
 			}
-			post = '  \x1b[36m' + output + '\x1b[0m  ';
+			post = `  \x1b[36m${output}\x1b[0m  `;
 		}
 
 		if (!onlyPrintFailures || failure) {
-			console.log(status + ' ' + s + post + error);
+			console.log(`${status} ${s}${post}${error}`);
 		}
 	}
 	console.log(`Parsed ${ok}/${total} sentences.`);

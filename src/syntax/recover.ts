@@ -184,8 +184,6 @@ class Recoverer {
 	private nextBinding = 0;
 	private nextCoindex = 0;
 
-	constructor() {}
-
 	private newCoindex(): string {
 		return String.fromCodePoint('𝑖'.codePointAt(0)! + this.nextCoindex++);
 	}
@@ -210,16 +208,16 @@ class Recoverer {
 				const serial = tree.children[0];
 				if (!serial) throw new Impossible('*𝘷P without children');
 				if (serial.label !== '*Serial') {
-					throw new Impossible('*𝘷P without *Serial, instead: ' + serial.label);
+					throw new Impossible(`*𝘷P without *Serial, instead: ${serial.label}`);
 				}
 				if (!('children' in serial)) throw new Impossible('strange *Serial');
 
 				const vP = this.fixSerial(serial, tree.children.slice(1));
 				return this.recover(vP, scope);
-			} else {
-				throw new Impossible('unexpected non-binary tree: ' + tree.label);
 			}
-		} else if ('left' in tree) {
+			throw new Impossible(`unexpected non-binary tree: ${tree.label}`);
+		}
+		if ('left' in tree) {
 			if (tree.label === 'VP' && tree.left.label === '*Serial') {
 				// Tiny hack to extract a VP from fixSerial:
 				const vP = this.fixSerial(tree.left, [pro(), tree.right]);
@@ -290,9 +288,8 @@ class Recoverer {
 			}
 
 			return fixed;
-		} else {
-			return tree;
 		}
+		return tree;
 	}
 }
 

@@ -132,7 +132,7 @@ export function Settings(props: SettingsProps) {
 								type="text"
 								value={roofLabels}
 								onChange={e => setRoofLabels(e.target.value)}
-								placeholder={`DP QP`}
+								placeholder={'DP QP'}
 							/>
 						</div>
 						<div>

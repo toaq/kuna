@@ -21,7 +21,7 @@ const irregularVerbs: Record<string, string> = {
 };
 
 export function conjugate(verb: string, person: VerbForm, past: boolean) {
-	if (verb === 'be' && person == VerbForm.First && !past) {
+	if (verb === 'be' && person === VerbForm.First && !past) {
 		return 'am';
 	}
 	if (verb === 'be' && person <= VerbForm.Third && past) {
@@ -32,35 +32,40 @@ export function conjugate(verb: string, person: VerbForm, past: boolean) {
 		const [go, goes, went, go_inf, going, gone] = irr.split(',');
 		if (person === VerbForm.PresentParticiple) {
 			return going;
-		} else if (person === VerbForm.PastParticiple) {
-			return gone;
-		} else if (past) {
-			return went;
-		} else if (person === VerbForm.Infinitive) {
-			return go_inf;
-		} else if (person === VerbForm.Third) {
-			return goes;
-		} else {
-			return go;
 		}
+		if (person === VerbForm.PastParticiple) {
+			return gone;
+		}
+		if (past) {
+			return went;
+		}
+		if (person === VerbForm.Infinitive) {
+			return go_inf;
+		}
+		if (person === VerbForm.Third) {
+			return goes;
+		}
+		return go;
 	}
 	if (person === VerbForm.PastParticiple || past) {
-		return verb.replace(/e$/, '') + 'ed';
-	} else if (person === VerbForm.PresentParticiple) {
-		return verb.replace(/e$/, '') + 'ing';
-	} else if (past) {
-		return verb.replace(/e$/, '') + 'ed';
-	} else if (person === VerbForm.Third) {
-		if (/(s|sh|ch)$/.test(verb)) {
-			return verb + 'es';
-		} else if (/y$/.test(verb)) {
-			return verb.replace(/y$/, 'ies');
-		} else {
-			return verb + 's';
-		}
-	} else {
-		return verb;
+		return `${verb.replace(/e$/, '')}ed`;
 	}
+	if (person === VerbForm.PresentParticiple) {
+		return `${verb.replace(/e$/, '')}ing`;
+	}
+	if (past) {
+		return `${verb.replace(/e$/, '')}ed`;
+	}
+	if (person === VerbForm.Third) {
+		if (/(s|sh|ch)$/.test(verb)) {
+			return `${verb}es`;
+		}
+		if (/y$/.test(verb)) {
+			return verb.replace(/y$/, 'ies');
+		}
+		return `${verb}s`;
+	}
+	return verb;
 }
 
 export function negateAuxiliary(auxiliary: string) {
@@ -72,7 +77,7 @@ export function negateAuxiliary(auxiliary: string) {
 		case 'will':
 			return "won't";
 		default:
-			return auxiliary.replace(/n$/, '') + "n't";
+			return `${auxiliary.replace(/n$/, '')}n't`;
 	}
 }
 
@@ -109,7 +114,7 @@ export function realizeTense(toaqTense: string): VerbConstruction {
 		case 'jıa':
 			return { auxiliary: 'will', verbForm: VerbForm.Infinitive };
 		default:
-			throw new Unimplemented('realizeTense: ' + toaqTense);
+			throw new Unimplemented(`realizeTense: ${toaqTense}`);
 	}
 }
 
@@ -145,7 +150,7 @@ export function realizeAspect(toaqAspect: string): VerbConstruction {
 				verbForm: VerbForm.Infinitive,
 			};
 		default:
-			throw new Unimplemented('realizeAspect: ' + toaqAspect);
+			throw new Unimplemented(`realizeAspect: ${toaqAspect}`);
 	}
 }
 

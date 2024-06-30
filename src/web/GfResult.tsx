@@ -13,15 +13,14 @@ export function ShowLinearization({
 }) {
 	if (to === 'LibraryBrowserAPI') {
 		return undefined;
-	} else {
-		const lang = to.replace(/^(ResourceDemo|LibraryBrowser)/, '').toLowerCase();
-		return (
-			<div className="linearization">
-				<dd>{lang}:&nbsp;</dd>
-				<dt lang={lang}>{text}</dt>
-			</div>
-		);
 	}
+	const lang = to.replace(/^(ResourceDemo|LibraryBrowser)/, '').toLowerCase();
+	return (
+		<div className="linearization">
+			<dd>{lang}:&nbsp;</dd>
+			<dt lang={lang}>{text}</dt>
+		</div>
+	);
 }
 
 export interface GfResultProps {
@@ -39,10 +38,7 @@ export default (props: GfResultProps) => {
 			: 'ResourceDemo.pgf';
 	useEffect(() => {
 		fetch(
-			'https://cloud.grammaticalframework.org/grammars/' +
-				resource +
-				'?command=linearize&tree=' +
-				encodeURIComponent(gf),
+			`https://cloud.grammaticalframework.org/grammars/${resource}?command=linearize&tree=${encodeURIComponent(gf)}`,
 		).then(response => {
 			if (response.status >= 400) {
 				setLinearizations([]);

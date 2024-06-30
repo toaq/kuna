@@ -145,9 +145,9 @@ export class Dictionary {
 		] as Entry[];
 
 		for (const e of entries) {
-			delete (e as any).examples;
-			delete (e as any).keywords;
-			delete (e as any).notes;
+			(e as any).examples = undefined;
+			(e as any).keywords = undefined;
+			(e as any).notes = undefined;
 			if (e.type === 'complementizer') {
 				if (e.english.includes('relative')) {
 					e.type = 'relative clause complementizer';
@@ -157,7 +157,7 @@ export class Dictionary {
 					this.inner.set(ic, {
 						toaq: ic,
 						english: e.english,
-						gloss: 'of.' + e.gloss,
+						gloss: `of.${e.gloss}`,
 						type: 'incorporated complementizer',
 					});
 				}
@@ -165,13 +165,13 @@ export class Dictionary {
 
 			// We'll assume "prefix" is a verb-to-verb prefix, and make some
 			// sub-types for special prefixes.
-			if (e.toaq == 'hu-') {
+			if (e.toaq === 'hu-') {
 				e.type = 'prefix pronoun';
 			}
-			if (e.toaq == 'na-') {
+			if (e.toaq === 'na-') {
 				e.type = 'prefix conjunctionizer';
 			}
-			if (e.toaq == 'kı-') {
+			if (e.toaq === 'kı-') {
 				e.type = 'adjective marker';
 			}
 			this.inner.set(e.toaq.toLowerCase(), e);
@@ -181,7 +181,7 @@ export class Dictionary {
 				this.inner.set(oid, {
 					toaq: oid,
 					english: e.english,
-					gloss: 'of.' + e.gloss,
+					gloss: `of.${e.gloss}`,
 					type: 'incorporated determiner',
 				});
 			}
@@ -191,7 +191,7 @@ export class Dictionary {
 				this.inner.set(oip, {
 					toaq: oip,
 					english: e.english,
-					gloss: 'of.' + e.gloss,
+					gloss: `of.${e.gloss}`,
 					type: 'incorporated pronoun',
 				});
 			}
@@ -224,7 +224,7 @@ export class Dictionary {
 			}
 
 			if (e.type === 'aspect') {
-				const prefix = e.toaq + '-';
+				const prefix = `${e.toaq}-`;
 				this.inner.set(prefix, {
 					toaq: prefix,
 					english: e.english,
@@ -234,7 +234,7 @@ export class Dictionary {
 			}
 
 			if (e.type === 'tense') {
-				const prefix = e.toaq + '-';
+				const prefix = `${e.toaq}-`;
 				this.inner.set(prefix, {
 					toaq: prefix,
 					english: e.english,

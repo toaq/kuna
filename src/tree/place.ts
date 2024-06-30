@@ -100,13 +100,12 @@ export function boundingRect<C extends DrawContext>(
 			layers = Math.max(layers, subRect.layers + 1);
 		}
 		return { left, right, layers };
-	} else {
-		return {
-			left: placedTree.width / 2,
-			right: placedTree.width / 2,
-			layers: 1,
-		};
 	}
+	return {
+		left: placedTree.width / 2,
+		right: placedTree.width / 2,
+		layers: 1,
+	};
 }
 
 export function getLabel(tree: Tree | DTree): string {
@@ -117,7 +116,7 @@ export function getLabel(tree: Tree | DTree): string {
 
 export function denotationRenderText(
 	denotation: Expr,
-	theme: Theme,
+	_theme: Theme,
 	compact?: boolean,
 ): RenderedDenotation<CanvasRenderingContext2D> {
 	const text = toPlainText(denotation, compact);
@@ -129,7 +128,7 @@ export function denotationRenderText(
 		width(ctx) {
 			return ctx.measureText(text).width;
 		},
-		height(ctx) {
+		height(_ctx) {
 			return 30;
 		},
 		denotation,
@@ -142,19 +141,19 @@ export function denotationRenderLatex(
 	compact?: boolean,
 ): RenderedDenotation<CanvasRenderingContext2D> {
 	const latex = toLatex(denotation, compact);
-	let { width, height, svg } = get_mathjax_svg('\\LARGE ' + latex);
+	let { width, height, svg } = get_mathjax_svg(`\\LARGE ${latex}`);
 	svg = svg.replace(/currentColor/g, theme.denotationColor);
 	const pxWidth = Number(width.replace(/ex$/, '')) * 7;
 	const pxHeight = Number(height.replace(/ex$/, '')) * 7;
 	return {
-		draw(ctx, centerX, bottomY, color) {
+		draw(ctx, centerX, bottomY, _color) {
 			return new Promise(resolve => {
-				var blob = new Blob([svg], {
+				const blob = new Blob([svg], {
 					type: 'image/svg+xml;charset=utf-8',
 				});
 
-				var url = URL.createObjectURL(blob);
-				var img = new Image();
+				const url = URL.createObjectURL(blob);
+				const img = new Image();
 
 				img.addEventListener('load', (e: any) => {
 					ctx.drawImage(
@@ -168,10 +167,10 @@ export function denotationRenderLatex(
 				img.src = url;
 			});
 		},
-		width(ctx) {
+		width(_ctx) {
 			return pxWidth;
 		},
-		height(ctx) {
+		height(_ctx) {
 			return pxHeight;
 		},
 		denotation,
@@ -356,10 +355,10 @@ export class TreePlacer<C extends DrawContext> {
 	public placeTree(tree: Tree | DTree): PlacedTree<C> {
 		if ('word' in tree) {
 			return this.placeLeaf(tree);
-		} else if (this.options.truncateLabels.includes(tree.label)) {
-			return this.placeRoof(tree);
-		} else {
-			return 'children' in tree ? this.placeRose(tree) : this.placeBranch(tree);
 		}
+		if (this.options.truncateLabels.includes(tree.label)) {
+			return this.placeRoof(tree);
+		}
+		return 'children' in tree ? this.placeRose(tree) : this.placeBranch(tree);
 	}
 }

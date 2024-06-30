@@ -7,7 +7,7 @@ import { type DrawContext, type PlacedTree, TreePlacer } from './place';
  */
 function summarize<C extends DrawContext>(tree: PlacedTree<C>): any {
 	if ('word' in tree) return tree.label;
-	else return { ...tree, children: tree.children.map(summarize) };
+	return { ...tree, children: tree.children.map(summarize) };
 }
 
 test('it places trees', () => {

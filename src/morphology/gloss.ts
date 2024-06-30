@@ -19,7 +19,7 @@ const words = [...toaduaGlosses.keys()]
 	.filter(x => x);
 words.sort((a, b) => b.length - a.length);
 const partRegExp = new RegExp(
-	words.join('|') + "(?=[bcdfghjklmnpqrstvwxzꝡ']|$)",
+	`${words.join('|')}(?=[bcdfghjklmnpqrstvwxzꝡ']|$)`,
 	'gui',
 );
 const compoundRegExp = new RegExp(`^((${partRegExp.source})){1,3}$`, 'ui');
@@ -119,15 +119,15 @@ export class Glosser {
 	}
 
 	protected glossPrefix(prefix: string): string {
-		const entry = dictionary.get(prefix + '-');
+		const entry = dictionary.get(`${prefix}-`);
 		if (entry) {
-			return this.getGloss(entry) + '-';
+			return `${this.getGloss(entry)}-`;
 		}
 
 		// hacky fallback for unknown prefixes: gloss them as if they were words
 		const rootEntry = dictionary.get(prefix);
 		if (rootEntry) {
-			return this.getGloss(rootEntry) + '-';
+			return `${this.getGloss(rootEntry)}-`;
 		}
 
 		return '?-';
@@ -139,16 +139,15 @@ export class Glosser {
 			return this.getGloss(entry);
 		}
 		if (clean(root) === 'é') {
-			return 'the\\' + this.glossRoot('ë');
+			return `the\\${this.glossRoot('ë')}`;
 		}
 		const bareRoot = bare(root);
 		const bareEntry = dictionary.get(bareRoot);
 		if (bareEntry) {
 			if (bareEntry.type === 'predicate') {
 				return (tone(root) === Tone.T2 ? 'the\\' : 'A\\') + bareEntry.gloss;
-			} else {
-				return bareEntry.gloss;
 			}
+			return bareEntry.gloss;
 		}
 		const fromToadua = toaduaGlosses.get(root) ?? toaduaGlosses.get(bareRoot);
 		if (fromToadua) {
@@ -159,7 +158,7 @@ export class Glosser {
 		if (match) {
 			const last = match[1];
 			const butLast = bareRoot.slice(0, bareRoot.length - last.length);
-			return this.glossRoot(butLast) + '-' + this.glossRoot(last);
+			return `${this.glossRoot(butLast)}-${this.glossRoot(last)}`;
 		}
 
 		return bareRoot;
@@ -168,7 +167,8 @@ export class Glosser {
 	public glossWord(word: string): string {
 		if (word === '◌́') {
 			return 'the';
-		} else if (word === '◌̂') {
+		}
+		if (word === '◌̂') {
 			return 'ADVERB';
 		}
 		word = clean(word.replace(/[\p{Pe}\p{Pf}\p{Pi}\p{Po}\p{Ps}]/gu, ''));
@@ -192,9 +192,9 @@ export class Glosser {
 		for (const entry of this.glossSentence(sentence)) {
 			const lt = displayLength(entry.toaq);
 			const lb = displayLength(entry.english);
-			top += ' ' + entry.toaq + ''.padEnd(lb - lt);
-			bot += ' ' + entry.english + ''.padEnd(lt - lb);
+			top += ` ${entry.toaq}${''.padEnd(lb - lt)}`;
+			bot += ` ${entry.english}${''.padEnd(lt - lb)}`;
 		}
-		return top + '\n' + bot;
+		return `${top}\n${bot}`;
 	}
 }

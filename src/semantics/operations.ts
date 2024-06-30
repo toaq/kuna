@@ -141,9 +141,8 @@ function betaReduce(e: Expr): Expr {
 		return e.fn.restriction === undefined
 			? body
 			: presuppose(body, substitute(0, e.argument, e.fn.restriction));
-	} else {
-		return e;
 	}
+	return e;
 }
 
 /**
@@ -223,7 +222,7 @@ export function reduce_(e: Expr, premises: Set<string>): Expr {
 					),
 					reduced.defines === undefined ? undefined : mapping(reduced.defines),
 				);
-			} catch (e) {
+			} catch (_e) {
 				// This presupposition evidently uses the quantified variable and cannot be
 				// lifted
 				innerPresuppositions.push([reduced.presupposition, reduced.defines]);
@@ -346,7 +345,8 @@ function forEachBinding(
 		fn(
 			bs.resumptive,
 			bs => bs.resumptive,
-			(bs, b) => (b === undefined ? delete bs.resumptive : (bs.resumptive = b)),
+			(bs, b) =>
+				b === undefined ? (bs.resumptive = undefined) : (bs.resumptive = b),
 		);
 	if (bs.covertResumptive !== undefined)
 		fn(
@@ -354,7 +354,7 @@ function forEachBinding(
 			bs => bs.covertResumptive,
 			(bs, b) =>
 				b === undefined
-					? delete bs.covertResumptive
+					? (bs.covertResumptive = undefined)
 					: (bs.covertResumptive = b),
 		);
 }
@@ -404,10 +404,9 @@ export function unifyDenotations(
 			context.push(right.denotation!.context[rIndex]);
 			rightMapping[rIndex] = context.length - 1;
 			return context.length - 1;
-		} else {
-			rightMapping[rIndex] = lIndex;
-			return lIndex;
 		}
+		rightMapping[rIndex] = lIndex;
+		return lIndex;
 	};
 
 	// TODO: implement the 'Cho máma hó/áq' rule using the subordinate field
@@ -605,9 +604,8 @@ export function filterPresuppositions(
 		return predicate(e.presupposition)
 			? presuppose(body, e.presupposition, e.defines)
 			: body;
-	} else {
-		return e;
 	}
+	return e;
 }
 
 class LiftError extends Error {

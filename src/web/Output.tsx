@@ -64,7 +64,7 @@ export function Output(props: OutputProps) {
 	let trees: Tree[];
 	try {
 		trees = parse(text);
-	} catch (e) {
+	} catch (_e) {
 		trees = [];
 	}
 	const parseCount = trees.length;

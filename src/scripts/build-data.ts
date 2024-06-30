@@ -1,5 +1,5 @@
-import * as fs from 'fs';
-import https from 'https';
+import * as fs from 'node:fs';
+import https from 'node:https';
 import { guessFrameFromDefinition } from '../morphology/frame';
 
 async function post(
@@ -36,9 +36,8 @@ async function readToadua(): Promise<{ results: any[] }> {
 		const toadua = await fetchToadua();
 		fs.writeFileSync('data/toadua/dump.json', JSON.stringify(toadua));
 		return toadua;
-	} else {
-		return JSON.parse(fs.readFileSync('data/toadua/dump.json').toString());
 	}
+	return JSON.parse(fs.readFileSync('data/toadua/dump.json').toString());
 }
 
 function extractGlossWord(text: string) {
@@ -67,11 +66,11 @@ readToadua().then(({ results }) => {
 	const entries: Record<string, any> = {};
 
 	for (const result of results) {
-		if (result['scope'] !== 'en') continue;
-		if (result['score'] < 0) continue;
-		const head = result['head'];
+		if (result.scope !== 'en') continue;
+		if (result.score < 0) continue;
+		const head = result.head;
 		if (head.length >= 30) continue;
-		const body = result['body'];
+		const body = result.body;
 		const gloss = makeGloss(body);
 		const entry: any = { body, head, user: result.user, score: result.score };
 		if (gloss && gloss.length <= 25) {

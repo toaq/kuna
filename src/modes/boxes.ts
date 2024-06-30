@@ -124,7 +124,8 @@ class Boxifier {
 				verbalComplexWords.push(serial);
 				postField = this.boxifyPostField(node.children.slice(1));
 				break;
-			} else if ('left' in node) {
+			}
+			if ('left' in node) {
 				switch (node.label) {
 					case 'TopicP':
 						topic = node.left;
@@ -152,13 +153,14 @@ class Boxifier {
 					case 'TP':
 					case 'AspP':
 					case 'CPrel':
-					case "𝘷'":
+					case "𝘷'": {
 						const w = node.left;
 						if (this.words(w)) {
 							verbalComplexWords.push(w);
 						}
 						node = node.right;
 						break;
+					}
 					case '&P':
 						assertBranch(node.right);
 						conjunction = {
@@ -169,7 +171,7 @@ class Boxifier {
 						break;
 					default:
 						console.log(node);
-						throw new Unimplemented('in boxifyClause: ' + node.label);
+						throw new Unimplemented(`in boxifyClause: ${node.label}`);
 				}
 			} else {
 				throw new Impossible('hit leaf in boxifyClause');
@@ -213,11 +215,11 @@ class Boxifier {
 		tree = skipFree(tree);
 		if (tree.label === 'SAP') {
 			return [this.boxifySentence(tree)];
-		} else if ('left' in tree && tree.label === 'Discourse') {
-			return [this.boxifySentence(tree.left), ...this.boxify(tree.right)];
-		} else {
-			throw new Ungrammatical("Can't boxify " + tree.label);
 		}
+		if ('left' in tree && tree.label === 'Discourse') {
+			return [this.boxifySentence(tree.left), ...this.boxify(tree.right)];
+		}
+		throw new Ungrammatical(`Can't boxify ${tree.label}`);
 	}
 }
 
@@ -225,9 +227,9 @@ export function boxify(tree: Tree): SplitBoxes[] {
 	tree = skipFree(tree);
 	if (tree.label === 'SAP') {
 		return [new Boxifier().boxifySentence(tree)];
-	} else if ('left' in tree && tree.label === 'Discourse') {
-		return [new Boxifier().boxifySentence(tree.left), ...boxify(tree.right)];
-	} else {
-		throw new Ungrammatical("Can't boxify " + tree.label);
 	}
+	if ('left' in tree && tree.label === 'Discourse') {
+		return [new Boxifier().boxifySentence(tree.left), ...boxify(tree.right)];
+	}
+	throw new Ungrammatical(`Can't boxify ${tree.label}`);
 }

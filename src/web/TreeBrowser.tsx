@@ -14,15 +14,11 @@ export function Node(props: {
 	theme: Theme;
 }) {
 	const { tree, compactDenotations, theme } = props;
-	const mathml =
-		`<pre style="color:${theme.wordColor};font-family:inherit; margin: 0">` +
-		(tree.source.trim() || '∅') +
-		'</pre>' +
-		('denotation' in tree && tree.denotation
-			? `<hr style="border:1px solid #8884";/><div style="margin-top:0.5em">` +
-				toMathml(tree.denotation.denotation, compactDenotations) +
-				'</div>'
-			: '');
+	const mathml = `<pre style="color:${theme.wordColor};font-family:inherit; margin: 0">${tree.source.trim() || '∅'}</pre>${
+		'denotation' in tree && tree.denotation
+			? `<hr style="border:1px solid #8884";/><div style="margin-top:0.5em">${toMathml(tree.denotation.denotation, compactDenotations)}</div>`
+			: ''
+	}`;
 	return (
 		<>
 			<div className="tree-node">
@@ -59,9 +55,9 @@ export function Subtree(props: {
 	lineDx?: number;
 }) {
 	const shouldTruncate = props.truncateLabels.some(x =>
-		props.tree.label.startsWith(x + ' '),
+		props.tree.label.startsWith(`${x} `),
 	);
-	const [expanded, setExpanded] = useState(!shouldTruncate);
+	const [expanded, _setExpanded] = useState(!shouldTruncate);
 
 	const { tree, width, compactDenotations, theme, truncateLabels } = props;
 	const children = 'children' in tree ? tree.children : [];
@@ -73,7 +69,7 @@ export function Subtree(props: {
 			style={{
 				width: width,
 				position: 'absolute',
-				left: props.lineDx + 'px',
+				left: `${props.lineDx}px`,
 			}}
 		>
 			{props.lineDx && (
@@ -88,7 +84,7 @@ export function Subtree(props: {
 						transformOrigin: '0.5px 0.5px',
 						transform: `rotate(${Math.atan2(props.lineDx, -20)}rad)`,
 					}}
-				></div>
+				/>
 			)}
 			<div>
 				<Node
@@ -167,11 +163,11 @@ export function TreeBrowser(props: {
 		>
 			<div
 				style={{
-					transform: 'translateX(' + -rect.left + 'px)',
+					transform: `translateX(${-rect.left}px)`,
 				}}
 			>
 				<Subtree
-					width={rect.right - rect.left + 'px'}
+					width={`${rect.right - rect.left}px`}
 					tree={placed}
 					compactDenotations={compactDenotations}
 					theme={theme}

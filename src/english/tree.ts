@@ -24,7 +24,7 @@ function verbToEnglish(tree: Tree): string {
 	if (tree.label === 'EvAP') {
 		const translator = new ClauseTranslator();
 		translator.processClause(tree.right);
-		return 'event of ' + translator.emit();
+		return `event of ${translator.emit()}`;
 	}
 	const right = verbToEnglish(tree.right);
 	if (tree.label === 'mıP') {
@@ -94,18 +94,17 @@ function dpToEnglish(tree: Branch<Tree>): Constituent {
 		translator.processCP(complement);
 		noun = translator.emit();
 	} else {
-		throw new Unimplemented('Unrecognized DP complement: ' + complement.label);
+		throw new Unimplemented(`Unrecognized DP complement: ${complement.label}`);
 	}
 	if (clean(leafText(d)) === 'báq') {
-		return { text: noun + 's', person: VerbForm.Plural };
-	} else {
-		const det = treeToEnglish(d).text;
-		let text = (det + ' ' + noun).trim();
-		if (text === 'which') text = 'what';
-		if (text === 'some') text = 'something';
-		if (text === 'every') text = 'everything';
-		return { text };
+		return { text: `${noun}s`, person: VerbForm.Plural };
 	}
+	const det = treeToEnglish(d).text;
+	let text = `${det} ${noun}`.trim();
+	if (text === 'which') text = 'what';
+	if (text === 'some') text = 'something';
+	if (text === 'every') text = 'everything';
+	return { text };
 }
 
 function adjunctpToEnglish(tree: Branch<Tree>): Constituent {
@@ -114,12 +113,11 @@ function adjunctpToEnglish(tree: Branch<Tree>): Constituent {
 		const serial = tree.right.left;
 		const object = tree.right.right;
 		return {
-			text: serialToEnglish(serial) + ' ' + treeToEnglish(object).text,
+			text: `${serialToEnglish(serial)} ${treeToEnglish(object).text}`,
 		};
-	} else {
-		const serial = tree.right;
-		return { text: serialToEnglish(serial) + 'ly' };
 	}
+	const serial = tree.right;
+	return { text: `${serialToEnglish(serial)}ly` };
 }
 
 function modalpToEnglish(tree: Branch<Tree>): Constituent {
@@ -134,11 +132,10 @@ function modalpToEnglish(tree: Branch<Tree>): Constituent {
 		] ?? '?';
 	if (c.word.covert) {
 		return { text: eng };
-	} else {
-		return {
-			text: 'if ' + translator.emit().replace(/^that /, '') + ', then ' + eng,
-		};
 	}
+	return {
+		text: `if ${translator.emit().replace(/^that /, '')}, then ${eng}`,
+	};
 }
 
 function focuspToEnglish(tree: Branch<Tree>): Constituent {
@@ -147,9 +144,9 @@ function focuspToEnglish(tree: Branch<Tree>): Constituent {
 	switch (left) {
 		case 'FOC':
 		case 'FOC.CONTR':
-			return { text: '*' + right + '*', person };
+			return { text: `*${right}*`, person };
 		default:
-			return { text: left + ' ' + right, person };
+			return { text: `${left} ${right}`, person };
 	}
 }
 
@@ -158,7 +155,7 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 		case 'Discourse': {
 			const left = treeToEnglish(tree.left);
 			const right = treeToEnglish(tree.right);
-			return { text: left.text + ' ' + right.text };
+			return { text: `${left.text} ${right.text}` };
 		}
 		case 'SAP':
 			return sapToEnglish(tree);
@@ -177,25 +174,25 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 			const left = treeToEnglish(tree.left);
 			const right = treeToEnglish(tree.right);
 			return {
-				text: left.text + ' ' + right.text,
+				text: `${left.text} ${right.text}`,
 				person: VerbForm.Plural,
 			};
 		}
 		case 'FocusP':
 			return focuspToEnglish(tree);
 		default:
-			throw new Unimplemented('in branchToEnglish: ' + tree.label);
+			throw new Unimplemented(`in branchToEnglish: ${tree.label}`);
 	}
 }
 
 export function treeToEnglish(tree: Tree): Constituent {
 	if ('word' in tree) {
 		return leafToEnglish(tree);
-	} else if ('left' in tree) {
-		return branchToEnglish(tree);
-	} else {
-		throw new Impossible('unexpected Rose in treeToEnglish: ' + tree.label);
 	}
+	if ('left' in tree) {
+		return branchToEnglish(tree);
+	}
+	throw new Impossible(`unexpected Rose in treeToEnglish: ${tree.label}`);
 }
 
 export function toEnglish(text: string): string {

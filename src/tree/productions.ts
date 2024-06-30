@@ -148,8 +148,8 @@ export function makeOptLeaf(label: Label) {
 
 export function makeSerial(
 	[verbs, vlast]: [Tree[], Tree],
-	location: number,
-	reject: Object,
+	_location: number,
+	_reject: Object,
 ) {
 	const children = verbs.concat([vlast]);
 	const frames = children.map(getFrame);
@@ -183,7 +183,7 @@ export function makevP(
 		Tree[],
 		[Tree[], Tree[]] | null,
 	],
-	location: number,
+	_location: number,
 	reject: Object,
 	depth: 'main' | 'sub',
 ) {
@@ -242,7 +242,7 @@ export function makevP_sub(
 
 export function makevPdet(
 	[serial, argIncorp]: [Tree, Tree | null],
-	location: number,
+	_location: number,
 	reject: Object,
 ) {
 	const arity = (serial as any).arity;
@@ -279,7 +279,7 @@ export function makeEvAPdet([rl, rr]: [Tree, Tree]) {
 
 export function makeConn(
 	[left, c, right]: [Tree, Tree, Tree],
-	location: number,
+	_location: number,
 	reject: Object,
 ) {
 	// Don't parse "Hao ꝡä hao jí rú hao súq" as "(Hao ꝡä hao jí) rú hao súq":
@@ -300,7 +300,7 @@ export function makeConn(
 
 export function makeAdjunctPI(
 	[adjunct, serial]: [Tree, Tree],
-	location: number,
+	_location: number,
 	reject: Object,
 ) {
 	const arity = (serial as any).arity;
@@ -325,7 +325,7 @@ export function makeAdjunctPI(
 
 export function makeAdjunctPT(
 	[adjunct, serial, obj]: [Tree, Tree, Tree],
-	location: number,
+	_location: number,
 	reject: Object,
 ) {
 	const arity = (serial as any).arity;
@@ -391,7 +391,7 @@ export function makePrefixLeaf([token]: [ToaqToken]) {
 
 export function makePrefixP([prefix, verb]: [Tree, Tree]) {
 	return {
-		label: prefix.label + 'P',
+		label: `${prefix.label}P`,
 		left: prefix,
 		right: verb,
 		source: catSource(prefix, verb),
@@ -424,7 +424,7 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 
 export function makeDiscourse(
 	[left, right]: [Tree, Tree],
-	location: number,
+	_location: number,
 	reject: Object,
 ) {
 	const l = skipFree(left);
