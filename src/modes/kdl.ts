@@ -1,5 +1,5 @@
-import KDL from 'kdljs';
-import { Tree, treeChildren } from '../tree';
+import type KDL from 'kdljs';
+import { type Tree, treeChildren } from '../tree';
 
 const toStringRecord = <O extends object>(obj: O) => {
 	for (const key in obj) {
@@ -13,12 +13,12 @@ const toStringRecord = <O extends object>(obj: O) => {
 export interface PartialKdlNode {
 	name: string;
 	values?: any[];
-	properties?: {};
+	properties?: Record<string, unknown>;
 	children?: PartialKdlNode[];
 	tags?: {
 		name?: string;
 		values?: any[];
-		properties?: {};
+		properties?: Record<string, unknown>;
 	};
 }
 

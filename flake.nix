@@ -3,7 +3,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let pkgs = import nixpkgs { inherit system; };
       in {
-        devShells.default = pkgs.mkShell {
+        devShells.default = pkgs.mkShellNoCC {
           buildInputs = with pkgs; [
             nodejs_latest
             # The pnpm in nixpkgs is out of date, so we instead rely on Corepack
@@ -11,6 +11,8 @@
             corepack_latest
             nodePackages_latest.typescript-language-server
             nodePackages_latest.vscode-json-languageserver
+            # Forces Biome to run as a statically-linked musl binary
+            musl
 
             # Dependencies for building canvas
             python3

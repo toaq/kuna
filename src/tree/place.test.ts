@@ -1,14 +1,13 @@
-import { test, expect } from 'vitest';
-import { DrawContext, PlacedTree, TreePlacer } from './place';
-import { themes } from './theme';
+import { expect, test } from 'vitest';
 import { parse } from '../modes/parse';
+import { type DrawContext, type PlacedTree, TreePlacer } from './place';
 
 /**
  * Trim irrelevant word data from PlacedTree for the snapshot.
  */
 function summarize<C extends DrawContext>(tree: PlacedTree<C>): any {
 	if ('word' in tree) return tree.label;
-	else return { ...tree, children: tree.children.map(summarize) };
+	return { ...tree, children: tree.children.map(summarize) };
 }
 
 test('it places trees', () => {

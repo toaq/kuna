@@ -1,6 +1,5 @@
-import _ from 'lodash';
-import { useEffect, useState } from 'react';
-import { useDarkMode, useLocalStorage } from 'usehooks-ts';
+import { useState } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 
 export type TreeMode =
 	| 'syntax-tree'
@@ -56,10 +55,8 @@ export function Settings(props: SettingsProps) {
 	const [trimNulls, setTrimNulls] = useState(false);
 	const [showMovement, setShowMovement] = useState(false);
 	const [meaningCompact, setMeaningCompact] = useState(false);
-	const [lastMode, setLastMode] = useState<Mode>();
-	const darkMode = useDarkMode();
 
-	function submit(mode: Mode) {
+	function render(mode: Mode) {
 		if (mode) {
 			props.onSubmit({
 				text: text,
@@ -72,24 +69,6 @@ export function Settings(props: SettingsProps) {
 			});
 		}
 	}
-
-	function render(mode: Mode) {
-		setLastMode(mode);
-		submit(mode);
-	}
-	useEffect(
-		() => lastMode && submit(lastMode),
-		[
-			treeFormat,
-			roofLabels,
-			trimNulls,
-			showMovement,
-			meaningCompact,
-			lastMode,
-			darkMode.isDarkMode,
-			text,
-		],
-	);
 
 	return (
 		<div className="card settings" style={{ width: '30em' }}>
@@ -133,7 +112,7 @@ export function Settings(props: SettingsProps) {
 								type="text"
 								value={roofLabels}
 								onChange={e => setRoofLabels(e.target.value)}
-								placeholder={`DP QP`}
+								placeholder={'DP QP'}
 							/>
 						</div>
 						<div>
@@ -161,17 +140,28 @@ export function Settings(props: SettingsProps) {
 				{advanced && (
 					<div className="button-group">
 						<div className="button-group-name">Debug</div>
-						<button onClick={() => render('tokens')}>Tokens</button>
-						<button onClick={() => render('raw-tree')}>Raw tree</button>
+						<button type="button" onClick={() => render('tokens')}>
+							Tokens
+						</button>
+						<button type="button" onClick={() => render('raw-tree')}>
+							Raw tree
+						</button>
 					</div>
 				)}
 				<div className="button-group">
 					<div className="button-group-name">Tree</div>
-					<button onClick={() => render('syntax-tree')}>Syntax</button>
-					<button onClick={() => render('semantics-tree')}>Denoted</button>
+					<button type="button" onClick={() => render('syntax-tree')}>
+						Syntax
+					</button>
+					<button type="button" onClick={() => render('semantics-tree')}>
+						Denoted
+					</button>
 					{advanced && (
 						<>
-							<button onClick={() => render('semantics-tree-compact')}>
+							<button
+								type="button"
+								onClick={() => render('semantics-tree-compact')}
+							>
 								Compact
 							</button>
 						</>
@@ -179,32 +169,56 @@ export function Settings(props: SettingsProps) {
 				</div>
 				<div className="button-group">
 					<div className="button-group-name">Boxes</div>
-					<button onClick={() => render('boxes-flat')}>Flat</button>
-					<button onClick={() => render('boxes-nest')}>Nested</button>
-					<button onClick={() => render('boxes-split')}>Split</button>
+					<button type="button" onClick={() => render('boxes-flat')}>
+						Flat
+					</button>
+					<button type="button" onClick={() => render('boxes-nest')}>
+						Nested
+					</button>
+					<button type="button" onClick={() => render('boxes-split')}>
+						Split
+					</button>
 				</div>
 				<div className="button-group">
 					<div className="button-group-name">Gloss</div>
-					<button onClick={() => render('gloss')}>Friendly</button>
-					<button onClick={() => render('technical-gloss')}>Technical</button>
+					<button type="button" onClick={() => render('gloss')}>
+						Friendly
+					</button>
+					<button type="button" onClick={() => render('technical-gloss')}>
+						Technical
+					</button>
 				</div>
 				<div className="button-group">
 					<div className="button-group-name">Translate</div>
-					<button onClick={() => render('english')}>English</button>
+					<button type="button" onClick={() => render('english')}>
+						English
+					</button>
 					{advanced && (
-						<button onClick={() => render('gf1')}>GF (Quantity)</button>
+						<button type="button" onClick={() => render('gf1')}>
+							GF (Quantity)
+						</button>
 					)}
 					{advanced && (
-						<button onClick={() => render('gf2')}>GF (Quality)</button>
+						<button type="button" onClick={() => render('gf2')}>
+							GF (Quality)
+						</button>
 					)}
-					{!advanced && <button onClick={() => render('gf2')}>GF</button>}
+					{!advanced && (
+						<button type="button" onClick={() => render('gf2')}>
+							GF
+						</button>
+					)}
 				</div>
 				{advanced && (
 					<div className="button-group">
 						<div className="button-group-name">Meaning</div>
-						<button onClick={() => render('logical-form-mathml')}>Math</button>
-						<button onClick={() => render('logical-form')}>Text</button>
-						<button onClick={() => render('logical-form-latex')}>
+						<button type="button" onClick={() => render('logical-form-mathml')}>
+							Math
+						</button>
+						<button type="button" onClick={() => render('logical-form')}>
+							Text
+						</button>
+						<button type="button" onClick={() => render('logical-form-latex')}>
 							LaTeX code
 						</button>
 						<label>

@@ -1,16 +1,16 @@
-import { CanvasRenderingContext2D } from 'canvas';
-import { DTree, Expr } from '../semantics/model';
-import { toPlainText, toLatex, typeToPlainText } from '../semantics/render';
-import { Branch, Leaf, Rose, Tree } from '../tree';
+import type { CanvasRenderingContext2D } from 'canvas';
+import type { DTree, Expr } from '../semantics/model';
+import { toLatex, toPlainText, typeToPlainText } from '../semantics/render';
+import type { Branch, Leaf, Rose, Tree } from '../tree';
 
-import { mathjax } from 'mathjax-full/js/mathjax';
-import { TeX } from 'mathjax-full/js/input/tex';
-import { SVG } from 'mathjax-full/js/output/svg';
-import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
-import { Theme, themes } from './theme';
-import { Movement } from './movement';
+import { TeX } from 'mathjax-full/js/input/tex';
+import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
+import { mathjax } from 'mathjax-full/js/mathjax';
+import { SVG } from 'mathjax-full/js/output/svg';
+import type { Movement } from './movement';
+import { type Theme, themes } from './theme';
 
 const adaptor = liteAdaptor();
 RegisterHTMLHandler(adaptor);
@@ -100,13 +100,12 @@ export function boundingRect<C extends DrawContext>(
 			layers = Math.max(layers, subRect.layers + 1);
 		}
 		return { left, right, layers };
-	} else {
-		return {
-			left: placedTree.width / 2,
-			right: placedTree.width / 2,
-			layers: 1,
-		};
 	}
+	return {
+		left: placedTree.width / 2,
+		right: placedTree.width / 2,
+		layers: 1,
+	};
 }
 
 export function getLabel(tree: Tree | DTree): string {
@@ -117,7 +116,7 @@ export function getLabel(tree: Tree | DTree): string {
 
 export function denotationRenderText(
 	denotation: Expr,
-	theme: Theme,
+	_theme: Theme,
 	compact?: boolean,
 ): RenderedDenotation<CanvasRenderingContext2D> {
 	const text = toPlainText(denotation, compact);
@@ -129,7 +128,7 @@ export function denotationRenderText(
 		width(ctx) {
 			return ctx.measureText(text).width;
 		},
-		height(ctx) {
+		height() {
 			return 30;
 		},
 		denotation,
@@ -142,19 +141,19 @@ export function denotationRenderLatex(
 	compact?: boolean,
 ): RenderedDenotation<CanvasRenderingContext2D> {
 	const latex = toLatex(denotation, compact);
-	let { width, height, svg } = get_mathjax_svg('\\LARGE ' + latex);
+	let { width, height, svg } = get_mathjax_svg(`\\LARGE ${latex}`);
 	svg = svg.replace(/currentColor/g, theme.denotationColor);
 	const pxWidth = Number(width.replace(/ex$/, '')) * 7;
 	const pxHeight = Number(height.replace(/ex$/, '')) * 7;
 	return {
-		draw(ctx, centerX, bottomY, color) {
+		draw(ctx, centerX, bottomY) {
 			return new Promise(resolve => {
-				var blob = new Blob([svg], {
+				const blob = new Blob([svg], {
 					type: 'image/svg+xml;charset=utf-8',
 				});
 
-				var url = URL.createObjectURL(blob);
-				var img = new Image();
+				const url = URL.createObjectURL(blob);
+				const img = new Image();
 
 				img.addEventListener('load', (e: any) => {
 					ctx.drawImage(
@@ -168,10 +167,10 @@ export function denotationRenderLatex(
 				img.src = url;
 			});
 		},
-		width(ctx) {
+		width() {
 			return pxWidth;
 		},
-		height(ctx) {
+		height() {
 			return pxHeight;
 		},
 		denotation,
@@ -181,7 +180,7 @@ export function denotationRenderLatex(
 function layerExtents<C extends DrawContext>(
 	tree: PlacedTree<C>,
 ): { left: number; right: number }[] {
-	let extents = [];
+	const extents = [];
 	let frontier = [{ x: 0, tree }];
 	while (frontier.length) {
 		const left = Math.min(...frontier.map(e => e.x - e.tree.width / 2));
@@ -356,10 +355,10 @@ export class TreePlacer<C extends DrawContext> {
 	public placeTree(tree: Tree | DTree): PlacedTree<C> {
 		if ('word' in tree) {
 			return this.placeLeaf(tree);
-		} else if (this.options.truncateLabels.includes(tree.label)) {
-			return this.placeRoof(tree);
-		} else {
-			return 'children' in tree ? this.placeRose(tree) : this.placeBranch(tree);
 		}
+		if (this.options.truncateLabels.includes(tree.label)) {
+			return this.placeRoof(tree);
+		}
+		return 'children' in tree ? this.placeRose(tree) : this.placeBranch(tree);
 	}
 }

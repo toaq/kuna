@@ -1,7 +1,7 @@
 import { dictionary } from '../morphology/dictionary';
-import { getFrame } from '../syntax/serial';
 import { toadua } from '../morphology/toadua';
-import { bare, ToaqToken, tone } from '../morphology/tokenize';
+import { type ToaqToken, bare, tone } from '../morphology/tokenize';
+import { getFrame } from '../syntax/serial';
 import {
 	catSource,
 	endsInClauseBoundary,
@@ -9,7 +9,7 @@ import {
 	labelForPrefix,
 	skipFree,
 } from './functions';
-import { Label, Leaf, Tree, Word } from './types';
+import type { Label, Leaf, Tree, Word } from './types';
 
 /**
  * Make a null leaf with the given label.
@@ -146,11 +146,7 @@ export function makeOptLeaf(label: Label) {
 	};
 }
 
-export function makeSerial(
-	[verbs, vlast]: [Tree[], Tree],
-	location: number,
-	reject: Object,
-) {
+export function makeSerial([verbs, vlast]: [Tree[], Tree]) {
 	const children = verbs.concat([vlast]);
 	const frames = children.map(getFrame);
 	const frame = frames[frames.length - 1];
@@ -183,8 +179,8 @@ export function makevP(
 		Tree[],
 		[Tree[], Tree[]] | null,
 	],
-	location: number,
-	reject: Object,
+	_location: number,
+	reject: unknown,
 	depth: 'main' | 'sub',
 ) {
 	const argsL = argIncorp === null ? [] : [argIncorp];
@@ -227,7 +223,7 @@ export function makevP(
 export function makevP_main(
 	args: [Tree, Tree | null, Tree[], [Tree[], Tree[]] | null],
 	location: number,
-	reject: Object,
+	reject: unknown,
 ) {
 	return makevP(args, location, reject, 'main');
 }
@@ -235,15 +231,15 @@ export function makevP_main(
 export function makevP_sub(
 	args: [Tree, Tree | null, Tree[], [Tree[], Tree[]] | null],
 	location: number,
-	reject: Object,
+	reject: unknown,
 ) {
 	return makevP(args, location, reject, 'sub');
 }
 
 export function makevPdet(
 	[serial, argIncorp]: [Tree, Tree | null],
-	location: number,
-	reject: Object,
+	_location: number,
+	reject: unknown,
 ) {
 	const arity = (serial as any).arity;
 	if (arity < (argIncorp === null ? 1 : 2)) return reject;
@@ -279,8 +275,8 @@ export function makeEvAPdet([rl, rr]: [Tree, Tree]) {
 
 export function makeConn(
 	[left, c, right]: [Tree, Tree, Tree],
-	location: number,
-	reject: Object,
+	_location: number,
+	reject: unknown,
 ) {
 	// Don't parse "Hao ꝡä hao jí rú hao súq" as "(Hao ꝡä hao jí) rú hao súq":
 	if (left.label === 'TP' && endsInClauseBoundary(left)) {
@@ -300,8 +296,8 @@ export function makeConn(
 
 export function makeAdjunctPI(
 	[adjunct, serial]: [Tree, Tree],
-	location: number,
-	reject: Object,
+	_location: number,
+	reject: unknown,
 ) {
 	const arity = (serial as any).arity;
 	if (arity !== undefined && arity !== 1) {
@@ -325,8 +321,8 @@ export function makeAdjunctPI(
 
 export function makeAdjunctPT(
 	[adjunct, serial, obj]: [Tree, Tree, Tree],
-	location: number,
-	reject: Object,
+	_location: number,
+	reject: unknown,
 ) {
 	const arity = (serial as any).arity;
 	if (arity !== undefined && arity !== 2) {
@@ -391,7 +387,7 @@ export function makePrefixLeaf([token]: [ToaqToken]) {
 
 export function makePrefixP([prefix, verb]: [Tree, Tree]) {
 	return {
-		label: prefix.label + 'P',
+		label: `${prefix.label}P`,
 		left: prefix,
 		right: verb,
 		source: catSource(prefix, verb),
@@ -424,8 +420,8 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 
 export function makeDiscourse(
 	[left, right]: [Tree, Tree],
-	location: number,
-	reject: Object,
+	_location: number,
+	reject: unknown,
 ) {
 	const l = skipFree(left);
 	if (!('left' in right)) return reject;

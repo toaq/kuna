@@ -2,10 +2,10 @@ import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
 import { Tone } from '../morphology/tone';
 import {
-	Branch,
-	Label,
-	Leaf,
-	Tree,
+	type Branch,
+	type Label,
+	type Leaf,
+	type Tree,
 	assertBranch,
 	assertLeaf,
 	catSource,
@@ -64,37 +64,41 @@ export function getFrame(verb: Tree): string {
 		}
 		if (verb.word.entry?.type === 'predicate') {
 			return verb.word.entry.frame;
-		} else if (verb.word.entry?.type === 'predicatizer') {
-			return `${verb.word.entry.frame} c`;
-		} else if (verb.word.entry?.type === 'adjective marker') {
-			return 'kı';
-		} else {
-			throw new Impossible('weird verb');
 		}
-	} else if (verb.label === '&P' && 'left' in verb) {
+		if (verb.word.entry?.type === 'predicatizer') {
+			return `${verb.word.entry.frame} c`;
+		}
+		if (verb.word.entry?.type === 'adjective marker') {
+			return 'kı';
+		}
+		throw new Impossible('weird verb');
+	}
+	if (verb.label === '&P' && 'left' in verb) {
 		return getFrame(verb.left);
-	} else if (
-		verb.label === 'shuP' ||
-		verb.label === 'mıP' ||
-		verb.label === 'teoP'
-	) {
+	}
+	if (verb.label === 'shuP' || verb.label === 'mıP' || verb.label === 'teoP') {
 		return 'c';
-	} else if (verb.label === 'VP') {
+	}
+	if (verb.label === 'VP') {
 		// object incorporation... check that the verb is transitive?
 		return 'c';
-	} else if (verb.label === 'EvAP') {
-		return 'c';
-	} else if (verb.label === 'haP') {
-		return 'c c';
-	} else if (verb.label === 'boP') {
-		return 'c c';
-	} else if (intransitiveVerbPrefixes.includes(verb.label)) {
-		return 'c';
-	} else if (arityPreservingVerbPrefixes.includes(verb.label)) {
-		return getFrame((verb as Branch<Tree>).right);
-	} else {
-		throw new Unimplemented("Can't get frame of " + verb.label);
 	}
+	if (verb.label === 'EvAP') {
+		return 'c';
+	}
+	if (verb.label === 'haP') {
+		return 'c c';
+	}
+	if (verb.label === 'boP') {
+		return 'c c';
+	}
+	if (intransitiveVerbPrefixes.includes(verb.label)) {
+		return 'c';
+	}
+	if (arityPreservingVerbPrefixes.includes(verb.label)) {
+		return getFrame((verb as Branch<Tree>).right);
+	}
+	throw new Unimplemented(`Can't get frame of ${verb.label}`);
 }
 
 function makevP(verb: Tree, args: Tree[]): Tree {
@@ -140,23 +144,21 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 						right: { ...verb, label: 'VP' },
 						source: verb.source,
 					},
-					source: verb.source + ' ' + subject.source,
-				};
-			} else {
-				const source = verb.source + ' ' + subject.source;
-				return {
-					label: '𝘷P',
-					left: v,
-					right: { label: 'VP', left: verb, right: subject, source },
-					source,
+					source: `${verb.source} ${subject.source}`,
 				};
 			}
+			const source = `${verb.source} ${subject.source}`;
+			return {
+				label: '𝘷P',
+				left: v,
+				right: { label: 'VP', left: verb, right: subject, source },
+				source,
+			};
 		}
 		case 2: {
 			const [subject, directObject] = args;
-			const voSource = verb.source + ' … ' + directObject.source;
-			const vsoSource =
-				verb.source + ' ' + subject.source + ' ' + directObject.source;
+			const voSource = `${verb.source} … ${directObject.source}`;
+			const vsoSource = `${verb.source} ${subject.source} ${directObject.source}`;
 
 			return {
 				label: '𝘷P',
@@ -177,17 +179,9 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 		}
 		case 3: {
 			const [subject, indirectObject, directObject] = args;
-			const voSource = verb.source + ' … ' + directObject.source;
-			const vooSource =
-				verb.source + ' … ' + indirectObject.source + ' ' + directObject.source;
-			const vsooSource =
-				verb.source +
-				' ' +
-				subject.source +
-				' ' +
-				indirectObject.source +
-				' ' +
-				directObject.source;
+			const voSource = `${verb.source} … ${directObject.source}`;
+			const vooSource = `${verb.source} … ${indirectObject.source} ${directObject.source}`;
+			const vsooSource = `${verb.source} ${subject.source} ${indirectObject.source} ${directObject.source}`;
 			return {
 				label: '𝘷P',
 				left: subject,
@@ -232,53 +226,52 @@ function serialTovP(
 		}
 
 		return makevP(verbs[0], args);
-	} else {
-		const frame = splitNonEmpty(firstFrame.replace(/a/g, 'c'), ' ');
-		for (let i = 0; i < frame.length - 1; i++) {
-			if (frame[i] !== 'c') {
-				throw new Ungrammatical("frame can't serialize: " + firstFrame);
-			}
-		}
-		if (frame[frame.length - 1] === 'c') {
-			throw new Ungrammatical("frame can't serialize: " + firstFrame);
-		}
-		const cCount = frame.length - 1;
-		const lastSlot = frame[frame.length - 1];
-		const jaCount = Number(lastSlot[0]);
-		let pros: Leaf[] = new Array(jaCount).fill(undefined).map(pro);
-		for (let i = 0; i < jaCount; i++) {
-			switch (lastSlot[i + 1]) {
-				case 'i':
-					if (args.length > 0) {
-						args[0].coindex ??= newCoindex();
-						pros[i].coindex = args[0].coindex;
-					}
-					break;
-				case 'j':
-					if (args.length > 1) {
-						args[1].coindex ??= newCoindex();
-						pros[i].coindex = args[1].coindex;
-					}
-					break;
-			}
-		}
-		// if (args.length < cCount) {
-		// 	throw new Ungrammatical('not enough arguments');
-		// }
-		while (args.length < cCount) {
-			args.push(makeNull('DP'));
-		}
-		const innerArgs: Tree[] = [...pros, ...args.slice(cCount)];
-		const v0 = verbs[0];
-		assertLeaf(v0);
-		const vP = serialTovP(verbs.slice(1), innerArgs, newCoindex);
-		assertBranch(vP);
-		const v = vP.left.label === '𝘷' ? vP.left : (vP.right as Branch<Tree>).left;
-		assertLeaf(v);
-		moveUp(v, v0);
-		const outerArgs: Tree[] = [...args.slice(0, cCount), vP];
-		return makevP(v0, outerArgs);
 	}
+	const frame = splitNonEmpty(firstFrame.replace(/a/g, 'c'), ' ');
+	for (let i = 0; i < frame.length - 1; i++) {
+		if (frame[i] !== 'c') {
+			throw new Ungrammatical(`frame can't serialize: ${firstFrame}`);
+		}
+	}
+	if (frame[frame.length - 1] === 'c') {
+		throw new Ungrammatical(`frame can't serialize: ${firstFrame}`);
+	}
+	const cCount = frame.length - 1;
+	const lastSlot = frame[frame.length - 1];
+	const jaCount = Number(lastSlot[0]);
+	const pros: Leaf[] = new Array(jaCount).fill(undefined).map(pro);
+	for (let i = 0; i < jaCount; i++) {
+		switch (lastSlot[i + 1]) {
+			case 'i':
+				if (args.length > 0) {
+					args[0].coindex ??= newCoindex();
+					pros[i].coindex = args[0].coindex;
+				}
+				break;
+			case 'j':
+				if (args.length > 1) {
+					args[1].coindex ??= newCoindex();
+					pros[i].coindex = args[1].coindex;
+				}
+				break;
+		}
+	}
+	// if (args.length < cCount) {
+	// 	throw new Ungrammatical('not enough arguments');
+	// }
+	while (args.length < cCount) {
+		args.push(makeNull('DP'));
+	}
+	const innerArgs: Tree[] = [...pros, ...args.slice(cCount)];
+	const v0 = verbs[0];
+	assertLeaf(v0);
+	const vP = serialTovP(verbs.slice(1), innerArgs, newCoindex);
+	assertBranch(vP);
+	const v = vP.left.label === '𝘷' ? vP.left : (vP.right as Branch<Tree>).left;
+	assertLeaf(v);
+	moveUp(v, v0);
+	const outerArgs: Tree[] = [...args.slice(0, cCount), vP];
+	return makevP(v0, outerArgs);
 }
 
 /**
@@ -303,9 +296,8 @@ function segmentToKivP(
 			ki: segment[0],
 			vP: serialTovP(segment.slice(1), args, newCoindex),
 		};
-	} else {
-		return { vP: serialTovP(segment, args, newCoindex) };
 	}
+	return { vP: serialTovP(segment, args, newCoindex) };
 }
 
 /**
@@ -406,7 +398,7 @@ export function fixSerial(
 
 	const frames = children.map(getFrame);
 
-	let segments = [];
+	const segments = [];
 	let end = children.length;
 	for (let i = children.length - 2; i >= 0; i--) {
 		if (frames[i] === 'kı') {
@@ -424,10 +416,10 @@ export function fixSerial(
 	}
 	if (0 !== end) segments.unshift(children.slice(0, end));
 
-	let earlyAdjuncts: Tree[] = [];
-	let args: Tree[] = [];
+	const earlyAdjuncts: Tree[] = [];
+	const args: Tree[] = [];
 	let argIncorp: Tree | null | undefined = undefined;
-	let lateAdjuncts: Tree[] = [];
+	const lateAdjuncts: Tree[] = [];
 	for (const term of terms) {
 		if (
 			argIncorp === undefined &&

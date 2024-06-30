@@ -21,7 +21,7 @@
  * be contained in one line and only refer to at most one generic variable.
  */
 
-import * as fs from 'fs';
+import * as fs from 'node:fs';
 
 interface Definition {
 	lineIndex: number;
@@ -31,13 +31,13 @@ interface Definition {
 export function preprocess(lines: string[], flags_?: Set<string>): string[] {
 	const flags = flags_ ?? new Set();
 
-	let expanded: string[][] = [];
+	const expanded: string[][] = [];
 
 	/** Map from generic types to the lines they were defined on and their source code. */
-	let generics = new Map<string, Definition[]>();
+	const generics = new Map<string, Definition[]>();
 
 	/** Map from type variables to the values they can take on. */
-	let genericValues = new Map<string, string[]>();
+	const genericValues = new Map<string, string[]>();
 
 	/** Merge the domains of two generic type variables. */
 	function merge(x: string, y: string) {
@@ -60,20 +60,27 @@ export function preprocess(lines: string[], flags_?: Set<string>): string[] {
 	}
 
 	let lineIndex = 0;
-	let ifdefs: [string, boolean][] = [];
+	const ifdefs: [string, boolean][] = [];
 
 	for (let line of lines) {
 		let m: RegExpMatchArray | null;
-		if ((m = line.trim().match(/^#ifdef\s+(\w+)\b/))) {
+		m = line.trim().match(/^#ifdef\s+(\w+)\b/);
+		if (m !== null) {
 			ifdefs.push([m[1], true]);
 			continue;
-		} else if ((m = line.trim().match(/^#ifndef\s+(\w+)\b/))) {
+		}
+		m = line.trim().match(/^#ifndef\s+(\w+)\b/);
+		if (m !== null) {
 			ifdefs.push([m[1], false]);
 			continue;
-		} else if ((m = line.trim().match(/^#else\b/))) {
+		}
+		m = line.trim().match(/^#else\b/);
+		if (m !== null) {
 			ifdefs[ifdefs.length - 1][1] = !ifdefs[ifdefs.length - 1][1];
 			continue;
-		} else if ((m = line.trim().match(/^#endif\b/))) {
+		}
+		m = line.trim().match(/^#endif\b/);
+		if (m !== null) {
 			ifdefs.pop();
 			continue;
 		}
@@ -85,10 +92,11 @@ export function preprocess(lines: string[], flags_?: Set<string>): string[] {
 			genericValues.set(type, genericValues.get(type) || []);
 			const arr = genericValues.get(type)!;
 			if (!arr.includes(value)) arr.push(value);
-			return type + '_' + value;
+			return `${type}_${value}`;
 		});
 
-		if ((m = line.trim().match(/^(\w+)<([A-Z]\w*)>/))) {
+		m = line.trim().match(/^(\w+)<([A-Z]\w*)>/);
+		if (m !== null) {
 			const typeName = m[1];
 			const typeParam = m[2];
 			generics.set(typeName, generics.get(typeName) || []);
@@ -96,7 +104,7 @@ export function preprocess(lines: string[], flags_?: Set<string>): string[] {
 			const dependencies = line
 				.split('->')[1]
 				.split(/\s+/)
-				.filter(x => x.endsWith('<' + typeParam + '>'))
+				.filter(x => x.endsWith(`<${typeParam}>`))
 				.map(x => x.split('<')[0]);
 			for (const dep of dependencies) merge(typeName, dep);
 			expanded.push([]);
@@ -108,7 +116,7 @@ export function preprocess(lines: string[], flags_?: Set<string>): string[] {
 	for (const [t, defs] of generics.entries()) {
 		for (const v of genericValues.get(t)!) {
 			for (const { lineIndex, line } of defs) {
-				expanded[lineIndex].push(line.replace(/<[A-Z]\w*>/g, '_' + v));
+				expanded[lineIndex].push(line.replace(/<[A-Z]\w*>/g, `_${v}`));
 			}
 		}
 	}
@@ -120,9 +128,9 @@ function main(): void {
 
 	if (args.length < 2) {
 		console.error(
-			`Usage:\n\n` +
+			'Usage:\n\n' +
 				`    export KUNA_FLAGS="FOO BAR"\n` +
-				`    npx esr src/grammar-preprocessor.ts input.kuna.ne output.ne\n`,
+				'    npx esr src/grammar-preprocessor.ts input.kuna.ne output.ne\n',
 		);
 		process.exit(1);
 	}
@@ -139,7 +147,7 @@ function main(): void {
 	const contents: string = fs.readFileSync(inputPath, 'utf-8');
 	const converted = preprocess(contents.trim().split('\n'), flags);
 
-	fs.writeFileSync(outputPath, converted.join('\n') + '\n', 'utf-8');
+	fs.writeFileSync(outputPath, `${converted.join('\n')}\n`, 'utf-8');
 	console.log('✨ Preprocessing complete.');
 }
 

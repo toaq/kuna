@@ -1,6 +1,6 @@
 // TypeScript won't allow { ['a' | 'b']: 'c' } for { a: 'c' } | { b: 'c' }, but it
 
-import { Format, Infix, Name, Polarizer, Quantifier } from './base';
+import type { Format, Infix, Name, Polarizer, Quantifier } from './base';
 
 // will happily split a union type case-by-case in a mapped type and as a map index.
 type OneKeyAmong<Keys extends string, Value> = {

@@ -1,13 +1,13 @@
-import { test, expect } from 'vitest';
+import { expect, test } from 'vitest';
 import { preprocess } from './grammar-preprocessor';
 
 test('it expands generics', () => {
 	expect(
 		preprocess([
-			`CP -> wa Clause<main>`,
-			`CPsub -> wä Clause<sub>`,
-			`Clause<S> -> TP<S>`,
-			`TP<S> -> T AspP<S>`,
+			'CP -> wa Clause<main>',
+			'CPsub -> wä Clause<sub>',
+			'Clause<S> -> TP<S>',
+			'TP<S> -> T AspP<S>',
 		]),
 	).toMatchInlineSnapshot(`
 		[
@@ -22,11 +22,11 @@ test('it expands generics', () => {
 
 	expect(
 		preprocess([
-			`F<X> -> G<X> H<X>`,
-			`G<X> -> J G<X>`,
-			`A -> F<a>`,
-			`B -> F<b>`,
-			`C -> F<c>`,
+			'F<X> -> G<X> H<X>',
+			'G<X> -> J G<X>',
+			'A -> F<a>',
+			'B -> F<b>',
+			'C -> F<c>',
 		]),
 	).toMatchInlineSnapshot(`
 		[

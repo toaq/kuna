@@ -1,4 +1,4 @@
-import { loadImage, createCanvas, registerFont } from 'canvas';
+import { createCanvas } from 'canvas';
 import { Glosser } from '../morphology/gloss';
 
 export function pngGlossSentence(

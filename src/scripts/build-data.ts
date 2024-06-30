@@ -1,6 +1,6 @@
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import https from 'node:https';
 import { guessFrameFromDefinition } from '../morphology/frame';
-import https from 'https';
 
 async function post(
 	hostname: string,
@@ -12,7 +12,7 @@ async function post(
 			const chunks: Buffer[] = [];
 			res.on('data', data => chunks.push(data));
 			res.on('end', () => {
-				let body = Buffer.concat(chunks).toString('utf8');
+				const body = Buffer.concat(chunks).toString('utf8');
 				resolve(body);
 			});
 		});
@@ -36,9 +36,8 @@ async function readToadua(): Promise<{ results: any[] }> {
 		const toadua = await fetchToadua();
 		fs.writeFileSync('data/toadua/dump.json', JSON.stringify(toadua));
 		return toadua;
-	} else {
-		return JSON.parse(fs.readFileSync('data/toadua/dump.json').toString());
 	}
+	return JSON.parse(fs.readFileSync('data/toadua/dump.json').toString());
 }
 
 function extractGlossWord(text: string) {
@@ -48,14 +47,16 @@ function extractGlossWord(text: string) {
 function makeGloss(body: string) {
 	const m = body.match(/['‘’\"“”]([A-Za-z .]+)['‘’\"“”];/);
 	if (m) return m[1];
-	body = body.split(';')[0].trim();
-	body = body.replace(/\.$/, '');
-	body = body.replace(/\(.+\)$/, '');
-	body = body.trim();
-	body = body.replace(/ (of|for|to|by|from|on)? ▯$/, '');
-	const m2 = body.match(/^▯ (?:is|are) (?:(?:a|an|the) )?([^▯]+)$/);
+	const keywords = body
+		.split(';')[0]
+		.trim()
+		.replace(/\.$/, '')
+		.replace(/\(.+\)$/, '')
+		.trim()
+		.replace(/ (of|for|to|by|from|on)? ▯$/, '');
+	const m2 = keywords.match(/^▯ (?:is|are) (?:(?:a|an|the) )?([^▯]+)$/);
 	if (m2) return extractGlossWord(m2[1]);
-	const m3 = body.match(/^▯ ([^▯]+)( ▯)?$/);
+	const m3 = keywords.match(/^▯ ([^▯]+)( ▯)?$/);
 	if (m3) return extractGlossWord(m3[1]);
 	return undefined;
 }
@@ -64,16 +65,16 @@ readToadua().then(({ results }) => {
 	// Sort by ascending score so that higher scoring entries get processed later and overwrite earlier ones.
 	results.sort((a, b) => a.score - b.score);
 
-	let entries: Record<string, any> = {};
+	const entries: Record<string, any> = {};
 
-	for (let result of results) {
-		if (result['scope'] !== 'en') continue;
-		if (result['score'] < 0) continue;
-		const head = result['head'];
+	for (const result of results) {
+		if (result.scope !== 'en') continue;
+		if (result.score < 0) continue;
+		const head = result.head;
 		if (head.length >= 30) continue;
-		const body = result['body'];
+		const body = result.body;
 		const gloss = makeGloss(body);
-		let entry: any = { body, head, user: result.user, score: result.score };
+		const entry: any = { body, head, user: result.user, score: result.score };
 		if (gloss && gloss.length <= 25) {
 			entry.gloss = gloss;
 		}

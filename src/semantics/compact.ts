@@ -1,6 +1,6 @@
 import {
-	Expr,
-	ExprType,
+	type Expr,
+	type ExprType,
 	and,
 	assertContextsEqual,
 	assertSubtype,

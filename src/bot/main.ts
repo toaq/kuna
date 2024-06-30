@@ -1,7 +1,7 @@
 import { Events, REST, Routes } from 'discord.js';
 import { Client, GatewayIntentBits } from 'discord.js';
-import { commands } from './commands';
 import { KunaBot } from './bot';
+import { commands } from './commands';
 
 const TOKEN = process.env.KUNA_TOKEN!;
 const rest = new REST({ version: '10' }).setToken(TOKEN);

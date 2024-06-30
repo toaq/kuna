@@ -1,5 +1,16 @@
 import { Impossible } from '../core/error';
+import { type EventCompound, detectCompound } from './compact';
+import { json, latex, mathml, plainText } from './format';
 import {
+	type Format,
+	type NameType,
+	type Names,
+	type Quantifier,
+	constantAlphabets,
+	variableAlphabets,
+} from './format/base';
+import type { JsonExpr } from './format/json';
+import type {
 	Expr,
 	ExprType,
 	KnownConstant,
@@ -7,17 +18,6 @@ import {
 	KnownPolarizer,
 	KnownQuantifier,
 } from './model';
-import {
-	Format,
-	NameType,
-	Names,
-	Quantifier,
-	constantAlphabets,
-	variableAlphabets,
-} from './format/base';
-import { JsonExpr } from './format/json';
-import { plainText, latex, json, mathml } from './format';
-import { EventCompound, detectCompound } from './compact';
 
 const infixPrecedence: Record<KnownInfix['name'], number> = {
 	and: 5,
@@ -52,7 +52,7 @@ const polarizerPrecedence: Record<KnownPolarizer['name'], number> = {
 	indeed: 14,
 };
 
-const quantifiers: Record<KnownQuantifier['name'], {}> = {
+const quantifiers: Record<KnownQuantifier['name'], object> = {
 	some: {},
 	every: {},
 	every_sing: {},
@@ -242,7 +242,8 @@ class Renderer<T> {
 					const body = this.render(e.fn.body, innerNames, 0, 0);
 					const content = this.fmt.let(name, value, body);
 					return bracket ? this.fmt.bracket(content) : content;
-				} else if (
+				}
+				if (
 					e.fn.head === 'apply' &&
 					e.fn.fn.head === 'constant' &&
 					e.fn.fn.name in infixPrecedence
@@ -261,10 +262,8 @@ class Renderer<T> {
 					const right = this.render(e.argument, names, p, rp);
 					const content = this.fmt.infix(symbol, left, right);
 					return bracket ? this.fmt.bracket(content) : content;
-				} else if (
-					e.fn.head === 'constant' &&
-					e.fn.name in polarizerPrecedence
-				) {
+				}
+				if (e.fn.head === 'constant' && e.fn.name in polarizerPrecedence) {
 					const name = e.fn.name as KnownPolarizer['name'];
 					const symbol = this.fmt.symbolForConstant(name);
 					const p = polarizerPrecedence[name];
@@ -273,32 +272,39 @@ class Renderer<T> {
 					const body = this.render(e.argument, names, p, rp);
 					const content = this.fmt.polarizer(symbol, body);
 					return bracket ? this.fmt.bracket(content) : content;
-				} else if (e.fn.head === 'constant' && e.fn.name in quantifiers) {
+				}
+				if (e.fn.head === 'constant' && e.fn.name in quantifiers) {
 					const q = e.fn.name as KnownQuantifier['name'];
 					if (e.argument.head === 'lambda') {
 						return this.renderQuantifier(e.argument, q, names, rightPrecedence);
-					} else {
-						throw new Impossible('sdlfkjds');
 					}
-				} else {
-					const p = 14;
-					const bracket = leftPrecedence > p;
-					const fn = this.render(e.fn, names, bracket ? 0 : leftPrecedence, p);
-					const argument = this.render(e.argument, names, 0, 0);
-					const content = this.fmt.apply(fn, argument);
-					return bracket ? this.fmt.bracket(content) : content;
+					throw new Impossible('sdlfkjds');
 				}
+				const p = 14;
+				const bracket = leftPrecedence > p;
+				const fn = this.render(e.fn, names, bracket ? 0 : leftPrecedence, p);
+				const argument = this.render(e.argument, names, 0, 0);
+				const content = this.fmt.apply(fn, argument);
+				return bracket ? this.fmt.bracket(content) : content;
 			}
 			case 'presuppose': {
 				const p = 1;
 				const bracket = leftPrecedence >= p || rightPrecedence > p;
-				let presuppositions = [];
-				while (e.head === 'presuppose') {
-					presuppositions.push(this.render(e.presupposition, names, p, 0));
-					e = e.body;
+				const presuppositions = [];
+				let isolated: Expr = e;
+				while (isolated.head === 'presuppose') {
+					presuppositions.push(
+						this.render(isolated.presupposition, names, p, 0),
+					);
+					isolated = isolated.body;
 				}
 				presuppositions.reverse();
-				const body = this.render(e, names, bracket ? 0 : leftPrecedence, p);
+				const body = this.render(
+					isolated,
+					names,
+					bracket ? 0 : leftPrecedence,
+					p,
+				);
 				const content = this.fmt.presuppose(body, presuppositions);
 				return bracket ? this.fmt.bracket(content) : content;
 			}
@@ -352,11 +358,7 @@ export function toLatex(e: Expr, compact?: boolean): string {
 }
 
 export function toMathml(e: Expr, compact?: boolean): string {
-	return (
-		'<math display=block><mrow>' +
-		renderFull(e, mathml, compact) +
-		'</mrow></math>'
-	);
+	return `<math display=block><mrow>${renderFull(e, mathml, compact)}</mrow></math>`;
 }
 
 export function toJson(e: Expr, compact?: boolean): JsonExpr {
@@ -378,7 +380,7 @@ export function jsonStringifyCompact(expr: any): string {
 			const maybeKey = isArray ? '' : `${JSON.stringify(key)}: `;
 			const valueStringified = jsonStringifyCompact(value)
 				.split('\n')
-				.join('\n' + ' '.repeat(isArray ? 4 : 2 + maybeKey.length));
+				.join(`\n${' '.repeat(isArray ? 4 : 2 + maybeKey.length)}`);
 			const maybeOpening = index === 0 ? `${opening} ` : '';
 			const commaOrClosing = index === length - 1 ? ` ${closing}` : ',';
 			return maybeOpening + maybeKey + valueStringified + commaOrClosing;

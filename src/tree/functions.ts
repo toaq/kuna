@@ -1,6 +1,6 @@
 import { Impossible } from '../core/error';
 import { bare, clean, repairTones } from '../morphology/tokenize';
-import { Label, Tree, assertBranch } from './types';
+import { type Label, type Tree, assertBranch } from './types';
 
 export function isBoringNull(tree: Tree): boolean {
 	return (
@@ -26,12 +26,11 @@ export function treeChildren(tree: Tree): Tree[] {
 
 /** Extract the head X from an XP or X'. */
 export function findHead(tree: Tree): Tree {
-	w: while (tree.label.match(/['P]$/)) {
+	if (tree.label.match(/['P]$/)) {
 		const headLabel = tree.label.replace(/['P]$/, '');
 		for (const child of treeChildren(tree)) {
 			if (child.label.replace(/['P]$/, '') === headLabel) {
-				tree = child;
-				continue w;
+				return findHead(child);
 			}
 		}
 		throw new Impossible(`${tree.label} without ${headLabel} child`);
@@ -42,23 +41,23 @@ export function findHead(tree: Tree): Tree {
 export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
 	if (label.endsWith('P') || label === 'CPrel' || label === '*𝘷Pdet') {
 		return 'phrase';
-	} else if (label.endsWith("'")) {
-		return 'bar';
-	} else {
-		return 'head';
 	}
+	if (label.endsWith("'")) {
+		return 'bar';
+	}
+	return 'head';
 }
 
 export function effectiveLabel(tree: Tree): Label {
 	if (tree.label === '&P') {
 		assertBranch(tree);
 		return effectiveLabel(tree.left);
-	} else if (tree.label === 'FocusP') {
+	}
+	if (tree.label === 'FocusP') {
 		assertBranch(tree);
 		return effectiveLabel(tree.right);
-	} else {
-		return tree.label;
 	}
+	return tree.label;
 }
 
 export function containsWords(
@@ -68,13 +67,12 @@ export function containsWords(
 ): boolean {
 	if ('word' in tree) {
 		return !tree.word.covert && words.includes(clean(tree.word.text));
-	} else {
-		return treeChildren(tree).some(
-			child =>
-				!stopLabels.includes(child.label) &&
-				containsWords(child, words, stopLabels),
-		);
 	}
+	return treeChildren(tree).some(
+		child =>
+			!stopLabels.includes(child.label) &&
+			containsWords(child, words, stopLabels),
+	);
 }
 
 function circled(i: number): string {
@@ -83,12 +81,12 @@ function circled(i: number): string {
 
 export function leafText(tree: Tree): string {
 	if (!('word' in tree)) {
-		throw new Impossible('Unexpected non-leaf ' + tree.label);
+		throw new Impossible(`Unexpected non-leaf ${tree.label}`);
 	}
-	if (tree.movement && tree.movement.text) {
+	if (tree.movement?.text) {
 		return tree.movement.text;
 	}
-	if (tree.movement && tree.movement.movedTo) {
+	if (tree.movement?.movedTo) {
 		return '';
 	}
 	if (tree.word.covert) return '';
@@ -98,17 +96,16 @@ export function leafText(tree: Tree): string {
 export function treeText(tree: Tree, cpIndices?: Map<Tree, number>): string {
 	if ('word' in tree) {
 		return leafText(tree);
-	} else {
-		if (cpIndices) {
-			const cpIndex = cpIndices.get(tree);
-			if (cpIndex !== undefined) {
-				return circled(cpIndex);
-			}
-		}
-
-		const children = treeChildren(tree).map(x => treeText(x));
-		return repairTones(children.join(' ').trim());
 	}
+	if (cpIndices) {
+		const cpIndex = cpIndices.get(tree);
+		if (cpIndex !== undefined) {
+			return circled(cpIndex);
+		}
+	}
+
+	const children = treeChildren(tree).map(x => treeText(x));
+	return repairTones(children.join(' ').trim());
 }
 
 export function isQuestion(tree: Tree): boolean {
@@ -129,13 +126,12 @@ function findAtRightBoundary(
 ): Tree | undefined {
 	if (predicate(tree)) {
 		return tree;
-	} else {
-		const children = treeChildren(tree);
-		// Hack to avoid descending into PRO leaves @_@
-		let i = children.length - 1;
-		while (i >= 0 && isCovertLeaf(children[i])) i -= 1;
-		return i >= 0 ? findAtRightBoundary(children[i], predicate) : undefined;
 	}
+	const children = treeChildren(tree);
+	// Hack to avoid descending into PRO leaves @_@
+	let i = children.length - 1;
+	while (i >= 0 && isCovertLeaf(children[i])) i -= 1;
+	return i >= 0 ? findAtRightBoundary(children[i], predicate) : undefined;
 }
 
 export function endsInClauseBoundary(tree: Tree): Tree | undefined {
