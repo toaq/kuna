@@ -128,7 +128,7 @@ export function denotationRenderText(
 		width(ctx) {
 			return ctx.measureText(text).width;
 		},
-		height(_ctx) {
+		height() {
 			return 30;
 		},
 		denotation,
@@ -146,7 +146,7 @@ export function denotationRenderLatex(
 	const pxWidth = Number(width.replace(/ex$/, '')) * 7;
 	const pxHeight = Number(height.replace(/ex$/, '')) * 7;
 	return {
-		draw(ctx, centerX, bottomY, _color) {
+		draw(ctx, centerX, bottomY) {
 			return new Promise(resolve => {
 				const blob = new Blob([svg], {
 					type: 'image/svg+xml;charset=utf-8',
@@ -167,10 +167,10 @@ export function denotationRenderLatex(
 				img.src = url;
 			});
 		},
-		width(_ctx) {
+		width() {
 			return pxWidth;
 		},
-		height(_ctx) {
+		height() {
 			return pxHeight;
 		},
 		denotation,

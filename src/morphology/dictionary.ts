@@ -145,9 +145,6 @@ export class Dictionary {
 		] as Entry[];
 
 		for (const e of entries) {
-			(e as any).examples = undefined;
-			(e as any).keywords = undefined;
-			(e as any).notes = undefined;
 			if (e.type === 'complementizer') {
 				if (e.english.includes('relative')) {
 					e.type = 'relative clause complementizer';

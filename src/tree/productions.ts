@@ -146,11 +146,7 @@ export function makeOptLeaf(label: Label) {
 	};
 }
 
-export function makeSerial(
-	[verbs, vlast]: [Tree[], Tree],
-	_location: number,
-	_reject: Object,
-) {
+export function makeSerial([verbs, vlast]: [Tree[], Tree]) {
 	const children = verbs.concat([vlast]);
 	const frames = children.map(getFrame);
 	const frame = frames[frames.length - 1];
