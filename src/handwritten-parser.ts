@@ -103,7 +103,20 @@ export class HandwrittenParser {
 		}
 	}
 
+	private skipFree(): void {
+		const startParenthetical = this.eat('start_parenthetical');
+		if (startParenthetical) {
+			while (!this.eat('end_parenthetical')) this.expectFragment(false);
+			this.skipFree();
+		}
+		const interjection = this.eat('interjection');
+		if (interjection) {
+			this.skipFree();
+		}
+	}
+
 	private eatLeaf(tokenType: string, label: Label): Leaf | undefined {
+		this.skipFree();
 		const token = this.eat(tokenType);
 		if (token) {
 			return makeLeaf(label)([token, []]);
@@ -172,25 +185,25 @@ export class HandwrittenParser {
 	// Fragment -> Argument {% id %}
 	// Fragment -> AdjunctPcon {% id %}
 
-	public expectFragment(): Tree {
+	public expectFragment(expectEOF = true): Tree {
 		// We can't tell DPs from SAPs without backtracking because of fronted subjects.
 		const index = this.tokenIndex;
 		const DP = this.eatDPcon();
 		if (DP) {
-			if (this.eatEOF()) {
+			if (!expectEOF || this.eatEOF()) {
 				return DP;
 			}
 		}
 		this.tokenIndex = index;
 		const AdjunctP = this.eatAdjunctPcon();
 		if (AdjunctP) {
-			if (this.eatEOF()) {
+			if (!expectEOF || this.eatEOF()) {
 				return AdjunctP;
 			}
 		}
 		this.tokenIndex = index;
 		const SAP = this.expectSAP();
-		this.expectEOF();
+		if (expectEOF) this.expectEOF();
 		return SAP;
 	}
 
@@ -338,7 +351,7 @@ export class HandwrittenParser {
 				return this.makeBranch(
 					'𝘷P',
 					adjunctp,
-					this.makeBranch("𝘷'", na, this.expectCP(clauseType, true)!),
+					this.makeBranch("𝘷'", na, this.eatCPrel(true)!),
 				);
 			}
 			throw this.error('Adjunct phrases cannot be fronted without nä.');
@@ -505,10 +518,9 @@ export class HandwrittenParser {
 			for (;;) {
 				const arg = this.eatVocArgument();
 				if (!arg) break;
-				children.push(arg);
 				if (arg.label !== 'VocativeP') {
-					numArgs++;
-					if (numArgs === serial.arity) {
+					children.push(arg);
+					if (++numArgs === serial.arity) {
 						break;
 					}
 				}

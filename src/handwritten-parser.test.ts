@@ -19,14 +19,14 @@ describe('handwritten parser matches Nearley parser', () => {
 		.toString('utf-8')
 		.trim()
 		.split('\n');
-	test.each(sentences.filter(x => !/kïo|hóı|\. /.test(x)).map(x => [x]))(
+	test.each(sentences.filter(x => !/\. /.test(x)).map(x => [x]))(
 		'%s',
 		sentence => {
 			let trees: Tree[] = [];
 			try {
 				trees = parse(sentence);
 			} catch (_e) {
-				// whatever
+				// No parse; leave `trees` empty.
 			}
 			if (trees.length === 1) {
 				expect(handParse(sentence)).toEqual(trees[0]);
