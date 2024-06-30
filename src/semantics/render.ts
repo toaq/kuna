@@ -52,7 +52,7 @@ const polarizerPrecedence: Record<KnownPolarizer['name'], number> = {
 	indeed: 14,
 };
 
-const quantifiers: Record<KnownQuantifier['name'], {}> = {
+const quantifiers: Record<KnownQuantifier['name'], object> = {
 	some: {},
 	every: {},
 	every_sing: {},
@@ -291,12 +291,20 @@ class Renderer<T> {
 				const p = 1;
 				const bracket = leftPrecedence >= p || rightPrecedence > p;
 				const presuppositions = [];
-				while (e.head === 'presuppose') {
-					presuppositions.push(this.render(e.presupposition, names, p, 0));
-					e = e.body;
+				let isolated: Expr = e;
+				while (isolated.head === 'presuppose') {
+					presuppositions.push(
+						this.render(isolated.presupposition, names, p, 0),
+					);
+					isolated = isolated.body;
 				}
 				presuppositions.reverse();
-				const body = this.render(e, names, bracket ? 0 : leftPrecedence, p);
+				const body = this.render(
+					isolated,
+					names,
+					bracket ? 0 : leftPrecedence,
+					p,
+				);
 				const content = this.fmt.presuppose(body, presuppositions);
 				return bracket ? this.fmt.bracket(content) : content;
 			}

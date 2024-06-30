@@ -25,7 +25,11 @@ export function Interactive() {
 						Write some Toaq in the textbox below, then click one of the buttons
 						to see the output.
 					</p>
-					<button className="dismiss" onClick={() => setDismissed(true)}>
+					<button
+						className="dismiss"
+						type="button"
+						onClick={() => setDismissed(true)}
+					>
 						Dismiss
 					</button>
 				</div>

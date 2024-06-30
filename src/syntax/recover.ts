@@ -121,6 +121,7 @@ class Scope {
 	 * Wrap the given CompCP (probably ΣP) in the binding sites for this scope.
 	 */
 	wrap(tree: StrictTree): StrictTree {
+		let result = tree;
 		for (const [b, index] of reverse(this.bindings)) {
 			let left: StrictTree;
 			switch (b.type) {
@@ -170,10 +171,15 @@ class Scope {
 			}
 
 			left.binding = index;
-			tree = { label: tree.label, left, right: tree, source: tree.source };
+			result = {
+				label: result.label,
+				left,
+				right: result,
+				source: result.source,
+			};
 		}
 
-		return tree;
+		return result;
 	}
 }
 

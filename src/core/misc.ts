@@ -1,3 +1,5 @@
+import type { Key } from 'react';
+
 /**
  * Zips two arrays together, returning an array as long as the longest input.
  */
@@ -17,7 +19,7 @@ export function zip<A, B>(
  */
 export function* reverse<A>(as: A[]): Generator<A, void, unknown> {
 	for (let i = as.length - 1; i >= 0; i--)
-		if (as.hasOwnProperty(i)) yield as[i];
+		if (Object.hasOwn(as, i)) yield as[i];
 }
 
 /**
@@ -50,4 +52,19 @@ export function* enumerate<A>(
 		yield [a, i];
 		i++;
 	}
+}
+
+const keys = new WeakMap<object, Key>();
+
+/**
+ * Generates a React key that will remain stable across renders as long as the
+ * same object is passed.
+ */
+export function keyFor(o: object): Key {
+	let key = keys.get(o);
+	if (key === undefined) {
+		key = Math.random();
+		keys.set(o, key);
+	}
+	return key;
 }

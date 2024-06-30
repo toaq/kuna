@@ -345,17 +345,27 @@ function forEachBinding(
 		fn(
 			bs.resumptive,
 			bs => bs.resumptive,
-			(bs, b) =>
-				b === undefined ? (bs.resumptive = undefined) : (bs.resumptive = b),
+			(bs, b) => {
+				if (b === undefined) {
+					bs.resumptive = undefined;
+					return undefined;
+				}
+				bs.resumptive = b;
+				return b;
+			},
 		);
 	if (bs.covertResumptive !== undefined)
 		fn(
 			bs.covertResumptive,
 			bs => bs.covertResumptive,
-			(bs, b) =>
-				b === undefined
-					? (bs.covertResumptive = undefined)
-					: (bs.covertResumptive = b),
+			(bs, b) => {
+				if (b === undefined) {
+					bs.covertResumptive = undefined;
+					return undefined;
+				}
+				bs.covertResumptive = b;
+				return b;
+			},
 		);
 }
 
@@ -777,21 +787,23 @@ export function skolemize(e: Expr, index: number): [Expr, (number | null)[]] {
 		),
 	];
 	const newToOld = e.context.map((_t, i) => i);
-	e = rewriteContext(e, [...c], i => i);
+	let newE = e;
+	let newIndex = index;
+	newE = rewriteContext(newE, [...c], i => i);
 
 	// Substitute each entity in turn with its skolemized form
 	for (const [d, i] of enumerate(dependents)) {
 		const d_ = d - i;
 		c.splice(d_, 1);
 		newToOld.splice(d_, 1);
-		if (index > d_) index--;
+		if (newIndex > d_) newIndex--;
 		const fn = c.length - dependents.length + i;
-		e = substitute(d_, app(v(fn, c), v(index, c)), e, fn);
+		newE = substitute(d_, app(v(fn, c), v(newIndex, c)), newE, fn);
 	}
 
 	// Invert the new → old mapping
-	const oldToNew = e.context.map<number | null>(() => null);
+	const oldToNew = newE.context.map<number | null>(() => null);
 	for (const [old, new_] of enumerate(newToOld)) oldToNew[old] = new_;
 
-	return [e, oldToNew];
+	return [newE, oldToNew];
 }

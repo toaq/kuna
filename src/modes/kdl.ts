@@ -13,12 +13,12 @@ const toStringRecord = <O extends object>(obj: O) => {
 export interface PartialKdlNode {
 	name: string;
 	values?: any[];
-	properties?: {};
+	properties?: Record<string, unknown>;
 	children?: PartialKdlNode[];
 	tags?: {
 		name?: string;
 		values?: any[];
-		properties?: {};
+		properties?: Record<string, unknown>;
 	};
 }
 

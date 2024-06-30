@@ -5,6 +5,7 @@ import type { Tree } from '../tree';
 import { type PlacedTree, TreePlacer, boundingRect } from '../tree/place';
 import './TreeBrowser.css';
 import { Tooltip } from 'react-tooltip';
+import { keyFor } from '../core/misc';
 import type { Theme } from '../tree/theme';
 
 export function Node(props: {
@@ -57,7 +58,7 @@ export function Subtree(props: {
 	const shouldTruncate = props.truncateLabels.some(x =>
 		props.tree.label.startsWith(`${x} `),
 	);
-	const [expanded, _setExpanded] = useState(!shouldTruncate);
+	const [expanded] = useState(!shouldTruncate);
 
 	const { tree, width, compactDenotations, theme, truncateLabels } = props;
 	const children = 'children' in tree ? tree.children : [];
@@ -101,7 +102,7 @@ export function Subtree(props: {
 							lineDx={((1 - children.length) / 2 + i) * d}
 							width={d}
 							tree={c}
-							key={c.label + i}
+							key={keyFor(c)}
 							compactDenotations={compactDenotations}
 							theme={theme}
 							truncateLabels={truncateLabels}
@@ -115,6 +116,8 @@ export function Subtree(props: {
 						width="100%"
 						preserveAspectRatio="none"
 						viewBox="0 0 50 10"
+						role="img"
+						aria-label="Roof"
 					>
 						<path d="M25 0 L50 8 L0 8 Z" fill="none" stroke={theme.textColor} />
 					</svg>

@@ -170,7 +170,7 @@ export class ToaqTokenizer {
 	tokens: ToaqToken[] = [];
 	pos = 0;
 
-	reset(text: string, _info?: {}): void {
+	reset(text: string): void {
 		this.tokens = [];
 		this.pos = 0;
 		let textQuoteRange: Range | null = null;
@@ -321,7 +321,7 @@ export class ToaqTokenizer {
 	next(): ToaqToken | undefined {
 		return this.tokens[this.pos++];
 	}
-	save(): {} {
+	save(): object {
 		return {};
 	}
 	formatError(token: ToaqToken) {

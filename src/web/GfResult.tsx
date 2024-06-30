@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { keyFor } from '../core/misc';
 import { GfTarget } from '../gf';
 
 interface Linearization {
@@ -37,18 +38,24 @@ export default (props: GfResultProps) => {
 			? 'LibraryBrowser.pgf'
 			: 'ResourceDemo.pgf';
 	useEffect(() => {
+		let canceled = false;
 		fetch(
 			`https://cloud.grammaticalframework.org/grammars/${resource}?command=linearize&tree=${encodeURIComponent(gf)}`,
 		).then(response => {
-			if (response.status >= 400) {
-				setLinearizations([]);
-				response.text().then(error => setError(error));
-			} else {
-				setError('');
-				response.json().then(json => setLinearizations(json));
+			if (!canceled) {
+				if (response.status >= 400) {
+					setLinearizations([]);
+					response.text().then(error => setError(error));
+				} else {
+					setError('');
+					response.json().then(json => setLinearizations(json));
+				}
 			}
 		});
-	}, [gf]);
+		return () => {
+			canceled = true;
+		};
+	}, [gf, resource]);
 	return (
 		<div>
 			<div style={{ maxWidth: '66ch' }}>
@@ -56,8 +63,8 @@ export default (props: GfResultProps) => {
 			</div>
 			{error && <pre style={{ color: '#d00000' }}>{error}</pre>}
 			<ul>
-				{linearizations.map((l, i) => (
-					<ShowLinearization linearization={l} key={i} />
+				{linearizations.map(l => (
+					<ShowLinearization linearization={l} key={keyFor(l)} />
 				))}
 			</ul>
 		</div>

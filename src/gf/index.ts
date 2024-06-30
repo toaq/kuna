@@ -481,13 +481,14 @@ export class GfTranslator {
 		}
 
 		assertLabel(tree, 'ΣP');
-		while (tree.left.label === 'QP' || tree.left.label === '&QP') {
-			tree = tree.right;
-			assertBranch(tree);
-			assertLabel(tree, 'ΣP');
+		let stripped: StrictTree = tree;
+		while (stripped.left.label === 'QP' || stripped.left.label === '&QP') {
+			stripped = stripped.right;
+			assertBranch(stripped);
+			assertLabel(stripped, 'ΣP');
 		}
-		const s = this.declarativeTpToGf(tree.right);
-		s[2] = this.polarityToGf(tree.left);
+		const s = this.declarativeTpToGf(stripped.right);
+		s[2] = this.polarityToGf(stripped.left);
 		return s;
 	}
 
@@ -534,10 +535,8 @@ export class GfTranslator {
 	private relativeΣpToGf(tree: StrictTree): G_RS {
 		assertBranch(tree);
 		assertLabel(tree, 'ΣP');
-		while (tree.left.label === 'QP' || tree.left.label === '&QP') {
-			tree = tree.right;
-			assertBranch(tree);
-			assertLabel(tree, 'ΣP');
+		if (tree.left.label === 'QP' || tree.left.label === '&QP') {
+			return this.relativeΣpToGf(tree.right);
 		}
 		const rs = this.relativeTpToGf(tree.right);
 		rs[2] = this.polarityToGf(tree.left);

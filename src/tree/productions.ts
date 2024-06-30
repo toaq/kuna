@@ -180,7 +180,7 @@ export function makevP(
 		[Tree[], Tree[]] | null,
 	],
 	_location: number,
-	reject: Object,
+	reject: unknown,
 	depth: 'main' | 'sub',
 ) {
 	const argsL = argIncorp === null ? [] : [argIncorp];
@@ -223,7 +223,7 @@ export function makevP(
 export function makevP_main(
 	args: [Tree, Tree | null, Tree[], [Tree[], Tree[]] | null],
 	location: number,
-	reject: Object,
+	reject: unknown,
 ) {
 	return makevP(args, location, reject, 'main');
 }
@@ -231,7 +231,7 @@ export function makevP_main(
 export function makevP_sub(
 	args: [Tree, Tree | null, Tree[], [Tree[], Tree[]] | null],
 	location: number,
-	reject: Object,
+	reject: unknown,
 ) {
 	return makevP(args, location, reject, 'sub');
 }
@@ -239,7 +239,7 @@ export function makevP_sub(
 export function makevPdet(
 	[serial, argIncorp]: [Tree, Tree | null],
 	_location: number,
-	reject: Object,
+	reject: unknown,
 ) {
 	const arity = (serial as any).arity;
 	if (arity < (argIncorp === null ? 1 : 2)) return reject;
@@ -276,7 +276,7 @@ export function makeEvAPdet([rl, rr]: [Tree, Tree]) {
 export function makeConn(
 	[left, c, right]: [Tree, Tree, Tree],
 	_location: number,
-	reject: Object,
+	reject: unknown,
 ) {
 	// Don't parse "Hao ꝡä hao jí rú hao súq" as "(Hao ꝡä hao jí) rú hao súq":
 	if (left.label === 'TP' && endsInClauseBoundary(left)) {
@@ -297,7 +297,7 @@ export function makeConn(
 export function makeAdjunctPI(
 	[adjunct, serial]: [Tree, Tree],
 	_location: number,
-	reject: Object,
+	reject: unknown,
 ) {
 	const arity = (serial as any).arity;
 	if (arity !== undefined && arity !== 1) {
@@ -322,7 +322,7 @@ export function makeAdjunctPI(
 export function makeAdjunctPT(
 	[adjunct, serial, obj]: [Tree, Tree, Tree],
 	_location: number,
-	reject: Object,
+	reject: unknown,
 ) {
 	const arity = (serial as any).arity;
 	if (arity !== undefined && arity !== 2) {
@@ -421,7 +421,7 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 export function makeDiscourse(
 	[left, right]: [Tree, Tree],
 	_location: number,
-	reject: Object,
+	reject: unknown,
 ) {
 	const l = skipFree(left);
 	if (!('left' in right)) return reject;

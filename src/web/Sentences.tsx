@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { parse } from '../modes/parse';
 import './Sentences.css';
 import { useInView } from 'react-intersection-observer';
@@ -79,6 +79,7 @@ function ShowParseStatus({ status }: { status: ParseStatus }) {
 			<span style={{ color: RED }}>{errorText}</span>
 			<span className="bullets">
 				{bullets.map((color, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: order is stable
 					<span key={i} style={{ color }}>
 						{BULLET}
 					</span>
@@ -101,20 +102,30 @@ function SentenceRow(props: {
 		if (inView) {
 			setParseStatus(checkParse(props.sentence));
 		}
-	}, [inView]);
+	}, [inView, props.sentence]);
 
 	if (
 		parseStatus &&
 		!props.showScores.includes(parseStatusScore(parseStatus).toString())
 	)
 		return <></>;
+
+	const select = useCallback(() => {
+		navigator.clipboard.writeText(props.sentence);
+		props.setSelected(props.sentence);
+	}, [props.sentence, props.setSelected]);
+
 	return (
 		<tr
 			ref={ref}
 			className={props.sentence === props.selected ? ' selected' : ''}
-			onClick={() => {
-				navigator.clipboard.writeText(props.sentence);
-				props.setSelected(props.sentence);
+			tabIndex={0}
+			onClick={select}
+			onKeyUp={e => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					select();
+				}
 			}}
 		>
 			<td className="sentence-number">{props.id}</td>

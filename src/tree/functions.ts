@@ -26,12 +26,11 @@ export function treeChildren(tree: Tree): Tree[] {
 
 /** Extract the head X from an XP or X'. */
 export function findHead(tree: Tree): Tree {
-	w: while (tree.label.match(/['P]$/)) {
+	if (tree.label.match(/['P]$/)) {
 		const headLabel = tree.label.replace(/['P]$/, '');
 		for (const child of treeChildren(tree)) {
 			if (child.label.replace(/['P]$/, '') === headLabel) {
-				tree = child;
-				continue w;
+				return findHead(child);
 			}
 		}
 		throw new Impossible(`${tree.label} without ${headLabel} child`);

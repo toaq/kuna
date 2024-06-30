@@ -47,14 +47,16 @@ function extractGlossWord(text: string) {
 function makeGloss(body: string) {
 	const m = body.match(/['‘’\"“”]([A-Za-z .]+)['‘’\"“”];/);
 	if (m) return m[1];
-	body = body.split(';')[0].trim();
-	body = body.replace(/\.$/, '');
-	body = body.replace(/\(.+\)$/, '');
-	body = body.trim();
-	body = body.replace(/ (of|for|to|by|from|on)? ▯$/, '');
-	const m2 = body.match(/^▯ (?:is|are) (?:(?:a|an|the) )?([^▯]+)$/);
+	const keywords = body
+		.split(';')[0]
+		.trim()
+		.replace(/\.$/, '')
+		.replace(/\(.+\)$/, '')
+		.trim()
+		.replace(/ (of|for|to|by|from|on)? ▯$/, '');
+	const m2 = keywords.match(/^▯ (?:is|are) (?:(?:a|an|the) )?([^▯]+)$/);
 	if (m2) return extractGlossWord(m2[1]);
-	const m3 = body.match(/^▯ ([^▯]+)( ▯)?$/);
+	const m3 = keywords.match(/^▯ ([^▯]+)( ▯)?$/);
 	if (m3) return extractGlossWord(m3[1]);
 	return undefined;
 }

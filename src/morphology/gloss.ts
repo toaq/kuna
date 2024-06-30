@@ -171,9 +171,10 @@ export class Glosser {
 		if (word === '◌̂') {
 			return 'ADVERB';
 		}
-		word = clean(word.replace(/[\p{Pe}\p{Pf}\p{Pi}\p{Po}\p{Ps}]/gu, ''));
 
-		const { prefixes, root } = splitPrefixes(word);
+		const { prefixes, root } = splitPrefixes(
+			clean(word.replace(/[\p{Pe}\p{Pf}\p{Pi}\p{Po}\p{Ps}]/gu, '')),
+		);
 		return (
 			prefixes.map(p => this.glossPrefix(p)).join('') + this.glossRoot(root)
 		);

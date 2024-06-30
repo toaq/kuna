@@ -64,19 +64,23 @@ export function preprocess(lines: string[], flags_?: Set<string>): string[] {
 
 	for (let line of lines) {
 		let m: RegExpMatchArray | null;
-		if ((m = line.trim().match(/^#ifdef\s+(\w+)\b/))) {
+		m = line.trim().match(/^#ifdef\s+(\w+)\b/);
+		if (m !== null) {
 			ifdefs.push([m[1], true]);
 			continue;
 		}
-		if ((m = line.trim().match(/^#ifndef\s+(\w+)\b/))) {
+		m = line.trim().match(/^#ifndef\s+(\w+)\b/);
+		if (m !== null) {
 			ifdefs.push([m[1], false]);
 			continue;
 		}
-		if ((m = line.trim().match(/^#else\b/))) {
+		m = line.trim().match(/^#else\b/);
+		if (m !== null) {
 			ifdefs[ifdefs.length - 1][1] = !ifdefs[ifdefs.length - 1][1];
 			continue;
 		}
-		if ((m = line.trim().match(/^#endif\b/))) {
+		m = line.trim().match(/^#endif\b/);
+		if (m !== null) {
 			ifdefs.pop();
 			continue;
 		}
@@ -91,7 +95,8 @@ export function preprocess(lines: string[], flags_?: Set<string>): string[] {
 			return `${type}_${value}`;
 		});
 
-		if ((m = line.trim().match(/^(\w+)<([A-Z]\w*)>/))) {
+		m = line.trim().match(/^(\w+)<([A-Z]\w*)>/);
+		if (m !== null) {
 			const typeName = m[1];
 			const typeParam = m[2];
 			generics.set(typeName, generics.get(typeName) || []);

@@ -9,6 +9,7 @@ import {
 import { Glosser } from '../morphology/gloss';
 import type { Tree } from '../tree';
 import './Boxes.css';
+import { keyFor } from '../core/misc';
 import { repairTones } from '../morphology/tokenize';
 
 interface BoxesContext {
@@ -57,9 +58,11 @@ function words(tree: Tree): (string | JSX.Element)[] {
 	if ('left' in tree) {
 		const cpIndex = context.cpIndices.get(tree);
 		if (context.cpStrategy !== 'flat' && cpIndex !== undefined) {
-			return context.cpStrategy === 'nest'
-				? [<ClauseBox clause={context.subclauses[cpIndex - 1]} />]
-				: [circled(cpIndex)];
+			if (context.cpStrategy === 'nest') {
+				const clause = context.subclauses[cpIndex - 1];
+				return [<ClauseBox key={keyFor(clause)} clause={clause} />];
+			}
+			return [circled(cpIndex)];
 		}
 		return [...words(tree.left), ...words(tree.right)];
 	}
@@ -107,25 +110,27 @@ function Subtree(props: { tree: Tree }) {
 	// const { children } = props;
 	// const ch = new Boxifier()
 	const children = gluedWords(props.tree);
-	return children.map((x, i) => <Segment key={i} segment={x} />);
+	return children.map(x => (
+		<Segment key={typeof x === 'string' ? x : x.key} segment={x} />
+	));
 }
 
 function PostFieldBox(props: { postField: PostField }) {
 	const { earlyAdjuncts, arguments: args, lateAdjuncts } = props.postField;
 	return (
 		<Box color="#ffcc00" label="Post-field">
-			{earlyAdjuncts.map((a, i) => (
-				<Box key={i} color="purple" label="Adjunct">
+			{earlyAdjuncts.map(a => (
+				<Box key={keyFor(a)} color="purple" label="Adjunct">
 					<Subtree tree={a} />
 				</Box>
 			))}
-			{args.map((a, i) => (
-				<Box key={i} color="teal" label="Argument">
+			{args.map(a => (
+				<Box key={keyFor(a)} color="teal" label="Argument">
 					<Subtree tree={a} />
 				</Box>
 			))}
-			{lateAdjuncts.map((a, i) => (
-				<Box key={i} color="purple" label="Adjunct">
+			{lateAdjuncts.map(a => (
+				<Box key={keyFor(a)} color="purple" label="Adjunct">
 					<Subtree tree={a} />
 				</Box>
 			))}
@@ -199,7 +204,7 @@ export function Boxes(props: {
 				</Box>
 				{cpStrategy === 'split' &&
 					props.subclauses.map((clause, i) => (
-						<li key={i}>
+						<li key={keyFor(clause)}>
 							<div className="boxes-clause-number">{circled(i + 1)}</div>
 							<ClauseBox clause={clause} />
 						</li>
