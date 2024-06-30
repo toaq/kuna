@@ -156,15 +156,20 @@ export function splitPrefixes(word: string): {
 export interface ToaqToken {
 	type: string;
 	value: string;
-	index: number | undefined;
+	position: Position;
+}
+
+export interface Position {
+	line: number;
+	column: number;
 }
 
 /**
  * A range of positions in the input string, used by the tokenizer to keep track of quotations.
  */
 interface Range {
-	start: number;
-	end: number;
+	start: Position;
+	end: Position;
 }
 
 export class ToaqTokenizer {
@@ -178,145 +183,161 @@ export class ToaqTokenizer {
 		let textQuoteDepth = 0;
 		let wordQuote = false;
 
-		for (const m of text.matchAll(/[\p{L}\p{N}\p{Diacritic}-]+/gu)) {
-			if (wordQuote && textQuoteDepth === 0) {
-				// We are inside a word quote; emit this word as a token
-				this.tokens.push({ type: 'word', value: m[0], index: m.index });
-				wordQuote = false;
-				continue;
-			}
-
-			const { prefixes, root } = splitPrefixes(m[0]);
-			const lastTextQuoteDepth = textQuoteDepth;
-			const wordTokens: ToaqToken[] = [];
-			let tokenQuote = false;
-			let toneInPrefix = false;
-
-			for (const tokenText of [...prefixes.map(p => p + '-'), root]) {
-				const lemmaForm = clean(tokenText);
-				if (!lemmaForm) throw new Impossible('empty token at ' + m.index);
-				const exactEntry = dictionary.get(lemmaForm);
-				const base = baseForm(tokenText);
-				const entry = dictionary.get(base);
-
-				if (tokenQuote) {
-					if (tokenText.endsWith('-'))
-						throw new Ungrammatical('hu- must be followed by a root');
-
-					const hu = wordTokens.at(-1)!;
-					hu.value = inTone(hu.value, tone(tokenText));
-					if (tone(tokenText) === Tone.T4) {
-						hu.type = 'incorporated_prefix_pronoun';
-					}
-					wordTokens.push({
+		let lineNum = 0;
+		for (const line of text.split(/\r?\n/)) {
+			for (const m of line.matchAll(/[\p{L}\p{N}\p{Diacritic}-]+/gu)) {
+				const position: Position = { line: lineNum, column: m.index };
+				if (wordQuote && textQuoteDepth === 0) {
+					// We are inside a word quote; emit this word as a token
+					this.tokens.push({
 						type: 'word',
-						value: bare(tokenText),
-						index: m.index,
+						value: m[0],
+						position,
 					});
-
-					tokenQuote = false;
+					wordQuote = false;
 					continue;
 				}
 
-				if (entry) {
-					// Deal with words that open and close quotes (except those that are
-					// themselves quoted by a word quote!)
-					if (wordQuote) {
-						wordQuote = false;
-					} else {
-						wordQuote =
-							entry.type === 'word quote' || entry.type === 'name verb';
-						if (entry.type === 'text quote' || entry.type === 'name quote') {
-							textQuoteDepth++;
-						} else if (entry.type === 'end quote') {
-							textQuoteDepth--;
-							if (textQuoteDepth === 0) {
-								// Close out the quote
-								this.tokens.push({
-									type: 'text',
-									value: text.slice(textQuoteRange!.start, textQuoteRange!.end),
-									index: textQuoteRange!.start,
-								});
-								textQuoteRange = null;
+				const { prefixes, root } = splitPrefixes(m[0]);
+				const lastTextQuoteDepth = textQuoteDepth;
+				const wordTokens: ToaqToken[] = [];
+				let tokenQuote = false;
+				let toneInPrefix = false;
+
+				for (const tokenText of [...prefixes.map(p => p + '-'), root]) {
+					const lemmaForm = clean(tokenText);
+					if (!lemmaForm) throw new Impossible('empty token at ' + m.index);
+					const exactEntry = dictionary.get(lemmaForm);
+					const base = baseForm(tokenText);
+					const entry = dictionary.get(base);
+
+					if (tokenQuote) {
+						if (tokenText.endsWith('-'))
+							throw new Ungrammatical('hu- must be followed by a root');
+
+						const hu = wordTokens.at(-1)!;
+						hu.value = inTone(hu.value, tone(tokenText));
+						if (tone(tokenText) === Tone.T4) {
+							hu.type = 'incorporated_prefix_pronoun';
+						}
+						wordTokens.push({
+							type: 'word',
+							value: bare(tokenText),
+							position,
+						});
+
+						tokenQuote = false;
+						continue;
+					}
+
+					if (entry) {
+						// Deal with words that open and close quotes (except those that are
+						// themselves quoted by a word quote!)
+						if (wordQuote) {
+							wordQuote = false;
+						} else {
+							wordQuote =
+								entry.type === 'word quote' || entry.type === 'name verb';
+							if (entry.type === 'text quote' || entry.type === 'name quote') {
+								textQuoteDepth++;
+							} else if (entry.type === 'end quote') {
+								textQuoteDepth--;
+								if (textQuoteDepth === 0) {
+									// Close out the quote
+									this.tokens.push({
+										type: 'text',
+										value: text[textQuoteRange!.start.line].slice(
+											// TODO multiline
+											textQuoteRange!.start.column,
+											textQuoteRange!.end.column,
+										),
+										position: textQuoteRange!.start,
+									});
+									textQuoteRange = null;
+								}
 							}
 						}
 					}
-				}
 
-				if (exactEntry) {
-					if (exactEntry.type === 'prefix conjunctionizer') {
-						console.log(wordTokens, prefixes);
-						const wordTone = tone(m[0]);
-						if (wordTone === Tone.T3) {
-							throw new Ungrammatical('na- in t3 word');
+					if (exactEntry) {
+						if (exactEntry.type === 'prefix conjunctionizer') {
+							console.log(wordTokens, prefixes);
+							const wordTone = tone(m[0]);
+							if (wordTone === Tone.T3) {
+								throw new Ungrammatical('na- in t3 word');
+							}
+							wordTokens.push({
+								type:
+									wordTone === Tone.T1
+										? 'prefix_conjunctionizer_in_t1'
+										: wordTone === Tone.T4
+											? 'prefix_conjunctionizer_in_t4'
+											: 'prefix_conjunctionizer',
+								value: inTone(tokenText, wordTone),
+								position,
+							});
+							toneInPrefix = true;
+						} else {
+							if (exactEntry.type === 'prefix pronoun') {
+								tokenQuote = true;
+							}
+							wordTokens.push({
+								type: exactEntry.type.replace(/ /g, '_'),
+								value: tokenText,
+								position,
+							});
 						}
-						wordTokens.push({
-							type:
-								wordTone === Tone.T1
-									? 'prefix_conjunctionizer_in_t1'
-									: wordTone === Tone.T4
-										? 'prefix_conjunctionizer_in_t4'
-										: 'prefix_conjunctionizer',
-							value: inTone(tokenText, wordTone),
-							index: m.index,
-						});
-						toneInPrefix = true;
-					} else {
-						if (exactEntry.type === 'prefix pronoun') {
-							tokenQuote = true;
-						}
-						wordTokens.push({
-							type: exactEntry.type.replace(/ /g, '_'),
-							value: tokenText,
-							index: m.index,
-						});
+						continue;
 					}
-					continue;
-				}
 
-				const wordTone = tone(tokenText);
+					const wordTone = tone(tokenText);
 
-				if (entry) {
-					if (!toneInPrefix)
+					if (entry) {
+						if (!toneInPrefix)
+							wordTokens.unshift({
+								type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
+								value: wordTone === Tone.T2 ? '◌́' : '◌̂',
+								position,
+							});
+						wordTokens.push({
+							type: entry.type.replace(/ /g, '_'),
+							value: inTone(tokenText, tone(base)),
+							position,
+						});
+						continue;
+					}
+					if (wordTone === Tone.T1) {
+						wordTokens.push({
+							type: 'predicate',
+							value: tokenText,
+							position,
+						});
+					} else if (!toneInPrefix) {
 						wordTokens.unshift({
 							type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
 							value: wordTone === Tone.T2 ? '◌́' : '◌̂',
-							index: m.index,
+							position,
 						});
-					wordTokens.push({
-						type: entry.type.replace(/ /g, '_'),
-						value: inTone(tokenText, tone(base)),
-						index: m.index,
-					});
-					continue;
+						wordTokens.push({
+							type: 'predicate',
+							value: inTone(tokenText, tone(base)),
+							position,
+						});
+					}
 				}
-				if (wordTone === Tone.T1) {
-					wordTokens.push({
-						type: 'predicate',
-						value: tokenText,
-						index: m.index,
-					});
-				} else if (!toneInPrefix) {
-					wordTokens.unshift({
-						type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
-						value: wordTone === Tone.T2 ? '◌́' : '◌̂',
-						index: m.index,
-					});
-					wordTokens.push({
-						type: 'predicate',
-						value: inTone(tokenText, tone(base)),
-						index: m.index,
-					});
-				}
-			}
 
-			if (lastTextQuoteDepth > 0 && textQuoteDepth > 0) {
-				// We are inside a text quote; don't emit any tokens until closed
-				textQuoteRange ??= { start: m.index!, end: 0 };
-				textQuoteRange.end = m.index! + m[0].length;
-			} else {
-				this.tokens.push(...wordTokens);
+				if (lastTextQuoteDepth > 0 && textQuoteDepth > 0) {
+					// We are inside a text quote; don't emit any tokens until closed
+					textQuoteRange ??= { start: position, end: { line: 0, column: 0 } };
+					textQuoteRange.end = {
+						line: lineNum,
+						column: m.index! + m[0].length,
+					};
+				} else {
+					this.tokens.push(...wordTokens);
+				}
 			}
+			lineNum++;
 		}
 	}
 	next(): ToaqToken | undefined {
@@ -326,7 +347,7 @@ export class ToaqTokenizer {
 		return {};
 	}
 	formatError(token: ToaqToken) {
-		return `${token.value} at column ${token.index}`;
+		return `${token.value} at ${token.position.line}:${token.position.column}`;
 	}
 	has(tokenType: string): boolean {
 		return (

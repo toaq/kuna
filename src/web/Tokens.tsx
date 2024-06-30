@@ -5,7 +5,7 @@ import './Tokens.css';
 function Token(props: { token: ToaqToken }) {
 	return (
 		<tr className="token">
-			<td className="token-index">{props.token.index}</td>
+			<td className="token-index">{props.token.column}</td>
 			<td className="token-value">{props.token.value}</td>
 			<td className="token-gloss">
 				{new Glosser(true).glossWord(props.token.value)}

@@ -6,9 +6,7 @@ import { HandwrittenParser } from './handwritten-parser';
 import { Tree } from './tree';
 
 function handParse(sentence: string): Tree | string {
-	const tokenizer = new ToaqTokenizer();
-	tokenizer.reset(sentence);
-	const parser = new HandwrittenParser(tokenizer.tokens);
+	const parser = new HandwrittenParser(sentence);
 	try {
 		return parser.expectFragment();
 	} catch (e) {

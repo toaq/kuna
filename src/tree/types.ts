@@ -2,10 +2,11 @@ import { Entry } from '../morphology/dictionary';
 import { Impossible } from '../core/error';
 import { Tone } from '../morphology/tone';
 import { Movement } from './movement';
+import { Position } from '../morphology/tokenize';
 
 export interface Word {
 	covert: false;
-	index: number | undefined;
+	index: Position | undefined;
 	text: string;
 	bare: string;
 	tone: Tone;

@@ -29,7 +29,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 	const bareWord = bare(token.value);
 	return {
 		covert: false,
-		index: token.index,
+		index: token.position,
 		text: token.value,
 		bare: bareWord,
 		tone: tone(token.value),

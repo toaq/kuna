@@ -1,4 +1,4 @@
-import { ToaqToken } from './morphology/tokenize';
+import { ToaqToken, ToaqTokenizer } from './morphology/tokenize';
 import {
 	Label,
 	Leaf,
@@ -19,9 +19,16 @@ import {
 } from './tree';
 
 export class ParseError extends Error {
-	constructor(token: ToaqToken | undefined, message?: string) {
+	constructor(token: ToaqToken | undefined, message?: string, line?: string) {
 		if (token) {
-			message += ` (at index ${token.index}, near '${token.value}')`;
+			message += ` (at ${token.position.line + 1}:${token.position.column + 1})`;
+			if (line) {
+				message += '\n\n    ' + line;
+				message +=
+					'\n    ' +
+					' '.repeat(token.position.column) +
+					'^'.repeat(token.value.length);
+			}
 		} else {
 			message += ` (at EOF)`;
 		}
@@ -40,9 +47,23 @@ enum ClauseType {
 
 export class HandwrittenParser {
 	private tokenIndex = 0;
-	constructor(private tokens: ToaqToken[]) {}
+	private tokens: ToaqToken[];
+	private lines: string[];
+	constructor(private text: string) {
+		const tokenizer = new ToaqTokenizer();
+		tokenizer.reset(text);
+		this.tokens = tokenizer.tokens;
+		this.lines = text.split('\n');
+	}
 
 	//#region Basic API
+
+	private error(message: string): ParseError {
+		const token = this.peek();
+		if (token)
+			return new ParseError(token, message, this.lines[token.position.line]);
+		else return new ParseError(undefined, message);
+	}
 
 	private peek(): ToaqToken | undefined {
 		return this.tokens[this.tokenIndex];
@@ -66,7 +87,7 @@ export class HandwrittenParser {
 
 	private expectEOF(): void {
 		if (!this.eatEOF()) {
-			throw new ParseError(this.peek(), 'I expected the sentence to end here.');
+			throw this.error('I expected the sentence to end here.');
 		}
 	}
 
@@ -104,8 +125,7 @@ export class HandwrittenParser {
 		if (conj) {
 			const right = this.conjoined(what, eat, eatConj);
 			if (!right) {
-				throw new ParseError(
-					this.peek(),
+				throw this.error(
 					`This ${conj.source} must be followed by another ${what}.`,
 				);
 			}
@@ -229,8 +249,7 @@ export class HandwrittenParser {
 		const Hu = this.eatLeaf('prefix_pronoun', 'D');
 		if (!Hu) return undefined;
 		const word = this.eatWord();
-		if (!word)
-			throw new ParseError(this.peek(), 'hu- must be attached to a word.');
+		if (!word) throw this.error('hu- must be attached to a word.');
 		return this.makeBranch('DP', Hu, word);
 	}
 
@@ -289,8 +308,7 @@ export class HandwrittenParser {
 					this.makeBranch("𝘷'", na, this.eatCPrel(true)!),
 				);
 			}
-			throw new ParseError(
-				this.peek(),
+			throw this.error(
 				'This clause starts with a fronted subject or topic, so I expected bï or nä.',
 			);
 		}
@@ -304,10 +322,7 @@ export class HandwrittenParser {
 					this.makeBranch("𝘷'", na, this.expectCP(clauseType, true)!),
 				);
 			}
-			throw new ParseError(
-				this.peek(),
-				'Adjunct phrases cannot be fronted without nä.',
-			);
+			throw this.error('Adjunct phrases cannot be fronted without nä.');
 		}
 		const modalp = this.eatModalP();
 		if (modalp) {
@@ -319,7 +334,7 @@ export class HandwrittenParser {
 					this.makeBranch("𝘷'", na, this.expectCP(clauseType, true)!),
 				);
 			}
-			throw new ParseError(this.peek(), 'This ModalP is missing nä.');
+			throw this.error('This ModalP is missing nä.');
 		}
 
 		const interjection = this.eatInterjection();
@@ -403,8 +418,7 @@ export class HandwrittenParser {
 		const eva = this.eatEvA();
 		if (eva) {
 			const vp = this.eatvP(ClauseType.Sub);
-			if (!vp)
-				throw new ParseError(this.peek(), 'ë must be followed by a verb');
+			if (!vp) throw this.error('ë must be followed by a verb');
 			const dp = clauseType === ClauseType.Det ? PRO : this.eatDPcon() ?? PRO;
 			return makeEvAP([eva, vp, dp]);
 		}
@@ -421,7 +435,7 @@ export class HandwrittenParser {
 		const Asp = this.expectAspcon();
 		const vP = this.eatvP(clauseType);
 		if (!vP) {
-			throw new ParseError(this.peek(), 'I expect a verb here.');
+			throw this.error('I expect a verb here.');
 		}
 		return this.makeBranch('AspP', Asp, vP);
 	}
@@ -471,8 +485,7 @@ export class HandwrittenParser {
 				serial.arity !== undefined &&
 				numArgs < serial.arity
 			) {
-				throw new ParseError(
-					this.peek(),
+				throw this.error(
 					`This subclause is underfilled. '${serial.source}' should have exactly ${serial.arity} arguments, but it has ${numArgs}.`,
 				);
 			}
@@ -501,16 +514,12 @@ export class HandwrittenParser {
 		if (!Adjunct) return undefined;
 		const serial = this.eatSerial();
 		if (!serial) {
-			throw new ParseError(
-				this.peek(),
-				'Adjunct head must be followed by a verb.',
-			);
+			throw this.error('Adjunct head must be followed by a verb.');
 		}
 		if (serial.arity === 2) {
 			const object = this.eatArgument();
 			if (!object) {
-				throw new ParseError(
-					this.peek(),
+				throw this.error(
 					`${catSource(Adjunct, serial)} must be followed by an object, because it is transitive`,
 				);
 			}
@@ -583,8 +592,7 @@ export class HandwrittenParser {
 		if (conj) {
 			const res = this.eatVlast();
 			if (!res) {
-				throw new ParseError(
-					this.peek(),
+				throw this.error(
 					`This ${conj.source} must be followed by another verb.`,
 				);
 			}
@@ -618,11 +626,7 @@ export class HandwrittenParser {
 		const Voiv = this.eatVoiv();
 		if (!Voiv) return undefined;
 		const DP = this.eatDP(); // TODO eatDPcon
-		if (!DP)
-			throw new ParseError(
-				this.peek(),
-				`${Voiv.source} must be followed by a DP.`,
-			);
+		if (!DP) throw this.error(`${Voiv.source} must be followed by a DP.`);
 		return this.makeBranch('VP', Voiv, DP);
 	}
 
@@ -653,10 +657,7 @@ export class HandwrittenParser {
 		if (conj) {
 			const right = this.eatDPcon();
 			if (!right) {
-				throw new ParseError(
-					this.peek(),
-					`This ${conj.source} must be followed by another DP.`,
-				);
+				throw this.error(`This ${conj.source} must be followed by another DP.`);
 			}
 			return this.makeBranch('&P', left, this.makeBranch("&'", conj, right));
 		}
@@ -664,10 +665,7 @@ export class HandwrittenParser {
 		if (conjT1) {
 			const right = this.eatCPargcon();
 			if (!right) {
-				throw new ParseError(
-					this.peek(),
-					`This ${conjT1.source} must be followed by a CP.`,
-				);
+				throw this.error(`This ${conjT1.source} must be followed by a CP.`);
 			}
 			return this.makeBranch('&P', left, this.makeBranch("&'", conjT1, right));
 		}
@@ -686,10 +684,7 @@ export class HandwrittenParser {
 		if (roi) {
 			const right = this.eatDPcon();
 			if (!right) {
-				throw new ParseError(
-					this.peek(),
-					`This ${roi.source} must be followed by another DP.`,
-				);
+				throw this.error(`This ${roi.source} must be followed by another DP.`);
 			}
 			return this.makeBranch('&P', left, this.makeBranch("&'", roi, right));
 		}
@@ -785,8 +780,7 @@ export class HandwrittenParser {
 		if ((prefix = this.eatPrefix())) {
 			const inner = this.eatVerb();
 			if (!inner) {
-				throw new ParseError(
-					this.peek(),
+				throw this.error(
 					`I expected a verb after the prefix '${prefix.source}'.`,
 				);
 			}
@@ -801,7 +795,7 @@ export class HandwrittenParser {
 		const moP = this.expectMoP();
 		const teo = this.eatTeo();
 		if (!teo) {
-			throw new ParseError(this.peek(), 'mo must be terminated by teo.');
+			throw this.error('mo must be terminated by teo.');
 		}
 		return this.makeBranch('teoP', moP, teo);
 	}
@@ -809,8 +803,7 @@ export class HandwrittenParser {
 	private expectMoP(): Tree {
 		const mo = this.eatMo()!;
 		const text = this.eatText();
-		if (!text)
-			throw new ParseError(this.peek(), 'mo must be followed by text.');
+		if (!text) throw this.error('mo must be followed by text.');
 		return this.makeBranch('moP', mo, text);
 	}
 
@@ -818,8 +811,7 @@ export class HandwrittenParser {
 		const shu = this.eatShu();
 		if (!shu) return undefined;
 		const next = this.next();
-		if (!next)
-			throw new ParseError(this.peek(), 'mı must be followed by another word.');
+		if (!next) throw this.error('mı must be followed by another word.');
 		const word = makeLeaf('word')([next, []]);
 		return this.makeBranch('shuP', shu, word);
 	}
@@ -828,8 +820,7 @@ export class HandwrittenParser {
 		const mi = this.eatMi();
 		if (!mi) return undefined;
 		const next = this.next();
-		if (!next)
-			throw new ParseError(this.peek(), 'mı must be followed by another word.');
+		if (!next) throw this.error('mı must be followed by another word.');
 		const word = makeLeaf('word')([next, []]);
 		return this.makeBranch('mıP', mi, word);
 	}
@@ -840,8 +831,7 @@ export class HandwrittenParser {
 		const na = this.eatPrefixLeaf(na_type);
 		if (!na) return undefined;
 		const V = this.eatV();
-		if (!V)
-			throw new ParseError(this.peek(), 'na- must be followed by a verb.');
+		if (!V) throw this.error('na- must be followed by a verb.');
 		return this.makeBranch('&(naP)', na, V);
 	}
 
@@ -898,8 +888,7 @@ export class HandwrittenParser {
 		const vocative = this.eatVocative();
 		if (!vocative) return undefined;
 		const argument = this.eatArgument();
-		if (!argument)
-			throw new ParseError(this.peek(), 'I expected an argument after hóı.');
+		if (!argument) throw this.error('I expected an argument after hóı.');
 		return this.makeBranch('VocativeP', vocative, argument);
 	}
 

@@ -192,9 +192,7 @@ export function Output(props: OutputProps) {
 	}
 
 	function getHandParsed(): ReactElement {
-		const tokenizer = new ToaqTokenizer();
-		tokenizer.reset(text);
-		const parser = new HandwrittenParser(tokenizer.tokens);
+		const parser = new HandwrittenParser(text);
 		try {
 			const tree = parser.expectFragment();
 			const themeName = darkMode.isDarkMode ? 'dark' : 'light';
@@ -208,7 +206,7 @@ export function Output(props: OutputProps) {
 				/>
 			);
 		} catch (e) {
-			return <span className="error">{String(e)}</span>;
+			return <pre className="error">{String(e)}</pre>;
 		}
 	}
 

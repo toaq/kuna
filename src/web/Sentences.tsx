@@ -43,9 +43,7 @@ function parseStatusScore(status: ParseStatus): number {
 }
 
 function handParse(sentence: string): Tree | undefined {
-	const tokenizer = new ToaqTokenizer();
-	tokenizer.reset(sentence);
-	const parser = new HandwrittenParser(tokenizer.tokens);
+	const parser = new HandwrittenParser(sentence);
 	try {
 		return parser.expectFragment();
 	} catch (e) {
