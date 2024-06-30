@@ -119,17 +119,17 @@ test('it tokenizes sentences', () => {
 	const tokenizer = new ToaqTokenizer();
 	tokenizer.reset('Ꝡa bụqgı é sho tı súq nírıaq da!');
 	expect(tokenizer.tokens).toEqual([
-		{ type: 'complementizer', value: 'Ꝡa', index: 0 },
-		{ type: 'prefix', value: 'buq-', index: 3 },
-		{ type: 'predicate', value: 'gı', index: 3 },
-		{ type: 'determiner', value: '◌́', index: 9 },
-		{ type: 'event_accessor', value: 'ë', index: 9 },
-		{ type: 'predicate', value: 'sho', index: 11 },
-		{ type: 'predicate', value: 'tı', index: 15 },
-		{ type: 'pronoun', value: 'súq', index: 18 },
-		{ type: 'determiner', value: '◌́', index: 22 },
-		{ type: 'predicate', value: 'nırıaq', index: 22 },
-		{ type: 'illocution', value: 'da', index: 29 },
+		{ type: 'complementizer', value: 'Ꝡa', position: { line: 0, column: 0 } },
+		{ type: 'prefix', value: 'buq-', position: { line: 0, column: 3 } },
+		{ type: 'predicate', value: 'gı', position: { line: 0, column: 3 } },
+		{ type: 'determiner', value: '◌́', position: { line: 0, column: 9 } },
+		{ type: 'event_accessor', value: 'ë', position: { line: 0, column: 9 } },
+		{ type: 'predicate', value: 'sho', position: { line: 0, column: 11 } },
+		{ type: 'predicate', value: 'tı', position: { line: 0, column: 15 } },
+		{ type: 'pronoun', value: 'súq', position: { line: 0, column: 18 } },
+		{ type: 'determiner', value: '◌́', position: { line: 0, column: 22 } },
+		{ type: 'predicate', value: 'nırıaq', position: { line: 0, column: 22 } },
+		{ type: 'illocution', value: 'da', position: { line: 0, column: 29 } },
 	]);
 	expect(tokenizer.next()!.value).toEqual('Ꝡa');
 	expect(tokenizer.next()!.value).toEqual('buq-');
@@ -139,24 +139,28 @@ test('it tokenizes sentences', () => {
 
 	tokenizer.reset('Mụcho jí zạ́faq.');
 	expect(tokenizer.tokens).toEqual([
-		{ type: 'prefix', value: 'mu-', index: 0 },
-		{ type: 'predicate', value: 'cho', index: 0 },
-		{ type: 'pronoun', value: 'jí', index: 6 },
-		{ type: 'determiner', value: '◌́', index: 9 },
-		{ type: 'prefix_aspect', value: 'za-', index: 9 },
-		{ type: 'predicate', value: 'faq', index: 9 },
+		{ type: 'prefix', value: 'mu-', position: { line: 0, column: 0 } },
+		{ type: 'predicate', value: 'cho', position: { line: 0, column: 0 } },
+		{ type: 'pronoun', value: 'jí', position: { line: 0, column: 6 } },
+		{ type: 'determiner', value: '◌́', position: { line: 0, column: 9 } },
+		{ type: 'prefix_aspect', value: 'za-', position: { line: 0, column: 9 } },
+		{ type: 'predicate', value: 'faq', position: { line: 0, column: 9 } },
 	]);
 
 	tokenizer.reset('Kuq mí Mô mó «Shu teo hú mo «azazo» teo» teo');
 	expect(tokenizer.tokens).toEqual([
-		{ type: 'predicate', value: 'Kuq', index: 0 },
-		{ type: 'determiner', value: '◌́', index: 4 },
-		{ type: 'name_verb', value: 'mı', index: 4 },
-		{ type: 'word', value: 'Mô', index: 7 },
-		{ type: 'determiner', value: '◌́', index: 10 },
-		{ type: 'text_quote', value: 'mo', index: 10 },
-		{ type: 'text', value: 'Shu teo hú mo «azazo» teo', index: 14 },
-		{ type: 'end_quote', value: 'teo', index: 41 },
+		{ type: 'predicate', value: 'Kuq', position: { line: 0, column: 0 } },
+		{ type: 'determiner', value: '◌́', position: { line: 0, column: 4 } },
+		{ type: 'name_verb', value: 'mı', position: { line: 0, column: 4 } },
+		{ type: 'word', value: 'Mô', position: { line: 0, column: 7 } },
+		{ type: 'determiner', value: '◌́', position: { line: 0, column: 10 } },
+		{ type: 'text_quote', value: 'mo', position: { line: 0, column: 10 } },
+		{
+			type: 'text',
+			value: 'Shu teo hú mo «azazo» teo',
+			position: { line: 0, column: 14 },
+		},
+		{ type: 'end_quote', value: 'teo', position: { line: 0, column: 41 } },
 	]);
 });
 
@@ -164,8 +168,8 @@ test('it keeps capitalization', () => {
 	const tokenizer = new ToaqTokenizer();
 	tokenizer.reset('Gı Tóaqzu');
 	expect(tokenizer.tokens).toEqual([
-		{ type: 'predicate', value: 'Gı', index: 0 },
-		{ type: 'determiner', value: '◌́', index: 3 },
-		{ type: 'predicate', value: 'Toaqzu', index: 3 },
+		{ type: 'predicate', value: 'Gı', position: { line: 0, column: 0 } },
+		{ type: 'determiner', value: '◌́', position: { line: 0, column: 3 } },
+		{ type: 'predicate', value: 'Toaqzu', position: { line: 0, column: 3 } },
 	]);
 });

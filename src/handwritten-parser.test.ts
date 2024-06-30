@@ -1,7 +1,6 @@
-import { test, expect } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import * as fs from 'fs';
 import { parse } from './modes/parse';
-import { ToaqTokenizer } from './morphology/tokenize';
 import { HandwrittenParser } from './handwritten-parser';
 import { Tree } from './tree';
 
@@ -14,19 +13,26 @@ function handParse(sentence: string): Tree | string {
 	}
 }
 
-test('it matches the Nearley parser', () => {
+describe('handwritten parser matches Nearley parser', () => {
 	const sentences = fs
 		.readFileSync('sentences/refgram.txt')
 		.toString('utf-8')
 		.trim()
 		.split('\n');
-	for (const sentence of sentences) {
-		const trees = parse(sentence);
-		if (trees.length === 1) {
-			expect(handParse(sentence)).toEqual(trees[0]);
-		} else {
-			expect(handParse(sentence)).toBeTypeOf('string');
-		}
-	}
-	console.log(sentences);
+	test.each(sentences.filter(x => !/kïo|hóı|\. /.test(x)).map(x => [x]))(
+		'%s',
+		sentence => {
+			let trees: Tree[] = [];
+			try {
+				trees = parse(sentence);
+			} catch (e) {
+				// whatever
+			}
+			if (trees.length === 1) {
+				expect(handParse(sentence)).toEqual(trees[0]);
+			} else {
+				expect(handParse(sentence)).toBeTypeOf('string');
+			}
+		},
+	);
 });

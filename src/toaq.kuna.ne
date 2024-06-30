@@ -179,8 +179,6 @@ DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
 DPincorp -> Huincorp Word {% makeBranch('DP') %}
 # sâ ...
 DPincorp -> Dincorp nP {% makeBranch('DP') %}
-# po sá ...
-VPoiv -> Voiv DPcon {% makeBranch('VP') %}
 
 Argument -> DPcon {% id %}
 Argument -> CPargcon {% id %}

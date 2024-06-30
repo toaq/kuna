@@ -108,11 +108,12 @@ export function make3LCovertLeft(
 	labelR: Label,
 ) {
 	return ([rl, rr]: [Tree, Tree]) => {
+		const source = catSource(rl, rr);
 		return {
 			label,
 			left: makeNull(covertLabel),
-			right: { label: labelR, left: rl, right: rr },
-			source: catSource(rl, rr),
+			right: { label: labelR, left: rl, right: rr, source },
+			source,
 		};
 	};
 }

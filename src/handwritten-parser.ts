@@ -177,15 +177,21 @@ export class HandwrittenParser {
 	public expectFragment(): Tree {
 		// We can't tell DPs from SAPs without backtracking because of fronted subjects.
 		let index = this.tokenIndex;
-		const DP = this.eatDP();
+		const DP = this.eatDPcon();
 		if (DP) {
 			if (this.eatEOF()) {
 				return DP;
 			}
 		}
 		this.tokenIndex = index;
+		const AdjunctP = this.eatAdjunctPcon();
+		if (AdjunctP) {
+			if (this.eatEOF()) {
+				return AdjunctP;
+			}
+		}
+		this.tokenIndex = index;
 		const SAP = this.expectSAP();
-		console.log(SAP);
 		this.expectEOF();
 		return SAP;
 	}
@@ -489,8 +495,8 @@ export class HandwrittenParser {
 		let children: Tree[] = [serial as Tree];
 		if (serial.incorporatedObject) {
 			children.push(serial.incorporatedObject);
-			delete serial.incorporatedObject;
 		}
+		delete serial.incorporatedObject;
 		if (clauseType === ClauseType.Det) {
 			children.push(PRO);
 		} else {
@@ -589,9 +595,9 @@ export class HandwrittenParser {
 	private eatSerial(): SerialTree | undefined {
 		let eaten = this.eatSerialItem();
 		if (!eaten) return undefined;
-		let verbTrees = [eaten[1]];
+		let verbTrees = [];
 		let incorporatedObject: Tree | undefined;
-		while ((eaten = this.eatSerialItem())) {
+		do {
 			verbTrees.push(eaten[1]);
 			if (eaten[0] === 'oiv') {
 				incorporatedObject = this.eatArgument();
@@ -603,7 +609,8 @@ export class HandwrittenParser {
 				}
 				break;
 			}
-		}
+		} while ((eaten = this.eatSerialItem()));
+
 		incorporatedObject ??= this.eatArgincorp();
 		return {
 			label: '*Serial',
@@ -623,16 +630,16 @@ export class HandwrittenParser {
 	private eatVlast(): ['oiv' | 'plain', Tree] | undefined {
 		const left = this.eatVerb();
 		if (!left) {
-			const oiv = this.eatVPoiv();
+			const oiv = this.eatVoiv();
 			return oiv ? ['oiv', oiv] : undefined;
 		}
+		const preConj = this.tokenIndex;
 		const conj = this.eatConjunctionT1();
 		if (conj) {
 			const res = this.eatVlast();
 			if (!res) {
-				throw this.error(
-					`This ${conj.source} must be followed by another verb.`,
-				);
+				this.tokenIndex = preConj;
+				return ['plain', left];
 			}
 			const [flavor, right] = res;
 			return [
@@ -658,16 +665,6 @@ export class HandwrittenParser {
 		);
 	}
 
-	// # po sá ...
-	// VPoiv -> Voiv DPcon {% makeBranch('VP') %}
-	private eatVPoiv(): Tree | undefined {
-		const Voiv = this.eatVoiv();
-		if (!Voiv) return undefined;
-		const DP = this.eatDP(); // TODO eatDPcon
-		if (!DP) throw this.error(`${Voiv.source} must be followed by a DP.`);
-		return this.makeBranch('VP', Voiv, DP);
-	}
-
 	// Argument -> DPcon {% id %}
 	// Argument -> CPargcon {% id %}
 	private eatArgument(): Tree | undefined {
@@ -677,7 +674,7 @@ export class HandwrittenParser {
 	// Argincorp -> DPincorp {% id %}
 	// Argincorp -> CPincorp {% id %}
 	private eatArgincorp(): Tree | undefined {
-		if (this.peek()?.type === 'incorporating_complementizer') {
+		if (this.peek()?.type === 'incorporated_complementizer') {
 			const cp = this.expectCP(ClauseType.Incorp);
 			return this.makeBranch('DP', makeNull('D'), cp);
 		} else {

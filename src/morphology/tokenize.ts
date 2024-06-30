@@ -184,7 +184,8 @@ export class ToaqTokenizer {
 		let wordQuote = false;
 
 		let lineNum = 0;
-		for (const line of text.split(/\r?\n/)) {
+		const lines = text.split(/\r?\n/);
+		for (const line of lines) {
 			for (const m of line.matchAll(/[\p{L}\p{N}\p{Diacritic}-]+/gu)) {
 				const position: Position = { line: lineNum, column: m.index };
 				if (wordQuote && textQuoteDepth === 0) {
@@ -246,7 +247,7 @@ export class ToaqTokenizer {
 									// Close out the quote
 									this.tokens.push({
 										type: 'text',
-										value: text[textQuoteRange!.start.line].slice(
+										value: lines[textQuoteRange!.start.line].slice(
 											// TODO multiline
 											textQuoteRange!.start.column,
 											textQuoteRange!.end.column,
