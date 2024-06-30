@@ -21,7 +21,9 @@ import {
 export class ParseError extends Error {
 	constructor(token: ToaqToken | undefined, message?: string, line?: string) {
 		if (token) {
-			message += ` (at ${token.position.line + 1}:${token.position.column + 1})`;
+			message =
+				`on line ${token.position.line + 1} column ${token.position.column + 1}: ` +
+				message;
 			if (line) {
 				message += '\n\n    ' + line;
 				message +=
@@ -58,11 +60,18 @@ export class HandwrittenParser {
 
 	//#region Basic API
 
-	private error(message: string): ParseError {
+	private error(
+		message: string,
+		hints: Record<string, string> = {},
+	): ParseError {
 		const token = this.peek();
-		if (token)
+		if (token) {
+			const hint = hints[token.type];
+			if (hint) message += `\n(Hint: ${hint})`;
 			return new ParseError(token, message, this.lines[token.position.line]);
-		else return new ParseError(undefined, message);
+		} else {
+			return new ParseError(undefined, message);
+		}
 	}
 
 	private peek(): ToaqToken | undefined {
@@ -87,7 +96,10 @@ export class HandwrittenParser {
 
 	private expectEOF(): void {
 		if (!this.eatEOF()) {
-			throw this.error('I expected the sentence to end here.');
+			throw this.error('I expected the sentence to end here.', {
+				pronoun: 'Maybe there are too many arguments.',
+				D: 'Maybe there are too many arguments.',
+			});
 		}
 	}
 
@@ -121,13 +133,16 @@ export class HandwrittenParser {
 		eatConj ??= () => this.eatConjunction();
 		const left = eat();
 		if (!left) return undefined;
+		const preConj = this.tokenIndex;
 		const conj = eatConj();
 		if (conj) {
 			const right = this.conjoined(what, eat, eatConj);
 			if (!right) {
-				throw this.error(
-					`This ${conj.source} must be followed by another ${what}.`,
-				);
+				// throw this.error(
+				// 	`This ${conj.source} must be followed by another ${what}.`,
+				// );
+				this.tokenIndex = preConj;
+				return left;
 			}
 			return this.makeBranch('&P', left, this.makeBranch("&'", conj, right));
 		} else {
@@ -170,6 +185,7 @@ export class HandwrittenParser {
 		}
 		this.tokenIndex = index;
 		const SAP = this.expectSAP();
+		console.log(SAP);
 		this.expectEOF();
 		return SAP;
 	}
@@ -266,8 +282,8 @@ export class HandwrittenParser {
 	// nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 
 	private expectnP(): Tree {
-		const CPrel = this.expectCPdet();
-		const inner = this.makeBranch('𝘯P', makeNull('𝘯'), CPrel);
+		const CPdet = this.expectCPdet();
+		const inner = this.makeBranch('𝘯P', makeNull('𝘯'), CPdet);
 		const CPrelcon = this.eatCPrelcon();
 		if (CPrelcon) {
 			return this.makeBranch('𝘯P', inner, CPrelcon);
@@ -309,7 +325,7 @@ export class HandwrittenParser {
 				);
 			}
 			throw this.error(
-				'This clause starts with a fronted subject or topic, so I expected bï or nä.',
+				'This clause starts with a fronted subject or topic, so I expected bï or nä. (Maybe you forgot the verb.)',
 			);
 		}
 		const adjunctp = this.eatAdjunctPcon();
@@ -379,16 +395,24 @@ export class HandwrittenParser {
 		) {
 			const Σ = this.eatΣ()!;
 			const Modal = this.eatModal()!;
-			const ΣP = this.expectΣP(clauseType);
+			const ΣP =
+				clauseType === ClauseType.Det
+					? this.expectΣP(clauseType)
+					: this.expectΣPcon(clauseType);
 			return makeSigmaT1ModalvP([Σ, Modal, ΣP]) as Tree;
 		}
 
 		const Modal = this.eatModal();
 		if (Modal) {
-			const ΣP = this.expectΣP(clauseType);
+			const ΣP =
+				clauseType === ClauseType.Det
+					? this.expectΣP(clauseType)
+					: this.expectΣPcon(clauseType);
 			return makeT1ModalvP([Modal, ΣP]) as Tree;
 		}
-		return this.expectΣP(clauseType);
+		return clauseType === ClauseType.Det
+			? this.expectΣP(clauseType)
+			: this.expectΣPcon(clauseType);
 	}
 
 	// # jeo pu chum hao jí
@@ -397,6 +421,10 @@ export class HandwrittenParser {
 	// SigmaP<S> -> Sigmacon TP<S> {% makeBranch('ΣP') %}
 	// # (sá) jeo pu chum hao
 	// SigmaPdet -> Sigmacon TPdet {% makeBranch('ΣP') %}
+
+	private expectΣPcon(clauseType: ClauseType): Tree {
+		return this.conjoined('ΣP', () => this.expectΣP(clauseType))!;
+	}
 
 	private expectΣP(clauseType: ClauseType): Tree {
 		const Σ = this.expectΣcon();
@@ -435,7 +463,12 @@ export class HandwrittenParser {
 		const Asp = this.expectAspcon();
 		const vP = this.eatvP(clauseType);
 		if (!vP) {
-			throw this.error('I expect a verb here.');
+			throw this.error('I expect a verb here.', {
+				tense: 'Tense must come before Aspect.',
+				polarity: 'Polarity must come before Tense and Aspect.',
+				pronoun: 'Fronted subjects must come before Tense and Aspect.',
+				D: 'Fronted subjects must come before Tense and Aspect.',
+			});
 		}
 		return this.makeBranch('AspP', Asp, vP);
 	}
@@ -475,11 +508,6 @@ export class HandwrittenParser {
 					}
 				}
 			}
-			if (numArgs > 0) {
-				while ((arg = this.eatAdjunctPcon())) {
-					children.push(arg);
-				}
-			}
 			if (
 				clauseType === ClauseType.Sub &&
 				serial.arity !== undefined &&
@@ -488,6 +516,11 @@ export class HandwrittenParser {
 				throw this.error(
 					`This subclause is underfilled. '${serial.source}' should have exactly ${serial.arity} arguments, but it has ${numArgs}.`,
 				);
+			}
+			if (numArgs > 0) {
+				while ((arg = this.eatAdjunctPcon())) {
+					children.push(arg);
+				}
 			}
 		}
 
@@ -515,6 +548,11 @@ export class HandwrittenParser {
 		const serial = this.eatSerial();
 		if (!serial) {
 			throw this.error('Adjunct head must be followed by a verb.');
+		}
+		if (serial.arity && (serial.arity < 1 || serial.arity > 2)) {
+			throw this.error(
+				`'${serial.source}' has arity ${serial.arity}, so it can't be used as an adverb.`,
+			);
 		}
 		if (serial.arity === 2) {
 			const object = this.eatArgument();
@@ -653,11 +691,14 @@ export class HandwrittenParser {
 	private eatDPcon(): Tree | undefined {
 		const left = this.eatDProi();
 		if (!left) return undefined;
+		let preConj = this.tokenIndex;
 		const conj = this.eatConjunction();
 		if (conj) {
 			const right = this.eatDPcon();
 			if (!right) {
-				throw this.error(`This ${conj.source} must be followed by another DP.`);
+				// It must be ΣP-rú-ΣP then.
+				this.tokenIndex = preConj;
+				return left;
 			}
 			return this.makeBranch('&P', left, this.makeBranch("&'", conj, right));
 		}
