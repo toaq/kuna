@@ -5,16 +5,16 @@ import {
 	Unrecognized,
 } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
-import { VerbEntry } from '../morphology/dictionary';
+import type { VerbEntry } from '../morphology/dictionary';
 import { inTone } from '../morphology/tokenize';
 import { Tone } from '../morphology/tone';
 import { getFrame } from '../syntax/serial';
 import {
-	Branch,
-	CovertWord,
-	Leaf,
-	StrictTree,
-	Word,
+	type Branch,
+	type CovertWord,
+	type Leaf,
+	type StrictTree,
+	type Word,
 	effectiveLabel,
 } from '../tree';
 import { compose } from './compose';
@@ -49,9 +49,9 @@ import {
 	topic,
 } from './data';
 import {
-	AnimacyClass,
-	DTree,
-	Expr,
+	type AnimacyClass,
+	type DTree,
+	type Expr,
 	cloneBindings,
 	noBindings,
 	quote,

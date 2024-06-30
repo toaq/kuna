@@ -31,13 +31,13 @@ interface Definition {
 export function preprocess(lines: string[], flags_?: Set<string>): string[] {
 	const flags = flags_ ?? new Set();
 
-	let expanded: string[][] = [];
+	const expanded: string[][] = [];
 
 	/** Map from generic types to the lines they were defined on and their source code. */
-	let generics = new Map<string, Definition[]>();
+	const generics = new Map<string, Definition[]>();
 
 	/** Map from type variables to the values they can take on. */
-	let genericValues = new Map<string, string[]>();
+	const genericValues = new Map<string, string[]>();
 
 	/** Merge the domains of two generic type variables. */
 	function merge(x: string, y: string) {
@@ -60,7 +60,7 @@ export function preprocess(lines: string[], flags_?: Set<string>): string[] {
 	}
 
 	let lineIndex = 0;
-	let ifdefs: [string, boolean][] = [];
+	const ifdefs: [string, boolean][] = [];
 
 	for (let line of lines) {
 		let m: RegExpMatchArray | null;

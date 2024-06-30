@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { DTree, Expr } from '../semantics/model';
+import type { DTree, Expr } from '../semantics/model';
 import { toMathml } from '../semantics/render';
-import { Tree } from '../tree';
-import { PlacedTree, TreePlacer, boundingRect } from '../tree/place';
+import type { Tree } from '../tree';
+import { type PlacedTree, TreePlacer, boundingRect } from '../tree/place';
 import './TreeBrowser.css';
 import { Tooltip } from 'react-tooltip';
-import { Theme } from '../tree/theme';
+import type { Theme } from '../tree/theme';
 
 export function Node(props: {
 	tree: PlacedTree<Ctx>;

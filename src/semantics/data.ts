@@ -1,11 +1,11 @@
-import { SubjectType } from '../morphology/dictionary';
-import { CovertValue, Label } from '../tree';
+import type { SubjectType } from '../morphology/dictionary';
+import type { CovertValue, Label } from '../tree';
 import {
 	assert,
-	AnimacyClass,
-	Bindings,
-	Expr,
-	ExprType,
+	type AnimacyClass,
+	type Bindings,
+	type Expr,
+	type ExprType,
 	abstract,
 	after,
 	afterNear,

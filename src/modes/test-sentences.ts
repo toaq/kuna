@@ -17,7 +17,7 @@ export function testSentences(
 	for (const s of sentences) {
 		let status: string;
 		let failure = false;
-		let error: string = '';
+		let error = '';
 		if (s.startsWith('*')) continue;
 		total++;
 		try {

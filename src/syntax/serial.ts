@@ -2,10 +2,10 @@ import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
 import { Tone } from '../morphology/tone';
 import {
-	Branch,
-	Label,
-	Leaf,
-	Tree,
+	type Branch,
+	type Label,
+	type Leaf,
+	type Tree,
 	assertBranch,
 	assertLeaf,
 	catSource,
@@ -245,7 +245,7 @@ function serialTovP(
 		const cCount = frame.length - 1;
 		const lastSlot = frame[frame.length - 1];
 		const jaCount = Number(lastSlot[0]);
-		let pros: Leaf[] = new Array(jaCount).fill(undefined).map(pro);
+		const pros: Leaf[] = new Array(jaCount).fill(undefined).map(pro);
 		for (let i = 0; i < jaCount; i++) {
 			switch (lastSlot[i + 1]) {
 				case 'i':
@@ -406,7 +406,7 @@ export function fixSerial(
 
 	const frames = children.map(getFrame);
 
-	let segments = [];
+	const segments = [];
 	let end = children.length;
 	for (let i = children.length - 2; i >= 0; i--) {
 		if (frames[i] === 'kı') {
@@ -424,10 +424,10 @@ export function fixSerial(
 	}
 	if (0 !== end) segments.unshift(children.slice(0, end));
 
-	let earlyAdjuncts: Tree[] = [];
-	let args: Tree[] = [];
+	const earlyAdjuncts: Tree[] = [];
+	const args: Tree[] = [];
 	let argIncorp: Tree | null | undefined = undefined;
-	let lateAdjuncts: Tree[] = [];
+	const lateAdjuncts: Tree[] = [];
 	for (const term of terms) {
 		if (
 			argIncorp === undefined &&

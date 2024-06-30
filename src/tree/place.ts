@@ -1,7 +1,7 @@
-import { CanvasRenderingContext2D } from 'canvas';
-import { DTree, Expr } from '../semantics/model';
+import type { CanvasRenderingContext2D } from 'canvas';
+import type { DTree, Expr } from '../semantics/model';
 import { toLatex, toPlainText, typeToPlainText } from '../semantics/render';
-import { Branch, Leaf, Rose, Tree } from '../tree';
+import type { Branch, Leaf, Rose, Tree } from '../tree';
 
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
@@ -9,8 +9,8 @@ import { TeX } from 'mathjax-full/js/input/tex';
 import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
 import { mathjax } from 'mathjax-full/js/mathjax';
 import { SVG } from 'mathjax-full/js/output/svg';
-import { Movement } from './movement';
-import { Theme, themes } from './theme';
+import type { Movement } from './movement';
+import { type Theme, themes } from './theme';
 
 const adaptor = liteAdaptor();
 RegisterHTMLHandler(adaptor);
@@ -181,7 +181,7 @@ export function denotationRenderLatex(
 function layerExtents<C extends DrawContext>(
 	tree: PlacedTree<C>,
 ): { left: number; right: number }[] {
-	let extents = [];
+	const extents = [];
 	let frontier = [{ x: 0, tree }];
 	while (frontier.length) {
 		const left = Math.min(...frontier.map(e => e.x - e.tree.width / 2));

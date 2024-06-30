@@ -1,12 +1,12 @@
 import { Unimplemented } from '../core/error';
 
 export enum VerbForm {
-	First,
-	Third,
-	Plural,
-	Infinitive,
-	PresentParticiple,
-	PastParticiple,
+	First = 0,
+	Third = 1,
+	Plural = 2,
+	Infinitive = 3,
+	PresentParticiple = 4,
+	PastParticiple = 5,
 }
 
 const irregularVerbs: Record<string, string> = {
@@ -154,7 +154,7 @@ export function mergeConstructions(
 	aspect: VerbConstruction,
 ): VerbConstruction {
 	// TODO it's actually more complex
-	let merged = { ...aspect, ...tense };
+	const merged = { ...aspect, ...tense };
 	if (aspect.auxiliary) {
 		if (!tense.auxiliary || tense.auxiliary === 'do') {
 			merged.auxiliary = aspect.auxiliary;

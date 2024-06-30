@@ -1,6 +1,6 @@
 import { Impossible, Unimplemented } from '../core/error';
 import { clean } from '../morphology/tokenize';
-import { Leaf, Tree, assertBranch } from '../tree';
+import { type Leaf, type Tree, assertBranch } from '../tree';
 import { leafText } from '../tree/functions';
 import {
 	VerbForm,
@@ -35,13 +35,13 @@ export interface Constituent {
 export class ClauseTranslator {
 	static tagger = new Tagger();
 
-	toaqTense: string = 'naı';
+	toaqTense = 'naı';
 	toaqComplementizer?: string;
 	toaqSpeechAct?: string;
 	verb?: string = undefined;
 	topics: string[] = [];
-	toaqAspect: string = 'tam';
-	negative: boolean = false;
+	toaqAspect = 'tam';
+	negative = false;
 	hoaReferent?: Constituent = undefined;
 	subject?: Constituent = undefined;
 	earlyAdjuncts: string[] = [];
@@ -196,7 +196,7 @@ export class ClauseTranslator {
 		if (this.subject?.text) {
 			this.subject.text = nominative(this.subject.text);
 		}
-		let complementizer: string = '';
+		let complementizer = '';
 		switch (this.toaqComplementizer) {
 			case 'ꝡä':
 				complementizer = 'that';
@@ -214,7 +214,7 @@ export class ClauseTranslator {
 
 		const subjectVerbForm = this.subject?.person ?? VerbForm.Third;
 		let verbForm = subjectVerbForm;
-		let auxiliary: string = '';
+		let auxiliary = '';
 		if (this.negative || this.toaqComplementizer === 'ma') {
 			auxiliary = 'do';
 			verbForm = VerbForm.Infinitive;

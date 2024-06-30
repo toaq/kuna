@@ -1,5 +1,4 @@
-import {
-	Expr,
+import type {
 	KnownConstant,
 	KnownInfix,
 	KnownPolarizer,

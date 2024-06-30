@@ -12,7 +12,7 @@ async function post(
 			const chunks: Buffer[] = [];
 			res.on('data', data => chunks.push(data));
 			res.on('end', () => {
-				let body = Buffer.concat(chunks).toString('utf8');
+				const body = Buffer.concat(chunks).toString('utf8');
 				resolve(body);
 			});
 		});
@@ -64,16 +64,16 @@ readToadua().then(({ results }) => {
 	// Sort by ascending score so that higher scoring entries get processed later and overwrite earlier ones.
 	results.sort((a, b) => a.score - b.score);
 
-	let entries: Record<string, any> = {};
+	const entries: Record<string, any> = {};
 
-	for (let result of results) {
+	for (const result of results) {
 		if (result['scope'] !== 'en') continue;
 		if (result['score'] < 0) continue;
 		const head = result['head'];
 		if (head.length >= 30) continue;
 		const body = result['body'];
 		const gloss = makeGloss(body);
-		let entry: any = { body, head, user: result.user, score: result.score };
+		const entry: any = { body, head, user: result.user, score: result.score };
 		if (gloss && gloss.length <= 25) {
 			entry.gloss = gloss;
 		}

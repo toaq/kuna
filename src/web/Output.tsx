@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import _ from 'lodash';
-import { ReactElement, useEffect, useRef, useState } from 'react';
+import { type ReactElement, useEffect, useRef, useState } from 'react';
 import { useDarkMode } from 'usehooks-ts';
 
 import { treeToEnglish } from '../english/tree';
@@ -16,13 +16,13 @@ import { trimTree } from '../tree/trim';
 
 import { GfTarget, GfTranslator } from '../gf';
 import { ToaqTokenizer } from '../morphology/tokenize';
-import { Expr } from '../semantics/model';
-import { Tree } from '../tree';
+import type { Expr } from '../semantics/model';
+import type { Tree } from '../tree';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
 import { themes } from '../tree/theme';
 import { Boxes } from './Boxes';
 import GfResult from './GfResult';
-import { Configuration, Mode, Settings } from './Settings';
+import type { Configuration } from './Settings';
 import { Tokens } from './Tokens';
 import { TreeBrowser } from './TreeBrowser';
 
@@ -163,7 +163,7 @@ export function Output(props: OutputProps) {
 	function getLogicalForm(
 		renderer: (e: Expr, compact?: boolean) => string,
 	): string {
-		let expr: any = denote(recover(trees[parseIndex])).denotation;
+		const expr: any = denote(recover(trees[parseIndex])).denotation;
 		if (!expr) return 'No denotation';
 		return renderer(expr, meaningCompact);
 	}

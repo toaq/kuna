@@ -3,16 +3,16 @@ import {
 	AttachmentBuilder,
 	ButtonBuilder,
 	ButtonStyle,
-	ChatInputCommandInteraction,
-	Client,
-	Interaction,
+	type ChatInputCommandInteraction,
+	type Client,
+	type Interaction,
 } from 'discord.js';
 import _ from 'lodash';
 import { toEnglish } from '../english/tree';
 import { parse } from '../modes/parse';
 import { pngGlossSentence } from '../modes/png-gloss';
 import { dictionary } from '../morphology/dictionary';
-import { ToaduaEntry, toadua } from '../morphology/toadua';
+import { type ToaduaEntry, toadua } from '../morphology/toadua';
 import { drawTreeToCanvas } from '../tree/draw';
 import { denotationRenderText } from '../tree/place';
 

@@ -1,17 +1,15 @@
 import { Impossible } from '../core/error';
 import { enumerate, reverse, some, zip } from '../core/misc';
 import {
-	Binding,
-	Bindings,
-	DTree,
-	Expr,
-	ExprType,
+	type Binding,
+	type Bindings,
+	type DTree,
+	type Expr,
+	type ExprType,
 	app,
 	cloneBindings,
 	constant,
-	polarizer,
 	presuppose,
-	quantifier,
 	quote,
 	typesEqual,
 	v,

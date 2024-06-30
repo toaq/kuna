@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useDarkMode, useLocalStorage } from 'usehooks-ts';
 

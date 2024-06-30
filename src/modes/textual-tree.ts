@@ -1,4 +1,4 @@
-import { Tree } from '../tree';
+import type { Tree } from '../tree';
 
 function ttree_converted(data: Tree): { label: string; branches: any } {
 	if ('word' in data) {
@@ -24,7 +24,7 @@ function is_string(v: any) {
 function textual_tree_of(data: { label: string; branches: any }, pad = '') {
 	let r = '';
 	let nl_pad: string;
-	let l = data.branches.length;
+	const l = data.branches.length;
 	if (l == 1 && is_string(data.branches[0])) {
 		r += '─• ';
 		nl_pad = pad + '   ';

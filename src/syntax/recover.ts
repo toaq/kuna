@@ -3,10 +3,10 @@ import { reverse } from '../core/misc';
 import { inTone } from '../morphology/tokenize';
 import { Tone } from '../morphology/tone';
 import {
-	Branch,
-	CovertValue,
-	StrictTree,
-	Tree,
+	type Branch,
+	type CovertValue,
+	type StrictTree,
+	type Tree,
 	assertBranch,
 	assertLeaf,
 	effectiveLabel,

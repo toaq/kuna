@@ -1,6 +1,6 @@
 import { repairTones } from '../morphology/tokenize';
 import { leafText } from './functions';
-import { Leaf } from './types';
+import type { Leaf } from './types';
 
 export type MovementID = number;
 

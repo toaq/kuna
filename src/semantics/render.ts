@@ -1,16 +1,16 @@
 import { Impossible } from '../core/error';
-import { EventCompound, detectCompound } from './compact';
+import { type EventCompound, detectCompound } from './compact';
 import { json, latex, mathml, plainText } from './format';
 import {
-	Format,
-	NameType,
-	Names,
-	Quantifier,
+	type Format,
+	type NameType,
+	type Names,
+	type Quantifier,
 	constantAlphabets,
 	variableAlphabets,
 } from './format/base';
-import { JsonExpr } from './format/json';
-import {
+import type { JsonExpr } from './format/json';
+import type {
 	Expr,
 	ExprType,
 	KnownConstant,
@@ -292,7 +292,7 @@ class Renderer<T> {
 			case 'presuppose': {
 				const p = 1;
 				const bracket = leftPrecedence >= p || rightPrecedence > p;
-				let presuppositions = [];
+				const presuppositions = [];
 				while (e.head === 'presuppose') {
 					presuppositions.push(this.render(e.presupposition, names, p, 0));
 					e = e.body;

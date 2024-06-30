@@ -1,15 +1,19 @@
-import { Canvas, CanvasRenderingContext2D, createCanvas } from 'canvas';
-import { DTree, Expr } from '../semantics/model';
-import { Tree } from '../tree';
-import { MovementID } from './movement';
 import {
-	PlacedBranch,
-	PlacedLeaf,
-	PlacedTree,
-	RenderedDenotation,
+	type Canvas,
+	type CanvasRenderingContext2D,
+	createCanvas,
+} from 'canvas';
+import type { DTree, Expr } from '../semantics/model';
+import type { Tree } from '../tree';
+import type { MovementID } from './movement';
+import {
+	type PlacedBranch,
+	type PlacedLeaf,
+	type PlacedTree,
+	type RenderedDenotation,
 	TreePlacer,
 } from './place';
-import { Theme, ThemeName, themes } from './theme';
+import { type Theme, type ThemeName, themes } from './theme';
 
 interface Location {
 	x: number;

@@ -1,12 +1,11 @@
 import { Impossible, Unimplemented } from '../core/error';
 import { some } from '../core/misc';
-import { Branch, StrictTree, effectiveLabel } from '../tree';
+import { type Branch, type StrictTree, effectiveLabel } from '../tree';
 import {
-	Binding,
-	Bindings,
-	DTree,
-	Expr,
-	ExprType,
+	type Bindings,
+	type DTree,
+	type Expr,
+	type ExprType,
 	and,
 	app,
 	subtype,

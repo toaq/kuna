@@ -1,8 +1,6 @@
 import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
-import { inTone } from '../morphology/tokenize';
-import { Tone } from '../morphology/tone';
 import {
-	Tree,
+	type Tree,
 	assertBranch,
 	catSource,
 	skipFree,
@@ -88,9 +86,9 @@ class Boxifier {
 
 	private boxifyPostField(trees: Tree[]): PostField {
 		let sawArgument = false;
-		let earlyAdjuncts: Tree[] = [];
-		let arguments_: Tree[] = [];
-		let lateAdjuncts: Tree[] = [];
+		const earlyAdjuncts: Tree[] = [];
+		const arguments_: Tree[] = [];
+		const lateAdjuncts: Tree[] = [];
 		for (const tree of trees) {
 			if (isArgument(tree)) {
 				arguments_.push(tree);
@@ -112,7 +110,7 @@ class Boxifier {
 	private boxifyClause(cp: Tree): BoxClause {
 		let topic: Tree | undefined = undefined;
 		let subject: Tree | undefined = undefined;
-		let verbalComplexWords = [];
+		const verbalComplexWords = [];
 		let postField: PostField | undefined = undefined;
 		let conjunction: AndClause | undefined = undefined;
 		if (!('left' in cp)) throw new Impossible('bad CP?');

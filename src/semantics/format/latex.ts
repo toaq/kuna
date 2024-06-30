@@ -1,4 +1,4 @@
-import { Format, fnFromMap, formatName } from './base';
+import { type Format, fnFromMap, formatName } from './base';
 
 export const latex: Format<string> = {
 	formatName: 'latex',

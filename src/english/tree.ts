@@ -1,9 +1,15 @@
 import { Impossible, Unimplemented } from '../core/error';
 import { parse } from '../modes/parse';
 import { bare, clean } from '../morphology/tokenize';
-import { Branch, Leaf, Tree, assertBranch, isQuestion } from '../tree';
+import {
+	type Branch,
+	type Leaf,
+	type Tree,
+	assertBranch,
+	isQuestion,
+} from '../tree';
 import { leafText } from '../tree/functions';
-import { ClauseTranslator, Constituent } from './clause-translator';
+import { ClauseTranslator, type Constituent } from './clause-translator';
 import { VerbForm } from './conjugation';
 import { leafTextToEnglish, leafToEnglish } from './leaf';
 

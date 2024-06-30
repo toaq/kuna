@@ -1,5 +1,5 @@
-import KDL from 'kdljs';
-import { Tree, treeChildren } from '../tree';
+import type KDL from 'kdljs';
+import { type Tree, treeChildren } from '../tree';
 
 const toStringRecord = <O extends object>(obj: O) => {
 	for (const key in obj) {

@@ -1,8 +1,13 @@
-import { ReactNode, createContext, useContext } from 'react';
+import { type ReactNode, createContext, useContext } from 'react';
 import { useDarkMode } from 'usehooks-ts';
-import { BoxClause, BoxSentence, PostField, circled } from '../modes/boxes';
+import {
+	type BoxClause,
+	type BoxSentence,
+	type PostField,
+	circled,
+} from '../modes/boxes';
 import { Glosser } from '../morphology/gloss';
-import { Tree } from '../tree';
+import type { Tree } from '../tree';
 import './Boxes.css';
 import { repairTones } from '../morphology/tokenize';
 

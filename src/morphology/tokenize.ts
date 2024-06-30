@@ -125,7 +125,7 @@ export function splitPrefixes(word: string): {
 	prefixes: string[];
 	root: string;
 } {
-	let raku = splitIntoRaku(word.normalize('NFKD')).map(x =>
+	const raku = splitIntoRaku(word.normalize('NFKD')).map(x =>
 		x.includes('\u0323') ? x.replace(/\u0323/gu, '') + '-' : x,
 	);
 	const diacriticIndex = raku.findIndex(r =>
@@ -169,7 +169,7 @@ interface Range {
 
 export class ToaqTokenizer {
 	tokens: ToaqToken[] = [];
-	pos: number = 0;
+	pos = 0;
 
 	reset(text: string, _info?: {}): void {
 		this.tokens = [];

@@ -1,5 +1,5 @@
 import { Impossible } from '../../core/error';
-import { Format, fnFromMap, formatName } from './base';
+import { type Format, fnFromMap, formatName } from './base';
 
 function mathematicalSansSerifItalic(name: string) {
 	const letter = name[0];

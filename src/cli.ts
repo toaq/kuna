@@ -11,7 +11,7 @@ import { textual_tree_from_json } from './modes/textual-tree';
 import { Glosser } from './morphology/gloss';
 import { ToaqTokenizer } from './morphology/tokenize';
 import { denote } from './semantics/denote';
-import { DTree } from './semantics/model';
+import type { DTree } from './semantics/model';
 import {
 	jsonStringifyCompact,
 	toJson,
@@ -19,7 +19,7 @@ import {
 	toPlainText,
 } from './semantics/render';
 import { recover } from './syntax/recover';
-import { Tree } from './tree';
+import type { Tree } from './tree';
 import { drawTreeToCanvas } from './tree/draw';
 import { denotationRenderText } from './tree/place';
 import { trimTree } from './tree/trim';
@@ -86,7 +86,7 @@ yargs
 			yargs.demandOption('sentence');
 		},
 
-		function (argv) {
+		argv => {
 			const tokenizer = new ToaqTokenizer();
 			tokenizer.reset(argv.sentence as string);
 			console.log(JSON.stringify(tokenizer.tokens));
@@ -98,7 +98,7 @@ yargs
 		yargs => {
 			yargs.demandOption('sentence');
 		},
-		function (argv) {
+		argv => {
 			const glosser = new Glosser(argv.easy);
 			console.log(glosser.alignGlossSentence(argv.sentence!));
 		},
@@ -115,7 +115,7 @@ yargs
 			});
 		},
 
-		function (argv) {
+		argv => {
 			const imgBuffer = pngGlossSentence(argv.sentence!, { easy: argv.easy });
 			fs.writeFileSync(argv.output as string, imgBuffer);
 		},
@@ -136,7 +136,7 @@ yargs
 			});
 		},
 
-		async function (argv) {
+		async argv => {
 			const trees = getTrees(argv);
 			if (trees.length === 0) {
 				console.error('No parse.');
@@ -168,7 +168,7 @@ yargs
 			yargs.demandOption('sentence');
 		},
 
-		function (argv) {
+		argv => {
 			const trees = getTrees(argv);
 			console.log(JSON.stringify(trees));
 		},
@@ -180,7 +180,7 @@ yargs
 			yargs.demandOption('sentence');
 		},
 
-		function (argv) {
+		argv => {
 			const trees = getTrees(argv);
 			console.log(KDL.format(trees.map(formatTreeAsKdl)));
 		},
@@ -192,7 +192,7 @@ yargs
 			yargs.demandOption('sentence');
 		},
 
-		function (argv) {
+		argv => {
 			const trees = getTrees(argv);
 			for (const v of trees) {
 				console.log(textual_tree_from_json(v));
@@ -210,7 +210,7 @@ yargs
 				default: 'output.tex',
 			});
 		},
-		function (argv) {
+		argv => {
 			const trees = getTrees(argv);
 			console.log(trees.length + ' parses');
 			fs.writeFileSync(argv.output as string, toDocument(trees));
@@ -228,7 +228,7 @@ yargs
 			});
 		},
 
-		function (argv) {
+		argv => {
 			const dtrees = getTrees({ ...argv, semantics: true }) as DTree[];
 			const format = argv.format as 'text' | 'latex' | 'json';
 			const getDenotation = ({ denotation: d }: DTree) => d!;
@@ -264,7 +264,7 @@ yargs
 				describe: 'Only print failures',
 			});
 		},
-		function (argv) {
+		argv => {
 			testSentences((argv as any).failures as boolean, toEnglish);
 		},
 	)
@@ -274,7 +274,7 @@ yargs
 		yargs => {
 			yargs.demandOption('sentence');
 		},
-		function (argv) {
+		argv => {
 			console.log(toEnglish(argv.sentence!));
 		},
 	)

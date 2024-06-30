@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { useMemo, useState } from 'react';
 import { parse } from '../modes/parse';
 import './Sentences.css';
@@ -11,7 +10,7 @@ import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
 import { denote } from '../semantics/denote';
 import { recover } from '../syntax/recover';
 import { Output } from './Output';
-import { Mode } from './Settings';
+import type { Mode } from './Settings';
 
 const rSentences: string[] = refgramSentencesTxt.split('\n');
 const aSentences: string[] = aSentencesTxt.split('\n');

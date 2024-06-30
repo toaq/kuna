@@ -1,7 +1,7 @@
 import { Impossible } from '../core/error';
-import { Entry } from '../morphology/dictionary';
-import { Tone } from '../morphology/tone';
-import { Movement } from './movement';
+import type { Entry } from '../morphology/dictionary';
+import type { Tone } from '../morphology/tone';
+import type { Movement } from './movement';
 
 export interface Word {
 	covert: false;

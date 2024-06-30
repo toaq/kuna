@@ -1,8 +1,14 @@
 import { Impossible, Unimplemented } from '../core/error';
 import { baseForm } from '../morphology/tokenize';
-import { Branch, Leaf, StrictTree, assertBranch, assertLabel } from '../tree';
+import {
+	type Branch,
+	type Leaf,
+	type StrictTree,
+	assertBranch,
+	assertLabel,
+} from '../tree';
 import { leafText as actualLeafText } from '../tree';
-import { G_A, G_N, G_PN, G_V, G_V2, G_V2S, G_V3, G_VS } from './lexicon';
+import type { G_A, G_N, G_PN, G_V, G_V2, G_V2S, G_V3, G_VS } from './lexicon';
 import lexicon from './lexicon';
 
 type G_Quant = 'IndefArt' | 'DefArt' | 'that_Quant' | 'this_Quant';
@@ -86,12 +92,12 @@ export enum GfTarget {
 	/**
 	 * Target "ResourceDemo.pgf", which contains more languages but only a subset of the supported grammar.
 	 */
-	ResourceDemo,
+	ResourceDemo = 0,
 
 	/**
 	 * Target "LibraryBrowser.pgf", which contains the full RGF grammar but only supports a few languages.
 	 */
-	LibraryBrowser,
+	LibraryBrowser = 1,
 }
 
 export class GfTranslator {

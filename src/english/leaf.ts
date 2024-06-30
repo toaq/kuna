@@ -1,7 +1,7 @@
 import { Glosser } from '../morphology/gloss';
-import { Leaf } from '../tree';
+import type { Leaf } from '../tree';
 import { leafText } from '../tree/functions';
-import { Constituent } from './clause-translator';
+import type { Constituent } from './clause-translator';
 import { verbFormFor } from './conjugation';
 
 export function leafTextToEnglish(text: string): string {

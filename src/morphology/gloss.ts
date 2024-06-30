@@ -1,5 +1,5 @@
 import toaduaGlossesJson from '../../data/toadua/toadua.json';
-import { Entry, dictionary } from './dictionary';
+import { type Entry, dictionary } from './dictionary';
 import { bare, clean, splitPrefixes, tone } from './tokenize';
 import { Tone } from './tone';
 
@@ -8,7 +8,7 @@ interface Gloss {
 	english: string;
 }
 
-let toaduaGlosses = new Map();
+const toaduaGlosses = new Map();
 for (const [word, e] of Object.entries(toaduaGlossesJson)) {
 	if ('gloss' in e)
 		toaduaGlosses.set(word.toLowerCase(), e.gloss.replace(/\s+/g, '.'));

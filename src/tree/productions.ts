@@ -1,6 +1,6 @@
 import { dictionary } from '../morphology/dictionary';
 import { toadua } from '../morphology/toadua';
-import { ToaqToken, bare, tone } from '../morphology/tokenize';
+import { type ToaqToken, bare, tone } from '../morphology/tokenize';
 import { getFrame } from '../syntax/serial';
 import {
 	catSource,
@@ -9,7 +9,7 @@ import {
 	labelForPrefix,
 	skipFree,
 } from './functions';
-import { Label, Leaf, Tree, Word } from './types';
+import type { Label, Leaf, Tree, Word } from './types';
 
 /**
  * Make a null leaf with the given label.

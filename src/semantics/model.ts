@@ -1,5 +1,5 @@
 import { Impossible } from '../core/error';
-import { Branch, Leaf } from '../tree';
+import type { Branch, Leaf } from '../tree';
 import { toPlainText, typeToPlainText, typesToPlainText } from './render';
 
 /**
