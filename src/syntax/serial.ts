@@ -1,6 +1,5 @@
 import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
-import { Tone } from '../morphology/tone';
 import {
 	type Branch,
 	type Label,
@@ -79,9 +78,13 @@ export function getFrame(verb: Tree): string {
 	if (verb.label === 'shuP' || verb.label === 'mıP' || verb.label === 'teoP') {
 		return 'c';
 	}
-	if (verb.label === 'VP') {
-		// object incorporation... check that the verb is transitive?
-		return 'c';
+	if (verb.label === 'V') {
+		// Object incorporation: delete the object place from the V's frame
+		assertBranch(verb);
+		const frame = getFrame(verb.left);
+		const lastSpace = frame.lastIndexOf(' ');
+		if (lastSpace === -1) throw new Ungrammatical('Verb is not transitive');
+		return frame.slice(0, lastSpace);
 	}
 	if (verb.label === 'EvAP') {
 		return 'c';
@@ -225,7 +228,12 @@ function serialTovP(
 			args.push(makeNull('DP'));
 		}
 
-		return makevP(verbs[0], args);
+		// Extract the object from an object-incorporated verb
+		return verbs[0].label === 'V' &&
+			'left' in verbs[0] &&
+			verbs[0].left.label === 'V'
+			? makevP(verbs[0].left, [...args, verbs[0].right])
+			: makevP(verbs[0], args);
 	}
 	const frame = splitNonEmpty(firstFrame.replace(/a/g, 'c'), ' ');
 	for (let i = 0; i < frame.length - 1; i++) {
@@ -336,41 +344,6 @@ function attachAdjective(VP: Tree, kivP: KivP): Tree {
 }
 
 /**
- * Determines whether an argument is an incorporated object.
- */
-function isArgIncorp(dp: Tree): boolean {
-	let head: Leaf;
-	if ('word' in dp) {
-		head = dp;
-	} else {
-		assertBranch(dp);
-		assertLeaf(dp.left);
-		if (dp.left.word.covert) {
-			const cp = dp.right;
-			assertBranch(cp);
-			assertLeaf(cp.left);
-			head = cp.left;
-		} else {
-			head = dp.left;
-		}
-	}
-
-	return !head.word.covert && head.word.tone === Tone.T4;
-}
-
-/**
- * Determines whether a *Serial is a predicatizer.
- */
-function isPredicatizer(serial: Tree[]): boolean {
-	const last = serial[serial.length - 1];
-	return (
-		'word' in last &&
-		'entry' in last.word &&
-		last.word.entry?.type === 'predicatizer'
-	);
-}
-
-/**
  * Turn the given *Serial and terms into a proper 𝘷P, by:
  *
  * - splitting the *Serial into segments,
@@ -418,24 +391,13 @@ export function fixSerial(
 
 	const earlyAdjuncts: Tree[] = [];
 	const args: Tree[] = [];
-	let argIncorp: Tree | null | undefined = undefined;
 	const lateAdjuncts: Tree[] = [];
 	for (const term of terms) {
-		if (
-			argIncorp === undefined &&
-			term.label === 'DP' &&
-			(isArgIncorp(term) || isPredicatizer(children))
-		) {
-			argIncorp = term;
-		} else {
-			argIncorp ??= null;
-			const label = effectiveLabel(term);
-			if (label === 'DP') args.push(term);
-			else if (args.length) lateAdjuncts.push(term);
-			else earlyAdjuncts.push(term);
-		}
+		const label = effectiveLabel(term);
+		if (label === 'DP') args.push(term);
+		else if (args.length) lateAdjuncts.push(term);
+		else earlyAdjuncts.push(term);
 	}
-	if (argIncorp != null) args.push(argIncorp);
 
 	// Now the first segment is the serial verb and everything after it is serial adjectives.
 	let { ki, vP } = segmentToKivP(segments[0], args, newCoindex);

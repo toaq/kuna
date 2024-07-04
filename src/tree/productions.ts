@@ -185,20 +185,13 @@ export function makeSerial([verbs, vlast]: [Tree[], Tree]) {
 }
 
 export function makevP(
-	[serial, argIncorp, adjpsL, rest]: [
-		Tree,
-		Tree | null,
-		Tree[],
-		[Tree[], Tree[]] | null,
-	],
+	[serial, adjpsL, rest]: [Tree, Tree[], [Tree[], Tree[]] | null],
 	_location: number,
 	reject: unknown,
 	depth: 'main' | 'sub',
 ) {
-	const argsL = argIncorp === null ? [] : [argIncorp];
-	let [argsR, adjpsR] = rest ?? [[], []];
-	argsR = argsR.filter(x => x.label !== 'VocativeP');
-	const args = [...argsL, ...argsR];
+	let [args, adjpsR] = rest ?? [[], []];
+	args = args.filter(x => x.label !== 'VocativeP');
 
 	const arity = (serial as any).arity;
 	if (arity !== undefined) {
@@ -216,24 +209,24 @@ export function makevP(
 	// Disallow adjuncts that could have gone in a subclause:
 	if (
 		adjpsR.length &&
-		argsR.length &&
-		endsInClauseBoundary(argsR[argsR.length - 1])
+		args.length &&
+		endsInClauseBoundary(args[args.length - 1])
 	) {
 		return reject;
 	}
-	if (adjpsL.length && argIncorp !== null && endsInClauseBoundary(argIncorp)) {
+	if (adjpsL.length && endsInClauseBoundary(serial)) {
 		return reject;
 	}
 
 	return {
 		label: '*𝘷P',
-		children: [serial, ...argsL, ...adjpsL, ...argsR, ...adjpsR],
-		source: catSource(serial, ...argsL, ...adjpsL, ...argsR, ...adjpsR),
+		children: [serial, ...adjpsL, ...args, ...adjpsR],
+		source: catSource(serial, ...adjpsL, ...args, ...adjpsR),
 	};
 }
 
 export function makevP_main(
-	args: [Tree, Tree | null, Tree[], [Tree[], Tree[]] | null],
+	args: [Tree, Tree[], [Tree[], Tree[]] | null],
 	location: number,
 	reject: unknown,
 ) {
@@ -241,7 +234,7 @@ export function makevP_main(
 }
 
 export function makevP_sub(
-	args: [Tree, Tree | null, Tree[], [Tree[], Tree[]] | null],
+	args: [Tree, Tree[], [Tree[], Tree[]] | null],
 	location: number,
 	reject: unknown,
 ) {
@@ -249,16 +242,16 @@ export function makevP_sub(
 }
 
 export function makevPdet(
-	[serial, argIncorp]: [Tree, Tree | null],
+	[serial]: [Tree],
 	_location: number,
 	reject: unknown,
 ) {
 	const arity = (serial as any).arity;
-	if (arity < (argIncorp === null ? 1 : 2)) return reject;
+	if (arity === 0) return reject;
 
 	return {
 		label: '*𝘷P',
-		children: [serial, ...(argIncorp === null ? [] : [argIncorp]), PRO],
+		children: [serial, PRO],
 		source: catSource(serial, argIncorp),
 	};
 }

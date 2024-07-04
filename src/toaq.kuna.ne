@@ -151,27 +151,24 @@ AspP<S> -> Aspcon vP<S> {% makeBranch('AspP') %}
 AspPdet -> Aspcon vPdet {% makeBranch('AspP') %}
 
 # tua hao tî kúe jí súq râo níchaq
-vP<S> -> Serial<verb> Argincorp:? AdjunctPcon:* (VocArgument:+ AdjunctPcon:*):? {% makevP<S> %}
-vP<S> -> Serial<oiv> Argument AdjunctPcon:* (VocArgument:+ AdjunctPcon:*):? {% makevP<S> %}
+vP<S> -> Serial AdjunctPcon:* (VocArgument:+ AdjunctPcon:*):? {% makevP<S> %}
 
-# (sá) leo hamla lô raı
-vPdet -> Serialdet<verb> Argincorp:? {% makevPdet %}
-vPdet -> Serialdet<oiv> Argument {% makevPdet %}
+# (sá) tua hao
+vPdet -> Serialdet {% makevPdet %}
 
 # ^ tı kúe
-AdjunctP -> Adjunct Serial<verb> Argument {% makeAdjunctPT %}
-AdjunctP -> Adjunct Serial<oiv> Argument {% makeAdjunctPT %}
+AdjunctP -> Adjunct Serial Argument {% makeAdjunctPT %}
 # ^ jaq suaı
-AdjunctP -> Adjunct Serial<verb> {% makeAdjunctPI %}
+AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
 
 # tua hao
-Serial<L> -> V1orKi:* Vlast<L> {% makeSerial %}
+Serial -> V1orKi:* Vlast {% makeSerial %}
 V1orKi -> V1 {% id %}
 V1orKi -> Ki {% id %}
 # (sá) tua hao
-Serialdet<L> -> Serial<L> {% id %}
+Serialdet -> Serial {% id %}
 # (sá) ∅
-Serialdet<verb> -> null {% makeEmptySerial() %}
+Serialdet -> null {% makeEmptySerial() %}
 
 # jî
 DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
@@ -214,9 +211,10 @@ AdjunctPcon -> AdjunctPfoc {% id %}
 AdjunctPcon -> AdjunctPfoc Conjunction AdjunctPcon {% makeConn %}
 AdjunctPfoc -> AdjunctP {% id %}
 AdjunctPfoc -> Focus AdjunctP {% makeBranch('FocusP') %}
-Vlast<T> -> Verb ConjunctionT1 Vlast<T> {% makeConn %}
-Vlast<oiv> -> Voiv {% id %}
-Vlast<verb> -> Verb {% id %}
+Vlast -> Verb ConjunctionT1 Vlast {% makeConn %}
+Vlast -> Verb {% id %}
+Vlast -> Voiv Argument {% makeBranch('V') %}
+Vlast -> Verb Argincorp {% makeBranch('V') %}
 V1 -> Verb {% id %}
 V1 -> Verb ConjunctionT1 V1 {% makeConn %}
 Verb -> Prefix Verb {% makePrefixP %}
