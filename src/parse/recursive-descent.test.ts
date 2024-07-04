@@ -1,11 +1,11 @@
 import * as fs from 'node:fs';
 import { describe, expect, test } from 'vitest';
-import { HandwrittenParser } from './handwritten-parser';
-import { parse } from './modes/parse';
-import type { Tree } from './tree';
+import { parse } from '../modes/parse';
+import type { Tree } from '../tree';
+import { RecursiveDescentParser } from './recursive-descent';
 
-function handParse(sentence: string): Tree | string {
-	const parser = new HandwrittenParser(sentence);
+function recursiveDescentParse(sentence: string): Tree | string {
+	const parser = new RecursiveDescentParser(sentence);
 	try {
 		return parser.expectFragment();
 	} catch (e) {
@@ -13,7 +13,7 @@ function handParse(sentence: string): Tree | string {
 	}
 }
 
-describe('handwritten parser matches Nearley parser', () => {
+describe('recursive descent parser matches Nearley parser', () => {
 	const sentences = fs
 		.readFileSync('sentences/refgram.txt')
 		.toString('utf-8')
@@ -29,9 +29,9 @@ describe('handwritten parser matches Nearley parser', () => {
 				// No parse; leave `trees` empty.
 			}
 			if (trees.length === 1) {
-				expect(handParse(sentence)).toEqual(trees[0]);
+				expect(recursiveDescentParse(sentence)).toEqual(trees[0]);
 			} else {
-				expect(handParse(sentence)).toBeTypeOf('string');
+				expect(recursiveDescentParse(sentence)).toBeTypeOf('string');
 			}
 		},
 	);

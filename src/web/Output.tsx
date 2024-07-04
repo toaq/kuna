@@ -22,8 +22,8 @@ import { trimTree } from '../tree/trim';
 
 import { keyFor } from '../core/misc';
 import { GfTarget, GfTranslator } from '../gf';
-import { HandwrittenParser } from '../handwritten-parser';
 import { ToaqTokenizer } from '../morphology/tokenize';
+import { RecursiveDescentParser } from '../parse/recursive-descent';
 import type { Expr } from '../semantics/model';
 import type { Tree } from '../tree';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
@@ -204,7 +204,7 @@ export function Output(props: OutputProps) {
 	}
 
 	function getHandParsed(): ReactElement {
-		const parser = new HandwrittenParser(text);
+		const parser = new RecursiveDescentParser(text);
 		try {
 			const tree = parser.expectFragment();
 			const themeName = darkMode.isDarkMode ? 'dark' : 'light';

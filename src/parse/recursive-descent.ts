@@ -1,4 +1,4 @@
-import { type ToaqToken, ToaqTokenizer } from './morphology/tokenize';
+import { type ToaqToken, ToaqTokenizer } from '../morphology/tokenize';
 import {
 	type Label,
 	type Leaf,
@@ -16,7 +16,7 @@ import {
 	makeSigmaT1ModalvP,
 	makeT1ModalvP,
 	serialArity,
-} from './tree';
+} from '../tree';
 
 export class ParseError extends Error {
 	constructor(
@@ -47,7 +47,7 @@ enum ClauseType {
 	Incorp = 3,
 }
 
-export class HandwrittenParser {
+export class RecursiveDescentParser {
 	private tokenIndex = 0;
 	private tokens: ToaqToken[];
 	private lines: string[];

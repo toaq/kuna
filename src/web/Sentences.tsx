@@ -7,7 +7,7 @@ import { useInView } from 'react-intersection-observer';
 import aSentencesTxt from '../../sentences/a.txt?raw';
 // @ts-ignore
 import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
-import { HandwrittenParser } from '../handwritten-parser';
+import { RecursiveDescentParser } from '../parse/recursive-descent';
 import { denote } from '../semantics/denote';
 import { recover } from '../syntax/recover';
 import { Output } from './Output';
@@ -40,7 +40,7 @@ function parseStatusScore(status: ParseStatus): number {
 }
 
 function handParse(sentence: string): Tree | undefined {
-	const parser = new HandwrittenParser(sentence);
+	const parser = new RecursiveDescentParser(sentence);
 	try {
 		return parser.expectFragment();
 	} catch (_e) {
