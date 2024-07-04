@@ -17,28 +17,7 @@ import {
 	makeT1ModalvP,
 	serialArity,
 } from '../tree';
-
-export class ParseError extends Error {
-	constructor(
-		token: ToaqToken | undefined,
-		baseMessage?: string,
-		line?: string,
-	) {
-		let message = baseMessage;
-		if (token) {
-			message = `on line ${token.position.line + 1} column ${token.position.column + 1}: ${message}`;
-			if (line) {
-				message += `\n\n    ${line}`;
-				message += `\n    ${' '.repeat(token.position.column)}${'^'.repeat(token.value.length)}`;
-			}
-		} else {
-			message += ' (at EOF)';
-		}
-		super(message);
-		this.name = 'ParseError';
-		Object.setPrototypeOf(this, new.target.prototype);
-	}
-}
+import { ParseError } from './error';
 
 enum ClauseType {
 	Main = 0,
