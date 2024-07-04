@@ -252,7 +252,7 @@ export function makevPdet(
 	return {
 		label: '*𝘷P',
 		children: [serial, PRO],
-		source: catSource(serial, argIncorp),
+		source: serial.source,
 	};
 }
 

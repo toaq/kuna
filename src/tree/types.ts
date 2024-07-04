@@ -1,4 +1,5 @@
 import { Impossible } from '../core/error';
+import type { Entry } from '../morphology/dictionary';
 import type { Position } from '../morphology/tokenize';
 import type { Tone } from '../morphology/tone';
 import type { Movement } from './movement';
@@ -194,6 +195,5 @@ export function assertLabel(tree: Tree, label: Label): void {
 }
 
 export type SerialTree = Rose<Tree> & {
-	incorporatedObject?: Tree | undefined;
 	arity: number | undefined;
 };

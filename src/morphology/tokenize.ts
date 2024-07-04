@@ -261,7 +261,6 @@ export class ToaqTokenizer {
 
 					if (exactEntry) {
 						if (exactEntry.type === 'prefix conjunctionizer') {
-							console.log(wordTokens, prefixes);
 							const wordTone = tone(m[0]);
 							if (wordTone === Tone.T3) {
 								throw new Ungrammatical('na- in t3 word');

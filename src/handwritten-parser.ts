@@ -489,11 +489,9 @@ export class HandwrittenParser {
 	}
 
 	// # tua hao tî kúe jí súq râo níchaq
-	// vP<S> -> Serial<verb> Argincorp:? AdjunctPcon:* (VocArgument:+ AdjunctPcon:*):? {% makevP<S> %}
-	// vP<S> -> Serial<oiv> Argument AdjunctPcon:* (VocArgument:+ AdjunctPcon:*):? {% makevP<S> %}
+	// vP<S> -> Serial AdjunctPcon:* (VocArgument:+ AdjunctPcon:*):? {% makevP<S> %}
 	// # (sá) leo hamla lô raı
-	// vPdet -> Serialdet<verb> Argincorp:? {% makevPdet %}
-	// vPdet -> Serialdet<oiv> Argument {% makevPdet %}
+	// vPdet -> Serialdet {% makevPdet %}
 
 	private eatvP(clauseType: ClauseType): Tree | undefined {
 		const serial =
@@ -502,10 +500,6 @@ export class HandwrittenParser {
 		if (!serial) return undefined;
 
 		const children: Tree[] = [serial as Tree];
-		if (serial.incorporatedObject) {
-			children.push(serial.incorporatedObject);
-		}
-		serial.incorporatedObject = undefined;
 		if (clauseType === ClauseType.Det) {
 			children.push(PRO);
 		} else {
@@ -551,10 +545,9 @@ export class HandwrittenParser {
 	}
 
 	// # ^ tı kúe
-	// AdjunctP -> Adjunct Serial<verb> Argument {% makeAdjunctPT %}
-	// AdjunctP -> Adjunct Serial<oiv> Argument {% makeAdjunctPT %}
+	// AdjunctP -> Adjunct Serial Argument {% makeAdjunctPT %}
 	// # ^ jaq suaı
-	// AdjunctP -> Adjunct Serial<verb> {% makeAdjunctPI %}
+	// AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
 
 	private eatAdjunctPcon = () =>
 		this.conjoined('adjunct phrase', () =>
@@ -598,71 +591,73 @@ export class HandwrittenParser {
 	}
 
 	// # tua hao
-	// Serial<L> -> V1orKi:* Vlast<L> {% makeSerial %}
+	// Serial -> V1orKi:* Vlast {% makeSerial %}
 	// V1orKi -> V1 {% id %}
 	// V1orKi -> Ki {% id %}
 	// # (sá) tua hao
-	// Serialdet<L> -> Serial<L> {% id %}
+	// Serialdet -> Serial {% id %}
 	// # (sá) ∅
-	// Serialdet<verb> -> null {% makeEmptySerial() %}
+	// Serialdet -> null {% makeEmptySerial() %}
 
 	private eatSerial(): SerialTree | undefined {
 		let eaten = this.eatSerialItem();
 		if (!eaten) return undefined;
 		const verbTrees = [];
-		let incorporatedObject: Tree | undefined;
 		do {
 			verbTrees.push(eaten[1]);
-			if (eaten[0] === 'oiv') {
-				incorporatedObject = this.eatArgument();
-				if (!incorporatedObject) {
-					throw new ParseError(
-						this.peek(),
-						`Serial ending in ${eaten[1].source} must have incorporated object`,
-					);
-				}
+			if (eaten[0] === 'last') {
 				break;
 			}
 			eaten = this.eatSerialItem();
 		} while (eaten);
 
-		incorporatedObject ??= this.eatArgincorp();
 		return {
 			label: '*Serial',
 			children: verbTrees,
 			source: catSource(...verbTrees),
 			arity: serialArity(verbTrees),
-			incorporatedObject,
 		};
 	}
 
-	private eatSerialItem(): ['oiv' | 'plain' | 'ki', Tree] | undefined {
+	private eatSerialItem(): ['last' | 'non-last', Tree] | undefined {
 		const ki = this.eatKi();
-		if (ki) return ['ki', ki];
-		return this.eatVlast();
+		return ki ? ['non-last', ki] : this.eatVlast();
 	}
 
-	private eatVlast(): ['oiv' | 'plain', Tree] | undefined {
+	// Vlast -> Verb ConjunctionT1 Vlast {% makeConn %}
+	// Vlast -> Verb {% id %}
+	// Vlast -> Voiv Argument {% makeBranch('V') %}
+	// Vlast -> Verb Argincorp {% makeBranch('V') %}
+	// V1 -> Verb {% id %}
+	// V1 -> Verb ConjunctionT1 V1 {% makeConn %}
+	private eatVlast(): ['last' | 'non-last', Tree] | undefined {
 		const left = this.eatVerb();
 		if (!left) {
 			const oiv = this.eatVoiv();
-			return oiv ? ['oiv', oiv] : undefined;
+			if (!oiv) return undefined;
+			const arg = this.eatArgument();
+			if (!arg)
+				throw this.error('A predicatizer must be followed by an object.');
+			return ['last', this.makeBranch('V', oiv, arg)];
 		}
 		const preConj = this.tokenIndex;
 		const conj = this.eatConjunctionT1();
 		if (conj) {
-			const res = this.eatVlast();
-			if (!res) {
+			const right = this.eatV1();
+			if (!right) {
 				this.tokenIndex = preConj;
-				return ['plain', left];
+				return ['non-last', left];
 			}
-			const [flavor, right] = res;
 			return [
-				flavor,
+				'non-last',
 				this.makeBranch('&P', left, this.makeBranch("&'", conj, right)),
 			];
 		}
-		return ['plain', left];
+		const incorporatedObject = this.eatArgincorp();
+		if (incorporatedObject) {
+			return ['last', this.makeBranch('V', left, incorporatedObject)];
+		}
+		return ['non-last', left];
 	}
 
 	// # jî
