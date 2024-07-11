@@ -1,6 +1,7 @@
 import { useDarkMode } from 'usehooks-ts';
 import { Interactive } from './Interactive';
 import { Sentences } from './Sentences';
+import { Treepad } from './Treepad';
 import './App.css';
 import { NavLink, Route, Routes } from 'react-router-dom';
 
@@ -16,6 +17,7 @@ export function App() {
 				<nav style={{ marginLeft: 10 }}>
 					<NavLink to="/">Interactive</NavLink>
 					<NavLink to="/sentences">Sentences</NavLink>
+					<NavLink to="/treepad">Treepad</NavLink>
 				</nav>
 				<button
 					style={{ marginLeft: 'auto' }}
@@ -28,6 +30,7 @@ export function App() {
 			<Routes>
 				<Route path="/" element={<Interactive />} />
 				<Route path="/sentences" element={<Sentences />} />
+				<Route path="/treepad" element={<Treepad />} />
 			</Routes>
 		</div>
 	);
