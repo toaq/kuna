@@ -15,6 +15,10 @@ const shortcuts: Record<string, string> = {
 	"n'": "𝘯'",
 	nP: '𝘯P',
 	'0': '∅',
+	tone2: '◌́',
+	tone4: '◌̂',
+	':d2:': '◌́',
+	':d4:': '◌̂',
 };
 
 function parseTreepad(source: string, position: number): Tree {
