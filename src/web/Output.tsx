@@ -164,7 +164,7 @@ export function Output(props: OutputProps) {
 				{new Glosser(easy).glossSentence(text).map((g, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: order is stable
 					<div className="gloss-item" key={i}>
-						// <div className="gloss-toaq">{g.toaq}</div>
+						<div className="gloss-toaq">{g.toaq}</div>
 						<div className="gloss-english">{g.english}</div>
 					</div>
 				))}
