@@ -275,6 +275,7 @@ export class TreePlacer<C extends DrawContext> {
 			denotation,
 			movement: leaf.movement,
 			source: leaf.source,
+			roof: leaf.roof ?? false,
 		};
 	}
 

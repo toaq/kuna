@@ -156,6 +156,7 @@ interface TreeBase {
 export interface Leaf extends TreeBase {
 	movement?: Movement;
 	word: Word | CovertWord;
+	roof?: boolean;
 }
 
 export interface Branch<T> extends TreeBase {
