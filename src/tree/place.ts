@@ -1,7 +1,6 @@
 import type { CanvasRenderingContext2D } from 'canvas';
-import type { DTree, Expr } from '../semantics/model';
-import { toLatex, toPlainText, typeToPlainText } from '../semantics/render';
-import type { Branch, Leaf, Rose, Tree } from '../tree';
+import type { Expr } from '../semantics/model';
+import { toLatex, toPlainText } from '../semantics/render';
 
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
@@ -9,7 +8,7 @@ import { TeX } from 'mathjax-full/js/input/tex';
 import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
 import { mathjax } from 'mathjax-full/js/mathjax';
 import { SVG } from 'mathjax-full/js/output/svg';
-import type { Movement } from './movement';
+import type { Placed, Scene, SceneNode } from './scene';
 import { type Theme, themes } from './theme';
 
 const adaptor = liteAdaptor();
@@ -50,50 +49,22 @@ export interface RenderedDenotation<C extends DrawContext> {
 	denotation: Expr;
 }
 
-interface PlacedLeafBase<C extends DrawContext> {
-	width: number;
-	label: string;
-	denotation?: RenderedDenotation<C>;
-	movement?: Movement;
-	coindex?: string;
-	roof?: boolean;
-	source: string;
-}
-
-interface HasWord {
-	word: string;
-	gloss: string | undefined;
-}
-
-interface NoWord {
-	word: undefined;
-}
-
-export type PlacedLeaf<C extends DrawContext> = PlacedLeafBase<C> &
-	(HasWord | NoWord);
-
-export interface PlacedBranch<C extends DrawContext> {
-	width: number;
-	label: string;
-	denotation?: RenderedDenotation<C>;
-	distanceBetweenChildren: number;
-	children: PlacedTree<C>[];
-	coindex?: string;
-	source: string;
-}
-
-export type PlacedTree<C extends DrawContext> = PlacedLeaf<C> | PlacedBranch<C>;
+export type PlacedTree<C extends DrawContext> = SceneNode<
+	RenderedDenotation<C>,
+	Placed
+>;
 
 export function boundingRect<C extends DrawContext>(
 	placedTree: PlacedTree<C>,
 ): { left: number; right: number; layers: number } {
-	if ('children' in placedTree) {
+	if (placedTree.children.length) {
 		let left = 0;
 		let right = 0;
 		let layers = 0;
 		const n = placedTree.children.length;
 		for (let i = 0; i < n; i++) {
-			const dx = (i - (n - 1) / 2) * placedTree.distanceBetweenChildren;
+			const dx =
+				(i - (n - 1) / 2) * placedTree.placement.distanceBetweenChildren;
 			const subRect = boundingRect(placedTree.children[i]);
 			left = Math.min(left, subRect.left + dx);
 			right = Math.max(right, subRect.right + dx);
@@ -102,16 +73,10 @@ export function boundingRect<C extends DrawContext>(
 		return { left, right, layers };
 	}
 	return {
-		left: placedTree.width / 2,
-		right: placedTree.width / 2,
+		left: placedTree.placement.width / 2,
+		right: placedTree.placement.width / 2,
 		layers: 1,
 	};
-}
-
-export function getLabel(tree: Tree | DTree): string {
-	return 'denotation' in tree && tree.denotation !== null
-		? `${tree.label} : ${typeToPlainText(tree.denotation.type)}`
-		: tree.label;
 }
 
 export function denotationRenderText(
@@ -181,31 +146,38 @@ function layerExtents<C extends DrawContext>(
 	tree: PlacedTree<C>,
 ): { left: number; right: number }[] {
 	const extents = [];
-	let frontier = [{ x: 0, tree }];
+	let frontier = [
+		{ x: 0, ...tree.placement, text: tree.text, children: tree.children },
+	];
 	while (frontier.length) {
-		const left = Math.min(...frontier.map(e => e.x - e.tree.width / 2));
-		const right = Math.max(...frontier.map(e => e.x + e.tree.width / 2));
+		const left = Math.min(...frontier.map(e => e.x - e.width / 2));
+		const right = Math.max(...frontier.map(e => e.x + e.width / 2));
 		extents.push({ left, right });
 		const newFrontier = [];
 		for (const e of frontier) {
-			if ('word' in e.tree) {
+			if (e.text) {
 				newFrontier.push({
 					x: e.x,
-					tree: {
-						width: e.tree.width,
-						children: [],
-						label: e.tree.label,
-						distanceBetweenChildren: 0,
-						source: e.tree.source,
-					},
+					width: e.width,
+					distanceBetweenChildren: 0,
+					children: [],
+					text: undefined,
 				});
-				continue;
 			}
-			const children = e.tree.children;
-			const n = children.length;
-			for (let i = 0; i < n; i++) {
-				const dx = (i - (n - 1) / 2) * e.tree.distanceBetweenChildren;
-				newFrontier.push({ x: e.x + dx, tree: children[i] });
+			if (e.children.length) {
+				const children = e.children;
+				const n = children.length;
+				for (let i = 0; i < n; i++) {
+					const dx = (i - (n - 1) / 2) * e.distanceBetweenChildren;
+					newFrontier.push({
+						x: e.x + dx,
+						width: children[i].placement.width,
+						distanceBetweenChildren:
+							children[i].placement.distanceBetweenChildren,
+						children: children[i].children,
+						text: children[i].text,
+					});
+				}
 			}
 		}
 		frontier = newFrontier;
@@ -243,75 +215,31 @@ export class TreePlacer<C extends DrawContext> {
 	}
 
 	private renderDenotation(
-		tree: Tree | DTree,
+		node: SceneNode<Expr, any>,
 	): RenderedDenotation<C> | undefined {
-		if (!('denotation' in tree) || tree.denotation === null) return undefined;
+		if (!('denotation' in node) || !node.denotation) return undefined;
 		return this.denotationRenderer(
-			tree.denotation,
+			node.denotation,
 			this.options.theme,
 			this.options.compact,
 		);
 	}
 
-	private placeLeaf(
-		leaf: Leaf | (Leaf & { denotation: Expr | null }),
-	): PlacedLeaf<C> {
-		const gloss = leaf.word.covert ? undefined : leaf.word.entry?.gloss;
-		const label = getLabel(leaf);
-		const word = leaf.word.covert ? leaf.word.value : leaf.word.text;
-		const denotation = this.renderDenotation(leaf);
-		const width = Math.max(
-			this.ctx.measureText(label).width,
-			this.ctx.measureText(word ?? '').width,
-			this.ctx.measureText(gloss ?? '').width,
-			this.ctx.measureText(leaf.movement?.text ?? '').width,
-			denotation ? denotation.width(this.ctx) : 0,
-		);
-		return {
-			width,
-			label,
-			word,
-			gloss,
-			denotation,
-			movement: leaf.movement,
-			source: leaf.source,
-			roof: leaf.roof ?? false,
-		};
-	}
-
-	private placeRoof(tree: Tree | DTree): PlacedLeaf<C> {
-		const label = getLabel(tree);
-		const denotation = this.renderDenotation(tree);
-		const text = tree.source;
-
+	private placeSceneNode(node: SceneNode<Expr, any>): PlacedTree<C> {
+		const gloss = node.gloss;
+		const label = node.label;
+		const text = node.text;
+		const denotation = this.renderDenotation(node);
 		const width = Math.max(
 			this.ctx.measureText(label).width,
 			this.ctx.measureText(text ?? '').width,
-			denotation ? denotation.width(this.ctx) : 0,
-		);
-		return {
-			width,
-			label,
-			word: text,
-			gloss: undefined,
-			denotation,
-			roof: true,
-			source: tree.source,
-		};
-	}
-
-	private makePlacedBranch(
-		label: string,
-		denotation: RenderedDenotation<C> | undefined,
-		children: PlacedTree<C>[],
-		source: string,
-	): PlacedBranch<C> {
-		const width = Math.max(
-			this.ctx.measureText(label).width,
+			this.ctx.measureText(gloss ?? '').width,
 			denotation ? denotation.width(this.ctx) : 0,
 		);
 		let distanceBetweenChildren = 0;
+		const children = node.children.map(c => this.placeSceneNode(c));
 		const les = children.map(layerExtents);
+
 		for (let i = 0; i < children.length - 1; i++) {
 			const l = les[i];
 			const r = les[i + 1];
@@ -322,44 +250,20 @@ export class TreePlacer<C extends DrawContext> {
 				);
 			}
 		}
+
 		return {
-			width,
-			label,
-			denotation,
-			distanceBetweenChildren,
+			placement: { width, distanceBetweenChildren },
 			children,
-			source,
+			label,
+			text,
+			gloss,
+			denotation,
+			source: node.source,
+			roof: node.roof,
 		};
 	}
 
-	private placeBranch(
-		branch: Branch<Tree> | (Branch<DTree> & { denotation: Expr | null }),
-	): PlacedBranch<C> {
-		const denotation = this.renderDenotation(branch);
-		const children = [
-			this.placeTree(branch.left),
-			this.placeTree(branch.right),
-		];
-		return this.makePlacedBranch(
-			getLabel(branch),
-			denotation,
-			children,
-			branch.source,
-		);
-	}
-
-	private placeRose(rose: Rose<Tree>): PlacedBranch<C> {
-		const children = rose.children.map(c => this.placeTree(c));
-		return this.makePlacedBranch(rose.label, undefined, children, rose.source);
-	}
-
-	public placeTree(tree: Tree | DTree): PlacedTree<C> {
-		if ('word' in tree) {
-			return this.placeLeaf(tree);
-		}
-		if (this.options.truncateLabels.includes(tree.label)) {
-			return this.placeRoof(tree);
-		}
-		return 'children' in tree ? this.placeRose(tree) : this.placeBranch(tree);
+	public placeScene(scene: Scene<Expr, any>): PlacedTree<C> {
+		return this.placeSceneNode(scene.root);
 	}
 }

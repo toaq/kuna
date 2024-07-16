@@ -6,6 +6,7 @@ import { type PlacedTree, TreePlacer, boundingRect } from '../tree/place';
 import './TreeBrowser.css';
 import { Tooltip } from 'react-tooltip';
 import { keyFor } from '../core/misc';
+import { toScene } from '../tree/scene';
 import type { Theme } from '../tree/theme';
 
 export function Node(props: {
@@ -29,12 +30,12 @@ export function Node(props: {
 					data-tooltip-html={mathml}
 				>
 					<div className="tree-label">{tree.label}</div>
-					{'word' in tree && (
+					{tree.text && (
 						<>
 							<div className="tree-word" style={{ color: theme.wordColor }}>
-								{tree.word}
+								{tree.text}
 							</div>
-							{tree.word && tree.gloss ? (
+							{tree.text && tree.gloss ? (
 								<div className="tree-gloss">{tree.gloss}</div>
 							) : undefined}
 						</>
@@ -61,8 +62,8 @@ export function Subtree(props: {
 	const [expanded] = useState(!shouldTruncate);
 
 	const { tree, width, compactDenotations, theme, truncateLabels } = props;
-	const children = 'children' in tree ? tree.children : [];
-	const d = 'children' in tree ? tree.distanceBetweenChildren : 0;
+	const children = tree.children;
+	const d = tree.placement.distanceBetweenChildren;
 
 	return (
 		<div
@@ -152,7 +153,8 @@ export function TreeBrowser(props: {
 		};
 	};
 	const placer = new TreePlacer(ctx, denotationRenderer, { theme });
-	const placed = placer.placeTree(tree);
+	const scene = toScene(tree, false, truncateLabels);
+	const placed = placer.placeScene(scene);
 	const rect = boundingRect(placed);
 	return (
 		<div

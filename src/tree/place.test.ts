@@ -1,20 +1,25 @@
 import { expect, test } from 'vitest';
 import { parse } from '../modes/parse';
 import { type DrawContext, type PlacedTree, TreePlacer } from './place';
+import { toScene } from './scene';
 
 /**
  * Trim irrelevant word data from PlacedTree for the snapshot.
  */
 function summarize<C extends DrawContext>(tree: PlacedTree<C>): any {
-	if ('word' in tree) return tree.label;
-	return { ...tree, children: tree.children.map(summarize) };
+	return tree.children.length
+		? { ...tree, children: tree.children.map(summarize) }
+		: tree.label;
 }
 
 test('it places trees', () => {
 	const measureText = (text: string) => ({ width: text.length * 20 });
 	const placer = new TreePlacer({ measureText }, undefined!);
 	const tree = parse('gaı jí máq rú hao jí')[0];
-	expect(summarize(placer.placeTree(tree))).toMatchInlineSnapshot(`
+	const scene = toScene(tree);
+	const placed = placer.placeScene(scene);
+
+	expect(summarize(placed)).toMatchInlineSnapshot(`
 		{
 		  "children": [
 		    {
@@ -38,40 +43,55 @@ test('it places trees', () => {
 		                                "V",
 		                              ],
 		                              "denotation": undefined,
-		                              "distanceBetweenChildren": 0,
 		                              "label": "*Serial",
+		                              "placement": {
+		                                "distanceBetweenChildren": 0,
+		                                "width": 140,
+		                              },
+		                              "roof": false,
 		                              "source": "gaı",
-		                              "width": 140,
 		                            },
 		                            "DP",
 		                            "DP",
 		                          ],
 		                          "denotation": undefined,
-		                          "distanceBetweenChildren": 130,
 		                          "label": "*𝘷P",
+		                          "placement": {
+		                            "distanceBetweenChildren": 130,
+		                            "width": 80,
+		                          },
+		                          "roof": false,
 		                          "source": "gaı jí máq",
-		                          "width": 80,
 		                        },
 		                      ],
 		                      "denotation": undefined,
-		                      "distanceBetweenChildren": 260,
 		                      "label": "AspP",
+		                      "placement": {
+		                        "distanceBetweenChildren": 260,
+		                        "width": 80,
+		                      },
+		                      "roof": false,
 		                      "source": "gaı jí máq",
-		                      "width": 80,
 		                    },
 		                  ],
 		                  "denotation": undefined,
-		                  "distanceBetweenChildren": 200,
 		                  "label": "TP",
+		                  "placement": {
+		                    "distanceBetweenChildren": 200,
+		                    "width": 40,
+		                  },
+		                  "roof": false,
 		                  "source": "gaı jí máq",
-		                  "width": 40,
 		                },
 		              ],
 		              "denotation": undefined,
-		              "distanceBetweenChildren": 150,
 		              "label": "ΣP",
+		              "placement": {
+		                "distanceBetweenChildren": 150,
+		                "width": 40,
+		              },
+		              "roof": false,
 		              "source": "gaı jí máq",
-		              "width": 40,
 		            },
 		            {
 		              "children": [
@@ -92,68 +112,95 @@ test('it places trees', () => {
 		                                    "V",
 		                                  ],
 		                                  "denotation": undefined,
-		                                  "distanceBetweenChildren": 0,
 		                                  "label": "*Serial",
+		                                  "placement": {
+		                                    "distanceBetweenChildren": 0,
+		                                    "width": 140,
+		                                  },
+		                                  "roof": false,
 		                                  "source": "hao",
-		                                  "width": 140,
 		                                },
 		                                "DP",
 		                              ],
 		                              "denotation": undefined,
-		                              "distanceBetweenChildren": 120,
 		                              "label": "*𝘷P",
+		                              "placement": {
+		                                "distanceBetweenChildren": 120,
+		                                "width": 80,
+		                              },
+		                              "roof": false,
 		                              "source": "hao jí",
-		                              "width": 80,
 		                            },
 		                          ],
 		                          "denotation": undefined,
-		                          "distanceBetweenChildren": 190,
 		                          "label": "AspP",
+		                          "placement": {
+		                            "distanceBetweenChildren": 190,
+		                            "width": 80,
+		                          },
+		                          "roof": false,
 		                          "source": "hao jí",
-		                          "width": 80,
 		                        },
 		                      ],
 		                      "denotation": undefined,
-		                      "distanceBetweenChildren": 165,
 		                      "label": "TP",
+		                      "placement": {
+		                        "distanceBetweenChildren": 165,
+		                        "width": 40,
+		                      },
+		                      "roof": false,
 		                      "source": "hao jí",
-		                      "width": 40,
 		                    },
 		                  ],
 		                  "denotation": undefined,
-		                  "distanceBetweenChildren": 132.5,
 		                  "label": "ΣP",
+		                  "placement": {
+		                    "distanceBetweenChildren": 132.5,
+		                    "width": 40,
+		                  },
+		                  "roof": false,
 		                  "source": "hao jí",
-		                  "width": 40,
 		                },
 		              ],
 		              "denotation": undefined,
-		              "distanceBetweenChildren": 136.25,
 		              "label": "&'",
+		              "placement": {
+		                "distanceBetweenChildren": 136.25,
+		                "width": 40,
+		              },
+		              "roof": false,
 		              "source": "rú hao jí",
-		              "width": 40,
 		            },
 		          ],
 		          "denotation": undefined,
-		          "distanceBetweenChildren": 473.125,
 		          "label": "&P",
+		          "placement": {
+		            "distanceBetweenChildren": 473.125,
+		            "width": 40,
+		          },
+		          "roof": false,
 		          "source": "gaı jí máq rú hao jí",
-		          "width": 40,
 		        },
 		      ],
 		      "denotation": undefined,
-		      "distanceBetweenChildren": 296.5625,
 		      "label": "CP",
+		      "placement": {
+		        "distanceBetweenChildren": 296.5625,
+		        "width": 40,
+		      },
+		      "roof": false,
 		      "source": "gaı jí máq rú hao jí",
-		      "width": 40,
 		    },
 		    "SA",
 		  ],
 		  "denotation": undefined,
-		  "distanceBetweenChildren": 218.28125,
 		  "label": "SAP",
+		  "placement": {
+		    "distanceBetweenChildren": 218.28125,
+		    "width": 60,
+		  },
+		  "roof": false,
 		  "source": "gaı jí máq rú hao jí",
-		  "width": 60,
 		}
 	`);
 });

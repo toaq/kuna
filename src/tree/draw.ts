@@ -6,13 +6,8 @@ import {
 import type { DTree, Expr } from '../semantics/model';
 import type { Tree } from '../tree';
 import type { MovementID } from './movement';
-import {
-	type PlacedBranch,
-	type PlacedLeaf,
-	type PlacedTree,
-	type RenderedDenotation,
-	TreePlacer,
-} from './place';
+import { type PlacedTree, type RenderedDenotation, TreePlacer } from './place';
+import { SceneTextStyle, toScene } from './scene';
 import { type Theme, type ThemeName, themes } from './theme';
 
 interface Location {
@@ -103,68 +98,67 @@ class TreeDrawer {
 		y: number,
 		tree: PlacedTree<CanvasRenderingContext2D>,
 	): void {
-		if (tree.coindex) {
-			const w1 = this.ctx.measureText(tree.label).width;
-			const w2 = this.ctx.measureText(tree.coindex).width;
-			this.drawText(tree.label, x - w2 / 2, y, this.theme.textColor);
-			this.drawText(tree.coindex, x + w1 / 2, y + 8, this.theme.textColor);
-		} else {
-			this.drawText(tree.label, x, y, this.theme.textColor);
-		}
+		// if (tree.coindex) {
+		// 	const w1 = this.ctx.measureText(tree.label).width;
+		// 	const w2 = this.ctx.measureText(tree.coindex).width;
+		// 	this.drawText(tree.label, x - w2 / 2, y, this.theme.textColor);
+		// 	this.drawText(tree.coindex, x + w1 / 2, y + 8, this.theme.textColor);
+		// } else {
+		this.drawText(tree.label, x, y, this.theme.textColor);
+		// }
 	}
 
 	private drawLeaf(
 		x: number,
 		y: number,
-		tree: PlacedLeaf<CanvasRenderingContext2D>,
+		tree: PlacedTree<CanvasRenderingContext2D>,
 	): void {
 		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
 			this.drawText(tree.denotation, x, y + 30, this.theme.denotationColor);
 		}
 
-		const [wordColor, word] =
-			this.options.showMovement && tree.movement && tree.movement.text
-				? [this.theme.movedWordColor, tree.movement.text]
-				: [
-						this.options.showMovement && tree.movement?.movedTo
-							? this.theme.traceColor
-							: this.theme.wordColor,
-						tree.word,
-					];
+		const wordColor =
+			tree.textStyle === SceneTextStyle.Trace
+				? this.theme.traceColor
+				: tree.textStyle === SceneTextStyle.MovedHere
+					? this.theme.movedWordColor
+					: this.theme.wordColor;
+		const word = tree.text;
 
 		if (word !== undefined) {
+			const width = tree.placement.width;
 			const dy = 35 + (tree.denotation?.height(this.ctx) ?? 0);
 			const y1 = y + this.options.layerHeight - 15;
 			if (tree.roof) {
-				this.drawLine(x, y + dy, x - tree.width / 2, y1);
-				this.drawLine(x, y + dy, x + tree.width / 2, y1);
-				this.drawLine(x - tree.width / 2, y1, x + tree.width / 2, y1);
+				this.drawLine(x, y + dy, x - width / 2, y1);
+				this.drawLine(x, y + dy, x + width / 2, y1);
+				this.drawLine(x - width / 2, y1, x + width / 2, y1);
 			} else {
 				this.drawLine(x, y + dy, x, y1);
 			}
 
 			this.drawText(word, x, y + this.options.layerHeight, wordColor);
-			if (tree.word && tree.gloss) {
+			if (tree.text && tree.gloss) {
 				const yg = y + this.options.layerHeight + 30;
 				this.drawText(tree.gloss, x, yg, this.theme.textColor);
 			}
 		}
 
-		if (tree.movement) {
-			const width = this.ctx.measureText(tree.word ?? '').width;
+		if (tree.id) {
+			const width = this.ctx.measureText(tree.text ?? '').width;
 			const location = { x, y: y + 120, width };
-			this.locations.set(tree.movement.id, location);
-			if (tree.movement.movedTo) {
-				this.arrows.push([tree.movement.id, tree.movement.movedTo]);
-			}
+			this.locations.set(tree.id, location);
+			// if (tree.movement.movedTo) {
+			// 	this.arrows.push([tree.movement.id, tree.movement.movedTo]);
+			// }
 		}
 	}
 
 	private drawBranch(
 		x: number,
 		y: number,
-		tree: PlacedBranch<CanvasRenderingContext2D>,
+		tree: PlacedTree<CanvasRenderingContext2D>,
 	): void {
 		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
@@ -172,7 +166,7 @@ class TreeDrawer {
 		}
 		const n = tree.children.length;
 		for (let i = 0; i < n; i++) {
-			const dx = (i - (n - 1) / 2) * tree.distanceBetweenChildren;
+			const dx = (i - (n - 1) / 2) * tree.placement.distanceBetweenChildren;
 			this.drawTree(x + dx, y + this.options.layerHeight, tree.children[i]);
 			const dy = 35 + (tree.denotation?.height(this.ctx) ?? 0);
 			this.drawLine(x, y + dy, x + dx, y + this.options.layerHeight - 15);
@@ -184,10 +178,10 @@ class TreeDrawer {
 		y: number,
 		tree: PlacedTree<CanvasRenderingContext2D>,
 	): void {
-		if ('word' in tree) {
-			this.drawLeaf(x, y, tree);
-		} else {
+		if (tree.children.length) {
 			this.drawBranch(x, y, tree);
+		} else {
+			this.drawLeaf(x, y, tree);
 		}
 	}
 
@@ -244,7 +238,8 @@ class TreeDrawer {
 			compact: this.options.compact,
 			truncateLabels: this.options.truncateLabels,
 		});
-		const placed = placer.placeTree(tree);
+		const scene = toScene(tree);
+		const placed = placer.placeScene(scene);
 		this.drawTree(this.rootX, this.rootY, placed);
 		await Promise.all(this.promises);
 		if (this.options.showMovement) this.drawArrows();

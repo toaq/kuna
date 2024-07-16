@@ -12,7 +12,7 @@
 		"vite": "^4.4.9",
 		"vite-plugin-require-transform": "^1.0.21",
 		"vite-tsconfig-paths": "^4.2.0",
-		"vitest": "^0.34.5"
+		"vitest": "^2.0.3"
 	},
 	"name": "kuna",
 	"version": "0.0.1",
