@@ -243,7 +243,7 @@ export function makevPdet(
 			serial,
 			{ label: 'DP', word: { covert: true, value: 'PRO' }, source: '' },
 		],
-		source: serial,
+		source: serial.source,
 	};
 }
 
