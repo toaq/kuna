@@ -15,10 +15,10 @@ export function Node(props: {
 	compactDenotations: boolean;
 	theme: Theme;
 }) {
-	const { tree, compactDenotations, theme } = props;
+	const { tree, theme } = props;
 	const mathml = `<pre style="color:${theme.wordColor};font-family:inherit; margin: 0">${tree.source.trim() || '∅'}</pre>${
 		'denotation' in tree && tree.denotation
-			? `<hr style="border:1px solid #8884";/><div style="margin-top:0.5em">${toMathml(tree.denotation.denotation, compactDenotations)}</div>`
+			? `<hr style="border:1px solid #8884";/><div style="margin-top:0.5em">${tree.denotation.source}</div>`
 			: ''
 	}`;
 	return (
@@ -144,12 +144,12 @@ export function TreeBrowser(props: {
 		},
 	};
 
-	const denotationRenderer = (denotation: Expr) => {
+	const denotationRenderer = (expr: Expr) => {
 		return {
 			draw: async () => {},
 			width: () => 0,
 			height: () => 0,
-			denotation,
+			source: toMathml(expr, compactDenotations),
 		};
 	};
 	const placer = new TreePlacer(ctx, denotationRenderer, { theme });

@@ -148,10 +148,9 @@ yargs
 				);
 			}
 			const theme = argv.light ? 'light' : 'dark';
-			const canvas = await drawTreeToCanvas({
+			const canvas = await drawTreeToCanvas(trees[0], {
 				themeName: theme,
 				tall: argv.semantics,
-				tree: trees[0],
 				renderer: denotationRenderText,
 				showMovement: argv.movement,
 				compact: argv.compact,

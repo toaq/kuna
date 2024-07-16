@@ -8,7 +8,7 @@ import { TeX } from 'mathjax-full/js/input/tex';
 import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
 import { mathjax } from 'mathjax-full/js/mathjax';
 import { SVG } from 'mathjax-full/js/output/svg';
-import type { Placed, Scene, SceneNode } from './scene';
+import type { Placed, Scene, SceneNode, Unplaced } from './scene';
 import { type Theme, themes } from './theme';
 
 const adaptor = liteAdaptor();
@@ -37,7 +37,7 @@ export interface DrawContext {
 	measureText(text: string): { width: number };
 }
 
-export interface RenderedDenotation<C extends DrawContext> {
+export interface DrawableDenotation<C extends DrawContext> {
 	draw: (
 		ctx: C,
 		centerX: number,
@@ -46,11 +46,11 @@ export interface RenderedDenotation<C extends DrawContext> {
 	) => Promise<void>;
 	width(ctx: C): number;
 	height(ctx: C): number;
-	denotation: Expr;
+	source: string;
 }
 
 export type PlacedTree<C extends DrawContext> = SceneNode<
-	RenderedDenotation<C>,
+	DrawableDenotation<C>,
 	Placed
 >;
 
@@ -83,7 +83,7 @@ export function denotationRenderText(
 	denotation: Expr,
 	_theme: Theme,
 	compact?: boolean,
-): RenderedDenotation<CanvasRenderingContext2D> {
+): DrawableDenotation<CanvasRenderingContext2D> {
 	const text = toPlainText(denotation, compact);
 	return {
 		async draw(ctx, centerX, bottomY, color) {
@@ -96,16 +96,15 @@ export function denotationRenderText(
 		height() {
 			return 30;
 		},
-		denotation,
+		source: text,
 	};
 }
 
-export function denotationRenderLatex(
-	denotation: Expr,
+export function denotationRenderRawLatex(
+	latex: string,
 	theme: Theme,
-	compact?: boolean,
-): RenderedDenotation<CanvasRenderingContext2D> {
-	const latex = toLatex(denotation, compact);
+	_compact?: boolean,
+): DrawableDenotation<CanvasRenderingContext2D> {
 	let { width, height, svg } = get_mathjax_svg(`\\LARGE ${latex}`);
 	svg = svg.replace(/currentColor/g, theme.denotationColor);
 	const pxWidth = Number(width.replace(/ex$/, '')) * 7;
@@ -138,13 +137,25 @@ export function denotationRenderLatex(
 		height() {
 			return pxHeight;
 		},
-		denotation,
+		source: latex,
 	};
 }
 
-function layerExtents<C extends DrawContext>(
-	tree: PlacedTree<C>,
-): { left: number; right: number }[] {
+export function denotationRenderLatex(
+	denotation: Expr,
+	theme: Theme,
+	compact?: boolean,
+): DrawableDenotation<CanvasRenderingContext2D> {
+	const latex = toLatex(denotation, compact);
+	return denotationRenderRawLatex(latex, theme, compact);
+}
+
+interface LayerExtent {
+	left: number;
+	right: number;
+}
+
+function layerExtents(tree: PlacedTree<any>): LayerExtent[] {
 	const extents = [];
 	let frontier = [
 		{ x: 0, ...tree.placement, text: tree.text, children: tree.children },
@@ -199,24 +210,24 @@ const defaultOptions: TreePlacerOptions = {
 	truncateLabels: [],
 };
 
-export class TreePlacer<C extends DrawContext> {
+export class TreePlacer<C extends DrawContext, D> {
 	private options: TreePlacerOptions;
 
 	constructor(
 		private ctx: C,
 		private denotationRenderer: (
-			denotation: Expr,
+			denotation: D,
 			theme: Theme,
 			compact?: boolean,
-		) => RenderedDenotation<C>,
+		) => DrawableDenotation<C>,
 		options: Partial<TreePlacerOptions> = {},
 	) {
 		this.options = { ...defaultOptions, ...options };
 	}
 
 	private renderDenotation(
-		node: SceneNode<Expr, any>,
-	): RenderedDenotation<C> | undefined {
+		node: SceneNode<D, any>,
+	): DrawableDenotation<C> | undefined {
 		if (!('denotation' in node) || !node.denotation) return undefined;
 		return this.denotationRenderer(
 			node.denotation,
@@ -225,7 +236,7 @@ export class TreePlacer<C extends DrawContext> {
 		);
 	}
 
-	private placeSceneNode(node: SceneNode<Expr, any>): PlacedTree<C> {
+	private placeSceneNode(node: SceneNode<D, any>): PlacedTree<C> {
 		const gloss = node.gloss;
 		const label = node.label;
 		const text = node.text;
@@ -263,7 +274,7 @@ export class TreePlacer<C extends DrawContext> {
 		};
 	}
 
-	public placeScene(scene: Scene<Expr, any>): PlacedTree<C> {
+	public placeScene(scene: Scene<D, Unplaced>): PlacedTree<C> {
 		return this.placeSceneNode(scene.root);
 	}
 }

@@ -111,10 +111,9 @@ export function Output(props: OutputProps) {
 				);
 			case 'png-latex':
 			case 'png-text':
-				drawTreeToCanvas({
+				drawTreeToCanvas(tree, {
 					themeName: darkMode.isDarkMode ? 'dark' : 'light',
 					tall: mode.includes('semantics'),
-					tree,
 					renderer:
 						treeFormat === 'png-latex'
 							? denotationRenderLatex

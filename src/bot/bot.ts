@@ -70,10 +70,9 @@ export class KunaBot {
 		const trees = parse(text);
 		const canvases = await Promise.all(
 			trees.map(tree =>
-				drawTreeToCanvas({
+				drawTreeToCanvas(tree, {
 					themeName: 'dark',
 					tall: false,
-					tree,
 					renderer: denotationRenderText,
 					showMovement: false,
 					compact: false,

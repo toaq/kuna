@@ -6,8 +6,8 @@ import {
 import type { DTree, Expr } from '../semantics/model';
 import type { Tree } from '../tree';
 import type { MovementID } from './movement';
-import { type PlacedTree, type RenderedDenotation, TreePlacer } from './place';
-import { SceneTextStyle, toScene } from './scene';
+import { type DrawableDenotation, type PlacedTree, TreePlacer } from './place';
+import { type Scene, SceneTextStyle, type Unplaced, toScene } from './scene';
 import { type Theme, type ThemeName, themes } from './theme';
 
 interface Location {
@@ -29,7 +29,7 @@ class TreeDrawer {
 	private font = '27px Noto Sans Math, Noto Sans';
 
 	private canvas: Canvas;
-	private ctx: CanvasRenderingContext2D;
+	readonly ctx: CanvasRenderingContext2D;
 	private rootX: number;
 	private rootY: number;
 	private extent: { minX: number; maxX: number; minY: number; maxY: number };
@@ -69,7 +69,7 @@ class TreeDrawer {
 	}
 
 	private drawText(
-		text: string | RenderedDenotation<CanvasRenderingContext2D>,
+		text: string | DrawableDenotation<CanvasRenderingContext2D>,
 		x: number,
 		y: number,
 		color: string,
@@ -226,21 +226,9 @@ class TreeDrawer {
 	}
 
 	public async drawToCanvas(
-		tree: Tree | DTree,
-		renderer: (
-			denotation: Expr,
-			theme: Theme,
-			compact?: boolean,
-		) => RenderedDenotation<CanvasRenderingContext2D>,
+		placedTree: PlacedTree<CanvasRenderingContext2D>,
 	): Promise<Canvas> {
-		const placer = new TreePlacer(this.ctx, renderer, {
-			theme: this.theme,
-			compact: this.options.compact,
-			truncateLabels: this.options.truncateLabels,
-		});
-		const scene = toScene(tree);
-		const placed = placer.placeScene(scene);
-		this.drawTree(this.rootX, this.rootY, placed);
+		this.drawTree(this.rootX, this.rootY, placedTree);
 		await Promise.all(this.promises);
 		if (this.options.showMovement) this.drawArrows();
 		this.fitCanvasToContents();
@@ -248,26 +236,53 @@ class TreeDrawer {
 	}
 }
 
-export function drawTreeToCanvas(options: {
-	themeName: ThemeName;
-	tall: boolean;
-	tree: Tree | DTree;
-	renderer: (
-		denotation: Expr,
-		theme: Theme,
-		compact?: boolean,
-	) => RenderedDenotation<CanvasRenderingContext2D>;
-	showMovement: boolean;
-	compact: boolean;
-	truncateLabels: string[];
-}): Promise<Canvas> {
+export function drawSceneToCanvas<D>(
+	scene: Scene<D, Unplaced>,
+	options: {
+		themeName: ThemeName;
+		tall: boolean;
+		renderer: (
+			denotation: D,
+			theme: Theme,
+			compact?: boolean,
+		) => DrawableDenotation<CanvasRenderingContext2D>;
+		showMovement: boolean;
+		compact: boolean;
+		truncateLabels: string[];
+	},
+): Promise<Canvas> {
 	const layerHeight = options.tall ? 150 : 100;
+	const theme = themes[options.themeName];
 	const drawer = new TreeDrawer({
-		theme: themes[options.themeName],
+		theme,
 		layerHeight,
 		showMovement: options.showMovement,
 		compact: options.compact,
 		truncateLabels: options.truncateLabels,
 	});
-	return drawer.drawToCanvas(options.tree, options.renderer);
+	const placer = new TreePlacer(drawer.ctx, options.renderer, {
+		theme,
+		compact: options.compact,
+		truncateLabels: options.truncateLabels,
+	});
+	const placed = placer.placeScene(scene);
+	return drawer.drawToCanvas(placed);
+}
+
+export function drawTreeToCanvas(
+	tree: Tree | DTree,
+	options: {
+		themeName: ThemeName;
+		tall: boolean;
+		renderer: (
+			denotation: Expr,
+			theme: Theme,
+			compact?: boolean,
+		) => DrawableDenotation<CanvasRenderingContext2D>;
+		showMovement: boolean;
+		compact: boolean;
+		truncateLabels: string[];
+	},
+): Promise<Canvas> {
+	return drawSceneToCanvas(toScene(tree), options);
 }

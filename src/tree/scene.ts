@@ -77,7 +77,7 @@ export interface MovementArrow {
  * describes the kind of tree *diagrams* Kuna draws.
  *
  * * `toScene` turns a Toaq syntax `Tree` into `Scene<Expr, Unplaced>`.
- * * The placement algorithm turns that into `Scene<RenderedDenotation, Placed>`.
+ * * The placement algorithm turns that into `Scene<DrawableDenotation, Placed>`.
  * * This is termed `PlacedTree`, and it's what the renderers know how to render.
  */
 export interface Scene<Denotation, Placement> {
