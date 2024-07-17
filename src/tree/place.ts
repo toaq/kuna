@@ -155,47 +155,6 @@ interface LayerExtent {
 	right: number;
 }
 
-function layerExtents(tree: PlacedTree<any>): LayerExtent[] {
-	const extents = [];
-	let frontier = [
-		{ x: 0, ...tree.placement, text: tree.text, children: tree.children },
-	];
-	while (frontier.length) {
-		const left = Math.min(...frontier.map(e => e.x - e.width / 2));
-		const right = Math.max(...frontier.map(e => e.x + e.width / 2));
-		extents.push({ left, right });
-		const newFrontier = [];
-		for (const e of frontier) {
-			if (e.text) {
-				newFrontier.push({
-					x: e.x,
-					width: e.width,
-					distanceBetweenChildren: 0,
-					children: [],
-					text: undefined,
-				});
-			}
-			if (e.children.length) {
-				const children = e.children;
-				const n = children.length;
-				for (let i = 0; i < n; i++) {
-					const dx = (i - (n - 1) / 2) * e.distanceBetweenChildren;
-					newFrontier.push({
-						x: e.x + dx,
-						width: children[i].placement.width,
-						distanceBetweenChildren:
-							children[i].placement.distanceBetweenChildren,
-						children: children[i].children,
-						text: children[i].text,
-					});
-				}
-			}
-		}
-		frontier = newFrontier;
-	}
-	return extents;
-}
-
 interface TreePlacerOptions {
 	theme: Theme;
 	horizontalMargin: number;
@@ -236,7 +195,10 @@ export class TreePlacer<C extends DrawContext, D> {
 		);
 	}
 
-	private placeSceneNode(node: SceneNode<D, any>): PlacedTree<C> {
+	private placeSceneNode(node: SceneNode<D, any>): {
+		tree: PlacedTree<C>;
+		extents: LayerExtent[];
+	} {
 		const gloss = node.gloss;
 		const label = node.label;
 		const text = node.text;
@@ -247,13 +209,12 @@ export class TreePlacer<C extends DrawContext, D> {
 			this.ctx.measureText(gloss ?? '').width,
 			denotation ? denotation.width(this.ctx) : 0,
 		);
-		let distanceBetweenChildren = 0;
 		const children = node.children.map(c => this.placeSceneNode(c));
-		const les = children.map(layerExtents);
 
+		let distanceBetweenChildren = 0;
 		for (let i = 0; i < children.length - 1; i++) {
-			const l = les[i];
-			const r = les[i + 1];
+			const l = children[i].extents;
+			const r = children[i + 1].extents;
 			for (let j = 0; j < Math.min(r.length, l.length); j++) {
 				distanceBetweenChildren = Math.max(
 					distanceBetweenChildren,
@@ -262,9 +223,26 @@ export class TreePlacer<C extends DrawContext, D> {
 			}
 		}
 
-		return {
+		const extents = [
+			{ left: -width / 2, right: width / 2 },
+			{ left: -width / 2, right: width / 2 },
+		];
+		for (let i = 0; i < children.length; i++) {
+			const dx = (i - (children.length - 1) / 2) * distanceBetweenChildren;
+			const e = children[i].extents;
+			for (let j = 0; j < e.length; j++) {
+				extents[j + 1] ??= {
+					left: Number.POSITIVE_INFINITY,
+					right: Number.NEGATIVE_INFINITY,
+				};
+				extents[j + 1].left = Math.min(extents[j + 1].left, e[j].left + dx);
+				extents[j + 1].right = Math.max(extents[j + 1].right, e[j].right + dx);
+			}
+		}
+
+		const tree = {
 			placement: { width, distanceBetweenChildren },
-			children,
+			children: children.map(x => x.tree),
 			label,
 			text,
 			gloss,
@@ -272,9 +250,10 @@ export class TreePlacer<C extends DrawContext, D> {
 			source: node.source,
 			roof: node.roof,
 		};
+		return { tree, extents };
 	}
 
 	public placeScene(scene: Scene<D, Unplaced>): PlacedTree<C> {
-		return this.placeSceneNode(scene.root);
+		return this.placeSceneNode(scene.root).tree;
 	}
 }
