@@ -344,6 +344,72 @@ function attachAdjective(VP: Tree, kivP: KivP): Tree {
 }
 
 /**
+ * Turn a list of verbs into a description of the serial's effective slot structure.
+ *
+ * For example, [leo, do] is turned into
+ *
+ *     [
+ *       { verbIndex: 0, slotIndex: 0 },  // leo's subject
+ *       { verbIndex: 1, slotIndex: 1 },  // do's indirect object
+ *       { verbIndex: 1, slotIndex: 2 },  // do's direct object
+ *     ]
+ *
+ * whose length indicates that the effective arity of this serial is 3.
+ *
+ * If the serial cannot be analyzed (due to a missing frame), `undefined` is returned.
+ */
+export function describeSerial(
+	children: Tree[],
+): { verbIndex: number; slotIndex: number }[] | undefined {
+	const n = children.length;
+	const frames = children.map(getFrame);
+	if (frames.includes('?')) return undefined;
+	const frame = splitNonEmpty(frames[n - 1], ' ');
+	let description = frame.map((_, j) => ({ verbIndex: n - 1, slotIndex: j }));
+
+	for (let i = n - 2; i >= 0; i--) {
+		const frame = splitNonEmpty(frames[i], ' ');
+		const last = frame.at(-1)!;
+		if (/c/.test(last)) {
+			// Wipe the whole description, it was just an adjective:
+			description = frame.map((_, j) => ({ verbIndex: i, slotIndex: j }));
+		} else {
+			// Introduce some new slots and merge away some old slots:
+			description = [
+				...frame.slice(0, -1).map((_, j) => ({ verbIndex: i, slotIndex: j })),
+				...description.slice(Number(last[0])),
+			];
+		}
+	}
+	return description;
+}
+
+/**
+ * Turn the children of a *Serial into a list of segments.
+ */
+export function segmentSerial(children: Tree[]): Tree[][] {
+	const frames = children.map(getFrame);
+	const segments: Tree[][] = [];
+	let end = children.length;
+	for (let i = children.length - 2; i >= 0; i--) {
+		if (frames[i] === 'kı') {
+			segments.unshift(children.slice(i, end));
+			end = i;
+			continue;
+		}
+		const frame = splitNonEmpty(frames[i], ' ');
+		const last = frame.at(-1)!;
+		if (last === 'c' && i + 1 !== end) {
+			// So everything to the right is an adjective.
+			segments.unshift(children.slice(i + 1, end));
+			end = i + 1;
+		}
+	}
+	if (0 !== end) segments.unshift(children.slice(0, end));
+	return segments;
+}
+
+/**
  * Turn the given *Serial and terms into a proper 𝘷P, by:
  *
  * - splitting the *Serial into segments,
@@ -369,25 +435,7 @@ export function fixSerial(
 		throw new Impossible('zero children');
 	}
 
-	const frames = children.map(getFrame);
-
-	const segments = [];
-	let end = children.length;
-	for (let i = children.length - 2; i >= 0; i--) {
-		if (frames[i] === 'kı') {
-			segments.unshift(children.slice(i, end));
-			end = i;
-			continue;
-		}
-		const frame = splitNonEmpty(frames[i], ' ');
-		const last = frame.at(-1)!;
-		if (last === 'c' && i + 1 !== end) {
-			// So everything to the right is an adjective.
-			segments.unshift(children.slice(i + 1, end));
-			end = i + 1;
-		}
-	}
-	if (0 !== end) segments.unshift(children.slice(0, end));
+	const segments = segmentSerial(children);
 
 	const earlyAdjuncts: Tree[] = [];
 	const args: Tree[] = [];

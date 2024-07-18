@@ -38,6 +38,16 @@ export function findHead(tree: Tree): Tree {
 	return tree;
 }
 
+/** Depth-first search for a subtree with the given label. */
+export function findSubtree(tree: Tree, label: Label): Tree | undefined {
+	if (tree.label === label) return tree;
+	for (const child of treeChildren(tree)) {
+		const result = findSubtree(child, label);
+		if (result) return result;
+	}
+	return undefined;
+}
+
 export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
 	if (label.endsWith('P') || label === 'CPrel' || label === '*𝘷Pdet') {
 		return 'phrase';

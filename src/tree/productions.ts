@@ -1,7 +1,7 @@
 import { dictionary } from '../morphology/dictionary';
 import { toadua } from '../morphology/toadua';
 import { type ToaqToken, bare, tone } from '../morphology/tokenize';
-import { getFrame } from '../syntax/serial';
+import { describeSerial } from '../syntax/serial';
 import {
 	catSource,
 	endsInClauseBoundary,
@@ -148,25 +148,9 @@ export function makeOptLeaf(label: Label) {
 
 export function makeSerial([verbs, vlast]: [Tree[], Tree]) {
 	const children = verbs.concat([vlast]);
-	const frames = children.map(getFrame);
-	const frame = frames[frames.length - 1];
-	let arity: number | undefined;
-	if (!frames.includes('?')) {
-		arity = frame === '' ? 0 : frame.split(' ').length;
-		for (let i = frames.length - 2; i >= 0; i--) {
-			const frame = frames[i].split(' ');
-			const last = frame.at(-1)![0];
-			if (last === 'c') {
-				// So everything to the right is an adjective?
-				arity = frame.length;
-			} else {
-				arity += frame.length - 1 - Number(last);
-			}
-		}
-	}
 	return {
 		label: '*Serial',
-		arity,
+		arity: describeSerial(children)?.length,
 		children,
 		source: catSource(...verbs, vlast),
 	};
