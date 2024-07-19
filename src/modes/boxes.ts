@@ -57,10 +57,6 @@ interface SplitBoxes {
 	cpIndices: Map<Tree, number>;
 }
 
-export function circled(i: number): string {
-	return i < 10 ? '⓪①②③④⑤⑥⑦⑧⑨'[i] : `(${i})`;
-}
-
 class Boxifier {
 	cpBoxClauses: BoxClause[] = [];
 	cpIndices: Map<Tree, number> = new Map();

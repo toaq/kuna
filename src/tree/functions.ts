@@ -85,8 +85,8 @@ export function containsWords(
 	);
 }
 
-function circled(i: number): string {
-	return i < 10 ? '⓪①②③④⑤⑥⑦⑧⑨'[i] : `(${i})`;
+export function circled(i: number): string {
+	return '⓪①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳'[i] ?? `(${i})`;
 }
 
 export function leafText(tree: Tree): string {

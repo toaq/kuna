@@ -1,13 +1,7 @@
 import { type ReactNode, createContext, useContext } from 'react';
-import {
-	type BoxClause,
-	type BoxDp,
-	type BoxSentence,
-	type PostField,
-	circled,
-} from '../modes/boxes';
+import type { BoxClause, BoxDp, BoxSentence, PostField } from '../modes/boxes';
 import { Glosser } from '../morphology/gloss';
-import { type Tree, findSubtree } from '../tree';
+import { type Tree, circled, findSubtree } from '../tree';
 import './Boxes.css';
 import { keyFor, splitNonEmpty } from '../core/misc';
 import { repairTones } from '../morphology/tokenize';
