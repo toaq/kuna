@@ -14,16 +14,6 @@ for (const [word, e] of Object.entries(toaduaGlossesJson)) {
 		toaduaGlosses.set(word.toLowerCase(), e.gloss.replace(/\s+/g, '.'));
 }
 
-const words = [...toaduaGlosses.keys()]
-	.concat([...dictionary.keys()])
-	.filter(x => x);
-words.sort((a, b) => b.length - a.length);
-const partRegExp = new RegExp(
-	`${words.join('|')}(?=[bcdfghjklmnpqrstvwxzꝡ']|$)`,
-	'gui',
-);
-const compoundRegExp = new RegExp(`^((${partRegExp.source})){1,3}$`, 'ui');
-
 const easyGlossMap: Record<string, string> = {
 	'1+2': 'us',
 	'1+2+3': 'us',
@@ -143,22 +133,30 @@ export class Glosser {
 		}
 		const bareRoot = bare(root);
 		const bareEntry = dictionary.get(bareRoot);
+		const rootTone = tone(root);
+		const toneGloss =
+			rootTone === Tone.T2 ? 'the\\' : rootTone === Tone.T4 ? 'A\\' : '';
 		if (bareEntry) {
 			if (bareEntry.type === 'predicate') {
-				return (tone(root) === Tone.T2 ? 'the\\' : 'A\\') + bareEntry.gloss;
+				return toneGloss + bareEntry.gloss;
 			}
 			return bareEntry.gloss;
 		}
 		const fromToadua = toaduaGlosses.get(root) ?? toaduaGlosses.get(bareRoot);
 		if (fromToadua) {
-			return fromToadua;
+			return toneGloss + fromToadua;
 		}
 
-		const match = bareRoot.match(compoundRegExp);
-		if (match) {
-			const last = match[1];
-			const butLast = bareRoot.slice(0, bareRoot.length - last.length);
-			return `${this.glossRoot(butLast)}-${this.glossRoot(last)}`;
+		for (let i = bareRoot.length - 2; i >= 2; i--) {
+			const left = bareRoot.slice(0, i);
+			const right = bareRoot.slice(i);
+			const lgloss = dictionary.get(left)?.gloss ?? toaduaGlosses.get(left);
+			if (lgloss) {
+				const rgloss = dictionary.get(right)?.gloss ?? toaduaGlosses.get(right);
+				if (rgloss) {
+					return `${toneGloss}${lgloss}.${rgloss}`;
+				}
+			}
 		}
 
 		return bareRoot;

@@ -7,6 +7,13 @@ test('it glosses Toaq words', () => {
 	expect(glosser.glossWord('jío')).toEqual('the\\building');
 	expect(glosser.glossWord('tâocıa')).toEqual('A\\accidental');
 	expect(glosser.glossWord('sâ')).toEqual('of.some');
+
+	// From Toadua:
+	expect(glosser.glossWord('sáıku')).toEqual('the\\Discord.server');
+
+	// Break down a compound:
+	expect(glosser.glossWord("kâto'aı")).toEqual('A\\cat.has.the.nature.of');
+	expect(glosser.glossWord('sáıkujuo')).toEqual('the\\Discord.server.letter');
 });
 
 test('it supports technical and easy glosses', () => {
