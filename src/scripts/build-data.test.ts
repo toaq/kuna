@@ -15,4 +15,11 @@ test('it extracts glosses from Toadua definitions', () => {
 	expect(makeGloss('▯ came whiffling through the tulgey wood.')).toEqual(
 		'came whiffling through the tulgey wood',
 	);
+
+	// detıao
+	expect(
+		makeGloss(
+			'▯ and ▯ go beautifully together; ▯ nicely suits / fits / looks good on ▯.',
+		),
+	).toEqual('nicely suits');
 });
