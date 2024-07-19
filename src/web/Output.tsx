@@ -93,7 +93,12 @@ export function Output(props: OutputProps) {
 		const tree = trees[parseIndex];
 		const outputs = boxify(tree);
 		const divs = outputs.map(b => (
-			<Boxes key={keyFor(b)} {...b} cpStrategy={strategy} />
+			<Boxes
+				key={keyFor(b)}
+				{...b}
+				cpStrategy={strategy}
+				isDarkMode={darkMode.isDarkMode}
+			/>
 		));
 		return <>{divs}</>;
 	}

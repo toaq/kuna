@@ -1,5 +1,4 @@
 import { type ReactNode, createContext, useContext } from 'react';
-import { useDarkMode } from 'usehooks-ts';
 import {
 	type BoxClause,
 	type BoxSentence,
@@ -17,12 +16,14 @@ interface BoxesContext {
 	cpIndices: Map<Tree, number>;
 	subclauses: BoxClause[];
 	cpStrategy: 'flat' | 'nest' | 'split';
+	isDarkMode: boolean;
 }
 
 const boxesContext = createContext<BoxesContext>({
 	cpIndices: new Map(),
 	subclauses: [],
 	cpStrategy: 'split',
+	isDarkMode: true,
 });
 
 interface BoxProps {
@@ -32,9 +33,9 @@ interface BoxProps {
 }
 
 function Box(props: BoxProps) {
-	const darkMode = useDarkMode();
+	const context = useContext(boxesContext);
 	const { color, label, children } = props;
-	const other = darkMode.isDarkMode ? '#444 80%' : 'white 80%';
+	const other = context.isDarkMode ? '#444 80%' : 'white 80%';
 	return (
 		<div
 			className="boxes-box"
@@ -239,10 +240,16 @@ export function Boxes(props: {
 	subclauses: BoxClause[];
 	cpIndices: Map<Tree, number>;
 	cpStrategy: 'flat' | 'nest' | 'split';
+	isDarkMode: boolean;
 }) {
-	const { main, subclauses, cpIndices, cpStrategy } = props;
+	const { main, subclauses, cpIndices, cpStrategy, isDarkMode } = props;
 	const { clause, speechAct } = main;
-	const context: BoxesContext = { cpIndices, subclauses, cpStrategy };
+	const context: BoxesContext = {
+		cpIndices,
+		subclauses,
+		cpStrategy,
+		isDarkMode,
+	};
 	return (
 		<boxesContext.Provider value={context}>
 			<ol className="boxes-clause-list" start={1}>
