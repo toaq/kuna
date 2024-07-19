@@ -7,10 +7,11 @@ import {
 	circled,
 } from '../modes/boxes';
 import { Glosser } from '../morphology/gloss';
-import type { Tree } from '../tree';
+import { type Tree, findSubtree } from '../tree';
 import './Boxes.css';
-import { keyFor } from '../core/misc';
+import { keyFor, splitNonEmpty } from '../core/misc';
 import { repairTones } from '../morphology/tokenize';
+import { describeSerial, getFrame } from '../syntax/serial';
 
 interface BoxesContext {
 	cpIndices: Map<Tree, number>;
@@ -115,7 +116,10 @@ function Subtree(props: { tree: Tree }) {
 	));
 }
 
-function PostFieldBox(props: { postField: PostField }) {
+function PostFieldBox(props: {
+	postField: PostField;
+	argDescriptions: string[];
+}) {
 	const { earlyAdjuncts, arguments: args, lateAdjuncts } = props.postField;
 	return (
 		<Box color="#ffcc00" label="Post-field">
@@ -124,8 +128,12 @@ function PostFieldBox(props: { postField: PostField }) {
 					<Subtree tree={a} />
 				</Box>
 			))}
-			{args.map(a => (
-				<Box key={keyFor(a)} color="teal" label="Argument">
+			{args.map((a, i) => (
+				<Box
+					key={keyFor(a)}
+					color="teal"
+					label={props.argDescriptions[i] ?? 'Argument'}
+				>
 					<Subtree tree={a} />
 				</Box>
 			))}
@@ -138,8 +146,45 @@ function PostFieldBox(props: { postField: PostField }) {
 	);
 }
 
+/**
+ * Turn a serial like "Dua cho" into a list of strings like
+ *
+ *     [
+ *       "Subject of dua",
+ *       "Subject of cho",
+ *       "Object of cho",
+ *     ]
+ */
+function argumentDescriptions(serial: Tree): JSX.Element[] {
+	if (serial && 'children' in serial) {
+		const children = serial.children;
+		const description = describeSerial(children);
+		return (description?.slots ?? []).map(({ verbIndex, slotIndex }, i) => {
+			const verb = children[verbIndex];
+			const frame = getFrame(verb);
+			const arity = splitNonEmpty(frame, ' ').length;
+			const roles =
+				arity === 3
+					? ['Subject', 'Indirect object', 'Direct object']
+					: ['Subject', 'Object'];
+			const key = i;
+			return description?.didSerialize ? (
+				<span key={key}>
+					{roles[slotIndex]} of <b>{verb.source.toLowerCase()}</b>
+				</span>
+			) : (
+				<span key={key}>{roles[slotIndex]}</span>
+			);
+		});
+	}
+	return [];
+}
+
 function ClauseInner(props: { clause: BoxClause }) {
 	const { verbalComplex, postField, conjunction } = props.clause;
+	const serial = findSubtree(verbalComplex, '*Serial');
+	const argDescriptions = serial ? argumentDescriptions(serial) : [];
+
 	return (
 		<>
 			<Box color="green" label="Verbal complex">
@@ -148,7 +193,7 @@ function ClauseInner(props: { clause: BoxClause }) {
 			{postField.earlyAdjuncts.length +
 			postField.arguments.length +
 			postField.lateAdjuncts.length ? (
-				<PostFieldBox postField={postField} />
+				<PostFieldBox postField={postField} argDescriptions={argDescriptions} />
 			) : undefined}
 			{conjunction && (
 				<>

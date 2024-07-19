@@ -150,7 +150,7 @@ export function makeSerial([verbs, vlast]: [Tree[], Tree]) {
 	const children = verbs.concat([vlast]);
 	return {
 		label: '*Serial',
-		arity: describeSerial(children)?.length,
+		arity: describeSerial(children)?.slots?.length,
 		children,
 		source: catSource(...verbs, vlast),
 	};

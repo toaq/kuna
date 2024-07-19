@@ -33,29 +33,30 @@ test('it segments serials', () => {
 	]);
 });
 
-function parseAndDescribeSerial(text: string): string {
+function describe(text: string): [boolean, string] {
 	const tree = parse(text)[0];
 	const serial = findSubtree(tree, '*Serial')!;
 	assertRose(serial);
 	const children = serial.children;
 	const description = describeSerial(children);
-	if (!description) return 'bizarre';
-	return description
+	if (!description) return [false, 'bizarre'];
+	const slots = description.slots
 		.map(
 			({ verbIndex, slotIndex }) =>
 				`${children[verbIndex].source}${slotIndex + 1}`,
 		)
 		.join(' ');
+	return [description.didSerialize, slots];
 }
 
 test('it describes serials', () => {
-	expect(parseAndDescribeSerial('do')).toEqual('do1 do2 do3');
-	expect(parseAndDescribeSerial('jaq de')).toEqual('de1');
-	expect(parseAndDescribeSerial('dua de')).toEqual('dua1 de1');
-	expect(parseAndDescribeSerial('jaq cho')).toEqual('cho1 cho2');
-	expect(parseAndDescribeSerial('dua cho')).toEqual('dua1 cho1 cho2');
-	expect(parseAndDescribeSerial('rua jaq de')).toEqual('rua1');
-	expect(parseAndDescribeSerial('leo baı')).toEqual('leo1 baı2');
-	expect(parseAndDescribeSerial('taq cho')).toEqual('taq1');
-	expect(parseAndDescribeSerial('chı do')).toEqual('chı1 do1 do2 do3');
+	expect(describe('do')).toEqual([false, 'do1 do2 do3']);
+	expect(describe('jaq de')).toEqual([true, 'de1']);
+	expect(describe('dua de')).toEqual([true, 'dua1 de1']);
+	expect(describe('jaq cho')).toEqual([true, 'cho1 cho2']);
+	expect(describe('dua cho')).toEqual([true, 'dua1 cho1 cho2']);
+	expect(describe('rua jaq de')).toEqual([true, 'rua1']);
+	expect(describe('leo baı')).toEqual([true, 'leo1 baı2']);
+	expect(describe('taq cho')).toEqual([true, 'taq1']);
+	expect(describe('chı do')).toEqual([true, 'chı1 do1 do2 do3']);
 });

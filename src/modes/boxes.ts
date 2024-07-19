@@ -1,5 +1,6 @@
 import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 import {
+	type Label,
 	type Tree,
 	assertBranch,
 	catSource,
@@ -183,7 +184,7 @@ class Boxifier {
 			}
 		}
 		const verbalComplex: Tree = {
-			label: '*Serial',
+			label: 'VerbalComplex' as Label,
 			children: verbalComplexWords,
 			source: catSource(...verbalComplexWords),
 		};

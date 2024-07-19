@@ -343,45 +343,60 @@ function attachAdjective(VP: Tree, kivP: KivP): Tree {
 	};
 }
 
+export interface SerialSlot {
+	verbIndex: number;
+	slotIndex: number;
+}
+
+export interface SerialDescription {
+	slots: SerialSlot[];
+	didSerialize: boolean;
+}
+
 /**
  * Turn a list of verbs into a description of the serial's effective slot structure.
  *
- * For example, [leo, do] is turned into
+ * For example, [nue, do] is turned into
  *
- *     [
- *       { verbIndex: 0, slotIndex: 0 },  // leo's subject
- *       { verbIndex: 1, slotIndex: 1 },  // do's indirect object
- *       { verbIndex: 1, slotIndex: 2 },  // do's direct object
- *     ]
+ *     {
+ *       slots: [
+ *         { verbIndex: 0, slotIndex: 0 },  // nue's subject
+ *         { verbIndex: 0, slotIndex: 1 },  // nue's indirect object
+ *         { verbIndex: 1, slotIndex: 1 },  // do's indirect object
+ *         { verbIndex: 1, slotIndex: 2 },  // do's direct object
+ *       ],
+ *       didSerialize: true,
+ *     }
  *
- * whose length indicates that the effective arity of this serial is 3.
+ * where slots.length indicates that the effective arity of this serial is 3.
  *
  * If the serial cannot be analyzed (due to a missing frame), `undefined` is returned.
  */
 export function describeSerial(
 	children: Tree[],
-): { verbIndex: number; slotIndex: number }[] | undefined {
+): SerialDescription | undefined {
 	const n = children.length;
 	const frames = children.map(getFrame);
 	if (frames.includes('?')) return undefined;
 	const frame = splitNonEmpty(frames[n - 1], ' ');
-	let description = frame.map((_, j) => ({ verbIndex: n - 1, slotIndex: j }));
-
+	let slots = frame.map((_, j) => ({ verbIndex: n - 1, slotIndex: j }));
+	let didSerialize = false;
 	for (let i = n - 2; i >= 0; i--) {
 		const frame = splitNonEmpty(frames[i], ' ');
 		const last = frame.at(-1)!;
 		if (/c/.test(last)) {
 			// Wipe the whole description, it was just an adjective:
-			description = frame.map((_, j) => ({ verbIndex: i, slotIndex: j }));
+			slots = frame.map((_, j) => ({ verbIndex: i, slotIndex: j }));
 		} else {
 			// Introduce some new slots and merge away some old slots:
-			description = [
+			didSerialize = true;
+			slots = [
 				...frame.slice(0, -1).map((_, j) => ({ verbIndex: i, slotIndex: j })),
-				...description.slice(Number(last[0])),
+				...slots.slice(Number(last[0])),
 			];
 		}
 	}
-	return description;
+	return { slots, didSerialize };
 }
 
 /**
