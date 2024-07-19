@@ -159,23 +159,28 @@ function argumentDescriptions(serial: Tree): JSX.Element[] {
 	if (serial && 'children' in serial) {
 		const children = serial.children;
 		const description = describeSerial(children);
-		return (description?.slots ?? []).map(({ verbIndex, slotIndex }, i) => {
-			const verb = children[verbIndex];
-			const frame = getFrame(verb);
-			const arity = splitNonEmpty(frame, ' ').length;
-			const roles =
-				arity === 3
-					? ['Subject', 'Indirect object', 'Direct object']
-					: ['Subject', 'Object'];
-			const key = i;
-			return description?.didSerialize ? (
-				<span key={key}>
-					{roles[slotIndex]} of <b>{verb.source.toLowerCase()}</b>
-				</span>
-			) : (
-				<span key={key}>{roles[slotIndex]}</span>
-			);
-		});
+		return (description?.slots ?? []).map((group, i) => (
+			// biome-ignore lint/suspicious/noArrayIndexKey: order is stable
+			<div className="boxes-col" key={i}>
+				{group.map(({ verbIndex, slotIndex }, j) => {
+					const verb = children[verbIndex];
+					const frame = getFrame(verb);
+					const arity = splitNonEmpty(frame, ' ').length;
+					const roles =
+						arity === 3
+							? ['Subject', 'Indirect object', 'Direct object']
+							: ['Subject', 'Object'];
+					const key = 1000 * i + j;
+					return description?.didSerialize ? (
+						<span key={key}>
+							{roles[slotIndex]} of <b>{verb.source.toLowerCase()}</b>
+						</span>
+					) : (
+						<span key={key}>{roles[slotIndex]}</span>
+					);
+				})}
+			</div>
+		));
 	}
 	return [];
 }

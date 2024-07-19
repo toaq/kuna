@@ -41,9 +41,13 @@ function describe(text: string): [boolean, string] {
 	const description = describeSerial(children);
 	if (!description) return [false, 'bizarre'];
 	const slots = description.slots
-		.map(
-			({ verbIndex, slotIndex }) =>
-				`${children[verbIndex].source}${slotIndex + 1}`,
+		.map(group =>
+			group
+				.map(
+					({ verbIndex, slotIndex }) =>
+						`${children[verbIndex].source}${slotIndex + 1}`,
+				)
+				.join('='),
 		)
 		.join(' ');
 	return [description.didSerialize, slots];
@@ -56,7 +60,8 @@ test('it describes serials', () => {
 	expect(describe('jaq cho')).toEqual([true, 'cho1 cho2']);
 	expect(describe('dua cho')).toEqual([true, 'dua1 cho1 cho2']);
 	expect(describe('rua jaq de')).toEqual([true, 'rua1']);
-	expect(describe('leo baı')).toEqual([true, 'leo1 baı2']);
-	expect(describe('taq cho')).toEqual([true, 'taq1']);
+	expect(describe('leo baı')).toEqual([true, 'leo1=baı1 baı2']);
+	expect(describe('taq cho')).toEqual([true, 'taq1=cho1=cho2']);
 	expect(describe('chı do')).toEqual([true, 'chı1 do1 do2 do3']);
+	expect(describe('nue do')).toEqual([true, 'nue1=do1 nue2 do2 do3']);
 });

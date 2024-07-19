@@ -349,7 +349,7 @@ export interface SerialSlot {
 }
 
 export interface SerialDescription {
-	slots: SerialSlot[];
+	slots: SerialSlot[][];
 	didSerialize: boolean;
 }
 
@@ -360,10 +360,11 @@ export interface SerialDescription {
  *
  *     {
  *       slots: [
- *         { verbIndex: 0, slotIndex: 0 },  // nue's subject
- *         { verbIndex: 0, slotIndex: 1 },  // nue's indirect object
- *         { verbIndex: 1, slotIndex: 1 },  // do's indirect object
- *         { verbIndex: 1, slotIndex: 2 },  // do's direct object
+ *         [ { verbIndex: 0, slotIndex: 0 },    // nue's subject
+ *           { verbIndex: 1, slotIndex: 0 } ],  // = do's subject
+ *         [ { verbIndex: 0, slotIndex: 1 } ],  // nue's indirect object
+ *         [ { verbIndex: 1, slotIndex: 1 } ],  // do's indirect object
+ *         [ { verbIndex: 1, slotIndex: 2 } ],  // do's direct object
  *       ],
  *       didSerialize: true,
  *     }
@@ -379,21 +380,25 @@ export function describeSerial(
 	const frames = children.map(getFrame);
 	if (frames.includes('?')) return undefined;
 	const frame = splitNonEmpty(frames[n - 1], ' ');
-	let slots = frame.map((_, j) => ({ verbIndex: n - 1, slotIndex: j }));
+	let slots = frame.map((_, j) => [{ verbIndex: n - 1, slotIndex: j }]);
 	let didSerialize = false;
 	for (let i = n - 2; i >= 0; i--) {
 		const frame = splitNonEmpty(frames[i], ' ');
 		const last = frame.at(-1)!;
 		if (/c/.test(last)) {
 			// Wipe the whole description, it was just an adjective:
-			slots = frame.map((_, j) => ({ verbIndex: i, slotIndex: j }));
+			slots = frame.map((_, j) => [{ verbIndex: i, slotIndex: j }]);
 		} else {
 			// Introduce some new slots and merge away some old slots:
 			didSerialize = true;
-			slots = [
-				...frame.slice(0, -1).map((_, j) => ({ verbIndex: i, slotIndex: j })),
-				...slots.slice(Number(last[0])),
-			];
+			const newSlots = frame
+				.slice(0, -1)
+				.map((_, j) => [{ verbIndex: i, slotIndex: j }]);
+			for (let x = 1; x < last.length; x++) {
+				if (last[x] === 'i') newSlots[0].push(...slots[x - 1]);
+				if (last[x] === 'j') newSlots[1].push(...slots[x - 1]);
+			}
+			slots = [...newSlots, ...slots.slice(Number(last[0]))];
 		}
 	}
 	return { slots, didSerialize };
