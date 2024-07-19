@@ -137,7 +137,7 @@ function SentenceRow(props: {
 	);
 }
 
-export function Sentences() {
+export function Sentences(props: { isDarkMode: boolean }) {
 	const [selected, setSelected] = useState<string>();
 	const [showScores, setShowScores] = useState('01234');
 	const [outputMode, setOutputMode] = useState<Mode>('boxes-nest');
@@ -210,6 +210,7 @@ export function Sentences() {
 								meaningCompact: true,
 								mode: outputMode,
 							}}
+							isDarkMode={props.isDarkMode}
 						/>
 					</div>
 				)}

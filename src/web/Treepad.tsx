@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import './Sentences.css';
-import { useDarkMode } from 'usehooks-ts';
 import { Impossible } from '../core/error';
 import { drawSceneToCanvas } from '../tree/draw';
 import { moveNodeUp } from '../tree/movement';
@@ -44,7 +43,6 @@ function parseTreepad(
 	const stack: Node[] = [];
 	let mode: 'default' | 'expecting label' = 'default';
 	const regex = /\[|\]|<\w+>|\$([^$]+)\$|[^\s\[\]]+/gu;
-	console.log(regex);
 	const movementTargets: Record<string, Node> = {};
 	const arrows: MovementArrow[] = [];
 
@@ -120,8 +118,7 @@ function parseTreepad(
 	throw new Error('no tree');
 }
 
-export function Treepad() {
-	const darkMode = useDarkMode();
+export function Treepad(props: { isDarkMode: boolean }) {
 	const [source, setSource] = useState('');
 	const [pos, setPos] = useState(0);
 	const [error, setError] = useState('');
@@ -137,7 +134,7 @@ export function Treepad() {
 		}
 		if (scene) {
 			drawSceneToCanvas(scene, {
-				themeName: darkMode.isDarkMode ? 'dark' : 'light',
+				themeName: props.isDarkMode ? 'dark' : 'light',
 				tall: false,
 				renderer: denotationRenderRawLatex,
 				showMovement: true,
@@ -151,7 +148,7 @@ export function Treepad() {
 				}, 0);
 			});
 		}
-	}, [source, pos, darkMode]);
+	}, [source, pos, props.isDarkMode]);
 	return (
 		<div
 			style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}

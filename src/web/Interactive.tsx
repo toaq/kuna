@@ -4,7 +4,7 @@ import { useLocalStorage } from 'usehooks-ts';
 import { Output } from './Output';
 import { type Configuration, Settings } from './Settings';
 
-export function Interactive() {
+export function Interactive(props: { isDarkMode: boolean }) {
 	const [dismissed, setDismissed] = useLocalStorage(
 		'explanationDismissed',
 		false,
@@ -38,7 +38,9 @@ export function Interactive() {
 				onSubmit={config => setConfiguration(config)}
 				dismissExplanation={() => setDismissed(true)}
 			/>
-			{configuration && <Output configuration={configuration} />}
+			{configuration && (
+				<Output configuration={configuration} isDarkMode={props.isDarkMode} />
+			)}
 		</>
 	);
 }

@@ -28,9 +28,18 @@ export function App() {
 				</button>
 			</header>
 			<Routes>
-				<Route path="/" element={<Interactive />} />
-				<Route path="/sentences" element={<Sentences />} />
-				<Route path="/treepad" element={<Treepad />} />
+				<Route
+					path="/"
+					element={<Interactive isDarkMode={darkMode.isDarkMode} />}
+				/>
+				<Route
+					path="/sentences"
+					element={<Sentences isDarkMode={darkMode.isDarkMode} />}
+				/>
+				<Route
+					path="/treepad"
+					element={<Treepad isDarkMode={darkMode.isDarkMode} />}
+				/>
 			</Routes>
 		</div>
 	);

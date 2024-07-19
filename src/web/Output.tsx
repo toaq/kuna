@@ -7,7 +7,6 @@ import {
 	useRef,
 	useState,
 } from 'react';
-import { useDarkMode } from 'usehooks-ts';
 
 import { treeToEnglish } from '../english/tree';
 import { boxify } from '../modes/boxes';
@@ -48,6 +47,7 @@ function errorString(e: any): string {
 
 export interface OutputProps {
 	configuration: Configuration;
+	isDarkMode: boolean;
 }
 
 export function RenderMathml(props: { mathml: string }) {
@@ -57,7 +57,6 @@ export function RenderMathml(props: { mathml: string }) {
 }
 
 export function Output(props: OutputProps) {
-	const darkMode = useDarkMode();
 	const [parseIndex, setParseIndex] = useState(0);
 	const {
 		text,
@@ -97,7 +96,7 @@ export function Output(props: OutputProps) {
 				key={keyFor(b)}
 				{...b}
 				cpStrategy={strategy}
-				isDarkMode={darkMode.isDarkMode}
+				isDarkMode={props.isDarkMode}
 			/>
 		));
 		return <>{divs}</>;
@@ -117,7 +116,7 @@ export function Output(props: OutputProps) {
 			case 'png-latex':
 			case 'png-text':
 				drawTreeToCanvas(tree, {
-					themeName: darkMode.isDarkMode ? 'dark' : 'light',
+					themeName: props.isDarkMode ? 'dark' : 'light',
 					tall: mode.includes('semantics'),
 					renderer:
 						treeFormat === 'png-latex'
@@ -148,7 +147,7 @@ export function Output(props: OutputProps) {
 			case 'json':
 				return <pre>{JSON.stringify(tree, undefined, 1)}</pre>;
 			case 'react': {
-				const themeName = darkMode.isDarkMode ? 'dark' : 'light';
+				const themeName = props.isDarkMode ? 'dark' : 'light';
 				return (
 					<TreeBrowser
 						tree={tree}
