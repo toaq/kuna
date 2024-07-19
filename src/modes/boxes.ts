@@ -21,6 +21,10 @@ export interface AndClause {
 	clause: BoxClause;
 }
 
+export interface BoxDp {
+	dp: Tree;
+}
+
 export interface BoxClause {
 	/// If empty, means covert "ꝡa"
 	complementizer: Tree;
@@ -48,7 +52,7 @@ function isArgument(tree: Tree): boolean {
 }
 
 interface SplitBoxes {
-	main: BoxSentence;
+	main: BoxSentence | BoxDp;
 	subclauses: BoxClause[];
 	cpIndices: Map<Tree, number>;
 }
@@ -220,11 +224,20 @@ class Boxifier {
 		if (!('word' in sa)) throw new Impossible('SA without word?');
 		const speechAct = sa;
 		const cp = skipFree(sap.left);
-		this.harvestCps(cp);
+		for (const child of treeChildren(cp)) this.harvestCps(child);
 		const clause = this.boxifyClause(cp);
 		return {
 			main: { clause, speechAct },
-			subclauses: this.cps.slice(1).map(x => this.boxifyClause(x)),
+			subclauses: this.cps.map(x => this.boxifyClause(x)),
+			cpIndices: this.cpIndices,
+		};
+	}
+
+	public boxifyDp(tree: Tree): SplitBoxes {
+		this.harvestCps(tree);
+		return {
+			main: { dp: tree },
+			subclauses: this.cps.map(x => this.boxifyClause(x)),
 			cpIndices: this.cpIndices,
 		};
 	}
@@ -237,17 +250,13 @@ class Boxifier {
 		if ('left' in saps && saps.label === 'Discourse') {
 			return [this.boxifySentence(saps.left), ...this.boxify(saps.right)];
 		}
+		if (saps.label === 'DP') {
+			return [this.boxifyDp(saps)];
+		}
 		throw new Ungrammatical(`Can't boxify ${saps.label}`);
 	}
 }
 
 export function boxify(tree: Tree): SplitBoxes[] {
-	const saps = skipFree(tree);
-	if (saps.label === 'SAP') {
-		return [new Boxifier().boxifySentence(saps)];
-	}
-	if ('left' in saps && saps.label === 'Discourse') {
-		return [new Boxifier().boxifySentence(saps.left), ...boxify(saps.right)];
-	}
-	throw new Ungrammatical(`Can't boxify ${saps.label}`);
+	return new Boxifier().boxify(tree);
 }

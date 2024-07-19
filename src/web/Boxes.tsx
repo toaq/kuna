@@ -1,6 +1,7 @@
 import { type ReactNode, createContext, useContext } from 'react';
 import {
 	type BoxClause,
+	type BoxDp,
 	type BoxSentence,
 	type PostField,
 	circled,
@@ -61,10 +62,10 @@ function words(tree: Tree): (string | JSX.Element)[] {
 		const cpIndex = context.cpIndices.get(tree);
 		if (context.cpStrategy !== 'flat' && cpIndex !== undefined) {
 			if (context.cpStrategy === 'nest') {
-				const clause = context.subclauses[cpIndex - 1];
-				return [<ClauseBox key={keyFor(clause)} clause={clause} />];
+				const clause = context.subclauses[cpIndex];
+				return [<ClauseBox key={0} clause={clause} />];
 			}
-			return [circled(cpIndex)];
+			return [circled(cpIndex + 1)];
 		}
 		return [...words(tree.left), ...words(tree.right)];
 	}
@@ -236,14 +237,14 @@ function ClauseBox(props: { clause: BoxClause }) {
 }
 
 export function Boxes(props: {
-	main: BoxSentence;
+	main: BoxSentence | BoxDp;
 	subclauses: BoxClause[];
 	cpIndices: Map<Tree, number>;
 	cpStrategy: 'flat' | 'nest' | 'split';
 	isDarkMode: boolean;
 }) {
 	const { main, subclauses, cpIndices, cpStrategy, isDarkMode } = props;
-	const { clause, speechAct } = main;
+	console.log(props);
 	const context: BoxesContext = {
 		cpIndices,
 		subclauses,
@@ -253,12 +254,18 @@ export function Boxes(props: {
 	return (
 		<boxesContext.Provider value={context}>
 			<ol className="boxes-clause-list" start={1}>
-				<Box color="blue" label="Sentence">
-					<ClauseBox clause={clause} />
-					<Box color="gray" label="Speech act">
-						<Subtree tree={speechAct} />
+				{'clause' in main ? (
+					<Box color="blue" label="Sentence">
+						<ClauseBox clause={main.clause} />
+						<Box color="gray" label="Speech act">
+							<Subtree tree={main.speechAct} />
+						</Box>
 					</Box>
-				</Box>
+				) : (
+					<Box color="teal" label="Argument">
+						<Subtree tree={main.dp} />
+					</Box>
+				)}
 				{cpStrategy === 'split' &&
 					props.subclauses.map((clause, i) => (
 						<li key={keyFor(clause)}>
