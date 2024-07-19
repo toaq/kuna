@@ -44,9 +44,9 @@ function extractGlossWord(text: string) {
 	return text.split('/')[0].trim().replaceAll(/[()"]/g, '');
 }
 
-function makeGloss(body: string) {
-	const m = body.match(/['‘’\"“”]([A-Za-z .]+)['‘’\"“”];/);
-	if (m) return m[1];
+export function makeGloss(body: string) {
+	const quotedMatch = body.match(/['‘’\"“”]([A-Za-z .]+)['‘’\"“”];/);
+	if (quotedMatch) return quotedMatch[1];
 	const keywords = body
 		.split(';')[0]
 		.trim()
@@ -54,10 +54,12 @@ function makeGloss(body: string) {
 		.replace(/\(.+\)$/, '')
 		.trim()
 		.replace(/ (of|for|to|by|from|on)? ▯$/, '');
-	const m2 = keywords.match(/^▯ (?:is|are) (?:(?:a|an|the) )?([^▯]+)$/);
-	if (m2) return extractGlossWord(m2[1]);
-	const m3 = keywords.match(/^▯ ([^▯]+)( ▯)?$/);
-	if (m3) return extractGlossWord(m3[1]);
+	const isAMatch = keywords.match(
+		/^▯ (?:is|are) (?:(?:a|an|the) )?([^▯,.]+)([,.]|$)/,
+	);
+	if (isAMatch) return extractGlossWord(isAMatch[1]);
+	const verbMatch = keywords.match(/^▯ ([^▯]+)( ▯)?$/);
+	if (verbMatch) return extractGlossWord(verbMatch[1]);
 	return undefined;
 }
 
