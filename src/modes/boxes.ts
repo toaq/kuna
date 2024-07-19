@@ -1,4 +1,4 @@
-import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
+import { Impossible, Unimplemented } from '../core/error';
 import {
 	type Label,
 	type Tree,
@@ -21,8 +21,8 @@ export interface AndClause {
 	clause: BoxClause;
 }
 
-export interface BoxDp {
-	dp: Tree;
+export interface BoxFragment {
+	fragment: Tree;
 }
 
 export interface BoxClause {
@@ -52,7 +52,7 @@ function isArgument(tree: Tree): boolean {
 }
 
 interface SplitBoxes {
-	main: BoxSentence | BoxDp;
+	main: BoxSentence | BoxFragment;
 	subclauses: BoxClause[];
 	cpIndices: Map<Tree, number>;
 }
@@ -229,10 +229,10 @@ class Boxifier {
 		};
 	}
 
-	public boxifyDp(tree: Tree): SplitBoxes {
+	public boxifyFragment(tree: Tree): SplitBoxes {
 		this.harvestCps(tree);
 		return {
-			main: { dp: tree },
+			main: { fragment: tree },
 			subclauses: this.cps.map(x => this.boxifyClause(x)),
 			cpIndices: this.cpIndices,
 		};
@@ -246,10 +246,7 @@ class Boxifier {
 		if ('left' in saps && saps.label === 'Discourse') {
 			return [this.boxifySentence(saps.left), ...this.boxify(saps.right)];
 		}
-		if (saps.label === 'DP') {
-			return [this.boxifyDp(saps)];
-		}
-		throw new Ungrammatical(`Can't boxify ${saps.label}`);
+		return [this.boxifyFragment(saps)];
 	}
 }
 

@@ -1,7 +1,12 @@
 import { type ReactNode, createContext, useContext } from 'react';
-import type { BoxClause, BoxDp, BoxSentence, PostField } from '../modes/boxes';
+import type {
+	BoxClause,
+	BoxFragment,
+	BoxSentence,
+	PostField,
+} from '../modes/boxes';
 import { Glosser } from '../morphology/gloss';
-import { type Tree, circled, findSubtree } from '../tree';
+import { type Tree, circled, effectiveLabel, findSubtree } from '../tree';
 import './Boxes.css';
 import { keyFor, splitNonEmpty } from '../core/misc';
 import { repairTones } from '../morphology/tokenize';
@@ -231,8 +236,28 @@ function ClauseBox(props: { clause: BoxClause }) {
 	);
 }
 
+function FragmentBox(props: { tree: Tree }) {
+	let color = 'gray';
+	let label = 'Fragment';
+	switch (effectiveLabel(props.tree)) {
+		case 'DP':
+			color = 'teal';
+			label = 'Argument';
+			break;
+		case 'AdjunctP':
+			color = 'purple';
+			label = 'Adjunct';
+			break;
+	}
+	return (
+		<Box color={color} label={label}>
+			<Subtree tree={props.tree} />
+		</Box>
+	);
+}
+
 export function Boxes(props: {
-	main: BoxSentence | BoxDp;
+	main: BoxSentence | BoxFragment;
 	subclauses: BoxClause[];
 	cpIndices: Map<Tree, number>;
 	cpStrategy: 'flat' | 'nest' | 'split';
@@ -258,9 +283,7 @@ export function Boxes(props: {
 						</Box>
 					</Box>
 				) : (
-					<Box color="teal" label="Argument">
-						<Subtree tree={main.dp} />
-					</Box>
+					<FragmentBox tree={main.fragment} />
 				)}
 				{cpStrategy === 'split' &&
 					props.subclauses.map((clause, i) => (
