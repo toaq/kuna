@@ -68,7 +68,7 @@ class Boxifier {
 
 	private isOvertCp(tree: Tree) {
 		return (
-			tree.label === 'CP' ||
+			(tree.label === 'CP' && 'left' in tree) ||
 			(tree.label === 'CPrel' &&
 				'left' in tree &&
 				'word' in tree.left &&

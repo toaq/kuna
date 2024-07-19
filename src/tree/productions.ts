@@ -334,7 +334,8 @@ export function makeT1ModalvP([modal, tp]: [Tree, Tree]) {
 			label: "𝘷'",
 			left: {
 				label: '𝘷',
-				word: { covert: true, value: 'BE', source: '' },
+				word: { covert: true, value: 'BE' },
+				source: '',
 			},
 			right: tp,
 			source: tp.source,
