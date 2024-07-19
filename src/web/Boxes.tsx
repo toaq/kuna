@@ -12,6 +12,7 @@ interface BoxesContext {
 	subclauses: BoxClause[];
 	cpStrategy: 'flat' | 'nest' | 'split';
 	isDarkMode: boolean;
+	isColorful: boolean;
 }
 
 const boxesContext = createContext<BoxesContext>({
@@ -19,6 +20,7 @@ const boxesContext = createContext<BoxesContext>({
 	subclauses: [],
 	cpStrategy: 'split',
 	isDarkMode: true,
+	isColorful: true,
 });
 
 interface BoxProps {
@@ -30,14 +32,13 @@ interface BoxProps {
 function Box(props: BoxProps) {
 	const context = useContext(boxesContext);
 	const { color, label, children } = props;
-	const other = context.isDarkMode ? '#444 80%' : 'white 80%';
+	const other = context.isDarkMode ? '#444 70%' : 'white 70%';
+	const gray = context.isDarkMode ? '#8882' : '#8882';
+	const background = context.isColorful
+		? `color-mix(in oklab, ${color}, ${other})`
+		: gray;
 	return (
-		<div
-			className="boxes-box"
-			style={{
-				background: `color-mix(in srgb, ${color}, ${other})`,
-			}}
-		>
+		<div className="boxes-box" style={{ background }}>
 			<div className="boxes-label">{label}</div>
 			<div className="boxes-children">{children}</div>
 		</div>
@@ -238,12 +239,13 @@ export function Boxes(props: {
 	isDarkMode: boolean;
 }) {
 	const { main, subclauses, cpIndices, cpStrategy, isDarkMode } = props;
-	console.log(props);
+	const isColorful = true;
 	const context: BoxesContext = {
 		cpIndices,
 		subclauses,
 		cpStrategy,
 		isDarkMode,
+		isColorful,
 	};
 	return (
 		<boxesContext.Provider value={context}>
