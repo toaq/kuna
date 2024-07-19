@@ -82,7 +82,7 @@ h1 {
 .kuna header a,
 .kuna header button {
 	display: inline-block;
-	padding: 4px 6px;
+	padding: 4px 14px;
 	background: none;
 	cursor: pointer;
 	border: none;
