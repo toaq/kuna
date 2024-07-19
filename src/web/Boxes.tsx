@@ -27,7 +27,7 @@ const boxesContext = createContext<BoxesContext>({
 
 interface BoxProps {
 	color: string;
-	label: string;
+	label: string | JSX.Element;
 	children: ReactNode;
 }
 
@@ -118,7 +118,7 @@ function Subtree(props: { tree: Tree }) {
 
 function PostFieldBox(props: {
 	postField: PostField;
-	argDescriptions: string[];
+	argDescriptions: JSX.Element[];
 }) {
 	const { earlyAdjuncts, arguments: args, lateAdjuncts } = props.postField;
 	return (
@@ -208,7 +208,7 @@ function ClauseInner(props: { clause: BoxClause }) {
 }
 
 function ClauseBox(props: { clause: BoxClause }) {
-	const { complementizer, topic, subject } = props.clause;
+	const { complementizer, topic, fronted, frontedLabel } = props.clause;
 	return (
 		<Box color="red" label="Clause">
 			<Box color="orange" label="Comp.">
@@ -219,9 +219,9 @@ function ClauseBox(props: { clause: BoxClause }) {
 					<Subtree tree={topic} />
 				</Box>
 			)}
-			{subject && (
-				<Box color="aqua" label="Subject">
-					<Subtree tree={subject} />
+			{fronted && (
+				<Box color="aqua" label={frontedLabel}>
+					<Subtree tree={fronted} />
 				</Box>
 			)}
 			<ClauseInner clause={props.clause} />

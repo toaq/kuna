@@ -4,6 +4,7 @@ import {
 	type Tree,
 	assertBranch,
 	catSource,
+	effectiveLabel,
 	skipFree,
 	treeChildren,
 	treeText,
@@ -24,7 +25,8 @@ export interface BoxClause {
 	/// If empty, means covert "ꝡa"
 	complementizer: Tree;
 	topic?: Tree;
-	subject?: Tree;
+	fronted?: Tree;
+	frontedLabel: string;
 	verbalComplex: Tree;
 	postField: PostField;
 	conjunction?: AndClause;
@@ -109,7 +111,8 @@ class Boxifier {
 
 	private boxifyClause(cp: Tree): BoxClause {
 		let topic: Tree | undefined = undefined;
-		let subject: Tree | undefined = undefined;
+		let fronted: Tree | undefined = undefined;
+		let frontedLabel = 'Subject';
 		const verbalComplexWords = [];
 		let postField: PostField | undefined = undefined;
 		let conjunction: AndClause | undefined = undefined;
@@ -143,7 +146,14 @@ class Boxifier {
 						break;
 					case '𝘷P': {
 						if ('left' in node.right && this.words(node.right.left) === 'nä') {
-							subject = node.left;
+							fronted = node.left;
+							const label = effectiveLabel(fronted);
+							frontedLabel =
+								label === 'ModalP'
+									? 'Condition'
+									: label === 'AdjunctP'
+										? 'Fronted adjunct'
+										: 'Subject';
 							node = node.right;
 							break;
 						}
@@ -158,6 +168,7 @@ class Boxifier {
 					case 'ModalP':
 					case 'TP':
 					case 'AspP':
+					case 'CP':
 					case 'CPrel':
 					case "𝘷'": {
 						const w = node.left;
@@ -191,7 +202,8 @@ class Boxifier {
 		return {
 			complementizer,
 			topic,
-			subject,
+			fronted,
+			frontedLabel,
 			verbalComplex,
 			postField,
 			conjunction,
