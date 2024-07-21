@@ -1,271 +1,102 @@
 import { Impossible } from '../core/error';
 import type { Branch, Leaf } from '../tree';
-import { toPlainText, typeToPlainText, typesToPlainText } from './render';
-
-/**
- * The possible types of semantic expressions.
- */
-export type ExprType =
-	| 'e' // Individual
-	| 'v' // Event
-	| 'i' // Time interval
-	| 't' // Truth value
-	| 's' // World
-	| 'a' // Speech act
-	| [ExprType, ExprType]; // Function
-
-interface Variable {
-	head: 'variable';
-	type: ExprType;
-	context: ExprType[];
-	/**
-	 * The De Bruijn index of the variable in the context.
-	 */
-	index: number;
-}
-
-interface Verb {
-	head: 'verb';
-	type: 't';
-	context: ExprType[];
-	name: string;
-	args: [] | [Expr] | [Expr, Expr];
-	event: Expr;
-	world: Expr;
-}
-
-interface Lambda {
-	head: 'lambda';
-	type: [ExprType, ExprType];
-	context: ExprType[];
-	body: Expr;
-	restriction?: Expr;
-}
-
-interface Apply {
-	head: 'apply';
-	type: ExprType;
-	context: ExprType[];
-	fn: Expr;
-	argument: Expr;
-}
-
-interface Presuppose {
-	head: 'presuppose';
-	type: ExprType;
-	context: ExprType[];
-	body: Expr;
-	presupposition: Expr;
-	/**
-	 * The De Bruijn index of the variable that is said to be "defined" by this
-	 * presupposition.
-	 */
-	defines?: number;
-}
-
-type Quantifier<Name extends string> = Constant<Name, [[ExprType, 't'], 't']>;
-
-type Conjunction<Name extends string> = Constant<Name, ['t', ['t', 't']]>;
-
-type TimeRelation<Name extends string> = Constant<Name, ['i', ['i', 't']]>;
-
-interface Constant<Name extends string, T extends ExprType> {
-	head: 'constant';
-	type: T;
-	context: ExprType[];
-	name: Name;
-}
-
-type Role<Name extends string> = Constant<Name, ['v', ['s', 'e']]>;
-
-// A modal accessibility relation
-type Accessibility<Name extends string> = Constant<Name, ['s', ['s', 't']]>;
-
-type Pronoun<Name extends string> = Constant<Name, 'e'>;
-
-type Animacy<Name extends string> = Constant<Name, ['e', 't']>;
-
-type PropSpeechAct<Name extends string> = Constant<Name, [['s', 't'], 'a']>;
-
-interface Quote {
-	head: 'quote';
-	type: 'e';
-	context: ExprType[];
-	text: string;
-}
-
-export type KnownInfix =
-	| Conjunction<'and'>
-	| Conjunction<'or'>
-	| Conjunction<'implies'>
-	| Constant<'equals', [ExprType, [ExprType, 't']]>
-	| TimeRelation<'subinterval'>
-	| TimeRelation<'before'>
-	| TimeRelation<'after'>
-	| TimeRelation<'before_near'>
-	| TimeRelation<'after_near'>
-	| Constant<'roi', ['e', ['e', 'e']]>
-	| Constant<'coevent', ['v', ['v', 't']]>;
-
-export type KnownPolarizer =
-	| Constant<'not', ['t', 't']>
-	| Constant<'indeed', ['t', 't']>;
-
-export type KnownConstant =
-	| KnownPolarizer
-	| Pronoun<'ji'>
-	| Pronoun<'suq'>
-	| Pronoun<'nhao'>
-	| Pronoun<'suna'>
-	| Pronoun<'nhana'>
-	| Pronoun<'umo'>
-	| Pronoun<'ime'>
-	| Pronoun<'suo'>
-	| Pronoun<'ama'>
-	| Role<'agent'>
-	| Role<'subject'>
-	| Accessibility<'she'>
-	| Accessibility<'le'>
-	| Animacy<'animate'>
-	| Animacy<'inanimate'>
-	| Animacy<'abstract'>
-	| PropSpeechAct<'assert'>
-	| PropSpeechAct<'perform'>
-	| PropSpeechAct<'wish'>
-	| PropSpeechAct<'promise'>
-	| PropSpeechAct<'permit'>
-	| PropSpeechAct<'warn'>
-	| Constant<'real_world', 's'>
-	| Constant<'inertia_worlds', ['s', ['s', ['i', 't']]]>
-	| Constant<'alternative', [ExprType, [ExprType, ['s', 't']]]>
-	// TODO: all temporal features of events should have world parameters
-	| Constant<'temporal_trace', ['v', 'i']>
-	| Constant<'expected_start', ['v', 'i']>
-	| Constant<'expected_end', ['v', 'i']>
-	| Constant<'speech_time', 'i'>
-	| Constant<'content', ['e', ['s', ['s', 't']]]>
-	| Constant<'topic', ['e', ['s', 's']]>;
-
-export type KnownQuantifier =
-	| Quantifier<'some'>
-	| Quantifier<'every'>
-	| Quantifier<'every_sing'>
-	| Quantifier<'every_cuml'>
-	| Quantifier<'gen'>;
-
-/**
- * A semantic expression. The field 'type' represents the expression's type,
- * while the field 'context' represents the types of variables in scope, ordered
- * by De Bruijn indexing.
- */
-export type Expr =
-	| Variable
-	| Verb
-	| Lambda
-	| Apply
-	| Presuppose
-	| KnownInfix
-	| KnownConstant
-	| KnownQuantifier
-	| Quote;
+import { typeToPlainText, typesToPlainText } from './render';
 
 export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 
-export interface Binding {
-	/**
-	 * The De Bruijn index of the free variable in the relevant expression
-	 * corresponding to this binding.
-	 */
-	index: number;
-	/**
-	 * Whether this binding originates from a subordinate clause.
-	 */
-	subordinate: boolean;
-	/**
-	 * The De Bruijn indices of the time interval variables associated with this
-	 * binding.
-	 */
-	timeIntervals: number[];
+export type Binding =
+	| { type: 'resumptive' }
+	| { type: 'verb'; verb: string }
+	| { type: 'animacy'; class: AnimacyClass }
+	| { type: 'head'; head: string };
+
+/**
+ * Determines whether two bindings are equal.
+ */
+export function bindingsEqual(b1: Binding, b2: Binding): boolean {
+	switch (b1.type) {
+		case 'resumptive':
+			return b2.type === 'resumptive';
+		case 'verb':
+			return b2.type === 'verb' && b1.verb === b2.verb;
+		case 'animacy':
+			return b2.type === 'animacy' && b1.class === b2.class;
+		case 'head':
+			return b2.type === 'head' && b1.head === b2.head;
+	}
 }
 
 /**
- * A summary of all the bindings originating from within a given subtree.
- *
- * Bindings are created by any node in the tree that conjures a new variable, or
- * otherwise represents something that could be referenced elsewhere in the
- * tree.
- *
- * For example, in "Sá duao nä jea jí tá", the DP "sá duao" binds the
- * variable duao, the descriptive animacy class, the head anaphor hụ́sa, and an
- * index associating it with its QP. Similarly, the DP "tá" binds the
- * descriptive animacy class, allowing its variable to be matched up with "sá
- * duao" during the composition process.
- *
- * It might seem counter-intuitive that even a simple reference like "tá" counts
- * as a binding, but this is what allows matching exophoric references to be
- * resolved to the same variable in a sentence like "Jea jí tá nûa tá".
+ * A type of a semantic expression.
  */
-export interface Bindings {
-	/**
-	 * Bindings that can be abstracted away by a binding site of the given index.
-	 */
-	index: Map<number, Binding>;
-	/**
-	 * Bindings that can be referenced by a variable of the given name.
-	 */
-	variable: Map<string, Binding>;
-	/**
-	 * Bindings that can be referenced by an anaphoric pronoun of the given animacy
-	 * class.
-	 */
-	animacy: Map<AnimacyClass, Binding>;
-	/**
-	 * Bindings that can be referenced by a head anaphor (hu-) for the given head.
-	 */
-	head: Map<string, Binding>;
-	/**
-	 * The binding associated with the resumptive pronoun (hóa).
-	 */
-	resumptive?: Binding;
-	/**
-	 * The binding associated with the covert resumptive pronoun (PRO).
-	 */
-	covertResumptive?: Binding;
+export type ExprType =
+	// An individual; anything which can act as a verbal argument.
+	| 'e'
+	// An event; a concrete instance of something happening.
+	| 'v'
+	// A time interval.
+	| 'i'
+	// A truth value.
+	| 't'
+	// A world; a frame of reference which associates intensions with extensions.
+	| 's'
+	// A speech act.
+	| 'a'
+	// A total function from {domain} to {range}.
+	| { head: 'fn'; domain: ExprType; range: ExprType }
+	// A continuation which behaves in local syntax like {inner} and takes scope at
+	// a t to produce a t; isomorphic to ({inner} → t) → t.
+	| { head: 'cont'; inner: ExprType }
+	// A plurality which behaves in local syntax like {inner}; isomorphic to a set
+	// of {inner}.
+	| { head: 'pl'; inner: ExprType }
+	// A generic reference which behaves in local syntax like {inner}; isomorphic
+	// to a set of {inner}.
+	| { head: 'gen'; inner: ExprType }
+	// A question which behaves in local syntax like {inner}; isomorphic to a set
+	// of {inner}.
+	| { head: 'qn'; inner: ExprType }
+	// A pair of meanings which behaves in local syntax like {inner} and carries a
+	// {supplement}; isomorphic to {inner} × {supplement}.
+	| { head: 'pair'; inner: ExprType; supplement: ExprType }
+	// An expression which binds a variable and behaves in local syntax like
+	// {inner}; isomorphic to {inner} × {binding} × e.
+	| { head: 'bind'; binding: Binding; inner: ExprType }
+	// An expression which references a variable and behaves in local syntax like
+	// {inner}; isomorphic to {binding} × (e → {inner}).
+	| { head: 'ref'; binding: Binding; inner: ExprType };
+
+export function Fn(domain: ExprType, range: ExprType): ExprType {
+	return { head: 'fn', domain, range };
 }
 
-export const noBindings: Bindings = {
-	index: new Map(),
-	variable: new Map(),
-	animacy: new Map(),
-	head: new Map(),
-};
-
-export function cloneBindings({
-	index,
-	variable,
-	animacy,
-	head,
-	...rest
-}: Bindings): Bindings {
-	return {
-		index: new Map(index),
-		variable: new Map(variable),
-		animacy: new Map(animacy),
-		head: new Map(head),
-		...rest,
-	};
+export function Cont(inner: ExprType): ExprType {
+	return { head: 'cont', inner };
 }
 
-/**
- * A tree with denotations.
- */
-export type DTree = (Leaf | Branch<DTree>) & {
-	denotation: Expr | null;
-	/**
-	 * References to bindings originating from this subtree.
-	 */
-	bindings: Bindings;
-};
+export function Pl(inner: ExprType): ExprType {
+	return { head: 'pl', inner };
+}
+
+export function Gen(inner: ExprType): ExprType {
+	return { head: 'gen', inner };
+}
+
+export function Qn(inner: ExprType): ExprType {
+	return { head: 'qn', inner };
+}
+
+export function Pair(inner: ExprType, supplement: ExprType): ExprType {
+	return { head: 'pair', inner, supplement };
+}
+
+export function Bind(binding: Binding, inner: ExprType): ExprType {
+	return { head: 'bind', binding, inner };
+}
+
+export function Ref(binding: Binding, inner: ExprType): ExprType {
+	return { head: 'ref', binding, inner };
+}
 
 /**
  * Determines whether the first type is a subtype of the second.
@@ -274,7 +105,41 @@ export function subtype(t1: ExprType, t2: ExprType): boolean {
 	if (typeof t1 === 'string' || typeof t2 === 'string') {
 		return t1 === t2 || (t1 === 'v' && t2 === 'e');
 	}
-	return t1 === t2 || (subtype(t2[0], t1[0]) && subtype(t1[1], t2[1]));
+	if (t1 === t2) return true;
+	switch (t1.head) {
+		case 'fn':
+			return (
+				t2.head === 'fn' &&
+				subtype(t2.domain, t1.domain) &&
+				subtype(t1.range, t2.range)
+			);
+		case 'cont':
+			return t2.head === 'cont' && subtype(t1.inner, t2.inner);
+		case 'pl':
+			return t2.head === 'pl' && subtype(t1.inner, t2.inner);
+		case 'gen':
+			return t2.head === 'gen' && subtype(t1.inner, t2.inner);
+		case 'qn':
+			return t2.head === 'qn' && subtype(t1.inner, t2.inner);
+		case 'pair':
+			return (
+				t2.head === 'pair' &&
+				subtype(t1.inner, t2.inner) &&
+				subtype(t1.supplement, t2.supplement)
+			);
+		case 'bind':
+			return (
+				t2.head === 'bind' &&
+				bindingsEqual(t1.binding, t2.binding) &&
+				subtype(t1.inner, t2.inner)
+			);
+		case 'ref':
+			return (
+				t2.head === 'ref' &&
+				bindingsEqual(t1.binding, t2.binding) &&
+				subtype(t1.inner, t2.inner)
+			);
+	}
 }
 
 export function assertSubtype(t1: ExprType, t2: ExprType): void {
@@ -290,10 +155,42 @@ export function assertSubtype(t1: ExprType, t2: ExprType): void {
  * Determines whether two types are equal.
  */
 export function typesEqual(t1: ExprType, t2: ExprType): boolean {
-	if (typeof t1 === 'string' || typeof t2 === 'string') {
-		return t1 === t2;
+	if (typeof t1 === 'string' || typeof t2 === 'string') return t1 === t2;
+	if (t1 === t2) return true;
+	switch (t1.head) {
+		case 'fn':
+			return (
+				t2.head === 'fn' &&
+				typesEqual(t2.domain, t1.domain) &&
+				typesEqual(t1.range, t2.range)
+			);
+		case 'cont':
+			return t2.head === 'cont' && typesEqual(t1.inner, t2.inner);
+		case 'pl':
+			return t2.head === 'pl' && typesEqual(t1.inner, t2.inner);
+		case 'gen':
+			return t2.head === 'gen' && typesEqual(t1.inner, t2.inner);
+		case 'qn':
+			return t2.head === 'qn' && typesEqual(t1.inner, t2.inner);
+		case 'pair':
+			return (
+				t2.head === 'pair' &&
+				typesEqual(t1.inner, t2.inner) &&
+				typesEqual(t1.supplement, t2.supplement)
+			);
+		case 'bind':
+			return (
+				t2.head === 'bind' &&
+				bindingsEqual(t1.binding, t2.binding) &&
+				typesEqual(t1.inner, t2.inner)
+			);
+		case 'ref':
+			return (
+				t2.head === 'ref' &&
+				bindingsEqual(t1.binding, t2.binding) &&
+				typesEqual(t1.inner, t2.inner)
+			);
 	}
-	return t1 === t2 || (typesEqual(t1[0], t2[0]) && typesEqual(t1[1], t2[1]));
 }
 
 /**
@@ -312,450 +209,519 @@ export function assertTypesCompatible(t1: ExprType, t2: ExprType): void {
 		);
 }
 
-export function contextsEqual(c1: ExprType[], c2: ExprType[]): boolean {
+function assertFn(
+	type: ExprType,
+): asserts type is { head: 'fn'; domain: ExprType; range: ExprType } {
+	if (typeof type === 'string' || type.head !== 'fn')
+		throw new Impossible(`${typeToPlainText(type)} is not a function type`);
+}
+
+function assertCont(
+	type: ExprType,
+): asserts type is { head: 'cont'; inner: ExprType } {
+	if (typeof type === 'string' || type.head !== 'cont')
+		throw new Impossible(`${typeToPlainText(type)} is not a continuation type`);
+}
+
+type SetHead = 'pl' | 'gen' | 'qn';
+
+function assertSet(
+	type: ExprType,
+): asserts type is { head: SetHead; inner: ExprType } {
+	if (
+		typeof type === 'string' ||
+		(type.head !== 'pl' && type.head !== 'gen' && type.head !== 'qn')
+	)
+		throw new Impossible(`${typeToPlainText(type)} is not a set type`);
+}
+
+function assertPair(
+	type: ExprType,
+): asserts type is { head: 'pair'; inner: ExprType; supplement: ExprType } {
+	if (typeof type === 'string' || type.head !== 'pair')
+		throw new Impossible(`${typeToPlainText(type)} is not a pair type`);
+}
+
+function assertBind(
+	type: ExprType,
+): asserts type is { head: 'bind'; binding: Binding; inner: ExprType } {
+	if (typeof type === 'string' || type.head !== 'bind')
+		throw new Impossible(`${typeToPlainText(type)} is not a bind type`);
+}
+
+function assertRef(
+	type: ExprType,
+): asserts type is { head: 'ref'; binding: Binding; inner: ExprType } {
+	if (typeof type === 'string' || type.head !== 'ref')
+		throw new Impossible(`${typeToPlainText(type)} is not a ref type`);
+}
+
+interface ExprBase {
+	/**
+	 * The type of this expression.
+	 */
+	type: ExprType;
+	/**
+	 * The types of all variables in scope, ordered by De Bruijn indexing.
+	 */
+	scope: ExprType[];
+}
+
+interface Variable extends ExprBase {
+	head: 'variable';
+	/**
+	 * The De Bruijn index of the variable in the current scope.
+	 */
+	index: number;
+}
+
+interface Lambda extends ExprBase {
+	head: 'lambda';
+	body: Expr;
+}
+
+interface Apply extends ExprBase {
+	head: 'apply';
+	fn: Expr;
+	arg: Expr;
+}
+
+interface Lexeme extends ExprBase {
+	head: 'lexeme';
+	name: string;
+}
+
+interface Quote extends ExprBase {
+	head: 'quote';
+	text: string;
+}
+
+interface Constant<Name extends string> extends ExprBase {
+	head: 'constant';
+	name: Name;
+}
+
+/**
+ * A semantic expression.
+ */
+export type Expr =
+	| Variable
+	| Lambda
+	| Apply
+	| Lexeme
+	| Quote
+	| Constant<'cont'>
+	| Constant<'uncont'>
+	| Constant<'empty'>
+	| Constant<'cons'>
+	| Constant<'build'>
+	| Constant<'filter'>
+	| Constant<'map'>
+	| Constant<'flat_map'>
+	| Constant<'element'>
+	| Constant<'some'>
+	| Constant<'every'>
+	| Constant<'pair'>
+	| Constant<'unpair'>
+	| Constant<'bind'>
+	| Constant<'unbind'>
+	| Constant<'ref'>
+	| Constant<'unref'>;
+
+/**
+ * A tree with denotations.
+ */
+export type DTree = (Leaf | Branch<DTree>) & { denotation: Expr };
+
+export function scopesEqual(s1: ExprType[], s2: ExprType[]): boolean {
 	return (
-		c1 === c2 ||
-		(c1.length === c2.length && c1.every((t, i) => subtype(t, c2[i])))
+		s1 === s2 ||
+		(s1.length === s2.length && s1.every((t, i) => subtype(t, s2[i])))
 	);
 }
 
-export function assertContextsEqual(c1: ExprType[], c2: ExprType[]): void {
-	if (!contextsEqual(c1, c2))
+export function assertScopesEqual(s1: ExprType[], s2: ExprType[]): void {
+	if (!scopesEqual(s1, s2))
 		throw new Impossible(
-			`Contexts ${typesToPlainText(c1)} and ${typesToPlainText(
-				c2,
+			`Scopes ${typesToPlainText(s1)} and ${typesToPlainText(
+				s2,
 			)} are not equal`,
 		);
 }
 
-function assertInBounds(index: number, context: ExprType[]): void {
-	if (index < 0 || index >= context.length)
-		throw new Impossible(
-			`Index ${index} out of bounds for context ${typesToPlainText(context)}`,
-		);
+/**
+ * A user-friendly scope type combining an indexical typing context with a
+ * naming context.
+ */
+export interface Scope {
+	types: ExprType[];
+	var: (name: symbol) => Variable;
 }
 
 /**
- * Constructor for variable expressions.
+ * An empty scope; the scope of closed expressions.
  */
-export function v(index: number, context: ExprType[]): Expr {
-	assertInBounds(index, context);
-	return { head: 'variable', type: context[index], context, index };
-}
+export const closed: Scope = {
+	types: [],
+	var: () => {
+		throw new Impossible('Variable not in scope');
+	},
+};
 
 /**
  * Constructor for lambda expressions.
  */
 export function λ(
 	inputType: ExprType,
-	context: ExprType[],
-	body: (context: ExprType[]) => Expr,
-	restriction?: (context: ExprType[]) => Expr,
+	scope: Scope,
+	body: (inputName: symbol, scope: Scope) => Expr,
 ): Expr {
-	const innerContext = [inputType, ...context];
-	const bodyResult = body(innerContext);
-	assertContextsEqual(bodyResult.context, innerContext);
-
-	let restrictionResult = undefined;
-	if (restriction !== undefined) {
-		restrictionResult = restriction(innerContext);
-		assertSubtype(restrictionResult.type, 't');
-		assertContextsEqual(restrictionResult.context, innerContext);
-	}
+	const inputName = Symbol();
+	const innerScopeTypes = [inputType, ...scope.types];
+	const innerScope: Scope = {
+		types: innerScopeTypes,
+		var: name => {
+			if (name === inputName)
+				return {
+					head: 'variable',
+					type: inputType,
+					scope: innerScopeTypes,
+					index: 0,
+				};
+			const outer = scope.var(name);
+			return { ...outer, index: outer.index + 1 };
+		},
+	};
+	const bodyResult = body(inputName, innerScope);
+	assertScopesEqual(bodyResult.scope, innerScope.types);
 
 	return {
 		head: 'lambda',
-		type: [inputType, bodyResult.type],
-		context,
+		type: Fn(inputType, bodyResult.type),
+		scope: scope.types,
 		body: bodyResult,
-		restriction: restrictionResult,
 	};
 }
 
 /**
  * Constructor for function application expressions.
  */
-export function app(fn: Expr, argument: Expr): Expr {
-	if (!Array.isArray(fn.type))
-		throw new Impossible(`${toPlainText(fn)} is not a function`);
-	const [inputType, outputType] = fn.type;
-	assertSubtype(argument.type, inputType);
-	assertContextsEqual(fn.context, argument.context);
+export function app(fn: Expr, arg: Expr): Expr {
+	assertFn(fn.type);
+	const { domain, range } = fn.type;
+	assertSubtype(arg.type, domain);
+	assertScopesEqual(fn.scope, arg.scope);
 
-	return { head: 'apply', type: outputType, context: fn.context, fn, argument };
+	return { head: 'apply', type: range, scope: fn.scope, fn, arg };
 }
 
-export function verb(
-	name: string,
-	args: [] | [Expr] | [Expr, Expr],
-	event: Expr,
-	world: Expr,
-): Expr {
-	assertSubtype(event.type, 'v');
-	assertSubtype(world.type, 's');
-	for (const arg of args) assertContextsEqual(arg.context, event.context);
-	assertContextsEqual(event.context, world.context);
-
-	return {
-		head: 'verb',
-		type: 't',
-		context: event.context,
-		name,
-		args,
-		event,
-		world,
-	};
+/**
+ * Constructor for lexeme expressions.
+ */
+export function lex(entry: string, type: ExprType, scope: Scope): Expr {
+	return { head: 'lexeme', type, scope: scope.types, name: entry };
 }
 
-export function presuppose(
-	body: Expr,
-	presupposition: Expr,
-	defines?: number,
-): Expr {
-	assertSubtype(presupposition.type, 't');
-	assertContextsEqual(body.context, presupposition.context);
-	if (defines !== undefined) assertInBounds(defines, body.context);
+/**
+ * Constructor for quote expressions.
+ */
+export function quote(text: string, scope: Scope): Expr {
+	return { head: 'quote', type: 'e', scope: scope.types, text };
+}
 
-	return {
-		head: 'presuppose',
-		type: body.type,
-		context: body.context,
+/**
+ * Constructs a continuation.
+ */
+export function cont(body: Expr): Expr {
+	assertFn(body.type);
+	assertFn(body.type.domain);
+	const inner = body.type.domain.domain;
+	return app(
+		{
+			head: 'constant',
+			type: Fn(Fn(Fn(inner, 't'), 't'), Cont(inner)),
+			scope: body.scope,
+			name: 'cont',
+		},
 		body,
-		presupposition,
-		defines,
+	);
+}
+
+/**
+ * Deconstructs a continuation.
+ */
+export function uncont(cont: Expr): Expr {
+	assertCont(cont.type);
+	return app(
+		{
+			head: 'constant',
+			type: Fn(cont.type, Fn(Fn(cont.type.inner, 't'), 't')),
+			scope: cont.scope,
+			name: 'uncont',
+		},
+		cont,
+	);
+}
+
+/**
+ * Constructs an empty set.
+ */
+export function empty(head: SetHead, inner: ExprType, scope: Scope): Expr {
+	return {
+		head: 'constant',
+		type: { head, inner },
+		scope: scope.types,
+		name: 'empty',
 	};
 }
 
-export function infix(
-	name: KnownInfix['name'],
-	type: ExprType,
-	left: Expr,
-	right: Expr,
-): Expr {
-	assertContextsEqual(left.context, right.context);
+/**
+ * Inserts an element into a set.
+ */
+export function cons(el: Expr, set: Expr): Expr {
+	assertSet(set.type);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(set.type.inner, Fn(set.type, set.type)),
+				scope: el.scope,
+				name: 'cons',
+			},
+			el,
+		),
+		set,
+	);
+}
 
-	const operator: Expr = {
+/**
+ * Builds a set consisting of all values in a given domain.
+ */
+export function build(head: SetHead, domain: ExprType, scope: Scope): Expr {
+	return {
 		head: 'constant',
-		type: [left.type, [right.type, type]],
-		context: left.context,
-		name,
-	} as Expr;
-	return app(app(operator, left), right);
-}
-
-function conjunction(
-	name: 'and' | 'or' | 'implies',
-	left: Expr,
-	right: Expr,
-): Expr {
-	assertSubtype(left.type, 't');
-	assertSubtype(right.type, 't');
-	return infix(name, 't', left, right);
-}
-
-export function and(left: Expr, right: Expr): Expr {
-	return conjunction('and', left, right);
-}
-
-export function or(left: Expr, right: Expr): Expr {
-	return conjunction('or', left, right);
-}
-
-export function implies(left: Expr, right: Expr): Expr {
-	return conjunction('implies', left, right);
-}
-
-export function polarizer(name: KnownPolarizer['name'], body: Expr): Expr {
-	assertSubtype(body.type, 't');
-
-	const operator: Expr = {
-		head: 'constant',
-		type: ['t', 't'],
-		context: body.context,
-		name,
+		type: { head, inner: domain },
+		scope: scope.types,
+		name: 'build',
 	};
-	return app(operator, body);
 }
 
-export function not(body: Expr): Expr {
-	return polarizer('not', body);
+/**
+ * Filters a set by a predicate.
+ */
+export function filter(set: Expr): Expr {
+	assertSet(set.type);
+	return app(
+		{
+			head: 'constant',
+			type: Fn(set.type, Fn(Fn(set.type.inner, 't'), set.type)),
+			scope: set.scope,
+			name: 'filter',
+		},
+		set,
+	);
 }
 
-export function indeed(body: Expr): Expr {
-	return polarizer('indeed', body);
+/**
+ * Maps a set to another set by projecting each element.
+ */
+export function map(set: Expr): Expr {
+	assertSet(set.type);
+	return app(
+		{
+			head: 'constant',
+			type: Fn(set.type, Fn(Fn(set.type.inner, set.type.inner), set.type)),
+			scope: set.scope,
+			name: 'map',
+		},
+		set,
+	);
 }
 
-export function quantifier(
-	name: KnownQuantifier['name'],
-	domain: ExprType,
-	context: ExprType[],
-	body: (context: ExprType[]) => Expr,
-	restriction?: (context: ExprType[]) => Expr,
-): Expr {
-	const operator: Expr = {
-		head: 'constant',
-		type: [[domain, 't'], 't'],
-		name,
-		context,
-	};
-
-	return app(operator, λ(domain, context, body, restriction));
+/**
+ * Maps a set to another set by projecting each element and taking the union of
+ * all projections.
+ */
+export function flatMap(set: Expr): Expr {
+	assertSet(set.type);
+	return app(
+		{
+			head: 'constant',
+			type: Fn(set.type, Fn(Fn(set.type.inner, set.type), set.type)),
+			scope: set.scope,
+			name: 'flat_map',
+		},
+		set,
+	);
 }
 
-export function some(
-	domain: ExprType,
-	context: ExprType[],
-	body: (context: ExprType[]) => Expr,
-	restriction?: (context: ExprType[]) => Expr,
-): Expr {
-	return quantifier('some', domain, context, body, restriction);
+/**
+ * Determines whether something is an element of a given set.
+ */
+export function element(el: Expr, set: Expr): Expr {
+	assertSet(set.type);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(set.type.inner, Fn(set.type, 't')),
+				scope: el.scope,
+				name: 'element',
+			},
+			el,
+		),
+		set,
+	);
 }
 
-export function every(
-	domain: ExprType,
-	context: ExprType[],
-	body: (context: ExprType[]) => Expr,
-	restriction?: (context: ExprType[]) => Expr,
-): Expr {
-	return quantifier('every', domain, context, body, restriction);
+/**
+ * Determines whether something in the domain satisfies a given predicate.
+ */
+export function some(predicate: Expr): Expr {
+	assertFn(predicate.type);
+	return app(
+		{
+			head: 'constant',
+			type: Fn(Fn(predicate.type.domain, 't'), 't'),
+			scope: predicate.scope,
+			name: 'some',
+		},
+		predicate,
+	);
 }
 
-export function everySing(
-	domain: ExprType,
-	context: ExprType[],
-	body: (context: ExprType[]) => Expr,
-	restriction?: (context: ExprType[]) => Expr,
-): Expr {
-	return quantifier('every_sing', domain, context, body, restriction);
+/**
+ * Determines whether everything in the domain satisfies a given predicate.
+ */
+export function every(predicate: Expr): Expr {
+	assertFn(predicate.type);
+	return app(
+		{
+			head: 'constant',
+			type: Fn(Fn(predicate.type.domain, 't'), 't'),
+			scope: predicate.scope,
+			name: 'every',
+		},
+		predicate,
+	);
 }
 
-export function everyCuml(
-	domain: ExprType,
-	context: ExprType[],
-	body: (context: ExprType[]) => Expr,
-	restriction?: (context: ExprType[]) => Expr,
-): Expr {
-	return quantifier('every_cuml', domain, context, body, restriction);
+/**
+ * Constructs a pair of meanings.
+ */
+export function pair(body: Expr, supplement: Expr): Expr {
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(
+					body.type,
+					Fn(supplement.type, Pair(body.type, supplement.type)),
+				),
+				scope: body.scope,
+				name: 'pair',
+			},
+			body,
+		),
+		supplement,
+	);
 }
 
-export function gen(
-	domain: ExprType,
-	context: ExprType[],
-	body: (context: ExprType[]) => Expr,
-	restriction?: (context: ExprType[]) => Expr,
-): Expr {
-	return quantifier('gen', domain, context, body, restriction);
+/**
+ * Deconstructs a pair of meanings.
+ */
+export function unpair(pair: Expr, project: Expr): Expr {
+	assertPair(pair.type);
+	assertFn(project.type);
+	assertFn(project.type.range);
+	const out = project.type.range.range;
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(
+					pair.type,
+					Fn(Fn(pair.type.inner, Fn(pair.type.supplement, out)), out),
+				),
+				scope: pair.scope,
+				name: 'unpair',
+			},
+			pair,
+		),
+		project,
+	);
 }
 
-export function equals(left: Expr, right: Expr): Expr {
-	assertTypesCompatible(left.type, right.type);
-	assertContextsEqual(left.context, right.context);
-
-	return infix('equals', 't', left, right);
+/**
+ * Constructs an expression that binds a variable.
+ */
+export function bind(binding: Binding, value: Expr, body: Expr): Expr {
+	const inner = body.type;
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn('e', Fn(inner, Bind(binding, inner))),
+				scope: body.scope,
+				name: 'bind',
+			},
+			value,
+		),
+		body,
+	);
 }
 
-function timeRelation(
-	name: 'subinterval' | 'before' | 'after' | 'before_near' | 'after_near',
-	left: Expr,
-	right: Expr,
-): Expr {
-	assertSubtype(left.type, 'i');
-	assertSubtype(right.type, 'i');
-	return infix(name, 't', left, right);
+/**
+ * Deconstructs an expression that binds a variable.
+ */
+export function unbind(bind: Expr, project: Expr): Expr {
+	assertBind(bind.type);
+	assertFn(project.type);
+	assertFn(project.type.range);
+	const out = project.type.range.range;
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(bind.type, Fn(Fn('e', Fn(bind.type.inner, out)), out)),
+				scope: bind.scope,
+				name: 'unbind',
+			},
+			bind,
+		),
+		project,
+	);
 }
 
-export function subinterval(left: Expr, right: Expr): Expr {
-	return timeRelation('subinterval', left, right);
+/**
+ * Constructs an expression that references a variable.
+ */
+export function ref(binding: Binding, body: Expr): Expr {
+	assertFn(body.type);
+	const inner = body.type.range;
+	return app(
+		{
+			head: 'constant',
+			type: Fn(Fn('e', inner), Ref(binding, inner)),
+			scope: body.scope,
+			name: 'ref',
+		},
+		body,
+	);
 }
 
-export function before(left: Expr, right: Expr): Expr {
-	return timeRelation('before', left, right);
-}
-
-export function after(left: Expr, right: Expr): Expr {
-	return timeRelation('after', left, right);
-}
-
-export function beforeNear(left: Expr, right: Expr): Expr {
-	return timeRelation('before_near', left, right);
-}
-
-export function afterNear(left: Expr, right: Expr): Expr {
-	return timeRelation('after_near', left, right);
-}
-
-export function roi(left: Expr, right: Expr): Expr {
-	assertSubtype(left.type, 'e');
-	assertSubtype(right.type, 'e');
-	return infix('roi', 'e', left, right);
-}
-
-export function coevent(left: Expr, right: Expr): Expr {
-	assertSubtype(left.type, 'v');
-	assertSubtype(right.type, 'v');
-	return infix('coevent', 't', left, right);
-}
-
-export function constant(
-	name: (Expr & { head: 'constant' })['name'],
-	type: (Expr & { head: 'constant' })['type'],
-	context: ExprType[],
-): Expr {
-	return { head: 'constant', type, context, name } as Expr;
-}
-
-function pronoun(
-	name: (Expr & { head: 'constant'; type: 'e' })['name'],
-	context: ExprType[],
-): Expr {
-	return constant(name, 'e', context);
-}
-
-export function ji(context: ExprType[]): Expr {
-	return pronoun('ji', context);
-}
-
-export function suq(context: ExprType[]): Expr {
-	return pronoun('suq', context);
-}
-
-export function nhao(context: ExprType[]): Expr {
-	return pronoun('nhao', context);
-}
-
-export function suna(context: ExprType[]): Expr {
-	return pronoun('suna', context);
-}
-
-export function nhana(context: ExprType[]): Expr {
-	return pronoun('nhana', context);
-}
-
-export function umo(context: ExprType[]): Expr {
-	return pronoun('umo', context);
-}
-
-export function ime(context: ExprType[]): Expr {
-	return pronoun('ime', context);
-}
-
-export function suo(context: ExprType[]): Expr {
-	return pronoun('suo', context);
-}
-
-export function ama(context: ExprType[]): Expr {
-	return pronoun('ama', context);
-}
-
-function role(
-	name: (Expr & { head: 'constant'; type: ['v', ['s', 'e']] })['name'],
-	context: ExprType[],
-): Expr {
-	return constant(name, ['v', ['s', 'e']], context);
-}
-
-export function agent(context: ExprType[]): Expr {
-	return role('agent', context);
-}
-
-export function subject(context: ExprType[]): Expr {
-	return role('subject', context);
-}
-
-function accessibility(
-	name: (Expr & { head: 'constant'; type: ['s', ['s', 't']] })['name'],
-	context: ExprType[],
-): Expr {
-	return constant(name, ['s', ['s', 't']], context);
-}
-
-export function she(context: ExprType[]): Expr {
-	return accessibility('she', context);
-}
-
-export function le(context: ExprType[]): Expr {
-	return accessibility('le', context);
-}
-
-function animacy(
-	name: (Expr & { head: 'constant'; type: ['e', 't'] })['name'],
-	context: ExprType[],
-): Expr {
-	return constant(name, ['e', 't'], context);
-}
-
-export function animate(context: ExprType[]): Expr {
-	return animacy('animate', context);
-}
-
-export function inanimate(context: ExprType[]): Expr {
-	return animacy('inanimate', context);
-}
-
-export function abstract(context: ExprType[]): Expr {
-	return animacy('abstract', context);
-}
-
-export function realWorld(context: ExprType[]): Expr {
-	return constant('real_world', 's', context);
-}
-
-export function inertiaWorlds(context: ExprType[]): Expr {
-	return constant('inertia_worlds', ['s', ['s', ['i', 't']]], context);
-}
-
-export function alternative(type: ExprType, context: ExprType[]): Expr {
-	return constant('alternative', [type, [type, ['s', 't']]], context);
-}
-
-export function temporalTrace(context: ExprType[]): Expr {
-	return constant('temporal_trace', ['v', 'i'], context);
-}
-
-export function expectedStart(context: ExprType[]): Expr {
-	return constant('expected_start', ['v', 'i'], context);
-}
-
-export function expectedEnd(context: ExprType[]): Expr {
-	return constant('expected_end', ['v', 'i'], context);
-}
-
-export function speechTime(context: ExprType[]): Expr {
-	return constant('speech_time', 'i', context);
-}
-
-export function content(context: ExprType[]): Expr {
-	return constant('content', ['e', ['s', ['s', 't']]], context);
-}
-
-export function topic(context: ExprType[]): Expr {
-	return constant('topic', ['e', ['s', 's']], context);
-}
-
-export function assert(context: ExprType[]): Expr {
-	return constant('assert', [['s', 't'], 'a'], context);
-}
-
-export function perform(context: ExprType[]): Expr {
-	return constant('perform', [['s', 't'], 'a'], context);
-}
-
-export function wish(context: ExprType[]): Expr {
-	return constant('wish', [['s', 't'], 'a'], context);
-}
-
-export function promise(context: ExprType[]): Expr {
-	return constant('promise', [['s', 't'], 'a'], context);
-}
-
-export function permit(context: ExprType[]): Expr {
-	return constant('permit', [['s', 't'], 'a'], context);
-}
-
-export function warn(context: ExprType[]): Expr {
-	return constant('warn', [['s', 't'], 'a'], context);
-}
-
-export function quote(text: string, context: ExprType[]): Expr {
-	return { head: 'quote', type: 'e', context, text };
+/**
+ * Deconstructs an expression that references a variable.
+ */
+export function unref(ref: Expr): Expr {
+	assertRef(ref.type);
+	return app(
+		{
+			head: 'constant',
+			type: Fn(ref.type, Fn('e', ref.type.inner)),
+			scope: ref.scope,
+			name: 'unref',
+		},
+		ref,
+	);
 }
