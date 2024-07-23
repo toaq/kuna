@@ -209,7 +209,7 @@ export function assertTypesCompatible(t1: ExprType, t2: ExprType): void {
 		);
 }
 
-function assertFn(
+export function assertFn(
 	type: ExprType,
 ): asserts type is { head: 'fn'; domain: ExprType; range: ExprType } {
 	if (typeof type === 'string' || type.head !== 'fn')

@@ -1,9 +1,10 @@
 import { Unimplemented } from '../../core/error';
 import type { Expr, ExprType } from '../model';
-import { PlainTextType } from './plain';
+import { PlainText, PlainTextType } from './plain';
 
-export function toPlainText(_e: Expr, _compact?: boolean): string {
-	throw new Unimplemented();
+export function toPlainText(e: Expr, compact?: boolean): string {
+	if (compact) throw new Unimplemented();
+	return new PlainText().render(e);
 }
 
 export function toLatex(_e: Expr, _compact?: boolean): string {

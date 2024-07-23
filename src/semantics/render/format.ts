@@ -1,3 +1,5 @@
+import type { ExprType } from '../model';
+
 export type Associativity = 'left' | 'right' | 'any' | 'none';
 
 interface Token<Out> {
@@ -76,4 +78,65 @@ export abstract class Renderer<In, Out> {
 		const bracketed = this.bracketAll(raw);
 		return this.join(this.tokens(bracketed));
 	}
+}
+
+export type NameType = 'e' | 'v' | 'i' | 's' | 'exotic';
+
+export const alphabets: Record<NameType, string[]> = {
+	e: ['a', 'b', 'c', 'd'],
+	v: ['e'],
+	i: ['t'],
+	s: ['w'],
+	exotic: ['P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+};
+
+/**
+ * Represents the 'id'th name available for variables of type 'type'.
+ */
+export interface Name {
+	readonly id: number;
+	readonly type: NameType;
+}
+
+/**
+ * A naming context to use when rendering an expression.
+ */
+export interface Names {
+	readonly scope: Name[];
+	readonly nextIds: Record<NameType, number>;
+}
+
+export const noNames: Names = {
+	scope: [],
+	nextIds: {
+		e: 0,
+		v: 0,
+		i: 0,
+		s: 0,
+		exotic: 0,
+	},
+};
+
+export function getNameType(type: ExprType): NameType {
+	return typeof type === 'string' && type !== 't' && type !== 'a'
+		? type
+		: 'exotic';
+}
+
+/**
+ * Adds a new name of type 'type' to the given naming context.
+ */
+export function addName(type: ExprType, { scope, nextIds }: Names): Names {
+	const nameType = getNameType(type);
+	const alphabetSize = alphabets[nameType].length;
+
+	let id = nextIds[nameType];
+	// If this name is already taken, try the same name one alphabetSize later
+	while (scope.some(n => n.type === type && n.id === id)) id += alphabetSize;
+
+	const name = { id, type: nameType };
+	return {
+		scope: [name, ...scope],
+		nextIds: { ...nextIds, [nameType]: nextIds[nameType] + 1 },
+	};
 }
