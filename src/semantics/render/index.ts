@@ -1,6 +1,7 @@
-import { Unimplemented } from '../core/error';
-import type { JsonExpr } from '../semantics-prev/format/json';
-import type { Expr, ExprType } from './model';
+import { Unimplemented } from '../../core/error';
+import type { JsonExpr } from '../../semantics-prev/format/json';
+import type { Expr, ExprType } from '../model';
+import { PlainTextType } from './plain';
 
 export function toPlainText(_e: Expr, _compact?: boolean): string {
 	throw new Unimplemented();
@@ -41,8 +42,8 @@ export function jsonStringifyCompact(expr: any): string {
 		.join('\n');
 }
 
-export function typeToPlainText(_t: ExprType): string {
-	throw new Unimplemented();
+export function typeToPlainText(t: ExprType): string {
+	return new PlainTextType().render(t);
 }
 
 export function typeToLatex(_t: ExprType): string {
