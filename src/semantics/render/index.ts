@@ -1,5 +1,4 @@
 import { Unimplemented } from '../../core/error';
-import type { JsonExpr } from '../../semantics-prev/format/json';
 import type { Expr, ExprType } from '../model';
 import { PlainTextType } from './plain';
 
@@ -15,7 +14,7 @@ export function toMathml(_e: Expr, _compact?: boolean): string {
 	throw new Unimplemented();
 }
 
-export function toJson(_e: Expr, _compact?: boolean): JsonExpr {
+export function toJson(_e: Expr, _compact?: boolean): unknown {
 	throw new Unimplemented();
 }
 
