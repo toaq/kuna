@@ -42,7 +42,7 @@ function getTrees(argv: {
 	return trees;
 }
 
-yargs
+yargs()
 	.scriptName('kuna')
 	.usage('$0 <mode> --sentence "Hıo ka"')
 	.option('sentence', {
