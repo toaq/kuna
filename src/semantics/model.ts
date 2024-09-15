@@ -1,5 +1,6 @@
 import { Impossible } from '../core/error';
 import type { Branch, Leaf } from '../tree';
+import type { CompositionMode } from './compose';
 import { typeToPlainText, typesToPlainText } from './render';
 
 export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
@@ -376,7 +377,9 @@ export type Expr =
 /**
  * A tree with denotations.
  */
-export type DTree = (Leaf | Branch<DTree>) & { denotation: Expr };
+export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode[] })) & {
+	denotation: Expr;
+};
 
 export function scopesEqual(s1: ExprType[], s2: ExprType[]): boolean {
 	return (
