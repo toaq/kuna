@@ -389,7 +389,7 @@ export function λ(
 					index: 0,
 				};
 			const outer = scope.var(name);
-			return { ...outer, index: outer.index + 1 };
+			return { ...outer, scope: innerScopeTypes, index: outer.index + 1 };
 		},
 	};
 	const bodyResult = body(inputName, innerScope);
@@ -525,16 +525,25 @@ export function filter(set: Expr): Expr {
 /**
  * Maps a set to another set by projecting each element.
  */
-export function map(set: Expr): Expr {
+export function map(set: Expr, project: Expr): Expr {
 	assertSet(set.type);
+	assertFn(project.type);
+	const range = project.type.range;
+	assertSet(range);
 	return app(
-		{
-			head: 'constant',
-			type: Fn(set.type, Fn(Fn(set.type.inner, set.type.inner), set.type)),
-			scope: set.scope,
-			name: 'map',
-		},
-		set,
+		app(
+			{
+				head: 'constant',
+				type: Fn(
+					set.type,
+					Fn(Fn(set.type.inner, range), { head: set.type.head, inner: range }),
+				),
+				scope: set.scope,
+				name: 'map',
+			},
+			set,
+		),
+		project,
 	);
 }
 
@@ -542,16 +551,21 @@ export function map(set: Expr): Expr {
  * Maps a set to another set by projecting each element and taking the union of
  * all projections.
  */
-export function flatMap(set: Expr): Expr {
-	assertSet(set.type);
+export function flatMap(set: Expr, project: Expr): Expr {
+	assertFn(project.type);
+	const { domain, range } = project.type;
+	assertSet(range);
 	return app(
-		{
-			head: 'constant',
-			type: Fn(set.type, Fn(Fn(set.type.inner, set.type), set.type)),
-			scope: set.scope,
-			name: 'flat_map',
-		},
-		set,
+		app(
+			{
+				head: 'constant',
+				type: Fn({ head: range.head, inner: domain }, Fn(project.type, range)),
+				scope: set.scope,
+				name: 'flat_map',
+			},
+			set,
+		),
+		project,
 	);
 }
 
