@@ -44,6 +44,9 @@ export type ExprType =
 	| 'a'
 	// A total function from {domain} to {range}.
 	| { head: 'fn'; domain: ExprType; range: ExprType }
+	// An intension which behaves in local syntax like {inner}; isomorphic to
+	// s → {inner}.
+	| { head: 'int'; inner: ExprType }
 	// A continuation which behaves in local syntax like {inner} and takes scope at
 	// a t to produce a t; isomorphic to ({inner} → t) → t.
 	| { head: 'cont'; inner: ExprType }
@@ -68,6 +71,10 @@ export type ExprType =
 
 export function Fn(domain: ExprType, range: ExprType): ExprType {
 	return { head: 'fn', domain, range };
+}
+
+export function Int(inner: ExprType): ExprType {
+	return { head: 'int', inner };
 }
 
 export function Cont(inner: ExprType): ExprType {
@@ -113,6 +120,8 @@ export function subtype(t1: ExprType, t2: ExprType): boolean {
 				subtype(t2.domain, t1.domain) &&
 				subtype(t1.range, t2.range)
 			);
+		case 'int':
+			return t2.head === 'int' && subtype(t1.inner, t2.inner);
 		case 'cont':
 			return t2.head === 'cont' && subtype(t1.inner, t2.inner);
 		case 'pl':
@@ -164,6 +173,8 @@ export function typesEqual(t1: ExprType, t2: ExprType): boolean {
 				typesEqual(t2.domain, t1.domain) &&
 				typesEqual(t1.range, t2.range)
 			);
+		case 'int':
+			return t2.head === 'int' && typesEqual(t1.inner, t2.inner);
 		case 'cont':
 			return t2.head === 'cont' && typesEqual(t1.inner, t2.inner);
 		case 'pl':
@@ -216,6 +227,13 @@ export function assertFn(
 		throw new Impossible(`${typeToPlainText(type)} is not a function type`);
 }
 
+export function assertInt(
+	type: ExprType,
+): asserts type is { head: 'int'; inner: ExprType } {
+	if (typeof type === 'string' || type.head !== 'int')
+		throw new Impossible(`${typeToPlainText(type)} is not a intension type`);
+}
+
 function assertCont(
 	type: ExprType,
 ): asserts type is { head: 'cont'; inner: ExprType } {
@@ -225,7 +243,7 @@ function assertCont(
 
 type SetHead = 'pl' | 'gen' | 'qn';
 
-function assertSet(
+export function assertSet(
 	type: ExprType,
 ): asserts type is { head: SetHead; inner: ExprType } {
 	if (
@@ -235,25 +253,25 @@ function assertSet(
 		throw new Impossible(`${typeToPlainText(type)} is not a set type`);
 }
 
-function assertPair(
+export function assertPair(
 	type: ExprType,
 ): asserts type is { head: 'pair'; inner: ExprType; supplement: ExprType } {
 	if (typeof type === 'string' || type.head !== 'pair')
 		throw new Impossible(`${typeToPlainText(type)} is not a pair type`);
 }
 
-function assertBind(
+export function assertBind(
 	type: ExprType,
 ): asserts type is { head: 'bind'; binding: Binding; inner: ExprType } {
 	if (typeof type === 'string' || type.head !== 'bind')
 		throw new Impossible(`${typeToPlainText(type)} is not a bind type`);
 }
 
-function assertRef(
+export function assertRef(
 	type: ExprType,
 ): asserts type is { head: 'ref'; binding: Binding; inner: ExprType } {
 	if (typeof type === 'string' || type.head !== 'ref')
-		throw new Impossible(`${typeToPlainText(type)} is not a ref type`);
+		throw new Impossible(`${typeToPlainText(type)} is not a reference type`);
 }
 
 interface ExprBase {
@@ -310,6 +328,8 @@ export type Expr =
 	| Apply
 	| Lexeme
 	| Quote
+	| Constant<'int'>
+	| Constant<'unint'>
 	| Constant<'cont'>
 	| Constant<'uncont'>
 	| Constant<'empty'>
@@ -427,6 +447,39 @@ export function lex(entry: string, type: ExprType, scope: Scope): Expr {
  */
 export function quote(text: string, scope: Scope): Expr {
 	return { head: 'quote', type: 'e', scope: scope.types, text };
+}
+
+/**
+ * Constructs an intension.
+ */
+export function int(body: Expr): Expr {
+	assertFn(body.type);
+	const inner = body.type.range;
+	return app(
+		{
+			head: 'constant',
+			type: Fn(Fn('s', inner), Int(inner)),
+			scope: body.scope,
+			name: 'int',
+		},
+		body,
+	);
+}
+
+/**
+ * Deconstructs an intension.
+ */
+export function unint(int: Expr): Expr {
+	assertInt(int.type);
+	return app(
+		{
+			head: 'constant',
+			type: Fn(int.type, Fn('s', int.type.inner)),
+			scope: int.scope,
+			name: 'unint',
+		},
+		int,
+	);
 }
 
 /**

@@ -69,6 +69,8 @@ export class PlainTextType extends Renderer<ExprType, string> {
 					token(' → '),
 					this.sub(t.range),
 				]);
+			case 'int':
+				return this.app(token('Int'), this.sub(t.inner));
 			case 'cont':
 				return this.app(token('Cont'), this.sub(t.inner));
 			case 'pl':
