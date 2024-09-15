@@ -97,6 +97,8 @@ export class PlainTextType extends Renderer<ExprType, string> {
 					this.app(token('Ref'), token(this.binding(t.binding))),
 					this.sub(t.inner),
 				);
+			case 'io':
+				return this.app(token('IO'), this.sub(t.inner));
 		}
 	}
 

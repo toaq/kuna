@@ -40,8 +40,8 @@ export type ExprType =
 	| 't'
 	// A world; a frame of reference which associates intensions with extensions.
 	| 's'
-	// A speech act.
-	| 'a'
+	// The unit type.
+	| '1'
 	// A total function from {domain} to {range}.
 	| { head: 'fn'; domain: ExprType; range: ExprType }
 	// An intension which behaves in local syntax like {inner}; isomorphic to
@@ -67,7 +67,11 @@ export type ExprType =
 	| { head: 'bind'; binding: Binding; inner: ExprType }
 	// An expression which references a variable and behaves in local syntax like
 	// {inner}; isomorphic to {binding} × (e → {inner}).
-	| { head: 'ref'; binding: Binding; inner: ExprType };
+	| { head: 'ref'; binding: Binding; inner: ExprType }
+	// An expression which interacts with the discourse context (e.g. through
+	// deixis or a speech act) and behaves in local syntax like {inner}; isomorphic
+	// to context → ({inner} × context).
+	| { head: 'io'; inner: ExprType };
 
 export function Fn(domain: ExprType, range: ExprType): ExprType {
 	return { head: 'fn', domain, range };
@@ -103,6 +107,10 @@ export function Bind(binding: Binding, inner: ExprType): ExprType {
 
 export function Ref(binding: Binding, inner: ExprType): ExprType {
 	return { head: 'ref', binding, inner };
+}
+
+export function IO(inner: ExprType): ExprType {
+	return { head: 'io', inner };
 }
 
 /**
@@ -148,6 +156,8 @@ export function subtype(t1: ExprType, t2: ExprType): boolean {
 				bindingsEqual(t1.binding, t2.binding) &&
 				subtype(t1.inner, t2.inner)
 			);
+		case 'io':
+			return t2.head === 'io' && subtype(t1.inner, t2.inner);
 	}
 }
 
@@ -201,6 +211,8 @@ export function typesEqual(t1: ExprType, t2: ExprType): boolean {
 				bindingsEqual(t1.binding, t2.binding) &&
 				typesEqual(t1.inner, t2.inner)
 			);
+		case 'io':
+			return t2.head === 'io' && typesEqual(t1.inner, t2.inner);
 	}
 }
 
@@ -272,6 +284,13 @@ export function assertRef(
 ): asserts type is { head: 'ref'; binding: Binding; inner: ExprType } {
 	if (typeof type === 'string' || type.head !== 'ref')
 		throw new Impossible(`${typeToPlainText(type)} is not a reference type`);
+}
+
+export function assertIO(
+	type: ExprType,
+): asserts type is { head: 'io'; inner: ExprType } {
+	if (typeof type === 'string' || type.head !== 'io')
+		throw new Impossible(`${typeToPlainText(type)} is not an IO type`);
 }
 
 interface ExprBase {
@@ -346,7 +365,13 @@ export type Expr =
 	| Constant<'bind'>
 	| Constant<'unbind'>
 	| Constant<'ref'>
-	| Constant<'unref'>;
+	| Constant<'unref'>
+	| Constant<'and_map'>
+	| Constant<'then'>
+	| Constant<'and_then'>
+	| Constant<'and'>
+	| Constant<'equals'>
+	| Constant<'agent'>;
 
 /**
  * A tree with denotations.
@@ -791,4 +816,103 @@ export function unref(ref: Expr): Expr {
 		},
 		ref,
 	);
+}
+
+/**
+ * Projects the value returned by a context operation.
+ */
+export function andMap(op: Expr, project: Expr): Expr {
+	assertIO(op.type);
+	assertFn(project.type);
+	const range = project.type.range;
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(op.type, Fn(Fn(op.type.inner, range), IO(range))),
+				scope: op.scope,
+				name: 'and_map',
+			},
+			op,
+		),
+		project,
+	);
+}
+
+/**
+ * Sequences two context operations, discarding their results.
+ */
+export function then(first: Expr, second: Expr): Expr {
+	assertIO(first.type);
+	assertIO(second.type);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(first.type, Fn(second.type, IO('1'))),
+				scope: first.scope,
+				name: 'then',
+			},
+			first,
+		),
+		second,
+	);
+}
+
+/**
+ * Sequences two context operations, with the second operation being dependent
+ * on the value returned by the first.
+ */
+export function andThen(first: Expr, continuation: Expr): Expr {
+	assertFn(continuation.type);
+	const { domain, range } = continuation.type;
+	assertIO(range);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(IO(domain), Fn(continuation.type, range)),
+				scope: first.scope,
+				name: 'and_then',
+			},
+			first,
+		),
+		continuation,
+	);
+}
+
+export function and(scope: Scope): Expr {
+	return {
+		head: 'constant',
+		type: Fn('t', Fn('t', 't')),
+		scope: scope.types,
+		name: 'and',
+	};
+}
+
+export function equals(left: Expr, right: Expr): Expr {
+	assertTypesCompatible(left.type, right.type);
+	assertScopesEqual(left.scope, right.scope);
+
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(left.type, Fn(right.type, 't')),
+				scope: left.scope,
+				name: 'equals',
+			},
+			left,
+		),
+		right,
+	);
+}
+
+export function agent(scope: Scope): Expr {
+	return {
+		head: 'constant',
+		type: Fn('v', Fn('s', 'e')),
+		scope: scope.types,
+		name: 'agent',
+	};
 }

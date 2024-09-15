@@ -118,7 +118,7 @@ export const noNames: Names = {
 };
 
 export function getNameType(type: ExprType): NameType {
-	return typeof type === 'string' && type !== 't' && type !== 'a'
+	return typeof type === 'string' && type !== 't' && type !== '1'
 		? type
 		: 'exotic';
 }
