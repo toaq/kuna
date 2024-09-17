@@ -247,7 +247,7 @@ export function assertInt(
 		throw new Impossible(`${typeToPlainText(type)} is not a intension type`);
 }
 
-function assertCont(
+export function assertCont(
 	type: ExprType,
 ): asserts type is { head: 'cont'; inner: ExprType } {
 	if (typeof type === 'string' || type.head !== 'cont')
