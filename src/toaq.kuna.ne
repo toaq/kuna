@@ -129,26 +129,26 @@ MSPdet -> Sigma Modal SigmaPdet {% makeSigmaT1ModalvP %}
 # jeo pu chum hao jí
 SigmaPcon<S> -> SigmaP<S> {% id %}
 SigmaPcon<S> -> SigmaP<S> Conjunction SigmaPcon<S> {% makeConn %}
-SigmaP<S> -> Sigmacon TP<S> {% makeBranch('ΣP') %}
+SigmaP<S> -> Sigmaconopt TP<S> {% makeBranch('ΣP') %}
 
 # (sá) jeo pu chum hao
-SigmaPdet -> Sigmacon TPdet {% makeBranch('ΣP') %}
+SigmaPdet -> Sigmaconopt TPdet {% makeBranch('ΣP') %}
 
 # pu chum hao jí
-TP<S> -> Tcon AspP<S> {% makeBranch('TP') %}
+TP<S> -> Tconopt AspP<S> {% makeBranch('TP') %}
 # ë marao óguı ráı
 TP<S> -> EvA vP<sub> DPcon {% makeEvAP %}
 
 # (sá) pu chum hao
-TPdet -> Tcon AspPdet {% makeBranch('TP') %}
+TPdet -> Tconopt AspPdet {% makeBranch('TP') %}
 # (sá) ë marao óguı
 TPdet -> EvA vP<sub> {% makeEvAPdet %}
 
 # chum hao jí
-AspP<S> -> Aspcon vP<S> {% makeBranch('AspP') %}
+AspP<S> -> Aspconopt vP<S> {% makeBranch('AspP') %}
 
 # (sá) chum hao
-AspPdet -> Aspcon vPdet {% makeBranch('AspP') %}
+AspPdet -> Aspconopt vPdet {% makeBranch('AspP') %}
 
 # tua hao tî kúe jí súq râo níchaq
 vP<S> -> Serial AdjunctPcon:* (VocArgument:+ AdjunctPcon:*):? {% makevP<S> %}
@@ -196,14 +196,17 @@ CPargfoc -> Focus CParg {% makeBranch('FocusP') %}
 CParg -> CPsub {% makeBranchCovertLeft('DP', 'D') %}
 CPrelcon -> CPrel {% id %}
 CPrelcon -> CPrel Conjunction CPrelcon {% makeConn %}
-Sigmacon -> null {% makeCovertLeaf('Σ') %}
+Sigmaconopt -> null {% makeCovertLeaf('Σ') %}
+Sigmaconopt -> Sigmacon {% id %}
 Sigmacon -> Sigma {% id %}
 Sigmacon -> Sigma Conjunction Sigmacon {% makeConn %}
-Tcon -> null {% makeCovertLeaf('T') %}
+Tconopt -> null {% makeCovertLeaf('T') %}
+Tconopt -> Tcon {% id %}
 Tcon -> T {% id %}
 Tcon -> T_prefix {% id %}
 Tcon -> T Conjunction Tcon {% makeConn %}
-Aspcon -> null {% makeCovertLeaf('Asp') %}
+Aspconopt -> null {% makeCovertLeaf('Asp') %}
+Aspconopt -> Aspcon {% id %}
 Aspcon -> Asp {% id %}
 Aspcon -> Asp_prefix {% id %}
 Aspcon -> Asp Conjunction Aspcon {% makeConn %}
