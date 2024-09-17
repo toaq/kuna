@@ -1,18 +1,23 @@
+import { Impossible } from '../core/error';
 import {
 	type Expr,
 	type ExprType,
 	Fn,
 	type Scope,
+	type SetHead,
 	app,
 	assertCont,
 	assertFn,
 	assertInt,
 	cont,
+	flatMap,
 	int,
+	map,
 	uncont,
 	unint,
 	λ,
 } from './model';
+import { typeToPlainText } from './render';
 
 export interface Functor {
 	/**
@@ -154,10 +159,64 @@ const contApplicative: Applicative = {
 	},
 };
 
+const setApplicative = (head: SetHead): Applicative => ({
+	functor: {
+		inner: type => {
+			if (typeof type === 'string' || type.head !== head)
+				throw new Impossible(`${typeToPlainText(type)} is not a ${head} type`);
+			return type.inner;
+		},
+		map: (fn, arg, s) => {
+			if (typeof arg.type === 'string' || arg.type.head !== head)
+				throw new Impossible(
+					`${typeToPlainText(arg.type)} is not a ${head} type`,
+				);
+			return app(
+				app(
+					λ(fn.type, s, (fn, s) =>
+						λ(arg.type, s, (arg, s) => map(s.var(arg), s.var(fn))),
+					),
+					fn,
+				),
+				arg,
+			);
+		},
+	},
+	apply: (fn, arg, s) => {
+		if (typeof fn.type === 'string' || fn.type.head !== head)
+			throw new Impossible(`${typeToPlainText(fn.type)} is not a ${head} type`);
+		const fnType = fn.type.inner;
+		return app(
+			app(
+				λ(fn.type, s, (fn, s) =>
+					λ(arg.type, s, (arg, s) =>
+						flatMap(
+							s.var(fn),
+							λ(fnType, s, (project, s) => map(s.var(arg), s.var(project))),
+						),
+					),
+				),
+				fn,
+			),
+			arg,
+		);
+	},
+});
+
+const plApplicative = setApplicative('pl');
+const plFunctor = plApplicative.functor;
+const genApplicative = setApplicative('gen');
+const genFunctor = genApplicative.functor;
+const qnApplicative = setApplicative('qn');
+const qnFunctor = qnApplicative.functor;
+
 export function getFunctor(t: ExprType): Functor | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'int') return intFunctor;
 	if (t.head === 'cont') return contFunctor;
+	if (t.head === 'pl') return plFunctor;
+	if (t.head === 'gen') return genFunctor;
+	if (t.head === 'qn') return qnFunctor;
 	return null;
 }
 
@@ -165,6 +224,9 @@ export function getApplicative(t1: ExprType, t2: ExprType): Applicative | null {
 	if (typeof t1 === 'string' || typeof t2 === 'string') return null;
 	if (t1.head !== t2.head) return null;
 	if (t1.head === 'int') return intApplicative;
-	if (t2.head === 'cont') return contApplicative;
+	if (t1.head === 'cont') return contApplicative;
+	if (t1.head === 'pl') return plApplicative;
+	if (t1.head === 'gen') return genApplicative;
+	if (t1.head === 'qn') return qnApplicative;
 	return null;
 }

@@ -254,7 +254,7 @@ export function assertCont(
 		throw new Impossible(`${typeToPlainText(type)} is not a continuation type`);
 }
 
-type SetHead = 'pl' | 'gen' | 'qn';
+export type SetHead = 'pl' | 'gen' | 'qn';
 
 export function assertSet(
 	type: ExprType,
@@ -610,7 +610,6 @@ export function map(set: Expr, project: Expr): Expr {
 	assertSet(set.type);
 	assertFn(project.type);
 	const range = project.type.range;
-	assertSet(range);
 	return app(
 		app(
 			{
