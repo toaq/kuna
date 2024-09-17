@@ -24,6 +24,8 @@
 
           env.LD_LIBRARY_PATH =
             pkgs.lib.makeLibraryPath (with pkgs; [ libuuid ]);
+          env.CPLUS_INCLUDE_PATH =
+            pkgs.lib.makeIncludePath (with pkgs; [ fontconfig.dev ]);
         };
       });
 }
