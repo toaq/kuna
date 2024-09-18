@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import KDL from 'kdljs';
 import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 import { toEnglish } from './english/tree';
 import { formatTreeAsKdl } from './modes/kdl';
 import { toDocument } from './modes/latex';
@@ -42,7 +43,7 @@ function getTrees(argv: {
 	return trees;
 }
 
-yargs()
+yargs(hideBin(process.argv))
 	.scriptName('kuna')
 	.usage('$0 <mode> --sentence "Hıo ka"')
 	.option('sentence', {
