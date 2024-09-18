@@ -196,17 +196,14 @@ CPargfoc -> Focus CParg {% makeBranch('FocusP') %}
 CParg -> CPsub {% makeBranchCovertLeft('DP', 'D') %}
 CPrelcon -> CPrel {% id %}
 CPrelcon -> CPrel Conjunction CPrelcon {% makeConn %}
-Sigmaconopt -> null {% makeCovertLeaf('Σ') %}
-Sigmaconopt -> Sigmacon {% id %}
+Sigmaconopt -> Sigmacon:? {% makeOptLeaf('Σ') %}
 Sigmacon -> Sigma {% id %}
 Sigmacon -> Sigma Conjunction Sigmacon {% makeConn %}
-Tconopt -> null {% makeCovertLeaf('T') %}
-Tconopt -> Tcon {% id %}
+Tconopt -> Tcon:? {% makeOptLeaf('T') %}
 Tcon -> T {% id %}
 Tcon -> T_prefix {% id %}
 Tcon -> T Conjunction Tcon {% makeConn %}
-Aspconopt -> null {% makeCovertLeaf('Asp') %}
-Aspconopt -> Aspcon {% id %}
+Aspconopt -> Aspcon:? {% makeOptLeaf('Asp') %}
 Aspcon -> Asp {% id %}
 Aspcon -> Asp_prefix {% id %}
 Aspcon -> Asp Conjunction Aspcon {% makeConn %}
