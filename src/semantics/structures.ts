@@ -5,10 +5,13 @@ import {
 	Fn,
 	type Scope,
 	type SetHead,
+	andMap,
+	andThen,
 	app,
 	assertBind,
 	assertCont,
 	assertFn,
+	assertIO,
 	assertInt,
 	assertPair,
 	assertRef,
@@ -345,6 +348,46 @@ const refApplicative: Applicative = {
 	},
 };
 
+const ioFunctor: Functor = {
+	inner: type => {
+		assertIO(type);
+		return type.inner;
+	},
+	map: (fn, arg, s) => {
+		return app(
+			app(
+				λ(fn.type, s, (fn, s) =>
+					λ(arg.type, s, (arg, s) => andMap(s.var(arg), s.var(fn))),
+				),
+				fn,
+			),
+			arg,
+		);
+	},
+};
+
+const ioApplicative: Applicative = {
+	functor: ioFunctor,
+	apply: (fn, arg, s) => {
+		assertIO(fn.type);
+		const fnType = fn.type.inner;
+		return app(
+			app(
+				λ(fn.type, s, (fn, s) =>
+					λ(arg.type, s, (arg, s) =>
+						andThen(
+							s.var(fn),
+							λ(fnType, s, (project, s) => andMap(s.var(arg), s.var(project))),
+						),
+					),
+				),
+				fn,
+			),
+			arg,
+		);
+	},
+};
+
 export function getFunctor(t: ExprType): Functor | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'int') return intFunctor;
@@ -355,6 +398,7 @@ export function getFunctor(t: ExprType): Functor | null {
 	if (t.head === 'pair') return pairFunctor;
 	if (t.head === 'bind') return bindFunctor;
 	if (t.head === 'ref') return refFunctor;
+	if (t.head === 'io') return ioFunctor;
 	return null;
 }
 
@@ -374,5 +418,6 @@ export function getApplicative(t1: ExprType, t2: ExprType): Applicative | null {
 		)
 	)
 		return refApplicative;
+	if (t1.head === 'io') return ioApplicative;
 	return null;
 }
