@@ -9,12 +9,15 @@ import {
 	assertCont,
 	assertFn,
 	assertInt,
+	assertPair,
 	cont,
 	flatMap,
 	int,
 	map,
+	pair,
 	uncont,
 	unint,
+	unpair,
 	λ,
 } from './model';
 import { typeToPlainText } from './render';
@@ -210,6 +213,42 @@ const genFunctor = genApplicative.functor;
 const qnApplicative = setApplicative('qn');
 const qnFunctor = qnApplicative.functor;
 
+const pairFunctor: Functor = {
+	inner: type => {
+		assertPair(type);
+		return type.inner;
+	},
+	map: (fn, arg, s) => {
+		assertPair(arg.type);
+		const { inner, supplement } = arg.type;
+		return app(
+			app(
+				λ(fn.type, s, (fn, s) =>
+					λ(arg.type, s, (arg, s) =>
+						pair(
+							app(
+								s.var(fn),
+								unpair(
+									s.var(arg),
+									λ(inner, s, (val, s) =>
+										λ(supplement, s, (_, s) => s.var(val)),
+									),
+								),
+							),
+							unpair(
+								s.var(arg),
+								λ(inner, s, (_, s) => λ(supplement, s, (val, s) => s.var(val))),
+							),
+						),
+					),
+				),
+				fn,
+			),
+			arg,
+		);
+	},
+};
+
 export function getFunctor(t: ExprType): Functor | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'int') return intFunctor;
@@ -217,6 +256,7 @@ export function getFunctor(t: ExprType): Functor | null {
 	if (t.head === 'pl') return plFunctor;
 	if (t.head === 'gen') return genFunctor;
 	if (t.head === 'qn') return qnFunctor;
+	if (t.head === 'pair') return pairFunctor;
 	return null;
 }
 
