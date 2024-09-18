@@ -11,16 +11,20 @@ import {
 	assertFn,
 	assertInt,
 	assertPair,
+	assertRef,
 	bind,
+	bindingsEqual,
 	cont,
 	flatMap,
 	int,
 	map,
 	pair,
+	ref,
 	unbind,
 	uncont,
 	unint,
 	unpair,
+	unref,
 	λ,
 } from './model';
 import { typeToPlainText } from './render';
@@ -287,6 +291,60 @@ const bindFunctor: Functor = {
 	},
 };
 
+const refFunctor: Functor = {
+	inner: type => {
+		assertRef(type);
+		return type.inner;
+	},
+	map: (fn, arg, s) => {
+		assertRef(arg.type);
+		const binding = arg.type.binding;
+		return app(
+			app(
+				λ(fn.type, s, (fn, s) =>
+					λ(arg.type, s, (arg, s) =>
+						ref(
+							binding,
+							λ('e', s, (val, s) =>
+								app(s.var(fn), app(unref(s.var(arg)), s.var(val))),
+							),
+						),
+					),
+				),
+				fn,
+			),
+			arg,
+		);
+	},
+};
+
+const refApplicative: Applicative = {
+	functor: refFunctor,
+	apply: (fn, arg, s) => {
+		assertRef(arg.type);
+		const binding = arg.type.binding;
+		return app(
+			app(
+				λ(fn.type, s, (fn, s) =>
+					λ(arg.type, s, (arg, s) =>
+						ref(
+							binding,
+							λ('e', s, (val, s) =>
+								app(
+									app(unref(s.var(fn)), s.var(val)),
+									app(unref(s.var(arg)), s.var(val)),
+								),
+							),
+						),
+					),
+				),
+				fn,
+			),
+			arg,
+		);
+	},
+};
+
 export function getFunctor(t: ExprType): Functor | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'int') return intFunctor;
@@ -296,6 +354,7 @@ export function getFunctor(t: ExprType): Functor | null {
 	if (t.head === 'qn') return qnFunctor;
 	if (t.head === 'pair') return pairFunctor;
 	if (t.head === 'bind') return bindFunctor;
+	if (t.head === 'ref') return refFunctor;
 	return null;
 }
 
@@ -307,5 +366,13 @@ export function getApplicative(t1: ExprType, t2: ExprType): Applicative | null {
 	if (t1.head === 'pl') return plApplicative;
 	if (t1.head === 'gen') return genApplicative;
 	if (t1.head === 'qn') return qnApplicative;
+	if (
+		t1.head === 'ref' &&
+		bindingsEqual(
+			t1.binding,
+			(t2 as ExprType & object & { head: 'ref' }).binding,
+		)
+	)
+		return refApplicative;
 	return null;
 }
