@@ -6,15 +6,18 @@ import {
 	type Scope,
 	type SetHead,
 	app,
+	assertBind,
 	assertCont,
 	assertFn,
 	assertInt,
 	assertPair,
+	bind,
 	cont,
 	flatMap,
 	int,
 	map,
 	pair,
+	unbind,
 	uncont,
 	unint,
 	unpair,
@@ -249,6 +252,41 @@ const pairFunctor: Functor = {
 	},
 };
 
+const bindFunctor: Functor = {
+	inner: type => {
+		assertBind(type);
+		return type.inner;
+	},
+	map: (fn, arg, s) => {
+		assertBind(arg.type);
+		const { binding, inner } = arg.type;
+		return app(
+			app(
+				λ(fn.type, s, (fn, s) =>
+					λ(arg.type, s, (arg, s) =>
+						bind(
+							binding,
+							unbind(
+								s.var(arg),
+								λ('e', s, (val, s) => λ(inner, s, (_, s) => s.var(val))),
+							),
+							app(
+								s.var(fn),
+								unbind(
+									s.var(arg),
+									λ('e', s, (_, s) => λ(inner, s, (val, s) => s.var(val))),
+								),
+							),
+						),
+					),
+				),
+				fn,
+			),
+			arg,
+		);
+	},
+};
+
 export function getFunctor(t: ExprType): Functor | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'int') return intFunctor;
@@ -257,6 +295,7 @@ export function getFunctor(t: ExprType): Functor | null {
 	if (t.head === 'gen') return genFunctor;
 	if (t.head === 'qn') return qnFunctor;
 	if (t.head === 'pair') return pairFunctor;
+	if (t.head === 'bind') return bindFunctor;
 	return null;
 }
 
