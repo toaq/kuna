@@ -34,3 +34,7 @@ export const covertLittleVs: Partial<Record<CovertValue, Expr>> = {
 	),
 	BE: λ(Fn('v', 't'), closed, (pred, s) => s.var(pred)),
 };
+
+export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
+
+export const covertSigma = λ('t', closed, (t, s) => s.var(t));

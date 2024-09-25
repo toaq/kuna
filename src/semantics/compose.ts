@@ -30,7 +30,9 @@ export function compose_(
 		subtype(left, right.domain)
 	) {
 		mode.push('<');
-		return λ(right, closed, (r, s) => s.var(r));
+		return λ(left, closed, (l, s) =>
+			λ(right, s, (r, s) => app(s.var(r), s.var(l))),
+		);
 	}
 
 	const applicative = getApplicative(left, right);
