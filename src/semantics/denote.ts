@@ -1,9 +1,17 @@
 import { Impossible, Unimplemented, Unrecognized } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
+import { inTone } from '../morphology/tokenize';
+import { Tone } from '../morphology/tone';
 import { getFrame } from '../syntax/serial';
 import type { Leaf, StrictTree } from '../tree';
 import { compose } from './compose';
-import { covertLittleVs, covertSigma, covertV, pronominalTenses } from './data';
+import {
+	covertLittleVs,
+	covertSigma,
+	covertV,
+	pronominalTenses,
+	pronouns,
+} from './data';
 import { type DTree, type Expr, Fn, IO, Int, closed, lex } from './model';
 
 function denoteLeaf(leaf: Leaf): Expr {
@@ -38,6 +46,17 @@ function denoteLeaf(leaf: Leaf): Expr {
 		throw new Unimplemented('Overt 𝘷');
 	}
 
+	if (leaf.label === 'DP') {
+		if (leaf.word.covert) throw new Unimplemented('Covert DP');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`DP: ${leaf.word.text}`);
+
+		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+		const type = pronouns.get(toaq);
+		if (type === undefined) throw new Unrecognized(`DP: ${toaq}`);
+		return lex(toaq, type, closed);
+	}
+
 	if (leaf.label === 'Asp') {
 		let toaq: string;
 		if (leaf.word.covert) {
@@ -61,6 +80,7 @@ function denoteLeaf(leaf: Leaf): Expr {
 		} else {
 			toaq = leaf.word.entry.toaq.replace(/-$/, '');
 		}
+
 		return lex(
 			toaq,
 			toaq === 'sula'
@@ -71,12 +91,9 @@ function denoteLeaf(leaf: Leaf): Expr {
 	}
 
 	if (leaf.label === 'Σ') {
-		if (leaf.word.covert) {
-			return covertSigma;
-		}
-		if (leaf.word.entry === undefined) {
+		if (leaf.word.covert) return covertSigma;
+		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`Σ: ${leaf.word.text}`);
-		}
 		const toaq = leaf.word.entry.toaq.replace(/-$/, '');
 		return lex(toaq, Fn('t', 't'), closed);
 	}

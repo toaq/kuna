@@ -2,6 +2,9 @@ import type { CovertValue } from '../tree';
 import {
 	type Expr,
 	Fn,
+	IO,
+	Int,
+	Pl,
 	agent,
 	and,
 	app,
@@ -34,6 +37,18 @@ export const covertLittleVs: Partial<Record<CovertValue, Expr>> = {
 	),
 	BE: λ(Fn('v', 't'), closed, (pred, s) => s.var(pred)),
 };
+
+export const pronouns = new Map([
+	['jí', IO(Int('e'))],
+	['súq', IO(Int('e'))],
+	['nháo', IO(Int('e'))],
+	['súna', IO(Int(Pl('e')))],
+	['nhána', IO(Int(Pl('e')))],
+	['súho', IO(Int(Pl('e')))],
+	['úmo', IO(Int(Pl('e')))],
+	['íme', IO(Int(Pl('e')))],
+	['áma', IO(Int(Pl('e')))],
+]);
 
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
 
