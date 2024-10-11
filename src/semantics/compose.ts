@@ -55,33 +55,32 @@ export function compose_(
 		);
 	}
 
-	const leftFunctor = getFunctor(left);
-	if (leftFunctor !== null) {
-		mode.push('↑R');
-		const { inner, map } = leftFunctor;
-		const cont = compose_(inner(left), right, mode);
-		return app(
-			λ(cont.type, closed, (cont, s) =>
-				λ(left, s, (l, s) =>
-					λ(right, s, (r, s) =>
-						map(
-							λ(inner(left), s, (l_, s) =>
-								app(app(s.var(cont), s.var(l_)), s.var(r)),
+	const functor = getFunctor(left, right);
+	if (functor !== null) {
+		const [choice, { inner, map }] = functor;
+
+		if (choice === 'left') {
+			mode.push('↑R');
+			const cont = compose_(inner(left), right, mode);
+			return app(
+				λ(cont.type, closed, (cont, s) =>
+					λ(left, s, (l, s) =>
+						λ(right, s, (r, s) =>
+							map(
+								λ(inner(left), s, (l_, s) =>
+									app(app(s.var(cont), s.var(l_)), s.var(r)),
+								),
+								s.var(l),
+								s,
 							),
-							s.var(l),
-							s,
 						),
 					),
 				),
-			),
-			cont,
-		);
-	}
+				cont,
+			);
+		}
 
-	const rightFunctor = getFunctor(right);
-	if (rightFunctor !== null) {
 		mode.push('↑L');
-		const { inner, map } = rightFunctor;
 		const cont = compose_(left, inner(right), mode);
 		return app(
 			λ(cont.type, closed, (cont, s) =>

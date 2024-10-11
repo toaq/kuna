@@ -1,5 +1,7 @@
 import { Impossible } from '../core/error';
 import {
+	type AnimacyClass,
+	type Binding,
 	type Expr,
 	type ExprType,
 	Fn,
@@ -388,7 +390,81 @@ const ioApplicative: Applicative = {
 	},
 };
 
-export function getFunctor(t: ExprType): Functor | null {
+const functorPrecedence = new Map(
+	(
+		[
+			// Starting with lowest precedence
+			'io',
+			'cont',
+			'pair',
+			'qn',
+			'gen',
+			'int',
+			'pl',
+			'ref',
+			'bind',
+		] as (ExprType & object)['head'][]
+	).map((head, i) => [head, i]),
+);
+
+const bindingTypePrecedence = new Map(
+	(['resumptive', 'verb', 'animacy', 'head'] as Binding['type'][]).map(
+		(type, i) => [type, i],
+	),
+);
+
+const animacyPrecedence = new Map(
+	(['animate', 'inanimate', 'abstract', 'descriptive'] as AnimacyClass[]).map(
+		(animacy, i) => [animacy, i],
+	),
+);
+
+/**
+ * Given two types which may or may not be functors, determine which functor
+ * should scope over the other. Biased toward the left.
+ */
+function chooseFunctor(left: ExprType, right: ExprType): ExprType {
+	if (typeof left === 'string') return right;
+	if (typeof right === 'string') return left;
+	if (left.head === right.head) {
+		if (left.head === 'bind' || left.head === 'ref') {
+			const rightCasted = right as ExprType & object & { head: 'bind' | 'ref' };
+			if (left.binding.type === rightCasted.binding.type) {
+				switch (left.binding.type) {
+					case 'resumptive':
+						return left;
+					case 'verb':
+						return left.binding.verb <=
+							(rightCasted.binding as Binding & { type: 'verb' }).verb
+							? left
+							: right;
+					case 'animacy':
+						return animacyPrecedence.get(left.binding.class)! <=
+							animacyPrecedence.get(
+								(rightCasted.binding as Binding & { type: 'animacy' }).class,
+							)!
+							? left
+							: right;
+					case 'head':
+						return left.binding.head <=
+							(rightCasted.binding as Binding & { type: 'head' }).head
+							? left
+							: right;
+				}
+			}
+			return bindingTypePrecedence.get(left.binding.type)! <
+				bindingTypePrecedence.get(rightCasted.binding.type)!
+				? left
+				: right;
+		}
+		return left;
+	}
+	return functorPrecedence.get(left.head)! < functorPrecedence.get(right.head)!
+		? left
+		: right;
+}
+
+function getFunctor_(t: ExprType): Functor | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'int') return intFunctor;
 	if (t.head === 'cont') return contFunctor;
@@ -402,22 +478,34 @@ export function getFunctor(t: ExprType): Functor | null {
 	return null;
 }
 
-export function getApplicative(t1: ExprType, t2: ExprType): Applicative | null {
-	if (typeof t1 === 'string' || typeof t2 === 'string') return null;
-	if (t1.head !== t2.head) return null;
-	if (t1.head === 'int') return intApplicative;
-	if (t1.head === 'cont') return contApplicative;
-	if (t1.head === 'pl') return plApplicative;
-	if (t1.head === 'gen') return genApplicative;
-	if (t1.head === 'qn') return qnApplicative;
+export function getFunctor(
+	left: ExprType,
+	right: ExprType,
+): ['left' | 'right', Functor] | null {
+	const choice = chooseFunctor(left, right);
+	const f = getFunctor_(choice);
+	return f && [choice === left ? 'left' : 'right', f];
+}
+
+export function getApplicative(
+	left: ExprType,
+	right: ExprType,
+): Applicative | null {
+	if (typeof left === 'string' || typeof right === 'string') return null;
+	if (left.head !== right.head) return null;
+	if (left.head === 'int') return intApplicative;
+	if (left.head === 'cont') return contApplicative;
+	if (left.head === 'pl') return plApplicative;
+	if (left.head === 'gen') return genApplicative;
+	if (left.head === 'qn') return qnApplicative;
 	if (
-		t1.head === 'ref' &&
+		left.head === 'ref' &&
 		bindingsEqual(
-			t1.binding,
-			(t2 as ExprType & object & { head: 'ref' }).binding,
+			left.binding,
+			(right as ExprType & object & { head: 'ref' }).binding,
 		)
 	)
 		return refApplicative;
-	if (t1.head === 'io') return ioApplicative;
+	if (left.head === 'io') return ioApplicative;
 	return null;
 }
