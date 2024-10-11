@@ -844,8 +844,10 @@ export function andMap(op: Expr, project: Expr): Expr {
 /**
  * Sequences two context operations, discarding their results.
  */
-// This should be named 'then', but exports named 'then' currently break Vitest
-// https://github.com/vitest-dev/vitest/issues/6685
+// This should be named 'then', but exports named 'then' get called during the
+// promise resolution process when importing a module dynamically. This breaks
+// Vitest, for example.
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import#module_namespace_object
 export function sequence(first: Expr, second: Expr): Expr {
 	assertIO(first.type);
 	assertIO(second.type);
