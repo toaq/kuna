@@ -844,7 +844,9 @@ export function andMap(op: Expr, project: Expr): Expr {
 /**
  * Sequences two context operations, discarding their results.
  */
-export function then(first: Expr, second: Expr): Expr {
+// This should be named 'then', but exports named 'then' currently break Vitest
+// https://github.com/vitest-dev/vitest/issues/6685
+export function sequence(first: Expr, second: Expr): Expr {
 	assertIO(first.type);
 	assertIO(second.type);
 	return app(
