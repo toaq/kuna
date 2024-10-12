@@ -2,11 +2,11 @@ import { Impossible, Unimplemented } from '../core/error';
 import { baseForm } from '../morphology/tokenize';
 import {
 	type Branch,
+	type Label,
 	type Leaf,
 	type StrictTree,
 	assertBranch,
 	assertLabel,
-	type Label,
 } from '../tree';
 import { leafText as actualLeafText } from '../tree';
 import type { G_A, G_N, G_PN, G_V, G_V2, G_V2S, G_V3, G_VS } from './lexicon';
@@ -551,6 +551,7 @@ export class GfTranslator {
 	private relativeCpToGf(tree: StrictTree): G_RS {
 		assertBranch(tree);
 		assertLabel(tree, 'CPrel');
+		// TODO: Could actually be a bare TP
 		return this.relativeΣpToGf(tree.right);
 	}
 

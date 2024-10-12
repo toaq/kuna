@@ -126,9 +126,11 @@ MSPdet -> Sigma Modal SigmaPdet {% makeSigmaT1ModalvP %}
 # jeo pu chum hao jí
 SigmaPcon<S> -> SigmaP<S> {% id %}
 SigmaPcon<S> -> SigmaP<S> Conjunction SigmaPcon<S> {% makeConn %}
+SigmaP<S> -> TP<S> {% id %}
 SigmaP<S> -> Sigmacon TP<S> {% makeBranch('ΣP') %}
 
 # (sá) jeo pu chum hao
+SigmaPdet -> TPdet {% id %}
 SigmaPdet -> Sigmacon TPdet {% makeBranch('ΣP') %}
 
 # pu chum hao jí
@@ -193,7 +195,6 @@ CPargfoc -> Focus CParg {% makeBranch('FocusP') %}
 CParg -> CPsub {% makeBranchCovertLeft('DP', 'D') %}
 CPrelcon -> CPrel {% id %}
 CPrelcon -> CPrel Conjunction CPrelcon {% makeConn %}
-Sigmacon -> null {% makeCovertLeaf('Σ') %}
 Sigmacon -> Sigma {% id %}
 Sigmacon -> Sigma Conjunction Sigmacon {% makeConn %}
 Tcon -> null {% makeCovertLeaf('T') %}
