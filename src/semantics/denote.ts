@@ -12,7 +12,17 @@ import {
 	pronominalTenses,
 	pronouns,
 } from './data';
-import { type DTree, type Expr, Fn, IO, Int, closed, lex } from './model';
+import {
+	Cont,
+	type DTree,
+	type Expr,
+	Fn,
+	IO,
+	Int,
+	Pl,
+	closed,
+	lex,
+} from './model';
 
 function denoteLeaf(leaf: Leaf): Expr {
 	if (leaf.label === 'V' || leaf.label === 'VP') {
@@ -96,6 +106,20 @@ function denoteLeaf(leaf: Leaf): Expr {
 			throw new Unrecognized(`Σ: ${leaf.word.text}`);
 		const toaq = leaf.word.entry.toaq.replace(/-$/, '');
 		return lex(toaq, Fn('t', 't'), closed);
+	}
+
+	if (leaf.label === '&') {
+		if (leaf.word.covert) throw new Impossible('Covert &');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`&: ${leaf.word.text}`);
+		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+		return lex(
+			toaq,
+			toaq === 'róı'
+				? Fn(Int(Pl('e')), Fn(Int(Pl('e')), Int(Pl('e'))))
+				: Fn(Int(Pl('e')), Fn(Int(Pl('e')), Cont(Int(Pl('e'))))),
+			closed,
+		);
 	}
 
 	throw new Unimplemented(`TODO: ${leaf.label}`);
