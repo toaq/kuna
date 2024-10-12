@@ -64,10 +64,10 @@ export type ExprType =
 	// {supplement}; isomorphic to {inner} × {supplement}.
 	| { head: 'pair'; inner: ExprType; supplement: ExprType }
 	// An expression which binds a variable and behaves in local syntax like
-	// {inner}; isomorphic to {inner} × {binding} × e.
+	// {inner}; isomorphic to {inner} × {binding} × Int Pl e.
 	| { head: 'bind'; binding: Binding; inner: ExprType }
 	// An expression which references a variable and behaves in local syntax like
-	// {inner}; isomorphic to {binding} × (e → {inner}).
+	// {inner}; isomorphic to {binding} × (Int Pl e → {inner}).
 	| { head: 'ref'; binding: Binding; inner: ExprType }
 	// An expression which interacts with the discourse context (e.g. through
 	// deixis or a speech act) and behaves in local syntax like {inner}; isomorphic
@@ -755,7 +755,7 @@ export function bind(binding: Binding, value: Expr, body: Expr): Expr {
 		app(
 			{
 				head: 'constant',
-				type: Fn('e', Fn(inner, Bind(binding, inner))),
+				type: Fn(Int(Pl('e')), Fn(inner, Bind(binding, inner))),
 				scope: body.scope,
 				name: 'bind',
 			},
@@ -777,7 +777,10 @@ export function unbind(bind: Expr, project: Expr): Expr {
 		app(
 			{
 				head: 'constant',
-				type: Fn(bind.type, Fn(Fn('e', Fn(bind.type.inner, out)), out)),
+				type: Fn(
+					bind.type,
+					Fn(Fn(Int(Pl('e')), Fn(bind.type.inner, out)), out),
+				),
 				scope: bind.scope,
 				name: 'unbind',
 			},
@@ -796,7 +799,7 @@ export function ref(binding: Binding, body: Expr): Expr {
 	return app(
 		{
 			head: 'constant',
-			type: Fn(Fn('e', inner), Ref(binding, inner)),
+			type: Fn(Fn(Int(Pl('e')), inner), Ref(binding, inner)),
 			scope: body.scope,
 			name: 'ref',
 		},
@@ -812,7 +815,7 @@ export function unref(ref: Expr): Expr {
 	return app(
 		{
 			head: 'constant',
-			type: Fn(ref.type, Fn('e', ref.type.inner)),
+			type: Fn(ref.type, Fn(Int(Pl('e')), ref.type.inner)),
 			scope: ref.scope,
 			name: 'unref',
 		},

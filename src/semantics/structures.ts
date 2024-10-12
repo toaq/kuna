@@ -5,6 +5,8 @@ import {
 	type Expr,
 	type ExprType,
 	Fn,
+	Int,
+	Pl,
 	type Scope,
 	type SetHead,
 	andMap,
@@ -277,13 +279,17 @@ const bindFunctor: Functor = {
 							binding,
 							unbind(
 								s.var(arg),
-								λ('e', s, (val, s) => λ(inner, s, (_, s) => s.var(val))),
+								λ(Int(Pl('e')), s, (val, s) =>
+									λ(inner, s, (_, s) => s.var(val)),
+								),
 							),
 							app(
 								s.var(fn),
 								unbind(
 									s.var(arg),
-									λ('e', s, (_, s) => λ(inner, s, (val, s) => s.var(val))),
+									λ(Int(Pl('e')), s, (_, s) =>
+										λ(inner, s, (val, s) => s.var(val)),
+									),
 								),
 							),
 						),
@@ -310,7 +316,7 @@ const refFunctor: Functor = {
 					λ(arg.type, s, (arg, s) =>
 						ref(
 							binding,
-							λ('e', s, (val, s) =>
+							λ(Int(Pl('e')), s, (val, s) =>
 								app(s.var(fn), app(unref(s.var(arg)), s.var(val))),
 							),
 						),
@@ -334,7 +340,7 @@ const refApplicative: Applicative = {
 					λ(arg.type, s, (arg, s) =>
 						ref(
 							binding,
-							λ('e', s, (val, s) =>
+							λ(Int(Pl('e')), s, (val, s) =>
 								app(
 									app(unref(s.var(fn)), s.var(val)),
 									app(unref(s.var(arg)), s.var(val)),
@@ -399,10 +405,10 @@ const functorPrecedence = new Map(
 			'pair',
 			'qn',
 			'gen',
-			'int',
-			'pl',
 			'ref',
 			'bind',
+			'int',
+			'pl',
 		] as (ExprType & object)['head'][]
 	).map((head, i) => [head, i]),
 );
@@ -424,8 +430,8 @@ const animacyPrecedence = new Map(
  * should scope over the other. Biased toward the left.
  */
 function chooseFunctor(left: ExprType, right: ExprType): ExprType {
-	if (typeof left === 'string') return right;
-	if (typeof right === 'string') return left;
+	if (typeof left === 'string' || left.head === 'fn') return right;
+	if (typeof right === 'string' || right.head === 'fn') return left;
 	if (left.head === right.head) {
 		if (left.head === 'bind' || left.head === 'ref') {
 			const rightCasted = right as ExprType & object & { head: 'bind' | 'ref' };
