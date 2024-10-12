@@ -114,6 +114,7 @@ function denoteLeaf(leaf: Leaf): Expr {
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`&: ${leaf.word.text}`);
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+		// TODO: Generalize to more than just verbal arguments
 		return lex(
 			toaq,
 			toaq === 'róı'
@@ -136,6 +137,7 @@ function denoteLeaf(leaf: Leaf): Expr {
 		if (leaf.word.covert) throw new Impossible('Covert Focus');
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`Focus: ${leaf.word.text}`);
+		// TODO: Generalize to more than just verbal arguments
 		return lex(
 			leaf.word.entry.toaq,
 			Fn(
