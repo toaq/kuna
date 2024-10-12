@@ -122,6 +122,17 @@ function denoteLeaf(leaf: Leaf): Expr {
 		);
 	}
 
+	if (leaf.label === 'Focus') {
+		if (leaf.word.covert) throw new Impossible('Covert Focus');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`Focus: ${leaf.word.text}`);
+		return lex(
+			leaf.word.entry.toaq,
+			Fn(Int(Pl('e')), Cont(Int(Pl('e')))),
+			closed,
+		);
+	}
+
 	throw new Unimplemented(`TODO: ${leaf.label}`);
 }
 
