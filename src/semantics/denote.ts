@@ -13,6 +13,7 @@ import {
 	pronouns,
 } from './data';
 import {
+	Bind,
 	Cont,
 	type DTree,
 	type Expr,
@@ -116,8 +117,17 @@ function denoteLeaf(leaf: Leaf): Expr {
 		return lex(
 			toaq,
 			toaq === 'róı'
-				? Fn(Int(Pl('e')), Fn(Int(Pl('e')), Int(Pl('e'))))
-				: Fn(Int(Pl('e')), Fn(Int(Pl('e')), Cont(Int(Pl('e'))))),
+				? Fn(
+						Int(Pl('e')),
+						Fn(Int(Pl('e')), Bind({ type: 'head', head: 'róı' }, Int(Pl('e')))),
+					)
+				: Fn(
+						Int(Pl('e')),
+						Fn(
+							Int(Pl('e')),
+							Cont(Bind({ type: 'head', head: toaq }, Int(Pl('e')))),
+						),
+					),
 			closed,
 		);
 	}
@@ -128,7 +138,10 @@ function denoteLeaf(leaf: Leaf): Expr {
 			throw new Unrecognized(`Focus: ${leaf.word.text}`);
 		return lex(
 			leaf.word.entry.toaq,
-			Fn(Int(Pl('e')), Cont(Int(Pl('e')))),
+			Fn(
+				Int(Pl('e')),
+				Cont(Bind({ type: 'head', head: leaf.word.entry.toaq }, Int(Pl('e')))),
+			),
 			closed,
 		);
 	}
