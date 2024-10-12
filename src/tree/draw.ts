@@ -26,7 +26,7 @@ interface TreeDrawerOptions {
 
 class TreeDrawer {
 	private margin = 40;
-	private font = '27px Noto Sans Math, Noto Sans';
+	private font = '27px Iosevka Toaq Aile, Noto Sans Math, Noto Sans';
 
 	private canvas: Canvas;
 	readonly ctx: CanvasRenderingContext2D;

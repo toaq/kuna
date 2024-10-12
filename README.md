@@ -27,7 +27,8 @@ and run the code on your computer using
 [Node.js](https://nodejs.org/en/download/) and [pnpm](https://pnpm.io/).
 
 For proper PNG rendering, install
-[Noto Sans Math](https://fonts.google.com/noto/specimen/Noto+Sans+Math).
+[Noto Sans Math](https://fonts.google.com/noto/specimen/Noto+Sans+Math) and
+[Iosevka Toaq](https://github.com/toaq/Iosevka/releases/tag/latest).
 
 To run as a web app (at <http://localhost:5173/>), run these commands in a
 terminal:
