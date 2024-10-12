@@ -36,6 +36,7 @@ const {
 	makeBranchCovertLeft,
 	makeConn,
 	makeCovertLeaf,
+	makeCPdet,
 	makeDiscourse,
     makeEmptySerial,
 	makeEvAP,
@@ -87,18 +88,14 @@ CPrel -> Crel Clause<sub> {% makeBranch('CPrel') %}
 # (ráı nä) hao
 CPrelna<S> -> Clause<S> {% makeBranchCovertLeft('CPrel', 'Crel') %}
 # (sá) ∅ hao
-CPdet -> MSPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
+CPdet -> MSPdet CPrelcon:? {% makeCPdet %}
 
 # jí
 DP -> %pronoun Free:* {% makeLeaf('DP') %}
 # hụ́ꝡa
 DP -> Hu Word {% makeBranch('DP') %}
 # sá ...
-DP -> D nP {% makeBranch('DP') %}
-# (sá) ꝡë hao
-nP -> nP CPrelcon {% makeBranch('𝘯P') %}
-# (sá) ∅ hao
-nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
+DP -> D CPdet {% makeBranch('DP') %}
 
 # ní bï pu hao
 Clause<S> -> Argument Bi Clause<S> {% make3L('TopicP', "Topic'") %}
@@ -175,7 +172,7 @@ DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
 # hụ̂ꝡa
 DPincorp -> Huincorp Word {% makeBranch('DP') %}
 # sâ ...
-DPincorp -> Dincorp nP {% makeBranch('DP') %}
+DPincorp -> Dincorp CPdet {% makeBranch('DP') %}
 
 Argument -> DPcon {% id %}
 Argument -> CPargcon {% id %}

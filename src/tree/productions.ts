@@ -270,6 +270,23 @@ export function makeConn(
 	};
 }
 
+export function makeCPdet([mspDet, relativeClause]: [Tree, Tree | null]): Tree {
+	const cpDet: Tree = {
+		label: 'CPrel',
+		left: makeNull('Crel'),
+		right: mspDet,
+		source: mspDet.source,
+	};
+	return relativeClause === null
+		? cpDet
+		: {
+				label: 'CPrel',
+				left: cpDet,
+				right: relativeClause,
+				source: catSource(cpDet, relativeClause),
+			};
+}
+
 export function makeAdjunctPI(
 	[adjunct, serial]: [Tree, Tree],
 	_location: number,

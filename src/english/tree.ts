@@ -85,9 +85,9 @@ function dpToEnglish(tree: Branch<Tree>): Constituent {
 	const d = tree.left;
 	const complement = tree.right as Branch<Tree>;
 	let noun: string;
-	if (complement.label === '𝘯P') {
+	if (complement.label === 'CPrel') {
 		const translator = new ClauseTranslator();
-		translator.processCP(complement.right);
+		translator.processCP(complement);
 		noun = translator.emit('DP');
 	} else if (complement.label === 'CP') {
 		const translator = new ClauseTranslator();

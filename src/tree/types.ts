@@ -99,8 +99,6 @@ export type Label =
 	| 'muP'
 	| 'nha'
 	| 'nhaP'
-	| '𝘯'
-	| '𝘯P'
 	| 'Q'
 	| 'QP'
 	| 'SA'

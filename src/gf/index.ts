@@ -6,6 +6,7 @@ import {
 	type StrictTree,
 	assertBranch,
 	assertLabel,
+	type Label,
 } from '../tree';
 import { leafText as actualLeafText } from '../tree';
 import type { G_A, G_N, G_PN, G_V, G_V2, G_V2S, G_V3, G_VS } from './lexicon';
@@ -199,7 +200,7 @@ export class GfTranslator {
 	 */
 	private npToGf(tree: StrictTree): G_CN {
 		assertBranch(tree);
-		assertLabel(tree, '𝘯P');
+		assertLabel(tree, '𝘯P' as Label); // TODO: 𝘯P doesn't exist anymore
 		const rs = this.relativeCpToGf(tree.right);
 		return this.simplifyRsToCn(rs) ?? ['RelCN', ['UseN', 'person_N'], rs];
 	}
@@ -280,7 +281,8 @@ export class GfTranslator {
 		}
 		const _d = tree.left;
 		const complement = tree.right as Branch<StrictTree>;
-		if (complement.label === '𝘯P') {
+		// TODO: 𝘯P doesn't exist anymore
+		if (complement.label === ('𝘯P' as Label)) {
 			const cn = this.npToGf(complement);
 			return ['DetCN', this.dToGf(tree.left), cn];
 		}
