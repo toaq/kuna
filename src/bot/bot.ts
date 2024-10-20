@@ -132,8 +132,13 @@ export class KunaBot {
 		const authors = entries.map(e => e.user);
 		authors.sort();
 
-		const questions = `Who defined which word? (${authors.join(', ')})\n\n${entries.map((e, i) => `${i + 1}. **${e.head}**`).join('\n')}`;
-		const answers = `Answers:\n\n${entries.map((e, i) => `${i + 1}. **${e.head}** ← ${e.user}`).join('\n')}`;
+		const poq = authors.join(', ');
+		const toa = entries.map((e, i) => `${i + 1}. **${e.head}**`).join('\n');
+		const tiaotei = entries
+			.map((e, i) => `${i + 1}. **${e.head}** ← ||${e.user}||`)
+			.join('\n');
+		const questions = `Who defined which word? (${poq})\n\n${toa}`;
+		const answers = `Answers:\n\n${tiaotei}`;
 
 		this.hostQuiz(interaction, questions, answers);
 	}
