@@ -24,7 +24,7 @@ async function post(
 
 async function fetchToadua(): Promise<{ results: any[] }> {
 	const query = JSON.stringify({ action: 'search', query: ['scope', 'en'] });
-	const response = await post('toadua.uakci.pl', '/api', query);
+	const response = await post('toadua.uakci.space', '/api', query);
 	return JSON.parse(response);
 }
 
