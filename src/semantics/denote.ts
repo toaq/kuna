@@ -24,6 +24,7 @@ import {
 	closed,
 	lex,
 } from './model';
+import { reduceExpr } from './reduce';
 
 function denoteLeaf(leaf: Leaf): Expr {
 	if (leaf.label === 'V' || leaf.label === 'VP') {
@@ -162,6 +163,7 @@ export function denote(tree: StrictTree): DTree {
 
 	const left = denote(tree.left);
 	const right = denote(tree.right);
-	const [denotation, mode] = compose(left.denotation, right.denotation);
+	const [expr, mode] = compose(left.denotation, right.denotation);
+	const denotation = reduceExpr(expr);
 	return { ...tree, left, right, denotation, mode };
 }
