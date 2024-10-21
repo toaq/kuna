@@ -831,13 +831,14 @@ export function unref(ref: Expr): Expr {
  * Projects the value returned by a context operation.
  */
 export function andMap(op: Expr, project: Expr): Expr {
-	assertIO(op.type);
-	assertFn(project.type);
+	assertIO(op.type); // IO a
+	assertFn(project.type); // a → b
 	const range = project.type.range;
 	return app(
 		app(
 			{
 				head: 'constant',
+				// IO a → (a → b) → IO b
 				type: Fn(op.type, Fn(Fn(op.type.inner, range), IO(range))),
 				scope: op.scope,
 				name: 'and_map',

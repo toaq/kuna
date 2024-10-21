@@ -254,11 +254,24 @@ h1 {
 	display: inline;
 }
 
-.dark-mode math .kuna-const,
+.dark-mode math .kuna-constant,
 .dark-mode math .kuna-quote {
 	color: #ff8888;
 }
 
-.dark-mode math .kuna-verb {
+.dark-mode math .kuna-lexeme {
 	color: #99eeff;
+}
+
+.type-hover:hover {
+	background-color: var(--blue);
+	color: white;
+	padding: 0 1px;
+	margin: 0 -1px;
+	position: relative;
+}
+
+.type-hover:has(.type-hover:hover) {
+	background-color: inherit;
+	color: inherit;
 }
