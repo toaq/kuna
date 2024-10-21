@@ -711,46 +711,87 @@ export function getRunner(t: ExprType): Runner | null {
 	return null;
 }
 
-/**
- * Given a type and a type constructor to search for, find the inner type given
- * by unwrapping the first occurrence of that type constructor within the type
- * constructor stack.
- */
-export function findInner(inType: ExprType, like: ExprType): ExprType | null {
+function coerceMonad_(
+	inType: ExprType,
+	like: ExprType,
+	wrap: (inner: ExprType) => ExprType,
+): ExprType | null {
 	if (typeof inType === 'string' || typeof like === 'string') return null;
 	if (inType.head !== like.head) {
 		const functor = getFunctor(inType);
-		return functor && findInner(functor.unwrap(inType), like);
+		return (
+			functor &&
+			coerceMonad_(
+				functor.unwrap(inType),
+				like,
+				getDistributive(inType) === null
+					? inner => wrap(functor.wrap(inner, inType))
+					: wrap,
+			)
+		);
 	}
-	if (inType.head === 'int') return inType.inner;
-	if (inType.head === 'cont') return inType.inner;
-	if (inType.head === 'pl') return inType.inner;
-	if (inType.head === 'gen') return inType.inner;
-	if (inType.head === 'qn') return inType.inner;
 	if (
-		inType.head === 'pair' &&
-		typesEqual(
-			inType.supplement,
-			(like as ExprType & object & { head: 'pair' }).supplement,
-		)
+		inType.head === 'int' ||
+		inType.head === 'cont' ||
+		inType.head === 'pl' ||
+		inType.head === 'gen' ||
+		inType.head === 'qn' ||
+		(inType.head === 'pair' &&
+			typesEqual(
+				inType.supplement,
+				(like as ExprType & object & { head: 'pair' }).supplement,
+			)) ||
+		(inType.head === 'bind' &&
+			bindingsEqual(
+				inType.binding,
+				(like as ExprType & object & { head: 'bind' }).binding,
+			)) ||
+		(inType.head === 'ref' &&
+			bindingsEqual(
+				inType.binding,
+				(like as ExprType & object & { head: 'ref' }).binding,
+			)) ||
+		inType.head === 'io'
 	)
-		return inType.inner;
-	if (
-		inType.head === 'bind' &&
-		bindingsEqual(
-			inType.binding,
-			(like as ExprType & object & { head: 'bind' }).binding,
-		)
-	)
-		return inType.inner;
-	if (
-		inType.head === 'ref' &&
-		bindingsEqual(
-			inType.binding,
-			(like as ExprType & object & { head: 'ref' }).binding,
-		)
-	)
-		return inType.inner;
-	if (inType.head === 'io') return inType.inner;
+		return wrap(inType.inner);
 	return null;
+}
+
+/**
+ * Determines whether a type is in a monad, and if so, searches for multiple
+ * layers of the monad in the effects stack that could be joined together.
+ * @returns If the type is in a monad and seems coercable to something that
+ *   could be joined, the monad along with the coerced input type of 'join'.
+ *   Otherwise, null.
+ */
+export function coerceMonad(type: ExprType): [Monad, ExprType] | null {
+	const monad = getMonad(type);
+	if (monad === null) return null;
+	const {
+		applicative: {
+			functor: { wrap, unwrap },
+		},
+	} = monad;
+	const coerced = coerceMonad_(unwrap(type), type, inner =>
+		wrap(wrap(inner, type), type),
+	);
+	return coerced && [monad, coerced];
+}
+
+/**
+ * Gets the "biggest" functor instance for a type that does not include any
+ * distributive functors. For example, if f, g, and h are functors and g is also
+ * a distributive functor, getBigNonDistributiveFunctor(f g h a) would return
+ * the composed functor of f and g, but not h.
+ *
+ * In other words, this allows you to strip away functors from a type until a
+ * distributive functor remains on top.
+ */
+export function getBigNonDistributiveFunctor(type: ExprType): Functor | null {
+	const distributive = getDistributive(type);
+	if (distributive !== null) return null;
+	const outer = getFunctor(type);
+	if (outer === null) return null;
+	const inner = getBigNonDistributiveFunctor(outer.unwrap(type));
+	return inner === null ? outer : composeFunctors(outer, inner);
 }
