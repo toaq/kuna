@@ -107,10 +107,12 @@ function coerceInput_(
 						),
 						cont,
 					),
-					[
-						inputSide === 'left' ? '→L' : inputSide === 'right' ? '→R' : '→',
-						mode,
-					],
+					inputSide === 'out'
+						? ['→', mode]
+						: [
+								inputSide === 'left' ? '→L' : '→R',
+								[inputSide === 'left' ? '↑R' : '↑L', mode],
+							],
 				];
 			}
 		}
