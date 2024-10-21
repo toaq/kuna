@@ -5,6 +5,7 @@ export type Associativity = 'left' | 'right' | 'any' | 'none';
 interface Token<Out> {
 	type: 'token';
 	content: Out;
+	exprType?: ExprType;
 }
 
 interface Join<Out> {
@@ -12,6 +13,7 @@ interface Join<Out> {
 	precedence: number;
 	associativity: Associativity;
 	parts: Render<Out>[];
+	exprType?: ExprType;
 }
 
 export type Render<Out> = Token<Out> | Join<Out>;
@@ -44,7 +46,7 @@ export abstract class Renderer<In, Out> {
 	 */
 	protected abstract join(tokens: Out[]): Out;
 
-	private bracketAll(r: Render<Out>): Render<Out> {
+	protected bracketAll(r: Render<Out>): Render<Out> {
 		if (r.type === 'token') return r;
 
 		return {

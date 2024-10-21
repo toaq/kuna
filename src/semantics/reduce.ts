@@ -1,5 +1,16 @@
 import _ from 'lodash';
-import { type Expr, type ExprType, app } from './model';
+import {
+	type Expr,
+	type ExprType,
+	andMap,
+	andThen,
+	app,
+	assertIO,
+	assertSet,
+	closed,
+	map,
+	λ,
+} from './model';
 
 function mapVariables(
 	e: Expr,
@@ -161,6 +172,79 @@ function reducePass(expr: Expr): Expr {
 					}
 				}
 			}
+
+			// [and_map ((and_map x) f)] g = and_map x (λz. g (f z))
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'and_map' &&
+				expr.fn.arg.head === 'apply' &&
+				expr.fn.arg.fn.head === 'apply' &&
+				expr.fn.arg.fn.fn.head === 'constant' &&
+				expr.fn.arg.fn.fn.name === 'and_map'
+			) {
+				const x = expr.fn.arg.fn.arg;
+				const f = expr.fn.arg.arg;
+				const g = expr.arg;
+				assertIO(x.type);
+				const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+				const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+				return andMap(
+					x,
+					λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+						app(gg, app(ff, s.var(z))),
+					),
+				);
+			}
+
+			// [and_then ((and_map x) f)] g = and_then x (λz. g (f z))
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'and_then' &&
+				expr.fn.arg.head === 'apply' &&
+				expr.fn.arg.fn.head === 'apply' &&
+				expr.fn.arg.fn.fn.head === 'constant' &&
+				expr.fn.arg.fn.fn.name === 'and_map'
+			) {
+				const x = expr.fn.arg.fn.arg;
+				const f = expr.fn.arg.arg;
+				const g = expr.arg;
+				assertIO(x.type);
+				const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+				const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+				return andThen(
+					x,
+					λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+						app(gg, app(ff, s.var(z))),
+					),
+				);
+			}
+
+			// [map ((map x) f)] g = map x (λz. g (f z))
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'map' &&
+				expr.fn.arg.head === 'apply' &&
+				expr.fn.arg.fn.head === 'apply' &&
+				expr.fn.arg.fn.fn.head === 'constant' &&
+				expr.fn.arg.fn.fn.name === 'map'
+			) {
+				const x = expr.fn.arg.fn.arg;
+				const f = expr.fn.arg.arg;
+				const g = expr.arg;
+				assertSet(x.type);
+				const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+				const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+				return map(
+					x,
+					λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+						app(gg, app(ff, s.var(z))),
+					),
+				);
+			}
+
 			return {
 				head: 'apply',
 				type: expr.type,

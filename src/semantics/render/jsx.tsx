@@ -80,7 +80,7 @@ export class Jsx extends Renderer<Expr, ReactNode> {
 				return { ...apply, exprType: e.type };
 			}
 			case 'lexeme':
-				return { ...token(`[[${e.name}]]`), exprType: e.type };
+				return { ...token(<b>{e.name}</b>), exprType: e.type };
 			case 'quote':
 				return { ...token(`"${e.text}"`), exprType: e.type };
 			case 'constant':
