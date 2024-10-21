@@ -146,7 +146,19 @@ function reducePass(expr: Expr): Expr {
 			if (expr.fn.head === 'lambda') {
 				// (λx. body) arg
 				if (isSmallExpr(expr.arg) || varOccurrences(expr.fn.body, 0) < 2) {
-					return substitute(0, expr.arg, expr.fn.body);
+					return reducePass(substitute(0, expr.arg, expr.fn.body));
+				}
+			}
+			if (expr.fn.head === 'constant') {
+				const outer = expr.fn.name;
+				if (expr.arg.head === 'apply' && expr.arg.fn.head === 'constant') {
+					const inner = expr.arg.fn.name;
+					if (outer === 'unint' && inner === 'int') {
+						return reducePass(expr.arg.arg);
+					}
+					if (outer === 'int' && inner === 'unint') {
+						return reducePass(expr.arg.arg);
+					}
 				}
 			}
 			return {
