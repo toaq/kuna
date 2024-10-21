@@ -21,14 +21,9 @@ export function TreeBrowser(props: {
 				<strong>{props.tree.label}</strong>
 				{type}{' '}
 				{'denotation' in tree ? (
-					<small
-						style={{
-							color: 'var(--blue)',
-							fontFamily: 'Iosevka Toaq Aile, Iosevka Aile, Noto Sans',
-						}}
-					>
+					<span className="toaq-font effects-denotation">
 						{toJsx(tree.denotation)}
-					</small>
+					</span>
 				) : undefined}
 			</li>
 

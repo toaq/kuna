@@ -1,3 +1,15 @@
+@font-face {
+	font-family: "Iosevka Toaq Aile";
+	font-weight: 400;
+	src: url("https://raw.githubusercontent.com/toaq/fonts/refs/heads/main/woff2/IosevkaToaqAile-Regular.woff2") format(woff2);
+}
+
+@font-face {
+	font-family: "Iosevka Toaq Aile";
+	font-weight: 700;
+	src: url("https://raw.githubusercontent.com/toaq/fonts/refs/heads/main/woff2/IosevkaToaqAile-Bold.woff2") format(woff2);
+}
+
 * {
 	box-sizing: border-box;
 }
@@ -13,6 +25,10 @@ body {
 	font-size: 14px;
 	margin: 0px;
 	height: 100%;
+}
+
+.toaq-font {
+	font-family: 'Iosevka Toaq Aile', 'Noto Sans', sans-serif;
 }
 
 h1 {
@@ -117,9 +133,9 @@ h1 {
 	margin-left: auto;
 }
 
-.kuna textarea,
-.kuna select,
-.kuna button {
+textarea,
+select,
+button {
 	font-family: inherit;
 }
 
@@ -274,4 +290,9 @@ h1 {
 .type-hover:has(.type-hover:hover) {
 	background-color: inherit;
 	color: inherit;
+}
+
+.effects-denotation {
+	margin-inline-start: 1rem;
+	color: var(--blue);
 }
