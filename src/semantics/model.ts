@@ -7,6 +7,7 @@ export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 
 export type Binding =
 	| { type: 'resumptive' }
+	| { type: 'covert resumptive' }
 	| { type: 'verb'; verb: string }
 	| { type: 'animacy'; class: AnimacyClass }
 	| { type: 'head'; head: string };
@@ -18,6 +19,8 @@ export function bindingsEqual(b1: Binding, b2: Binding): boolean {
 	switch (b1.type) {
 		case 'resumptive':
 			return b2.type === 'resumptive';
+		case 'covert resumptive':
+			return b2.type === 'covert resumptive';
 		case 'verb':
 			return b2.type === 'verb' && b1.verb === b2.verb;
 		case 'animacy':
@@ -371,13 +374,14 @@ export type Expr =
 	| Constant<'then'>
 	| Constant<'and_then'>
 	| Constant<'and'>
+	| Constant<'implies'>
 	| Constant<'equals'>
 	| Constant<'agent'>;
 
 /**
  * A tree with denotations.
  */
-export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode[] })) & {
+export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode })) & {
 	denotation: Expr;
 };
 
@@ -896,6 +900,15 @@ export function and(scope: Scope): Expr {
 		type: Fn('t', Fn('t', 't')),
 		scope: scope.types,
 		name: 'and',
+	};
+}
+
+export function implies(scope: Scope): Expr {
+	return {
+		head: 'constant',
+		type: Fn('t', Fn('t', 't')),
+		scope: scope.types,
+		name: 'implies',
 	};
 }
 

@@ -51,6 +51,8 @@ export class PlainTextType extends Renderer<ExprType, string> {
 		switch (b.type) {
 			case 'resumptive':
 				return 'hóa';
+			case 'covert resumptive':
+				return 'PRO';
 			case 'verb':
 				return inTone(b.verb, Tone.T2);
 			case 'animacy':

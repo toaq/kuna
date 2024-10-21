@@ -6,9 +6,12 @@ import { getFrame } from '../syntax/serial';
 import type { Leaf, StrictTree } from '../tree';
 import { compose } from './compose';
 import {
+	covertCrel,
 	covertLittleVs,
+	covertResumptive,
 	covertSigma,
 	covertV,
+	determiners,
 	pronominalTenses,
 	pronouns,
 } from './data';
@@ -59,7 +62,7 @@ function denoteLeaf(leaf: Leaf): Expr {
 	}
 
 	if (leaf.label === 'DP') {
-		if (leaf.word.covert) throw new Unimplemented('Covert DP');
+		if (leaf.word.covert) return covertResumptive;
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`DP: ${leaf.word.text}`);
 
@@ -108,6 +111,27 @@ function denoteLeaf(leaf: Leaf): Expr {
 			throw new Unrecognized(`Σ: ${leaf.word.text}`);
 		const toaq = leaf.word.entry.toaq.replace(/-$/, '');
 		return lex(toaq, Fn('t', 't'), closed);
+	}
+
+	// TODO: Add bindings to DPs
+	if (leaf.label === 'D') {
+		if (leaf.word.covert) throw new Impossible('Covert D');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`D: ${leaf.word.text}`);
+
+		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+		const type = determiners.get(toaq);
+		if (type === undefined) throw new Unrecognized(`D: ${toaq}`);
+		return lex(
+			toaq,
+			type(inner => inner),
+			closed,
+		);
+	}
+
+	if (leaf.label === 'Crel') {
+		if (leaf.word.covert) return covertCrel;
+		throw new Unimplemented('Overt Crel');
 	}
 
 	if (leaf.label === '&') {
