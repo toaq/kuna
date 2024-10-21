@@ -170,6 +170,18 @@ function reducePass(expr: Expr): Expr {
 					if (outer === 'int' && inner === 'unint') {
 						return reducePass(expr.arg.arg);
 					}
+					if (outer === 'unref' && inner === 'ref') {
+						return reducePass(expr.arg.arg);
+					}
+					if (outer === 'ref' && inner === 'unref') {
+						return reducePass(expr.arg.arg);
+					}
+					if (outer === 'uncont' && inner === 'cont') {
+						return reducePass(expr.arg.arg);
+					}
+					if (outer === 'cont' && inner === 'uncont') {
+						return reducePass(expr.arg.arg);
+					}
 				}
 			}
 
