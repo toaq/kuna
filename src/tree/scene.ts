@@ -108,7 +108,7 @@ export function toScene(
 			? // TODO: I've included the composition mode here in the denotation line as
 				// a stop-gap measure. Put it somewhere else?
 				// @ts-ignore
-				`${tree.label} : ${typeToPlainText(denotation.type)}${tree.mode ? `   ${tree.mode.join(', ')}` : ''}`
+				`${tree.label} : ${typeToPlainText(denotation.type)}${tree.mode ? `  ${tree.mode.join(', ')}` : ''}`
 			: tree.label;
 		const gloss =
 			'word' in tree && !tree.word.covert ? tree.word.entry?.gloss : undefined;
