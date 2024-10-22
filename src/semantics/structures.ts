@@ -50,7 +50,6 @@ import {
 import { typeToPlainText } from './render';
 
 export interface Semigroup {
-	// There is no 'empty' here because we don't really need it
 	/**
 	 * Combines two elements of the semigroup associatively.
 	 */
