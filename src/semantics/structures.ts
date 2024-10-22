@@ -1,13 +1,14 @@
 import { Impossible } from '../core/error';
 import {
+	Act,
 	type AnimacyClass,
 	Bind,
 	type Binding,
 	Cont,
+	Dx,
 	type Expr,
 	type ExprType,
 	Fn,
-	IO,
 	Int,
 	Pair,
 	Pl,
@@ -17,10 +18,11 @@ import {
 	andMap,
 	andThen,
 	app,
+	assertAct,
 	assertBind,
 	assertCont,
+	assertDx,
 	assertFn,
-	assertIO,
 	assertInt,
 	assertPair,
 	assertRef,
@@ -437,46 +439,65 @@ const refApplicative: Applicative = {
 	},
 };
 
-const ioFunctor: Functor = {
-	wrap: type => IO(type),
-	unwrap: type => {
-		assertIO(type);
-		return type.inner;
-	},
-	map: (fn, arg, s) => {
-		return app(
-			app(
-				λ(fn.type, s, (fn, s) =>
-					λ(arg.type, s, (arg, s) => andMap(s.var(arg), s.var(fn))),
+const opMonad = <T extends ExprType>(
+	wrap: (inner: ExprType) => ExprType,
+	assertHead: (t: ExprType) => asserts t is T & { inner: ExprType },
+): Monad => ({
+	applicative: {
+		functor: {
+			wrap,
+			unwrap: type => {
+				assertHead(type);
+				return type.inner;
+			},
+			map: (fn, arg, s) =>
+				app(
+					app(
+						λ(fn.type, s, (fn, s) =>
+							λ(arg.type, s, (arg, s) => andMap(s.var(arg), s.var(fn))),
+						),
+						fn,
+					),
+					arg,
 				),
-				fn,
-			),
-			arg,
-		);
-	},
-};
-
-const ioApplicative: Applicative = {
-	functor: ioFunctor,
-	apply: (fn, arg, s) => {
-		assertIO(fn.type);
-		const fnType = fn.type.inner;
-		return app(
-			app(
-				λ(fn.type, s, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
-						andThen(
-							s.var(fn),
-							λ(fnType, s, (project, s) => andMap(s.var(arg), s.var(project))),
+		},
+		apply: (fn, arg, s) => {
+			assertHead(fn.type);
+			const fnType = fn.type.inner;
+			return app(
+				app(
+					λ(fn.type, s, (fn, s) =>
+						λ(arg.type, s, (arg, s) =>
+							andThen(
+								s.var(fn),
+								λ(fnType, s, (project, s) =>
+									andMap(s.var(arg), s.var(project)),
+								),
+							),
 						),
 					),
+					fn,
 				),
-				fn,
-			),
-			arg,
+				arg,
+			);
+		},
+	},
+	join: (e, s) => {
+		assertHead(e.type);
+		return andThen(
+			e,
+			λ(e.type.inner, s, (inner, s) => s.var(inner)),
 		);
 	},
-};
+});
+
+const dxMonad = opMonad(Dx, assertDx);
+const dxApplicative = dxMonad.applicative;
+const dxFunctor = dxApplicative.functor;
+
+const actMonad = opMonad(Act, assertAct);
+const actApplicative = actMonad.applicative;
+const actFunctor = actApplicative.functor;
 
 const intDistributive: Distributive = {
 	functor: intFunctor,
@@ -523,7 +544,8 @@ const functorPrecedence = new Map(
 	(
 		[
 			// Starting with lowest precedence
-			'io',
+			'dx',
+			'act',
 			'cont',
 			'pair',
 			'qn',
@@ -599,7 +621,8 @@ export function getFunctor(t: ExprType): Functor | null {
 	if (t.head === 'pair') return pairFunctor;
 	if (t.head === 'bind') return bindFunctor;
 	if (t.head === 'ref') return refFunctor;
-	if (t.head === 'io') return ioFunctor;
+	if (t.head === 'dx') return dxFunctor;
+	if (t.head === 'act') return actFunctor;
 	return null;
 }
 
@@ -651,7 +674,8 @@ export function getMatchingFunctor(
 		)
 	)
 		return refFunctor;
-	if (left.head === 'io') return ioFunctor;
+	if (left.head === 'dx') return dxFunctor;
+	if (left.head === 'act') return actFunctor;
 	return null;
 }
 
@@ -688,7 +712,8 @@ export function getApplicative(
 		)
 	)
 		return refApplicative;
-	if (left.head === 'io') return ioApplicative;
+	if (left.head === 'dx') return dxApplicative;
+	if (left.head === 'act') return actApplicative;
 	return null;
 }
 
@@ -701,6 +726,8 @@ export function getDistributive(t: ExprType): Distributive | null {
 export function getMonad(t: ExprType): Monad | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'int') return intMonad;
+	if (t.head === 'dx') return dxMonad;
+	if (t.head === 'act') return actMonad;
 	return null;
 }
 
@@ -751,7 +778,8 @@ function coerceMonad_(
 				inType.binding,
 				(like as ExprType & object & { head: 'ref' }).binding,
 			)) ||
-		inType.head === 'io'
+		inType.head === 'dx' ||
+		inType.head === 'act'
 	)
 		return wrap(inType.inner);
 	return null;

@@ -72,10 +72,12 @@ export type ExprType =
 	// An expression which references a variable and behaves in local syntax like
 	// {inner}; isomorphic to {binding} × (Int Pl e → {inner}).
 	| { head: 'ref'; binding: Binding; inner: ExprType }
-	// An expression which interacts with the discourse context (e.g. through
-	// deixis or a speech act) and behaves in local syntax like {inner}; isomorphic
-	// to context → ({inner} × context).
-	| { head: 'io'; inner: ExprType };
+	// An expression which references an element of the discourse context through
+	// deixis; isomorphic to context → {inner}.
+	| { head: 'dx'; inner: ExprType }
+	// An expression which updates the discourse with a speech act; isomorphic to
+	// {inner} × speech act.
+	| { head: 'act'; inner: ExprType };
 
 export function Fn(domain: ExprType, range: ExprType): ExprType {
 	return { head: 'fn', domain, range };
@@ -113,8 +115,12 @@ export function Ref(binding: Binding, inner: ExprType): ExprType {
 	return { head: 'ref', binding, inner };
 }
 
-export function IO(inner: ExprType): ExprType {
-	return { head: 'io', inner };
+export function Dx(inner: ExprType): ExprType {
+	return { head: 'dx', inner };
+}
+
+export function Act(inner: ExprType): ExprType {
+	return { head: 'act', inner };
 }
 
 /**
@@ -160,8 +166,10 @@ export function subtype(t1: ExprType, t2: ExprType): boolean {
 				bindingsEqual(t1.binding, t2.binding) &&
 				subtype(t1.inner, t2.inner)
 			);
-		case 'io':
-			return t2.head === 'io' && subtype(t1.inner, t2.inner);
+		case 'dx':
+			return t2.head === 'dx' && subtype(t1.inner, t2.inner);
+		case 'act':
+			return t2.head === 'act' && subtype(t1.inner, t2.inner);
 	}
 }
 
@@ -215,8 +223,10 @@ export function typesEqual(t1: ExprType, t2: ExprType): boolean {
 				bindingsEqual(t1.binding, t2.binding) &&
 				typesEqual(t1.inner, t2.inner)
 			);
-		case 'io':
-			return t2.head === 'io' && typesEqual(t1.inner, t2.inner);
+		case 'dx':
+			return t2.head === 'dx' && typesEqual(t1.inner, t2.inner);
+		case 'act':
+			return t2.head === 'act' && typesEqual(t1.inner, t2.inner);
 	}
 }
 
@@ -290,11 +300,27 @@ export function assertRef(
 		throw new Impossible(`${typeToPlainText(type)} is not a reference type`);
 }
 
-export function assertIO(
+export function assertDx(
 	type: ExprType,
-): asserts type is { head: 'io'; inner: ExprType } {
-	if (typeof type === 'string' || type.head !== 'io')
-		throw new Impossible(`${typeToPlainText(type)} is not an IO type`);
+): asserts type is { head: 'dx'; inner: ExprType } {
+	if (typeof type === 'string' || type.head !== 'dx')
+		throw new Impossible(`${typeToPlainText(type)} is not a deixis type`);
+}
+
+export function assertAct(
+	type: ExprType,
+): asserts type is { head: 'act'; inner: ExprType } {
+	if (typeof type === 'string' || type.head !== 'act')
+		throw new Impossible(`${typeToPlainText(type)} is not an action type`);
+}
+
+export function assertDxOrAct(
+	type: ExprType,
+): asserts type is { head: 'dx' | 'act'; inner: ExprType } {
+	if (typeof type === 'string' || (type.head !== 'dx' && type.head !== 'act'))
+		throw new Impossible(
+			`${typeToPlainText(type)} is not a deixis or action type`,
+		);
 }
 
 interface ExprBase {
@@ -828,18 +854,20 @@ export function unref(ref: Expr): Expr {
 }
 
 /**
- * Projects the value returned by a context operation.
+ * Projects the value returned by a deixis or speech act operation.
  */
 export function andMap(op: Expr, project: Expr): Expr {
-	assertIO(op.type); // IO a
-	assertFn(project.type); // a → b
+	assertDxOrAct(op.type);
+	assertFn(project.type);
 	const range = project.type.range;
 	return app(
 		app(
 			{
 				head: 'constant',
-				// IO a → (a → b) → IO b
-				type: Fn(op.type, Fn(Fn(op.type.inner, range), IO(range))),
+				type: Fn(
+					op.type,
+					Fn(Fn(op.type.inner, range), { head: op.type.head, inner: range }),
+				),
 				scope: op.scope,
 				name: 'and_map',
 			},
@@ -850,20 +878,20 @@ export function andMap(op: Expr, project: Expr): Expr {
 }
 
 /**
- * Sequences two context operations, discarding their results.
+ * Sequences two speech act operations, discarding their results.
  */
 // This should be named 'then', but exports named 'then' get called during the
 // promise resolution process when importing a module dynamically. This breaks
 // Vitest, for example.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import#module_namespace_object
 export function sequence(first: Expr, second: Expr): Expr {
-	assertIO(first.type);
-	assertIO(second.type);
+	assertAct(first.type);
+	assertAct(second.type);
 	return app(
 		app(
 			{
 				head: 'constant',
-				type: Fn(first.type, Fn(second.type, IO('1'))),
+				type: Fn(first.type, Fn(second.type, Act('1'))),
 				scope: first.scope,
 				name: 'then',
 			},
@@ -880,12 +908,15 @@ export function sequence(first: Expr, second: Expr): Expr {
 export function andThen(first: Expr, continuation: Expr): Expr {
 	assertFn(continuation.type);
 	const { domain, range } = continuation.type;
-	assertIO(range);
+	assertDxOrAct(range);
 	return app(
 		app(
 			{
 				head: 'constant',
-				type: Fn(IO(domain), Fn(continuation.type, range)),
+				type: Fn(
+					{ head: range.head, inner: domain },
+					Fn(continuation.type, range),
+				),
 				scope: first.scope,
 				name: 'and_then',
 			},

@@ -107,8 +107,10 @@ export class MathmlType extends Renderer<ExprType, string> {
 					this.app(token(mi('Ref')), token(this.binding(t.binding))),
 					this.sub(t.inner),
 				);
-			case 'io':
-				return this.app(token(mi('IO')), this.sub(t.inner));
+			case 'dx':
+				return this.app(token(mi('Dx')), this.sub(t.inner));
+			case 'act':
+				return this.app(token(mi('Act')), this.sub(t.inner));
 		}
 	}
 

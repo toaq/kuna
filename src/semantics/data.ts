@@ -1,10 +1,10 @@
 import type { CovertValue } from '../tree';
 import {
 	Cont,
+	Dx,
 	type Expr,
 	type ExprType,
 	Fn,
-	IO,
 	Int,
 	Pl,
 	Qn,
@@ -62,7 +62,7 @@ export const covertResumptive = ref(
 );
 
 export const pronouns = new Map<string, ExprType>([
-	...personalPronouns.map(toaq => [toaq, IO(Int(Pl('e')))] as const),
+	...personalPronouns.map(toaq => [toaq, Dx(Int(Pl('e')))] as const),
 ]);
 
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
@@ -77,10 +77,10 @@ export const determiners = new Map<
 	['tú', wrap => Fn(Fn(Int(Pl('e')), 't'), Cont(wrap(Int(Pl('e')))))],
 	['sía', wrap => Fn(Fn(Int(Pl('e')), 't'), Cont(wrap(Int(Pl('e')))))],
 	['hí', wrap => Fn(Fn(Int(Pl('e')), 't'), Qn(wrap(Int(Pl('e')))))],
-	['ké', wrap => Fn(Fn(Int(Pl('e')), 't'), IO(wrap(Int(Pl('e')))))],
-	['hú', wrap => Fn(Fn(Int(Pl('e')), 't'), IO(wrap(Int(Pl('e')))))],
-	['ní', wrap => Fn(Fn(Int(Pl('e')), 't'), IO(wrap(Int(Pl('e')))))],
-	['nánı', wrap => Fn(Fn(Int(Pl('e')), 't'), IO(wrap(Int(Pl('e')))))],
+	['ké', wrap => Fn(Int(Fn(Int(Pl('e')), 't')), Dx(wrap(Int(Pl('e')))))],
+	['hú', wrap => Fn(Int(Fn(Int(Pl('e')), 't')), Dx(wrap(Int(Pl('e')))))],
+	['ní', wrap => Fn(Int(Fn(Int(Pl('e')), 't')), Dx(wrap(Int(Pl('e')))))],
+	['nánı', wrap => Fn(Int(Fn(Int(Pl('e')), 't')), Dx(wrap(Int(Pl('e')))))],
 ]);
 
 export const covertCrel = λ(

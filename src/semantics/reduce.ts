@@ -5,7 +5,7 @@ import {
 	andMap,
 	andThen,
 	app,
-	assertIO,
+	assertDxOrAct,
 	assertSet,
 	closed,
 	map,
@@ -198,7 +198,7 @@ function reducePass(expr: Expr): Expr {
 				const x = expr.fn.arg.fn.arg;
 				const f = expr.fn.arg.arg;
 				const g = expr.arg;
-				assertIO(x.type);
+				assertDxOrAct(x.type);
 				const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
 				const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
 				return andMap(
@@ -222,7 +222,7 @@ function reducePass(expr: Expr): Expr {
 				const x = expr.fn.arg.fn.arg;
 				const f = expr.fn.arg.arg;
 				const g = expr.arg;
-				assertIO(x.type);
+				assertDxOrAct(x.type);
 				const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
 				const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
 				return andThen(

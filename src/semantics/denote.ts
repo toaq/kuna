@@ -19,9 +19,9 @@ import {
 	Bind,
 	Cont,
 	type DTree,
+	Dx,
 	type Expr,
 	Fn,
-	IO,
 	Int,
 	Pl,
 	closed,
@@ -100,7 +100,7 @@ function denoteLeaf(leaf: Leaf): Expr {
 			toaq,
 			toaq === 'sula'
 				? Fn(Fn('i', 't'), 't')
-				: IO(pronominalTenses.has(toaq) ? 'i' : Fn(Fn('i', 't'), 't')),
+				: Dx(pronominalTenses.has(toaq) ? 'i' : Fn(Fn('i', 't'), 't')),
 			closed,
 		);
 	}
