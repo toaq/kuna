@@ -15,6 +15,7 @@ import {
 	Ref,
 	type Scope,
 	type SetHead,
+	and,
 	andMap,
 	andThen,
 	app,
@@ -47,6 +48,14 @@ import {
 	λ,
 } from './model';
 import { typeToPlainText } from './render';
+
+export interface Semigroup {
+	// There is no 'empty' here because we don't really need it
+	/**
+	 * Combines two elements of the semigroup associatively.
+	 */
+	plus: Expr;
+}
 
 export interface Functor {
 	/**
@@ -98,6 +107,14 @@ export interface Runner {
 	functor: Functor;
 	run: Expr;
 }
+
+const tSemigroup: Semigroup = {
+	plus: and(closed),
+};
+
+const unitSemigroup: Semigroup = {
+	plus: λ('1', closed, (_first, s) => λ('1', s, (second, s) => s.var(second))),
+};
 
 export const idFunctor: Functor = {
 	wrap: type => type,
@@ -540,6 +557,16 @@ const intMonad: Monad = {
 	},
 };
 
+export function getMatchingSemigroup(
+	left: ExprType,
+	right: ExprType,
+): Semigroup | null {
+	if (left !== right) return null;
+	if (left === 't') return tSemigroup;
+	if (left === '1') return unitSemigroup;
+	return null;
+}
+
 const functorPrecedence = new Map(
 	(
 		[
@@ -693,7 +720,7 @@ export function composeFunctors(outer: Functor, inner: Functor): Functor {
 	};
 }
 
-export function getApplicative(
+export function getMatchingApplicative(
 	left: ExprType,
 	right: ExprType,
 ): Applicative | null {

@@ -14,9 +14,10 @@ import {
 	chooseFunctor,
 	composeFunctors,
 	findInner,
-	getApplicative,
 	getDistributive,
+	getMatchingApplicative,
 	getMatchingFunctor,
+	getMatchingSemigroup,
 	getMonad,
 	getRunner,
 	idFunctor,
@@ -25,6 +26,7 @@ import {
 export type CompositionMode =
 	| '>' // Functional application
 	| '<' // Reverse functional application
+	| '+' // Semigroup combination
 	| ['↑L', CompositionMode] // Lift left into functor
 	| ['↑R', CompositionMode] // Lift right into functor
 	| ['A', CompositionMode] // Sequence effects via applicative functor
@@ -178,7 +180,12 @@ function composeStep(left: ExprType, right: ExprType): [Expr, CompositionMode] {
 		if (coerced !== null) return coerced;
 	}
 
-	const applicative = getApplicative(left, right);
+	const semigroup = getMatchingSemigroup(left, right);
+	if (semigroup !== null) {
+		return [semigroup.plus, '+'];
+	}
+
+	const applicative = getMatchingApplicative(left, right);
 	if (applicative !== null) {
 		const {
 			functor: { unwrap, map },
