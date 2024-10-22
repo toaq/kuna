@@ -12,12 +12,12 @@ import { typeToPlainText } from './render';
 import {
 	type Functor,
 	chooseFunctor,
-	coerceMonad,
 	composeFunctors,
+	findInner,
 	getApplicative,
-	getBigNonDistributiveFunctor,
 	getDistributive,
 	getMatchingFunctor,
+	getMonad,
 	getRunner,
 	idFunctor,
 } from './structures';
@@ -42,7 +42,7 @@ function coerceInput_(
 	under: Functor | null,
 ): [Expr, CompositionMode] | null {
 	assertFn(fn.type);
-	const { wrap, unwrap, map } = under ?? idFunctor;
+	const { unwrap } = under ?? idFunctor;
 	const inputInner = unwrap(input);
 	const domainInner = unwrap(fn.type.domain);
 	const range = fn.type.range;
@@ -68,7 +68,10 @@ function coerceInput_(
 	if (under !== null) {
 		const distributive = getDistributive(inputInner);
 		if (distributive !== null) {
-			const coercedInner = wrap(distributive.functor.unwrap(inputInner), input);
+			const coercedInner = under.wrap(
+				distributive.functor.unwrap(inputInner),
+				input,
+			);
 			const result = coerceInput_(fn, coercedInner, inputSide, mode, under);
 			if (result !== null) {
 				const [cont, mode] = result;
@@ -110,60 +113,6 @@ function coerceInput_(
 								inputSide === 'left' ? '→L' : '→R',
 								[inputSide === 'left' ? '↑R' : '↑L', mode],
 							],
-				];
-			}
-		}
-	}
-
-	// Okay, so inputInner doesn't have a distributive functor on top either;
-	// instead let's try taking a functor from the top of inputInner and pushing it
-	// inside a distributive functor even lower in the stack
-	const bigFunctor = getBigNonDistributiveFunctor(inputInner);
-	if (bigFunctor !== null) {
-		const bigFunctorInner = bigFunctor.unwrap(inputInner);
-		const distributive = getDistributive(bigFunctorInner);
-		if (distributive !== null) {
-			const coercedInner = wrap(
-				distributive.functor.wrap(
-					bigFunctor.wrap(
-						distributive.functor.unwrap(bigFunctorInner),
-						inputInner,
-					),
-					bigFunctorInner,
-				),
-				input,
-			);
-			const result = coerceInput_(
-				fn,
-				coercedInner,
-				inputSide,
-				[
-					inputSide === 'left' ? '→L' : inputSide === 'right' ? '→R' : '→',
-					mode,
-				],
-				under,
-			);
-			if (result !== null) {
-				const [cont, mode] = result;
-				return [
-					app(
-						λ(cont.type, closed, (cont, s) =>
-							λ(input, s, (input, s) =>
-								app(
-									s.var(cont),
-									map(
-										λ(inputInner, s, (input, s) =>
-											distributive.distribute(s.var(input), bigFunctor, s),
-										),
-										s.var(input),
-										s,
-									),
-								),
-							),
-						),
-						cont,
-					),
-					mode,
 				];
 			}
 		}
@@ -335,35 +284,46 @@ function composeAndSimplify(
 	}
 
 	// Try joining repeated monadic effects
-	const monad = coerceMonad(out);
+	const monad = getMonad(out);
 	if (monad !== null) {
-		const [{ join }, joinInputType] = monad;
-		const coerced = coerceInput(
-			λ(joinInputType, closed, (e, s) => join(s.var(e), s)),
-			out,
-			'out',
-			mode,
-		);
-		if (coerced !== null) {
-			const [join, mode] = coerced;
-			return [
-				app(
+		const {
+			applicative: {
+				functor: { wrap, unwrap },
+			},
+			join,
+		} = monad;
+		const inner = findInner(unwrap(out), out);
+		if (inner !== null) {
+			const coerced = coerceInput(
+				λ(wrap(wrap(inner, out), out), closed, (e, s) => join(s.var(e), s)),
+				out,
+				'out',
+				mode,
+			);
+			if (coerced !== null) {
+				const [join, mode] = coerced;
+				return [
 					app(
-						λ(join.type, closed, (join, s) =>
-							λ(cont.type, s, (cont, s) =>
-								λ(left, s, (l, s) =>
-									λ(right, s, (r, s) =>
-										app(s.var(join), app(app(s.var(cont), s.var(l)), s.var(r))),
+						app(
+							λ(join.type, closed, (join, s) =>
+								λ(cont.type, s, (cont, s) =>
+									λ(left, s, (l, s) =>
+										λ(right, s, (r, s) =>
+											app(
+												s.var(join),
+												app(app(s.var(cont), s.var(l)), s.var(r)),
+											),
+										),
 									),
 								),
 							),
+							join,
 						),
-						join,
+						cont,
 					),
-					cont,
-				),
-				['J', mode],
-			];
+					['J', mode],
+				];
+			}
 		}
 	}
 
