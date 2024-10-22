@@ -1,5 +1,6 @@
 import type { CovertValue } from '../tree';
 import {
+	Act,
 	Cont,
 	Dx,
 	type Expr,
@@ -89,3 +90,20 @@ export const covertCrel = λ(
 	(predicate, s) =>
 		λ(Int(Pl('e')), s, (arg, s) => app(unref(s.var(predicate)), s.var(arg))),
 );
+
+export const complementizers = new Map<string, ExprType>([
+	['ꝡa', Fn(Int('t'), Int('t'))],
+	['ma', Fn(Int('t'), Qn(Int('t')))],
+]);
+
+export const speechActParticles = new Map<string, ExprType>([
+	['da', Fn(Int('t'), Act('1'))],
+	['dâ', Fn(Int('t'), Act('1'))],
+	['ka', Fn(Int('t'), Act('1'))],
+	['móq', Fn(Qn(Int('t')), Act('1'))],
+	['môq', Fn(Qn(Int('t')), Act('1'))],
+	['ba', Fn(Int('t'), Act('1'))],
+	['nha', Fn(Int('t'), Act('1'))],
+	['doa', Fn(Int('t'), Act('1'))],
+	['ꝡo', Fn(Int('t'), Act('1'))],
+]);

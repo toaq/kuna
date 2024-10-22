@@ -6,6 +6,7 @@ import { getFrame } from '../syntax/serial';
 import type { Leaf, StrictTree } from '../tree';
 import { compose } from './compose';
 import {
+	complementizers,
 	covertCrel,
 	covertLittleVs,
 	covertResumptive,
@@ -14,6 +15,7 @@ import {
 	determiners,
 	pronominalTenses,
 	pronouns,
+	speechActParticles,
 } from './data';
 import {
 	Bind,
@@ -21,6 +23,7 @@ import {
 	type DTree,
 	Dx,
 	type Expr,
+	type ExprType,
 	Fn,
 	Int,
 	Pl,
@@ -28,8 +31,16 @@ import {
 	lex,
 } from './model';
 import { reduceExpr } from './reduce';
+import { getFunctor } from './structures';
 
-function denoteLeaf(leaf: Leaf): Expr {
+function isQuestion(type: ExprType): boolean {
+	if (typeof type === 'string') return false;
+	if (type.head === 'qn') return true;
+	const functor = getFunctor(type);
+	return functor !== null && isQuestion(functor.unwrap(type));
+}
+
+function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	if (leaf.label === 'V' || leaf.label === 'VP') {
 		if (leaf.word.covert) return covertV;
 
@@ -134,6 +145,33 @@ function denoteLeaf(leaf: Leaf): Expr {
 		throw new Unimplemented('Overt Crel');
 	}
 
+	if (leaf.label === 'C') {
+		let toaq: string;
+		if (leaf.word.covert) toaq = 'ꝡa';
+		else if (leaf.word.entry === undefined)
+			throw new Unrecognized(`C: ${leaf.word.text}`);
+		else toaq = leaf.word.entry.toaq;
+
+		const type = complementizers.get(toaq);
+		if (type === undefined) throw new Unrecognized(`C: ${toaq}`);
+		return lex(toaq, type, closed);
+	}
+
+	if (leaf.label === 'SA') {
+		let toaq: string;
+		if (leaf.word.covert) {
+			if (cCommand === null)
+				throw new Impossible('Cannot denote a covert SA in isolation');
+			toaq = isQuestion(cCommand.denotation.type) ? 'móq' : 'da';
+		} else if (leaf.word.entry === undefined)
+			throw new Unrecognized(`SA: ${leaf.word.text}`);
+		else toaq = leaf.word.entry.toaq;
+
+		const type = speechActParticles.get(toaq);
+		if (type === undefined) throw new Unrecognized(`SA: ${toaq}`);
+		return lex(toaq, type, closed);
+	}
+
 	if (leaf.label === '&') {
 		if (leaf.word.covert) throw new Impossible('Covert &');
 		if (leaf.word.entry === undefined)
@@ -176,18 +214,30 @@ function denoteLeaf(leaf: Leaf): Expr {
 	throw new Unimplemented(`TODO: ${leaf.label}`);
 }
 
+export function denote_(tree: StrictTree, cCommand: DTree | null): DTree {
+	if ('word' in tree) {
+		const denotation = denoteLeaf(tree, cCommand);
+		return { ...tree, denotation };
+	}
+
+	let left: DTree;
+	let right: DTree;
+	if ('word' in tree.left) {
+		right = denote_(tree.right, null);
+		left = denote_(tree.left, right);
+	} else {
+		left = denote_(tree.left, null);
+		right = denote_(tree.right, left);
+	}
+
+	const [expr, mode] = compose(left.denotation, right.denotation);
+	const denotation = reduceExpr(expr);
+	return { ...tree, left, right, denotation, mode };
+}
+
 /**
  * Annotates a tree with denotations.
  */
 export function denote(tree: StrictTree): DTree {
-	if ('word' in tree) {
-		const denotation = denoteLeaf(tree);
-		return { ...tree, denotation };
-	}
-
-	const left = denote(tree.left);
-	const right = denote(tree.right);
-	const [expr, mode] = compose(left.denotation, right.denotation);
-	const denotation = reduceExpr(expr);
-	return { ...tree, left, right, denotation, mode };
+	return denote_(tree, null);
 }
