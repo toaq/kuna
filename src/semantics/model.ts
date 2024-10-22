@@ -397,7 +397,6 @@ export type Expr =
 	| Constant<'ref'>
 	| Constant<'unref'>
 	| Constant<'and_map'>
-	| Constant<'then'>
 	| Constant<'and_then'>
 	| Constant<'and'>
 	| Constant<'implies'>
@@ -874,30 +873,6 @@ export function andMap(op: Expr, project: Expr): Expr {
 			op,
 		),
 		project,
-	);
-}
-
-/**
- * Sequences two speech act operations, discarding their results.
- */
-// This should be named 'then', but exports named 'then' get called during the
-// promise resolution process when importing a module dynamically. This breaks
-// Vitest, for example.
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import#module_namespace_object
-export function sequence(first: Expr, second: Expr): Expr {
-	assertAct(first.type);
-	assertAct(second.type);
-	return app(
-		app(
-			{
-				head: 'constant',
-				type: Fn(first.type, Fn(second.type, Act('1'))),
-				scope: first.scope,
-				name: 'then',
-			},
-			first,
-		),
-		second,
 	);
 }
 
