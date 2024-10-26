@@ -73,10 +73,10 @@ export const determiners = new Map<
 	['tú', wrap => Fn(Fn(Int(Pl('e')), 't'), Cont(wrap(Int(Pl('e')))))],
 	['sía', wrap => Fn(Fn(Int(Pl('e')), 't'), Cont(wrap(Int(Pl('e')))))],
 	['hí', wrap => Fn(Fn(Int(Pl('e')), 't'), Qn(wrap(Int(Pl('e')))))],
-	['ké', wrap => Fn(Int(Fn(Int(Pl('e')), 't')), Dx(wrap(Int(Pl('e')))))],
-	['hú', wrap => Fn(Int(Fn(Int(Pl('e')), 't')), Dx(wrap(Int(Pl('e')))))],
-	['ní', wrap => Fn(Int(Fn(Int(Pl('e')), 't')), Dx(wrap(Int(Pl('e')))))],
-	['nánı', wrap => Fn(Int(Fn(Int(Pl('e')), 't')), Dx(wrap(Int(Pl('e')))))],
+	['ké', wrap => Fn(Fn(Int(Pl('e')), 't'), Dx(wrap(Int(Pl('e')))))],
+	['hú', wrap => Fn(Fn(Int(Pl('e')), 't'), Dx(wrap(Int(Pl('e')))))],
+	['ní', wrap => Fn(Fn(Int(Pl('e')), 't'), Dx(wrap(Int(Pl('e')))))],
+	['nánı', wrap => Fn(Fn(Int(Pl('e')), 't'), Dx(wrap(Int(Pl('e')))))],
 ]);
 
 export const covertCrel = λ(
