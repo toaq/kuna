@@ -138,7 +138,9 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 	// TODO: Add bindings to DPs
 	if (leaf.label === 'D') {
-		if (leaf.word.covert) throw new Impossible('Covert D');
+		if (leaf.word.covert)
+			// TODO: This shouldn't be a random lexical entry
+			return lex('ló', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed);
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`D: ${leaf.word.text}`);
 

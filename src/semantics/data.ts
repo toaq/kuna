@@ -89,6 +89,8 @@ export const covertCrel = λ(
 export const complementizers = new Map<string, ExprType>([
 	['ꝡa', Fn(Int('t'), Int('t'))],
 	['ma', Fn(Int('t'), Qn(Int('t')))],
+	['ꝡä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't')))],
+	['mä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't')))],
 ]);
 
 export const speechActParticles = new Map<string, ExprType>([
