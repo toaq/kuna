@@ -1,9 +1,7 @@
-import type { CovertValue } from '../tree';
 import {
 	Act,
 	Cont,
 	Dx,
-	type Expr,
 	type ExprType,
 	Fn,
 	Int,
@@ -24,26 +22,23 @@ import {
 
 export const covertV = lex('raı', Fn('e', Fn('v', Fn('s', 't'))), closed);
 
-export const covertLittleVs: Partial<Record<CovertValue, Expr>> = {
-	CAUSE: int(
-		λ('s', closed, (w, s) =>
-			λ(Fn('v', 't'), s, (pred, s) =>
-				λ('e', s, (arg, s) =>
-					λ('v', s, (e, s) =>
+export const causeLittleV = int(
+	λ('s', closed, (w, s) =>
+		λ(Fn('v', 't'), s, (pred, s) =>
+			λ('e', s, (arg, s) =>
+				λ('v', s, (e, s) =>
+					app(
 						app(
-							app(
-								and(s),
-								equals(app(app(agent(s), s.var(e)), s.var(w)), s.var(arg)),
-							),
-							app(s.var(pred), s.var(e)),
+							and(s),
+							equals(app(app(agent(s), s.var(e)), s.var(w)), s.var(arg)),
 						),
+						app(s.var(pred), s.var(e)),
 					),
 				),
 			),
 		),
 	),
-	BE: λ(Fn('v', 't'), closed, (pred, s) => s.var(pred)),
-};
+);
 
 const personalPronouns = [
 	'jí',

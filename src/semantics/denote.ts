@@ -6,9 +6,9 @@ import { getFrame } from '../syntax/serial';
 import type { Leaf, StrictTree } from '../tree';
 import { compose } from './compose';
 import {
+	causeLittleV,
 	complementizers,
 	covertCrel,
-	covertLittleVs,
 	covertResumptive,
 	covertSigma,
 	covertV,
@@ -29,6 +29,7 @@ import {
 	Pl,
 	closed,
 	lex,
+	λ,
 } from './model';
 import { reduceExpr } from './reduce';
 import { getFunctor } from './structures';
@@ -38,6 +39,11 @@ function isQuestion(type: ExprType): boolean {
 	if (type.head === 'qn') return true;
 	const functor = getFunctor(type);
 	return functor !== null && isQuestion(functor.unwrap(type));
+}
+
+function unwrapEffects(type: ExprType): ExprType {
+	const functor = getFunctor(type);
+	return functor === null ? type : unwrapEffects(functor.unwrap(type));
 }
 
 function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
@@ -65,9 +71,15 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	if (leaf.label === '𝘷') {
 		if (leaf.word.covert) {
 			const value = leaf.word.value;
-			const data = covertLittleVs[value];
-			if (data === undefined) throw new Unrecognized(`𝘷: ${value}`);
-			return data;
+			if (value === 'CAUSE') return causeLittleV;
+			if (value === 'BE') {
+				if (cCommand === null)
+					throw new Impossible("Can't denote BE in isolation");
+				return λ(unwrapEffects(cCommand.denotation.type), closed, (pred, s) =>
+					s.var(pred),
+				);
+			}
+			throw new Unrecognized(`𝘷: ${value}`);
 		}
 		throw new Unimplemented('Overt 𝘷');
 	}
