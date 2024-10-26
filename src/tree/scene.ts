@@ -1,3 +1,4 @@
+import type { CompositionMode } from '../semantics/compose';
 import type { DTree, Expr } from '../semantics/model';
 import { typeToPlainText } from '../semantics/render';
 import { treeChildren } from './functions';
@@ -91,6 +92,10 @@ export interface Placed {
 	distanceBetweenChildren: number;
 }
 
+function modeToString(mode: CompositionMode): string {
+	return typeof mode === 'string' ? mode : mode.join(', ');
+}
+
 /**
  * Convert a Toaq syntax tree into a renderable "Scene" for the tree-rendering
  * functions to consume.
@@ -108,7 +113,7 @@ export function toScene(
 			? // TODO: I've included the composition mode here in the denotation line as
 				// a stop-gap measure. Put it somewhere else?
 				// @ts-ignore
-				`${tree.label} : ${typeToPlainText(denotation.type)}${tree.mode ? `  ${tree.mode.join(', ')}` : ''}`
+				`${tree.label} : ${typeToPlainText(denotation.type)}${tree.mode ? `  ${modeToString(tree.mode)}` : ''}`
 			: tree.label;
 		const gloss =
 			'word' in tree && !tree.word.covert ? tree.word.entry?.gloss : undefined;
