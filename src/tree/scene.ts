@@ -93,7 +93,12 @@ export interface Placed {
 }
 
 function modeToString(mode: CompositionMode): string {
-	return typeof mode === 'string' ? mode : mode.join(', ');
+	return typeof mode === 'string'
+		? mode
+		: // @ts-ignore TypeScript can't handle the infinite types here
+			mode
+				.flat(Number.POSITIVE_INFINITY)
+				.join(', ');
 }
 
 /**
