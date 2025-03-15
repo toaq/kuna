@@ -161,7 +161,7 @@ export class Mathml extends Renderer<Expr, string> {
 					this.go(e.arg, names),
 				]);
 			case 'lexeme':
-				return token(mi(`[[${e.name}]]`, 'kuna-lexeme'));
+				return token(mi(`⟦${e.name}⟧`, 'kuna-lexeme'));
 			case 'quote':
 				return token(mi(`"${e.text}"`, 'kuna-quote'));
 			case 'constant':

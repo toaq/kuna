@@ -149,7 +149,7 @@ export class PlainText extends Renderer<Expr, string> {
 					this.go(e.arg, names),
 				]);
 			case 'lexeme':
-				return token(`[[${e.name}]]`);
+				return token(`⟦${e.name}⟧`);
 			case 'quote':
 				return token(`"${e.text}"`);
 			case 'constant':
