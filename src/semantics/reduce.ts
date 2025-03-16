@@ -8,6 +8,9 @@ import {
 	assertDxOrAct,
 	assertSet,
 	closed,
+	element,
+	every,
+	implies,
 	map,
 	λ,
 } from './model';
@@ -65,6 +68,13 @@ export function rewriteScope(
 			),
 	);
 }
+
+/**
+ * Error which you can throw inside a rewriteScope callback to indicate that a
+ * rewrite is not possible, as the expression uses a variable which would no
+ * longer exist.
+ */
+export class VariableDeletedError extends Error {}
 
 /**
  * Substitutes all references to the variable at the given index with a target
@@ -255,6 +265,67 @@ function reducePass(expr: Expr): Expr {
 						app(gg, app(ff, s.var(z))),
 					),
 				);
+			}
+
+			// every (λy implies (element y (map x f)) g) = every (λz implies (element z x) ((λy g) (f z)))
+			if (
+				expr.fn.head === 'constant' &&
+				expr.fn.name === 'every' &&
+				expr.arg.head === 'lambda' &&
+				expr.arg.body.head === 'apply' &&
+				expr.arg.body.fn.head === 'apply' &&
+				expr.arg.body.fn.fn.head === 'constant' &&
+				expr.arg.body.fn.fn.name === 'implies' &&
+				expr.arg.body.fn.arg.head === 'apply' &&
+				expr.arg.body.fn.arg.fn.head === 'apply' &&
+				expr.arg.body.fn.arg.fn.fn.head === 'constant' &&
+				expr.arg.body.fn.arg.fn.fn.name === 'element' &&
+				expr.arg.body.fn.arg.fn.arg.head === 'variable' &&
+				expr.arg.body.fn.arg.fn.arg.index === 0 &&
+				expr.arg.body.fn.arg.arg.head === 'apply' &&
+				expr.arg.body.fn.arg.arg.fn.head === 'apply' &&
+				expr.arg.body.fn.arg.arg.fn.fn.head === 'constant' &&
+				expr.arg.body.fn.arg.arg.fn.fn.name === 'map'
+			) {
+				const x = expr.arg.body.fn.arg.arg.fn.arg;
+				const f = expr.arg.body.fn.arg.arg.arg;
+				const g = expr.arg.body.arg;
+				const originalDomain = g.scope[0];
+				assertSet(x.type);
+				let varError = false;
+				let xx: Expr;
+				let ff: Expr;
+				try {
+					xx = rewriteScope(x, [x.type.inner, ...x.scope.slice(1)], i => {
+						if (i === 0) throw new VariableDeletedError();
+						return i;
+					});
+					ff = rewriteScope(f, [x.type.inner, ...f.scope.slice(1)], i => {
+						if (i === 0) throw new VariableDeletedError();
+						return i;
+					});
+				} catch (e) {
+					if (e instanceof VariableDeletedError) varError = true;
+					else throw e;
+				}
+				if (!varError) {
+					const gg = rewriteScope(
+						g,
+						[originalDomain, x.type.inner, ...g.scope.slice(1)],
+						i => (i === 0 ? 0 : i + 1),
+					);
+					return every(
+						λ(x.type.inner, { ...closed, types: expr.scope }, (z, s) =>
+							app(
+								app(implies(s), element(s.var(z), xx)),
+								app(
+									λ(originalDomain, s, () => gg),
+									app(ff, s.var(z)),
+								),
+							),
+						),
+					);
+				}
 			}
 
 			return {
