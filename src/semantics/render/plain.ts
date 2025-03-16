@@ -1,13 +1,7 @@
 import { Impossible } from '../../core/error';
 import { bare, inTone } from '../../morphology/tokenize';
 import { Tone } from '../../morphology/tone';
-import {
-	type AnimacyClass,
-	type Binding,
-	type Expr,
-	type ExprType,
-	assertFn,
-} from '../model';
+import type { AnimacyClass, Binding, Expr, ExprType } from '../model';
 import {
 	type Names,
 	type Render,
@@ -136,8 +130,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 			case 'variable':
 				return token(this.name(e.index, names));
 			case 'lambda': {
-				assertFn(e.type);
-				const newNames = addName(e.type.domain, names);
+				const newNames = addName(e.body.scope[0], names);
 				return join(Precedence.Lambda, 'any', [
 					token(`λ${this.name(0, newNames)} `),
 					this.go(e.body, newNames),

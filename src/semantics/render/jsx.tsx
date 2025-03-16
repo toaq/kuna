@@ -2,7 +2,6 @@ import { type ReactNode, useId } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { typeToPlainText } from '.';
 import { Impossible } from '../../core/error';
-import { assertFn } from '../model';
 import {
 	type Names,
 	type Render,
@@ -64,8 +63,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 			case 'variable':
 				return { ...token(this.name(e.index, names)), exprType: e.type };
 			case 'lambda': {
-				assertFn(e.type);
-				const newNames = addName(e.type.domain, names);
+				const newNames = addName(e.body.scope[0], names);
 				const lambda = join(Precedence.Lambda, 'any', [
 					token(<>λ{this.name(0, newNames)}&nbsp;</>),
 					this.go(e.body, newNames),

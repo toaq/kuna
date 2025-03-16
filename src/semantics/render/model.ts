@@ -73,6 +73,8 @@ export function toRichExpr(e: Expr): RichExpr {
 		case 'lambda':
 			return { ...e, body: toRichExpr(e.body) };
 		case 'apply':
+			if (e.fn.head === 'constant' && e.fn.name === 'int')
+				return { ...toRichExpr(e.arg), type: e.type };
 			if (
 				e.fn.head === 'apply' &&
 				e.fn.fn.head === 'constant' &&
