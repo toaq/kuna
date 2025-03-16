@@ -3,6 +3,7 @@ import { Tooltip } from 'react-tooltip';
 import { typeToPlainText } from '.';
 import { Impossible } from '../../core/error';
 import {
+	type Associativity,
 	type Names,
 	type Render,
 	Renderer,
@@ -14,17 +15,42 @@ import {
 } from './format';
 import type { RichExpr } from './model';
 
+enum Precedence {
+	Quantify = 0,
+	And = 1,
+	Implies = 2,
+	Equals = 3,
+	Element = 4,
+	Apply = 5,
+	Bracket = 6,
+}
+
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
 	lambda: 'λ',
 	some: '∃',
 	every: '∀',
 };
 
-enum Precedence {
-	Quantify = 0,
-	Apply = 1,
-	Bracket = 2,
+interface Infix {
+	symbol: string;
+	precedence: Precedence;
+	associativity: Associativity;
 }
+
+const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
+	element: {
+		symbol: '∈',
+		precedence: Precedence.Element,
+		associativity: 'none',
+	},
+	and: { symbol: '∧', precedence: Precedence.And, associativity: 'any' },
+	implies: {
+		symbol: '→',
+		precedence: Precedence.Implies,
+		associativity: 'none',
+	},
+	equals: { symbol: '=', precedence: Precedence.Equals, associativity: 'none' },
+};
 
 function TypeHover(props: {
 	tooltipId: string;
@@ -64,13 +90,13 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 		return `${letter}${ticks}`;
 	}
 
-	private go(e: RichExpr, names: Names): Render<ReactNode> {
+	private go_(e: RichExpr, names: Names): Render<ReactNode> {
 		switch (e.head) {
 			case 'variable':
-				return { ...token(this.name(e.index, names)), exprType: e.type };
+				return token(this.name(e.index, names));
 			case 'quantify': {
 				const newNames = addName(e.body.scope[0], names);
-				const lambda = join(Precedence.Quantify, 'any', [
+				return join(Precedence.Quantify, 'any', [
 					token(
 						<>
 							{quantifiers[e.q]}
@@ -79,31 +105,38 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 					),
 					this.go(e.body, newNames),
 				]);
-				return { ...lambda, exprType: e.type };
 			}
-			case 'apply': {
-				const apply = join(Precedence.Apply, 'left', [
+			case 'apply':
+				return join(Precedence.Apply, 'left', [
 					this.go(e.fn, names),
 					token(' '),
 					this.go(e.arg, names),
 				]);
-				return { ...apply, exprType: e.type };
+			case 'infix': {
+				const infix = infixes[e.op];
+				return join(infix.precedence, infix.associativity, [
+					this.go(e.left, names),
+					token(` ${infix.symbol} `),
+					this.go(e.right, names),
+				]);
 			}
-			case 'lexeme':
-				return { ...token(<b>{e.name}</b>), exprType: e.type };
-			case 'quote':
-				return { ...token(`"${e.text}"`), exprType: e.type };
-			case 'constant':
-				return { ...token(e.name), exprType: e.type };
-			case 'subscript': {
-				const apply = join(Precedence.Apply, 'left', [
+			case 'subscript':
+				return join(Precedence.Apply, 'left', [
 					this.go(e.base, names),
 					token(' '),
 					this.go(e.sub, names),
 				]);
-				return { ...apply, exprType: e.type };
-			}
+			case 'lexeme':
+				return token(<b>{e.name}</b>);
+			case 'quote':
+				return token(`"${e.text}"`);
+			case 'constant':
+				return token(e.name);
 		}
+	}
+
+	private go(e: RichExpr, names: Names): Render<ReactNode> {
+		return { ...this.go_(e, names), exprType: e.type };
 	}
 
 	protected sub(e: RichExpr): Render<ReactNode> {

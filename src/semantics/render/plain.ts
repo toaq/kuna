@@ -3,6 +3,7 @@ import { bare, inTone } from '../../morphology/tokenize';
 import { Tone } from '../../morphology/tone';
 import type { AnimacyClass, Binding, ExprType } from '../model';
 import {
+	type Associativity,
 	type Names,
 	type Render,
 	Renderer,
@@ -110,17 +111,42 @@ export class PlainTextType extends Renderer<ExprType, string> {
 	}
 }
 
+enum Precedence {
+	Quantify = 0,
+	And = 1,
+	Implies = 2,
+	Equals = 3,
+	Element = 4,
+	Apply = 5,
+	Bracket = 6,
+}
+
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
 	lambda: 'λ',
 	some: '∃',
 	every: '∀',
 };
 
-enum Precedence {
-	Quantify = 0,
-	Apply = 1,
-	Bracket = 2,
+interface Infix {
+	symbol: string;
+	precedence: Precedence;
+	associativity: Associativity;
 }
+
+const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
+	element: {
+		symbol: '∈',
+		precedence: Precedence.Element,
+		associativity: 'none',
+	},
+	and: { symbol: '∧', precedence: Precedence.And, associativity: 'any' },
+	implies: {
+		symbol: '→',
+		precedence: Precedence.Implies,
+		associativity: 'none',
+	},
+	equals: { symbol: '=', precedence: Precedence.Equals, associativity: 'none' },
+};
 
 export class PlainText extends Renderer<RichExpr, string> {
 	private name(index: number, names: Names): string {
@@ -148,18 +174,26 @@ export class PlainText extends Renderer<RichExpr, string> {
 					token(' '),
 					this.go(e.arg, names),
 				]);
-			case 'lexeme':
-				return token(`⟦${e.name}⟧`);
-			case 'quote':
-				return token(`"${e.text}"`);
-			case 'constant':
-				return token(e.name);
+			case 'infix': {
+				const infix = infixes[e.op];
+				return join(infix.precedence, infix.associativity, [
+					this.go(e.left, names),
+					token(` ${infix.symbol} `),
+					this.go(e.right, names),
+				]);
+			}
 			case 'subscript':
 				return join(Precedence.Apply, 'left', [
 					this.go(e.base, names),
 					token(' '),
 					this.go(e.sub, names),
 				]);
+			case 'lexeme':
+				return token(`⟦${e.name}⟧`);
+			case 'quote':
+				return token(`"${e.text}"`);
+			case 'constant':
+				return token(e.name);
 		}
 	}
 

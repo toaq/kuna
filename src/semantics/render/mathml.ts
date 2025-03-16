@@ -3,6 +3,7 @@ import { bare, inTone } from '../../morphology/tokenize';
 import { Tone } from '../../morphology/tone';
 import type { AnimacyClass, Binding, ExprType } from '../model';
 import {
+	type Associativity,
 	type Names,
 	type Render,
 	Renderer,
@@ -124,18 +125,43 @@ export class MathmlType extends Renderer<ExprType, string> {
 	}
 }
 
+enum Precedence {
+	Quantify = 0,
+	And = 1,
+	Implies = 2,
+	Equals = 3,
+	Element = 4,
+	Apply = 5,
+	Subscript = 6,
+	Bracket = 7,
+}
+
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
 	lambda: 'λ',
 	some: '∃',
 	every: '∀',
 };
 
-enum Precedence {
-	Quantify = 0,
-	Apply = 1,
-	Subscript = 2,
-	Bracket = 3,
+interface Infix {
+	symbol: string;
+	precedence: Precedence;
+	associativity: Associativity;
 }
+
+const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
+	element: {
+		symbol: '∈',
+		precedence: Precedence.Element,
+		associativity: 'none',
+	},
+	and: { symbol: '∧', precedence: Precedence.And, associativity: 'any' },
+	implies: {
+		symbol: '→',
+		precedence: Precedence.Implies,
+		associativity: 'none',
+	},
+	equals: { symbol: '=', precedence: Precedence.Equals, associativity: 'none' },
+};
 
 export class Mathml extends Renderer<RichExpr, string> {
 	private name(index: number, names: Names): string {
@@ -166,12 +192,14 @@ export class Mathml extends Renderer<RichExpr, string> {
 					token('<mo lspace="0" rspace="0">&nbsp;</mo>'),
 					this.go(e.arg, names),
 				]);
-			case 'lexeme':
-				return token(mi(`${e.name}`, 'kuna-lexeme'));
-			case 'quote':
-				return token(mi(`"${e.text}"`, 'kuna-quote'));
-			case 'constant':
-				return token(mi(e.name, 'kuna-constant'));
+			case 'infix': {
+				const infix = infixes[e.op];
+				return join(infix.precedence, infix.associativity, [
+					this.go(e.left, names),
+					token(`<mo>${infix.symbol}</mo>`),
+					this.go(e.right, names),
+				]);
+			}
 			case 'subscript':
 				return join(Precedence.Subscript, 'left', [
 					token('<msub><mrow>'),
@@ -180,6 +208,12 @@ export class Mathml extends Renderer<RichExpr, string> {
 					this.go(e.sub, names),
 					token('</mrow></msub>'),
 				]);
+			case 'lexeme':
+				return token(mi(`${e.name}`, 'kuna-lexeme'));
+			case 'quote':
+				return token(mi(`"${e.text}"`, 'kuna-quote'));
+			case 'constant':
+				return token(mi(e.name, 'kuna-constant'));
 		}
 	}
 

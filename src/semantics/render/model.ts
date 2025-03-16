@@ -31,6 +31,19 @@ interface Apply extends ExprBase {
 	arg: RichExpr;
 }
 
+interface Infix extends ExprBase {
+	head: 'infix';
+	op: 'element' | 'and' | 'implies' | 'equals';
+	left: RichExpr;
+	right: RichExpr;
+}
+
+interface Subscript extends ExprBase {
+	head: 'subscript';
+	base: RichExpr;
+	sub: RichExpr;
+}
+
 interface Lexeme extends ExprBase {
 	head: 'lexeme';
 	name: string;
@@ -46,12 +59,6 @@ interface Constant extends ExprBase {
 	name: (Expr & { head: 'constant' })['name'];
 }
 
-interface Subscript extends ExprBase {
-	head: 'subscript';
-	base: RichExpr;
-	sub: RichExpr;
-}
-
 /**
  * A semantic expression with rich, human-readable syntax.
  */
@@ -59,10 +66,11 @@ export type RichExpr =
 	| Variable
 	| Quantify
 	| Apply
+	| Infix
+	| Subscript
 	| Lexeme
 	| Quote
-	| Constant
-	| Subscript;
+	| Constant;
 
 export function toRichExpr(e: Expr): RichExpr {
 	switch (e.head) {
@@ -80,30 +88,53 @@ export function toRichExpr(e: Expr): RichExpr {
 				(e.fn.name === 'int' || e.fn.name === 'ref')
 			)
 				return { ...toRichExpr(e.arg), type: e.type };
-			// Turn some/every into quantifiers
+
+			// Quantifier notation
 			if (
 				e.fn.head === 'constant' &&
 				(e.fn.name === 'some' || e.fn.name === 'every') &&
 				e.arg.head === 'lambda'
 			)
 				return {
-					...e,
+					type: e.type,
+					scope: e.scope,
 					head: 'quantify',
 					q: e.fn.name,
 					body: toRichExpr(e.arg.body),
 				};
-			// Turn unint/unref into subscripts
+
+			// Infix notation
+			if (
+				e.fn.head === 'apply' &&
+				e.fn.fn.head === 'constant' &&
+				(e.fn.fn.name === 'element' ||
+					e.fn.fn.name === 'and' ||
+					e.fn.fn.name === 'implies' ||
+					e.fn.fn.name === 'equals')
+			)
+				return {
+					type: e.type,
+					scope: e.scope,
+					head: 'infix',
+					op: e.fn.fn.name,
+					left: toRichExpr(e.fn.arg),
+					right: toRichExpr(e.arg),
+				};
+
+			// Subscript notation
 			if (
 				e.fn.head === 'apply' &&
 				e.fn.fn.head === 'constant' &&
 				(e.fn.fn.name === 'unint' || e.fn.fn.name === 'unref')
 			)
 				return {
-					...e,
+					type: e.type,
+					scope: e.scope,
 					head: 'subscript',
 					base: toRichExpr(e.fn.arg),
 					sub: toRichExpr(e.arg),
 				};
+
 			return { ...e, fn: toRichExpr(e.fn), arg: toRichExpr(e.arg) };
 	}
 }
