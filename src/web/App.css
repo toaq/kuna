@@ -10,6 +10,30 @@
 	src: url("https://raw.githubusercontent.com/toaq/fonts/refs/heads/main/woff2/IosevkaToaqAile-Bold.woff2") format(woff2);
 }
 
+@font-face {
+	font-family: "Fira Sans";
+	font-weight: 400;
+	src: url("/FiraSans-Regular.woff2") format(woff2);
+}
+
+@font-face {
+	font-family: "Fira Sans";
+	font-weight: 700;
+	src: url("/FiraSans-Bold.woff2") format(woff2);
+}
+
+@font-face {
+	font-family: "Fira Math";
+	font-weight: 400;
+	src: url("/FiraMath-Regular.woff2") format(woff2);
+}
+
+@font-face {
+	font-family: "Fira Math";
+	font-weight: 900;
+	src: url("/FiraMath-Bold.woff2") format(woff2);
+}
+
 * {
 	box-sizing: border-box;
 }
@@ -21,14 +45,14 @@ html,
 }
 
 body {
-	font-family: 'Noto Sans', sans-serif;
+	font-family: 'Fira Sans', sans-serif;
 	font-size: 14px;
 	margin: 0px;
 	height: 100%;
 }
 
 .toaq-font {
-	font-family: 'Iosevka Toaq Aile', 'Noto Sans', sans-serif;
+	font-family: 'Iosevka Toaq Aile', 'Fira Sans', sans-serif;
 }
 
 h1 {
@@ -211,8 +235,8 @@ button {
 	font-weight: bold;
 }
 
-.math {
-	font-family: 'Noto Sans', 'Noto Sans Math', sans-serif;
+math {
+	font-family: 'Fira Math', 'Fira Sans', sans-serif;
 }
 
 .error {
