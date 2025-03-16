@@ -14,8 +14,14 @@ import {
 } from './format';
 import type { RichExpr } from './model';
 
+const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
+	lambda: 'λ',
+	some: '∃',
+	every: '∀',
+};
+
 enum Precedence {
-	Lambda = 0,
+	Quantify = 0,
 	Apply = 1,
 	Bracket = 2,
 }
@@ -62,10 +68,15 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 		switch (e.head) {
 			case 'variable':
 				return { ...token(this.name(e.index, names)), exprType: e.type };
-			case 'lambda': {
+			case 'quantify': {
 				const newNames = addName(e.body.scope[0], names);
-				const lambda = join(Precedence.Lambda, 'any', [
-					token(<>λ{this.name(0, newNames)}&nbsp;</>),
+				const lambda = join(Precedence.Quantify, 'any', [
+					token(
+						<>
+							{quantifiers[e.q]}
+							{this.name(0, newNames)}&nbsp;
+						</>,
+					),
 					this.go(e.body, newNames),
 				]);
 				return { ...lambda, exprType: e.type };

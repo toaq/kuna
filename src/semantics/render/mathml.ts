@@ -124,8 +124,14 @@ export class MathmlType extends Renderer<ExprType, string> {
 	}
 }
 
+const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
+	lambda: 'λ',
+	some: '∃',
+	every: '∀',
+};
+
 enum Precedence {
-	Lambda = 0,
+	Quantify = 0,
 	Apply = 1,
 	Subscript = 2,
 	Bracket = 3,
@@ -145,11 +151,11 @@ export class Mathml extends Renderer<RichExpr, string> {
 		switch (e.head) {
 			case 'variable':
 				return token(this.name(e.index, names));
-			case 'lambda': {
+			case 'quantify': {
 				const newNames = addName(e.body.scope[0], names);
-				return join(Precedence.Lambda, 'any', [
+				return join(Precedence.Quantify, 'any', [
 					token(
-						`<mi>λ</mi>${this.name(0, newNames)}<mo lspace="0" rspace="0">&nbsp;</mo>`,
+						`<mo lspace="0" rspace="0">${quantifiers[e.q]}</mo>${this.name(0, newNames)}<mo lspace="0" rspace="0">&nbsp;</mo>`,
 					),
 					this.go(e.body, newNames),
 				]);

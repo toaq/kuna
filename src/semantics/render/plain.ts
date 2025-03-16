@@ -1,7 +1,7 @@
 import { Impossible } from '../../core/error';
 import { bare, inTone } from '../../morphology/tokenize';
 import { Tone } from '../../morphology/tone';
-import type { AnimacyClass, Binding, Expr, ExprType } from '../model';
+import type { AnimacyClass, Binding, ExprType } from '../model';
 import {
 	type Names,
 	type Render,
@@ -110,8 +110,14 @@ export class PlainTextType extends Renderer<ExprType, string> {
 	}
 }
 
+const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
+	lambda: 'λ',
+	some: '∃',
+	every: '∀',
+};
+
 enum Precedence {
-	Lambda = 0,
+	Quantify = 0,
 	Apply = 1,
 	Bracket = 2,
 }
@@ -129,10 +135,10 @@ export class PlainText extends Renderer<RichExpr, string> {
 		switch (e.head) {
 			case 'variable':
 				return token(this.name(e.index, names));
-			case 'lambda': {
+			case 'quantify': {
 				const newNames = addName(e.body.scope[0], names);
-				return join(Precedence.Lambda, 'any', [
-					token(`λ${this.name(0, newNames)} `),
+				return join(Precedence.Quantify, 'any', [
+					token(`${quantifiers[e.q]}${this.name(0, newNames)} `),
 					this.go(e.body, newNames),
 				]);
 			}
@@ -157,7 +163,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 		}
 	}
 
-	protected sub(e: Expr): Render<string> {
+	protected sub(e: RichExpr): Render<string> {
 		if (e.scope.length > 0) throw new Impossible('Not a closed expression');
 		return this.go(e, noNames);
 	}

@@ -19,8 +19,9 @@ interface Variable extends ExprBase {
 	index: number;
 }
 
-interface Lambda extends ExprBase {
-	head: 'lambda';
+interface Quantify extends ExprBase {
+	head: 'quantify';
+	q: 'lambda' | 'some' | 'every';
 	body: RichExpr;
 }
 
@@ -56,7 +57,7 @@ interface Subscript extends ExprBase {
  */
 export type RichExpr =
 	| Variable
-	| Lambda
+	| Quantify
 	| Apply
 	| Lexeme
 	| Quote
@@ -71,13 +72,27 @@ export function toRichExpr(e: Expr): RichExpr {
 		case 'constant':
 			return e;
 		case 'lambda':
-			return { ...e, body: toRichExpr(e.body) };
+			return { ...e, head: 'quantify', q: 'lambda', body: toRichExpr(e.body) };
 		case 'apply':
+			// Hide int/ref applications
 			if (
 				e.fn.head === 'constant' &&
 				(e.fn.name === 'int' || e.fn.name === 'ref')
 			)
 				return { ...toRichExpr(e.arg), type: e.type };
+			// Turn some/every into quantifiers
+			if (
+				e.fn.head === 'constant' &&
+				(e.fn.name === 'some' || e.fn.name === 'every') &&
+				e.arg.head === 'lambda'
+			)
+				return {
+					...e,
+					head: 'quantify',
+					q: e.fn.name,
+					body: toRichExpr(e.arg.body),
+				};
+			// Turn unint/unref into subscripts
 			if (
 				e.fn.head === 'apply' &&
 				e.fn.fn.head === 'constant' &&
