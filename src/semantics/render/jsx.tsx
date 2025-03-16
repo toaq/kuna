@@ -2,7 +2,7 @@ import { type ReactNode, useId } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { typeToPlainText } from '.';
 import { Impossible } from '../../core/error';
-import { type Expr, assertFn } from '../model';
+import { assertFn } from '../model';
 import {
 	type Names,
 	type Render,
@@ -13,6 +13,7 @@ import {
 	noNames,
 	token,
 } from './format';
+import type { RichExpr } from './model';
 
 enum Precedence {
 	Lambda = 0,
@@ -49,7 +50,7 @@ function TypeHover(props: {
 	);
 }
 
-export class Jsx extends Renderer<Expr, ReactNode> {
+export class Jsx extends Renderer<RichExpr, ReactNode> {
 	private name(index: number, names: Names): string {
 		const name = names.scope[index];
 		const alphabet = alphabets[name.type];
@@ -58,7 +59,7 @@ export class Jsx extends Renderer<Expr, ReactNode> {
 		return `${letter}${ticks}`;
 	}
 
-	private go(e: Expr, names: Names): Render<ReactNode> {
+	private go(e: RichExpr, names: Names): Render<ReactNode> {
 		switch (e.head) {
 			case 'variable':
 				return { ...token(this.name(e.index, names)), exprType: e.type };
@@ -85,10 +86,18 @@ export class Jsx extends Renderer<Expr, ReactNode> {
 				return { ...token(`"${e.text}"`), exprType: e.type };
 			case 'constant':
 				return { ...token(e.name), exprType: e.type };
+			case 'subscript': {
+				const apply = join(Precedence.Apply, 'left', [
+					this.go(e.base, names),
+					token(' '),
+					this.go(e.sub, names),
+				]);
+				return { ...apply, exprType: e.type };
+			}
 		}
 	}
 
-	protected sub(e: Expr): Render<ReactNode> {
+	protected sub(e: RichExpr): Render<ReactNode> {
 		if (e.scope.length > 0) throw new Impossible('Not a closed expression');
 		return this.go(e, noNames);
 	}
@@ -107,7 +116,7 @@ export class Jsx extends Renderer<Expr, ReactNode> {
 	/**
 	 * Renders an expression.
 	 */
-	render(input: Expr): ReactNode {
+	render(input: RichExpr): ReactNode {
 		const raw = this.sub(input);
 		const bracketed = this.bracketAll(raw);
 		const id = useId();

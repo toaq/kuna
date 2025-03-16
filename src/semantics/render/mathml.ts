@@ -4,7 +4,6 @@ import { Tone } from '../../morphology/tone';
 import {
 	type AnimacyClass,
 	type Binding,
-	type Expr,
 	type ExprType,
 	assertFn,
 } from '../model';
@@ -18,6 +17,7 @@ import {
 	noNames,
 	token,
 } from './format';
+import type { RichExpr } from './model';
 
 enum TypePrecedence {
 	Function = 1,
@@ -31,7 +31,9 @@ function mo(inner: string): string {
 }
 
 function mi(inner: string, className = ''): string {
-	return `<mi class="${className}">${inner}</mi>`;
+	return className === ''
+		? `<mi>${inner}</mi>`
+		: `<mi class="${className}">${inner}</mi>`;
 }
 
 export class MathmlType extends Renderer<ExprType, string> {
@@ -130,46 +132,56 @@ export class MathmlType extends Renderer<ExprType, string> {
 enum Precedence {
 	Lambda = 0,
 	Apply = 1,
-	Bracket = 2,
+	Subscript = 2,
+	Bracket = 3,
 }
 
-export class Mathml extends Renderer<Expr, string> {
+export class Mathml extends Renderer<RichExpr, string> {
 	private name(index: number, names: Names): string {
 		const name = names.scope[index];
 		const alphabet = alphabets[name.type];
 		const letter = alphabet[name.id % alphabet.length];
-		const ticks = "'".repeat(name.id / alphabet.length);
-		return `${letter}${ticks}`;
+		if (name.id / alphabet.length === 0) return mi(letter);
+		const ticks = '′'.repeat(name.id / alphabet.length);
+		return `<msup>${mi(letter)}<mo>${ticks}</mo></msup>`;
 	}
 
-	private go(e: Expr, names: Names): Render<string> {
+	private go(e: RichExpr, names: Names): Render<string> {
 		switch (e.head) {
 			case 'variable':
-				return token(mi(this.name(e.index, names)));
+				return token(this.name(e.index, names));
 			case 'lambda': {
 				assertFn(e.type);
 				const newNames = addName(e.type.domain, names);
 				return join(Precedence.Lambda, 'any', [
-					token(`<mo>λ${this.name(0, newNames)} </mo>`),
+					token(`<mi>λ</mi>${this.name(0, newNames)}&nbsp;`),
 					this.go(e.body, newNames),
 				]);
 			}
 			case 'apply':
 				return join(Precedence.Apply, 'left', [
 					this.go(e.fn, names),
-					token(' '),
+					token('&nbsp;'),
 					this.go(e.arg, names),
 				]);
 			case 'lexeme':
-				return token(mi(`⟦${e.name}⟧`, 'kuna-lexeme'));
+				return token(mi(`${e.name}`, 'kuna-lexeme'));
 			case 'quote':
 				return token(mi(`"${e.text}"`, 'kuna-quote'));
 			case 'constant':
 				return token(mi(e.name, 'kuna-constant'));
+			case 'subscript':
+				return join(Precedence.Subscript, 'left', [
+					token('<msub><mrow>'),
+					this.go(e.base, names),
+					token('</mrow><mrow>'),
+					this.go(e.sub, names),
+					token('</mrow></msub>'),
+				]);
 		}
 	}
 
-	protected sub(e: Expr): Render<string> {
+	protected sub(e: RichExpr): Render<string> {
 		if (e.scope.length > 0) throw new Impossible('Not a closed expression');
 		return this.go(e, noNames);
 	}

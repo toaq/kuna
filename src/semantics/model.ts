@@ -363,45 +363,40 @@ interface Quote extends ExprBase {
 	text: string;
 }
 
-interface Constant<Name extends string> extends ExprBase {
+interface Constant extends ExprBase {
 	head: 'constant';
-	name: Name;
+	name:
+		| 'int'
+		| 'unint'
+		| 'cont'
+		| 'uncont'
+		| 'empty'
+		| 'cons'
+		| 'build'
+		| 'filter'
+		| 'map'
+		| 'flat_map'
+		| 'element'
+		| 'some'
+		| 'every'
+		| 'pair'
+		| 'unpair'
+		| 'bind'
+		| 'unbind'
+		| 'ref'
+		| 'unref'
+		| 'and_map'
+		| 'and_then'
+		| 'and'
+		| 'implies'
+		| 'equals'
+		| 'agent';
 }
 
 /**
  * A semantic expression.
  */
-export type Expr =
-	| Variable
-	| Lambda
-	| Apply
-	| Lexeme
-	| Quote
-	| Constant<'int'>
-	| Constant<'unint'>
-	| Constant<'cont'>
-	| Constant<'uncont'>
-	| Constant<'empty'>
-	| Constant<'cons'>
-	| Constant<'build'>
-	| Constant<'filter'>
-	| Constant<'map'>
-	| Constant<'flat_map'>
-	| Constant<'element'>
-	| Constant<'some'>
-	| Constant<'every'>
-	| Constant<'pair'>
-	| Constant<'unpair'>
-	| Constant<'bind'>
-	| Constant<'unbind'>
-	| Constant<'ref'>
-	| Constant<'unref'>
-	| Constant<'and_map'>
-	| Constant<'and_then'>
-	| Constant<'and'>
-	| Constant<'implies'>
-	| Constant<'equals'>
-	| Constant<'agent'>;
+export type Expr = Variable | Lambda | Apply | Lexeme | Quote | Constant;
 
 /**
  * A tree with denotations.

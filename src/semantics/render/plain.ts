@@ -18,6 +18,7 @@ import {
 	noNames,
 	token,
 } from './format';
+import type { RichExpr } from './model';
 
 enum TypePrecedence {
 	Function = 1,
@@ -121,7 +122,7 @@ enum Precedence {
 	Bracket = 2,
 }
 
-export class PlainText extends Renderer<Expr, string> {
+export class PlainText extends Renderer<RichExpr, string> {
 	private name(index: number, names: Names): string {
 		const name = names.scope[index];
 		const alphabet = alphabets[name.type];
@@ -130,7 +131,7 @@ export class PlainText extends Renderer<Expr, string> {
 		return `${letter}${ticks}`;
 	}
 
-	private go(e: Expr, names: Names): Render<string> {
+	private go(e: RichExpr, names: Names): Render<string> {
 		switch (e.head) {
 			case 'variable':
 				return token(this.name(e.index, names));
@@ -154,6 +155,12 @@ export class PlainText extends Renderer<Expr, string> {
 				return token(`"${e.text}"`);
 			case 'constant':
 				return token(e.name);
+			case 'subscript':
+				return join(Precedence.Apply, 'left', [
+					this.go(e.base, names),
+					token(' '),
+					this.go(e.sub, names),
+				]);
 		}
 	}
 

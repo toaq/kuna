@@ -3,11 +3,12 @@ import { Unimplemented } from '../../core/error';
 import type { Expr, ExprType } from '../model';
 import { Jsx } from './jsx';
 import { Mathml, MathmlType } from './mathml';
+import { toRichExpr } from './model';
 import { PlainText, PlainTextType } from './plain';
 
 export function toPlainText(e: Expr, compact?: boolean): string {
 	if (compact) throw new Unimplemented();
-	return new PlainText().render(e);
+	return new PlainText().render(toRichExpr(e));
 }
 
 export function toLatex(_e: Expr, _compact?: boolean): string {
@@ -16,13 +17,13 @@ export function toLatex(_e: Expr, _compact?: boolean): string {
 
 export function toMathml(e: Expr, compact?: boolean): string {
 	if (compact) throw new Unimplemented();
-	const ml = new Mathml().render(e);
+	const ml = new Mathml().render(toRichExpr(e));
 	return `<math><mrow>${ml}</mrow></math>`;
 }
 
 export function toJsx(e: Expr, compact?: boolean): ReactNode {
 	if (compact) throw new Unimplemented();
-	return new Jsx().render(e);
+	return new Jsx().render(toRichExpr(e));
 }
 
 export function toJson(_e: Expr, _compact?: boolean): unknown {
