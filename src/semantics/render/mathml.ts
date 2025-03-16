@@ -154,14 +154,16 @@ export class Mathml extends Renderer<RichExpr, string> {
 				assertFn(e.type);
 				const newNames = addName(e.type.domain, names);
 				return join(Precedence.Lambda, 'any', [
-					token(`<mi>λ</mi>${this.name(0, newNames)}&nbsp;`),
+					token(
+						`<mi>λ</mi>${this.name(0, newNames)}<mo lspace="0" rspace="0">&nbsp;</mo>`,
+					),
 					this.go(e.body, newNames),
 				]);
 			}
 			case 'apply':
 				return join(Precedence.Apply, 'left', [
 					this.go(e.fn, names),
-					token('&nbsp;'),
+					token('<mo lspace="0" rspace="0">&nbsp;</mo>'),
 					this.go(e.arg, names),
 				]);
 			case 'lexeme':
