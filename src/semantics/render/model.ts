@@ -73,12 +73,15 @@ export function toRichExpr(e: Expr): RichExpr {
 		case 'lambda':
 			return { ...e, body: toRichExpr(e.body) };
 		case 'apply':
-			if (e.fn.head === 'constant' && e.fn.name === 'int')
+			if (
+				e.fn.head === 'constant' &&
+				(e.fn.name === 'int' || e.fn.name === 'ref')
+			)
 				return { ...toRichExpr(e.arg), type: e.type };
 			if (
 				e.fn.head === 'apply' &&
 				e.fn.fn.head === 'constant' &&
-				e.fn.fn.name === 'unint'
+				(e.fn.fn.name === 'unint' || e.fn.fn.name === 'unref')
 			)
 				return {
 					...e,
