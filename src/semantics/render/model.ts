@@ -44,6 +44,13 @@ interface Subscript extends ExprBase {
 	sub: RichExpr;
 }
 
+interface Do extends ExprBase {
+	head: 'do';
+	source: RichExpr;
+	result: RichExpr;
+	pure: boolean;
+}
+
 interface Lexeme extends ExprBase {
 	head: 'lexeme';
 	name: string;
@@ -68,6 +75,7 @@ export type RichExpr =
 	| Apply
 	| Infix
 	| Subscript
+	| Do
 	| Lexeme
 	| Quote
 	| Constant;
@@ -133,6 +141,22 @@ export function toRichExpr(e: Expr): RichExpr {
 					head: 'subscript',
 					base: toRichExpr(e.fn.arg),
 					sub: toRichExpr(e.arg),
+				};
+
+			// Do notation
+			if (
+				e.fn.head === 'apply' &&
+				e.fn.fn.head === 'constant' &&
+				(e.fn.fn.name === 'and_map' || e.fn.fn.name === 'and_then') &&
+				e.arg.head === 'lambda'
+			)
+				return {
+					type: e.type,
+					scope: e.scope,
+					head: 'do',
+					source: toRichExpr(e.fn.arg),
+					result: toRichExpr(e.arg.body),
+					pure: e.fn.fn.name === 'and_map',
 				};
 
 			return { ...e, fn: toRichExpr(e.fn), arg: toRichExpr(e.arg) };

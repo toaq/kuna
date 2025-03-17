@@ -377,14 +377,15 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 }
 
 enum Precedence {
-	Quantify = 0,
-	And = 1,
-	Implies = 2,
-	Equals = 3,
-	Element = 4,
-	Apply = 5,
-	Subscript = 6,
-	Bracket = 7,
+	Do = 0,
+	Quantify = 1,
+	And = 2,
+	Implies = 3,
+	Equals = 4,
+	Element = 5,
+	Apply = 6,
+	Subscript = 7,
+	Bracket = 8,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -514,6 +515,37 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 						wrap(null, inner => <mrow>{inner}</mrow>, this.go(e.sub, names)),
 					]),
 				);
+			case 'do': {
+				const newNames = addName(e.result.scope[0], names);
+				return wrap(
+					null,
+					inner => (
+						<mtable
+							columnalign="left"
+							rowlines={e.pure ? 'solid' : undefined}
+							rowspacing={e.pure ? '1em' : undefined}
+						>
+							{inner}
+						</mtable>
+					),
+					join(Precedence.Do, 'right', [
+						wrap(
+							null,
+							inner => (
+								<mtr>
+									<mtd>
+										{this.name(0, newNames)}
+										<mo>⇐</mo>
+										{inner}
+									</mtd>
+								</mtr>
+							),
+							this.go(e.source, names),
+						),
+						this.go(e.result, newNames),
+					]),
+				);
+			}
 			case 'lexeme':
 				return token(<mi className="kuna-lexeme">{e.name}</mi>);
 			case 'quote':
