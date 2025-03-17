@@ -93,6 +93,10 @@ export const complementizers = new Map<string, ExprType>([
 	['mä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't')))],
 ]);
 
+export const declarativeComplementizer = λ(Int('t'), closed, (t, s) =>
+	s.var(t),
+);
+
 export const speechActParticles = new Map<string, ExprType>([
 	['da', Fn(Int('t'), Act('1'))],
 	['dâ', Fn(Int('t'), Act('1'))],

@@ -12,6 +12,7 @@ import {
 	covertResumptive,
 	covertSigma,
 	covertV,
+	declarativeComplementizer,
 	determiners,
 	pronominalTenses,
 	pronouns,
@@ -165,6 +166,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		else if (leaf.word.entry === undefined)
 			throw new Unrecognized(`C: ${leaf.word.text}`);
 		else toaq = leaf.word.entry.toaq;
+		if (toaq === 'ꝡa') return declarativeComplementizer;
 
 		const type = complementizers.get(toaq);
 		if (type === undefined) throw new Unrecognized(`C: ${toaq}`);
