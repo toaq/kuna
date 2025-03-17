@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 import { Unimplemented } from '../../core/error';
 import type { Expr, ExprType } from '../model';
-import { Jsx } from './jsx';
-import { Mathml, MathmlType } from './mathml';
+import { Jsx, JsxType } from './jsx';
 import { toRichExpr } from './model';
 import { PlainText, PlainTextType } from './plain';
 
@@ -13,12 +12,6 @@ export function toPlainText(e: Expr, compact?: boolean): string {
 
 export function toLatex(_e: Expr, _compact?: boolean): string {
 	throw new Unimplemented();
-}
-
-export function toMathml(e: Expr, compact?: boolean): string {
-	if (compact) throw new Unimplemented();
-	const ml = new Mathml().render(toRichExpr(e));
-	return `<math><mrow>${ml}</mrow></math>`;
 }
 
 export function toJsx(e: Expr, compact?: boolean): ReactNode {
@@ -57,9 +50,8 @@ export function typeToPlainText(t: ExprType): string {
 	return new PlainTextType().render(t);
 }
 
-export function typeToMathml(t: ExprType): string {
-	const ml = new MathmlType().render(t);
-	return `<math><mrow>${ml}</mrow></math>`;
+export function typeToJsx(t: ExprType): ReactNode {
+	return new JsxType().render(t);
 }
 
 export function typeToLatex(_t: ExprType): string {

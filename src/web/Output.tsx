@@ -14,7 +14,7 @@ import { parse } from '../modes/parse';
 import { textual_tree_from_json } from '../modes/textual-tree';
 import { Glosser } from '../morphology/gloss';
 import { denote } from '../semantics/denote';
-import { toLatex, toMathml, toPlainText } from '../semantics/render';
+import { toJsx, toLatex, toPlainText } from '../semantics/render';
 import { recover } from '../syntax/recover';
 import { drawTreeToCanvas } from '../tree/draw';
 import { trimTree } from '../tree/trim';
@@ -48,12 +48,6 @@ function errorString(e: any): string {
 export interface OutputProps {
 	configuration: Configuration;
 	isDarkMode: boolean;
-}
-
-export function RenderMathml(props: { mathml: string }) {
-	// TODO: This is totally vulnerable to XSS!
-	// biome-ignore lint/security/noDangerouslySetInnerHtml: known bug
-	return <div dangerouslySetInnerHTML={{ __html: props.mathml }} />;
 }
 
 export function Output(props: OutputProps) {
@@ -176,8 +170,8 @@ export function Output(props: OutputProps) {
 	}
 
 	function getLogicalForm(
-		renderer: (e: Expr, compact?: boolean) => string,
-	): string {
+		renderer: (e: Expr, compact?: boolean) => ReactNode,
+	): ReactNode {
 		const expr: any = denote(recover(trees[parseIndex])).denotation;
 		if (!expr) return 'No denotation';
 		return renderer(expr, meaningCompact);
@@ -219,9 +213,9 @@ export function Output(props: OutputProps) {
 				return getGloss(true);
 			case 'technical-gloss':
 				return getGloss(false);
-			case 'logical-form-mathml':
-				return <RenderMathml mathml={getLogicalForm(toMathml)} />;
-			case 'logical-form':
+			case 'logical-form-math':
+				return <>{getLogicalForm(toJsx)}</>;
+			case 'logical-form-text':
 				return <>{getLogicalForm(toPlainText)}</>;
 			case 'logical-form-latex':
 				return <>{getLogicalForm(toLatex)}</>;

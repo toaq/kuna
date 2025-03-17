@@ -16,18 +16,34 @@ interface Join<Out> {
 	exprType?: ExprType;
 }
 
-export type Render<Out> = Token<Out> | Join<Out>;
+interface Wrap<Out> {
+	type: 'wrap';
+	precedence: number | null;
+	wrapper: (inner: Out) => Out;
+	inner: Render<Out>;
+	exprType?: ExprType;
+}
 
-export function token<T>(content: T): Render<T> {
+export type Render<Out> = Token<Out> | Join<Out> | Wrap<Out>;
+
+export function token<Out>(content: Out): Token<Out> {
 	return { type: 'token', content };
 }
 
-export function join<T>(
+export function join<Out>(
 	precedence: number,
 	associativity: Associativity,
-	parts: Render<T>[],
-): Render<T> {
+	parts: Render<Out>[],
+): Join<Out> {
 	return { type: 'join', precedence, associativity, parts };
+}
+
+export function wrap<Out>(
+	precedence: number | null,
+	wrapper: (inner: Out) => Out,
+	inner: Render<Out>,
+): Wrap<Out> {
+	return { type: 'wrap', precedence, wrapper, inner };
 }
 
 export abstract class Renderer<In, Out> {
@@ -46,30 +62,44 @@ export abstract class Renderer<In, Out> {
 	 */
 	protected abstract join(tokens: Out[]): Out;
 
+	private b(r: Join<Out>, part: Render<Out>, i: number): Render<Out> {
+		if (part.type === 'token') return part;
+		if (part.type === 'wrap' && part.precedence === null)
+			return { ...part, inner: this.b(r, part.inner, i) };
+		const sub = this.bracketAll(part);
+
+		if (part.precedence! > r.precedence || (i > 0 && i < r.parts.length - 1))
+			return sub;
+		if (part.precedence! < r.precedence) return this.bracket(sub);
+		if (r.associativity === 'left' && i === 0) return sub;
+		if (r.associativity === 'right' && i === r.parts.length - 1) return sub;
+		if (r.associativity === 'any') return sub;
+		return this.bracket(sub);
+	}
+
 	protected bracketAll(r: Render<Out>): Render<Out> {
-		if (r.type === 'token') return r;
-
-		return {
-			...r,
-			parts: r.parts.map((part, i) => {
-				if (part.type === 'token') return part;
-
-				const sub = this.bracketAll(part);
-				if (part.precedence > r.precedence || (i > 0 && i < r.parts.length - 1))
-					return sub;
-				if (part.precedence < r.precedence) return this.bracket(sub);
-				if (r.associativity === 'left' && i === 0) return sub;
-				if (r.associativity === 'right' && i === r.parts.length - 1) return sub;
-				if (r.associativity === 'any') return sub;
-				return this.bracket(sub);
-			}),
-		};
+		switch (r.type) {
+			case 'token':
+				return r;
+			case 'join':
+				return {
+					...r,
+					parts: r.parts.map((part, i) => this.b(r, part, i)),
+				};
+			case 'wrap':
+				return { ...r, inner: this.bracketAll(r.inner) };
+		}
 	}
 
 	private tokens(r: Render<Out>): Out[] {
-		return r.type === 'token'
-			? [r.content]
-			: r.parts.flatMap(part => this.tokens(part));
+		switch (r.type) {
+			case 'token':
+				return [r.content];
+			case 'join':
+				return r.parts.flatMap(part => this.tokens(part));
+			case 'wrap':
+				return [r.wrapper(this.join(this.tokens(r.inner)))];
+		}
 	}
 
 	/**

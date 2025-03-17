@@ -14,8 +14,8 @@ export type Mode =
 	| TreeMode
 	| 'gloss'
 	| 'technical-gloss'
-	| 'logical-form-mathml'
-	| 'logical-form'
+	| 'logical-form-math'
+	| 'logical-form-text'
 	| 'logical-form-latex'
 	| 'english'
 	| 'gf1'
@@ -213,10 +213,10 @@ export function Settings(props: SettingsProps) {
 				{advanced && (
 					<div className="button-group">
 						<div className="button-group-name">Meaning</div>
-						<button type="button" onClick={() => render('logical-form-mathml')}>
+						<button type="button" onClick={() => render('logical-form-math')}>
 							Math
 						</button>
-						<button type="button" onClick={() => render('logical-form')}>
+						<button type="button" onClick={() => render('logical-form-text')}>
 							Text
 						</button>
 						<button type="button" onClick={() => render('logical-form-latex')}>
