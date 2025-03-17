@@ -10,6 +10,7 @@ import {
 	closed,
 	element,
 	every,
+	flatMap,
 	implies,
 	map,
 	λ,
@@ -195,76 +196,162 @@ function reducePass(expr: Expr): Expr {
 				}
 			}
 
-			// [and_map ((and_map x) f)] g = and_map x (λz. g (f z))
+			// A bunch of these rules happen to look for the exact same expression shape
 			if (
 				expr.fn.head === 'apply' &&
 				expr.fn.fn.head === 'constant' &&
-				expr.fn.fn.name === 'and_map' &&
 				expr.fn.arg.head === 'apply' &&
 				expr.fn.arg.fn.head === 'apply' &&
-				expr.fn.arg.fn.fn.head === 'constant' &&
-				expr.fn.arg.fn.fn.name === 'and_map'
+				expr.fn.arg.fn.fn.head === 'constant'
 			) {
-				const x = expr.fn.arg.fn.arg;
-				const f = expr.fn.arg.arg;
-				const g = expr.arg;
-				assertDxOrAct(x.type);
-				const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-				const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
-				return andMap(
-					x,
-					λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-						app(gg, app(ff, s.var(z))),
-					),
-				);
-			}
+				// [and_map ((and_map x) f)] g = and_map x (λz. g (f z))
+				if (
+					expr.fn.fn.name === 'and_map' &&
+					expr.fn.arg.fn.fn.name === 'and_map'
+				) {
+					const x = expr.fn.arg.fn.arg;
+					const f = expr.fn.arg.arg;
+					const g = expr.arg;
+					assertDxOrAct(x.type);
+					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					return andMap(
+						x,
+						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+							app(gg, app(ff, s.var(z))),
+						),
+					);
+				}
 
-			// [and_then ((and_map x) f)] g = and_then x (λz. g (f z))
-			if (
-				expr.fn.head === 'apply' &&
-				expr.fn.fn.head === 'constant' &&
-				expr.fn.fn.name === 'and_then' &&
-				expr.fn.arg.head === 'apply' &&
-				expr.fn.arg.fn.head === 'apply' &&
-				expr.fn.arg.fn.fn.head === 'constant' &&
-				expr.fn.arg.fn.fn.name === 'and_map'
-			) {
-				const x = expr.fn.arg.fn.arg;
-				const f = expr.fn.arg.arg;
-				const g = expr.arg;
-				assertDxOrAct(x.type);
-				const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-				const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
-				return andThen(
-					x,
-					λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-						app(gg, app(ff, s.var(z))),
-					),
-				);
-			}
+				// [and_then ((and_map x) f)] g = and_then x (λz. g (f z))
+				if (
+					expr.fn.fn.name === 'and_then' &&
+					expr.fn.arg.fn.fn.name === 'and_map'
+				) {
+					const x = expr.fn.arg.fn.arg;
+					const f = expr.fn.arg.arg;
+					const g = expr.arg;
+					assertDxOrAct(x.type);
+					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					return andThen(
+						x,
+						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+							app(gg, app(ff, s.var(z))),
+						),
+					);
+				}
 
-			// [map ((map x) f)] g = map x (λz. g (f z))
-			if (
-				expr.fn.head === 'apply' &&
-				expr.fn.fn.head === 'constant' &&
-				expr.fn.fn.name === 'map' &&
-				expr.fn.arg.head === 'apply' &&
-				expr.fn.arg.fn.head === 'apply' &&
-				expr.fn.arg.fn.fn.head === 'constant' &&
-				expr.fn.arg.fn.fn.name === 'map'
-			) {
-				const x = expr.fn.arg.fn.arg;
-				const f = expr.fn.arg.arg;
-				const g = expr.arg;
-				assertSet(x.type);
-				const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-				const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
-				return map(
-					x,
-					λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-						app(gg, app(ff, s.var(z))),
-					),
-				);
+				// and_map (and_then x f) g = and_then x (λz and_map (f z) g)
+				if (
+					expr.fn.fn.name === 'and_map' &&
+					expr.fn.arg.fn.fn.name === 'and_then'
+				) {
+					const x = expr.fn.arg.fn.arg;
+					const f = expr.fn.arg.arg;
+					const g = expr.arg;
+					assertDxOrAct(x.type);
+					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					return andThen(
+						x,
+						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+							andMap(app(ff, s.var(z)), gg),
+						),
+					);
+				}
+
+				// and_then (and_then x f) g = and_then x (λz and_then (f z) g)
+				if (
+					expr.fn.fn.name === 'and_then' &&
+					expr.fn.arg.fn.fn.name === 'and_then'
+				) {
+					const x = expr.fn.arg.fn.arg;
+					const f = expr.fn.arg.arg;
+					const g = expr.arg;
+					assertDxOrAct(x.type);
+					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					return andThen(
+						x,
+						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+							andThen(app(ff, s.var(z)), gg),
+						),
+					);
+				}
+
+				// [map ((map x) f)] g = map x (λz. g (f z))
+				if (expr.fn.fn.name === 'map' && expr.fn.arg.fn.fn.name === 'map') {
+					const x = expr.fn.arg.fn.arg;
+					const f = expr.fn.arg.arg;
+					const g = expr.arg;
+					assertSet(x.type);
+					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					return map(
+						x,
+						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+							app(gg, app(ff, s.var(z))),
+						),
+					);
+				}
+
+				// [flat_map ((map x) f)] g = flat_map x (λz. g (f z))
+				if (
+					expr.fn.fn.name === 'flat_map' &&
+					expr.fn.arg.fn.fn.name === 'map'
+				) {
+					const x = expr.fn.arg.fn.arg;
+					const f = expr.fn.arg.arg;
+					const g = expr.arg;
+					assertSet(x.type);
+					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					return flatMap(
+						x,
+						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+							app(gg, app(ff, s.var(z))),
+						),
+					);
+				}
+
+				// map (flat_map x f) g = flat_map x (λz map (f z) g)
+				if (
+					expr.fn.fn.name === 'map' &&
+					expr.fn.arg.fn.fn.name === 'flat_map'
+				) {
+					const x = expr.fn.arg.fn.arg;
+					const f = expr.fn.arg.arg;
+					const g = expr.arg;
+					assertSet(x.type);
+					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					return flatMap(
+						x,
+						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+							map(app(ff, s.var(z)), gg),
+						),
+					);
+				}
+
+				// flat_map (flat_map x f) g = flat_map x (λz flat_map (f z) g)
+				if (
+					expr.fn.fn.name === 'flat_map' &&
+					expr.fn.arg.fn.fn.name === 'flat_map'
+				) {
+					const x = expr.fn.arg.fn.arg;
+					const f = expr.fn.arg.arg;
+					const g = expr.arg;
+					assertSet(x.type);
+					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
+					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					return flatMap(
+						x,
+						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
+							flatMap(app(ff, s.var(z)), gg),
+						),
+					);
+				}
 			}
 
 			// every (λy implies (element y (map x f)) g) = every (λz implies (element z x) ((λy g) (f z)))
