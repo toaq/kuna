@@ -117,11 +117,11 @@ export abstract class Renderer<In, Out> {
 export type NameType = 'e' | 'v' | 'i' | 's' | 'exotic';
 
 export const alphabets: Record<NameType, string[]> = {
-	e: ['a', 'b', 'c', 'd'],
-	v: ['e'],
-	i: ['t'],
-	s: ['w'],
-	exotic: ['P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+	e: ['𝑎', '𝑏', '𝑐', '𝑑'],
+	v: ['𝑒'],
+	i: ['𝑡'],
+	s: ['𝑤'],
+	exotic: ['𝑃', '𝑄', '𝑅', '𝑆', '𝑇', '𝑈', '𝑉', '𝑊', '𝑋', '𝑌', '𝑍'],
 };
 
 /**

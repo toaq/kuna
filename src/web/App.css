@@ -45,7 +45,7 @@ html,
 }
 
 body {
-	font-family: 'Fira Sans', sans-serif;
+	font-family: 'Fira Sans', 'Fira Math', sans-serif;
 	font-size: 14px;
 	margin: 0px;
 	height: 100%;
