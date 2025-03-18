@@ -334,6 +334,18 @@ function reducePass(expr: Expr): Expr {
 				}
 			}
 
+			// and_map x (λy y) = x
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'and_map' &&
+				expr.arg.head === 'lambda' &&
+				expr.arg.body.head === 'variable' &&
+				expr.arg.body.index === 0
+			) {
+				return expr.fn.arg;
+			}
+
 			// every (λy implies (element y (_ x f)) g)
 			if (
 				expr.fn.head === 'constant' &&
