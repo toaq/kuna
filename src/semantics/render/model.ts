@@ -90,10 +90,14 @@ export function toRichExpr(e: Expr): RichExpr {
 		case 'lambda':
 			return { ...e, head: 'quantify', q: 'lambda', body: toRichExpr(e.body) };
 		case 'apply':
-			// Hide int/ref applications
+			// Hide int/cont/uncont/ref/unref applications
 			if (
 				e.fn.head === 'constant' &&
-				(e.fn.name === 'int' || e.fn.name === 'ref')
+				(e.fn.name === 'int' ||
+					e.fn.name === 'cont' ||
+					e.fn.name === 'uncont' ||
+					e.fn.name === 'ref' ||
+					e.fn.name === 'unref')
 			)
 				return { ...toRichExpr(e.arg), type: e.type };
 
@@ -133,7 +137,7 @@ export function toRichExpr(e: Expr): RichExpr {
 			if (
 				e.fn.head === 'apply' &&
 				e.fn.fn.head === 'constant' &&
-				(e.fn.fn.name === 'unint' || e.fn.fn.name === 'unref')
+				e.fn.fn.name === 'unint'
 			)
 				return {
 					type: e.type,
