@@ -21,9 +21,7 @@ export function TreeBrowser(props: {
 				<strong>{props.tree.label}</strong>
 				{type}{' '}
 				{'denotation' in tree ? (
-					<span className="toaq-font effects-denotation">
-						{toJsx(tree.denotation)}
-					</span>
+					<span className="effects-denotation">{toJsx(tree.denotation)}</span>
 				) : undefined}
 			</li>
 

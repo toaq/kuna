@@ -75,7 +75,6 @@ export function Settings(props: SettingsProps) {
 			<textarea
 				rows={3}
 				value={text}
-				className="toaq-font"
 				onChange={e => {
 					setText(e.target.value);
 					props.dismissExplanation();
