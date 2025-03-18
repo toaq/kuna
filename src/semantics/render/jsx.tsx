@@ -471,6 +471,15 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 		const letter = alphabet[name.id % alphabet.length];
 		if (name.id / alphabet.length === 0) return <mi>{letter}</mi>;
 		const ticks = '′'.repeat(name.id / alphabet.length);
+		// Chrome doesn't like the superscript trick; it renders the ticks too small
+		if ('chrome' in window)
+			return (
+				<mi>
+					{letter}
+					{ticks}
+				</mi>
+			);
+		// Putting the ticks in a superscript is what Firefox and the spec expect
 		return (
 			<msup>
 				<mi>{letter}</mi>
