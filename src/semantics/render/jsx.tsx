@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import type {
 	CSSProperties,
 	ClassAttributes,
@@ -452,6 +453,17 @@ function TypeHover(props: {
 	);
 }
 
+function precedence(r: Render<ReactNode>): number | null {
+	switch (r.type) {
+		case 'token':
+			return null;
+		case 'join':
+			return r.precedence;
+		case 'wrap':
+			return r.precedence ?? precedence(r.inner);
+	}
+}
+
 export class Jsx extends Renderer<RichExpr, ReactNode> {
 	private name(index: number, names: Names): ReactNode {
 		const name = names.scope[index];
@@ -520,11 +532,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 				return wrap(
 					null,
 					inner => (
-						<mtable
-							columnalign="left"
-							rowlines={e.pure ? 'solid' : undefined}
-							rowspacing={e.pure ? '1em' : undefined}
-						>
+						<mtable className={classNames('kuna-do', { 'kuna-pure': e.pure })}>
 							{inner}
 						</mtable>
 					),
@@ -542,7 +550,15 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 							),
 							this.go(e.source, names),
 						),
-						this.go(e.result, newNames),
+						wrap(
+							null,
+							inner => (
+								<mtr>
+									<mtd>{inner}</mtd>
+								</mtr>
+							),
+							this.go(e.result, newNames),
+						),
 					]),
 				);
 			}
@@ -565,14 +581,15 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 	}
 
 	protected bracket(r: Render<ReactNode>): Render<ReactNode> {
+		const big = precedence(r) === Precedence.Do;
 		return {
 			...wrap(
 				Precedence.Bracket,
 				inner => (
-					<mrow>
-						<mo>(</mo>
+					<mrow className={big ? 'kuna-big-brackets' : undefined}>
+						<mo>{big ? '[' : '('}</mo>
 						{inner}
-						<mo>)</mo>
+						<mo>{big ? ']' : ')'}</mo>
 					</mrow>
 				),
 				r,

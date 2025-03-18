@@ -298,6 +298,33 @@ math .kuna-lexeme {
 	font-weight: 900;
 }
 
+math .kuna-big-brackets > mo:first-child {
+	padding-inline-end: 0.3em;
+}
+
+math .kuna-big-brackets > mo:last-child {
+	padding-inline-start: 0.3em;
+}
+
+math .kuna-do > mtr > mtd {
+	text-align: left;
+	padding: 0;
+	padding-block: 0.15em;
+}
+
+math .kuna-do > mtr:last-child > mtd:has(> mrow > .kuna-do) {
+	padding-block-end: 0;
+}
+
+math .kuna-do.kuna-pure > mtr:first-child > mtd {
+	border-block-end: 1px solid;
+	padding-block-end: 0.45em;
+}
+
+math .kuna-do.kuna-pure > mtr:last-child > mtd {
+	padding-block-start: 0.45em;
+}
+
 .dark-mode math .kuna-constant,
 .dark-mode math .kuna-quote {
 	color: #ff8888;

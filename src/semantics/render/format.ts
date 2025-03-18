@@ -62,19 +62,18 @@ export abstract class Renderer<In, Out> {
 	 */
 	protected abstract join(tokens: Out[]): Out;
 
-	private b(r: Join<Out>, part: Render<Out>, i: number): Render<Out> {
-		if (part.type === 'token') return part;
+	private needsBrackets(r: Join<Out>, part: Render<Out>, i: number): boolean {
+		if (part.type === 'token') return false;
 		if (part.type === 'wrap' && part.precedence === null)
-			return { ...part, inner: this.b(r, part.inner, i) };
-		const sub = this.bracketAll(part);
+			return this.needsBrackets(r, part.inner, i);
 
 		if (part.precedence! > r.precedence || (i > 0 && i < r.parts.length - 1))
-			return sub;
-		if (part.precedence! < r.precedence) return this.bracket(sub);
-		if (r.associativity === 'left' && i === 0) return sub;
-		if (r.associativity === 'right' && i === r.parts.length - 1) return sub;
-		if (r.associativity === 'any') return sub;
-		return this.bracket(sub);
+			return false;
+		if (part.precedence! < r.precedence) return true;
+		if (r.associativity === 'left' && i === 0) return false;
+		if (r.associativity === 'right' && i === r.parts.length - 1) return false;
+		if (r.associativity === 'any') return false;
+		return true;
 	}
 
 	protected bracketAll(r: Render<Out>): Render<Out> {
@@ -84,7 +83,10 @@ export abstract class Renderer<In, Out> {
 			case 'join':
 				return {
 					...r,
-					parts: r.parts.map((part, i) => this.b(r, part, i)),
+					parts: r.parts.map((part, i) => {
+						const sub = this.bracketAll(part);
+						return this.needsBrackets(r, part, i) ? this.bracket(sub) : sub;
+					}),
 				};
 			case 'wrap':
 				return { ...r, inner: this.bracketAll(r.inner) };
