@@ -19,17 +19,31 @@ interface TreeBrowserOptions {
 function TreeLabel(props: { label: string }) {
 	const parts = props.label.split(' : ');
 
-	return parts.length === 2 ? (
+	if (parts.length === 1) {
+		return (
+			<div className="tree-label">
+				<strong>{props.label}</strong>
+			</div>
+		);
+	}
+
+	const syntaxLabel = parts[0];
+	const semanticsParts = parts[1].split('\n');
+	if (semanticsParts.length === 1) {
+		return (
+			<div className="tree-label">
+				<strong>{syntaxLabel}</strong> : {parts[1]}
+			</div>
+		);
+	}
+	return (
 		<div className="tree-label">
-			<strong>{parts[0]}</strong> : {parts[1]}
-		</div>
-	) : (
-		<div className="tree-label">
-			<strong>{props.label}</strong>
+			<strong>{syntaxLabel}</strong> : {semanticsParts[0]}
+			{'\n'}
+			<span>{semanticsParts[1]}</span>
 		</div>
 	);
 }
-
 export function Node(props: {
 	tree: PlacedTree<Ctx>;
 	expanded: boolean;

@@ -28,8 +28,8 @@ export type CompositionMode =
 	| '>' // Functional application
 	| '<' // Reverse functional application
 	| '+' // Semigroup combination
-	| ['↑L', CompositionMode] // Lift left into functor
-	| ['↑R', CompositionMode] // Lift right into functor
+	| ['L', CompositionMode] // Lift left into functor
+	| ['R', CompositionMode] // Lift right into functor
 	| ['A', CompositionMode] // Sequence effects via applicative functor
 	| ['→L', CompositionMode] // Push functor inside distributive functor on the left
 	| ['→R', CompositionMode] // Push functor inside distributive functor on the right
@@ -114,7 +114,7 @@ function coerceInput_(
 						? ['→', mode]
 						: [
 								inputSide === 'left' ? '→L' : '→R',
-								[inputSide === 'left' ? '↑R' : '↑L', mode],
+								[inputSide === 'left' ? 'R' : 'L', mode],
 							],
 				];
 			}
@@ -264,7 +264,7 @@ function composeStep(left: ExprType, right: ExprType): [Expr, CompositionMode] {
 					),
 					cont,
 				),
-				['↑R', mode],
+				['R', mode],
 			];
 		}
 
@@ -278,7 +278,7 @@ function composeStep(left: ExprType, right: ExprType): [Expr, CompositionMode] {
 				),
 				cont,
 			),
-			['↑L', mode],
+			['L', mode],
 		];
 	}
 

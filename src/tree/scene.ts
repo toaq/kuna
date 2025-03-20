@@ -98,7 +98,7 @@ function modeToString(mode: CompositionMode): string {
 		: // @ts-ignore TypeScript can't handle the infinite types here
 			mode
 				.flat(Number.POSITIVE_INFINITY)
-				.join(', ');
+				.join(' ');
 }
 
 /**
