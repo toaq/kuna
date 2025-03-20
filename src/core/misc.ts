@@ -57,13 +57,22 @@ export function* enumerate<A>(
 const keys = new WeakMap<object, Key>();
 
 /**
+ * Generate a string of `length` random lowercase ASCII letters.
+ */
+function randomLetters(length: number): string {
+	return Array.from({ length }, _ =>
+		String.fromCharCode(97 + Math.random() * 26),
+	).join('');
+}
+
+/**
  * Generates a React key that will remain stable across renders as long as the
  * same object is passed.
  */
 export function keyFor(o: object): Key {
 	let key = keys.get(o);
 	if (key === undefined) {
-		key = Math.random();
+		key = randomLetters(8);
 		keys.set(o, key);
 	}
 	return key;
