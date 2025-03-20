@@ -14,7 +14,7 @@ import {
 	Pl,
 	Ref,
 	type Scope,
-	type SetHead,
+	among,
 	and,
 	andMap,
 	andThen,
@@ -26,24 +26,28 @@ import {
 	assertFn,
 	assertInt,
 	assertPair,
+	assertPl,
 	assertRef,
 	bind,
 	bindingsEqual,
 	closed,
 	cont,
-	element,
 	every,
 	flatMap,
+	gen,
 	implies,
 	int,
 	map,
 	pair,
+	qn,
 	ref,
 	typesEqual,
 	unbind,
 	uncont,
+	ungen,
 	unint,
 	unpair,
+	unqn,
 	unref,
 	λ,
 } from './model';
@@ -249,33 +253,30 @@ const contRunner: Runner = {
 	),
 };
 
-const setApplicative = (head: SetHead): Applicative => ({
-	functor: {
-		wrap: type => ({ head, inner: type }),
-		unwrap: type => {
-			if (typeof type === 'string' || type.head !== head)
-				throw new Impossible(`${typeToPlainText(type)} is not a ${head} type`);
-			return type.inner;
-		},
-		map: (fn, arg, s) => {
-			if (typeof arg.type === 'string' || arg.type.head !== head)
-				throw new Impossible(
-					`${typeToPlainText(arg.type)} is not a ${head} type`,
-				);
-			return app(
-				app(
-					λ(fn.type, s, (fn, s) =>
-						λ(arg.type, s, (arg, s) => map(s.var(arg), s.var(fn))),
-					),
-					fn,
-				),
-				arg,
-			);
-		},
+const plFunctor: Functor = {
+	wrap: type => Pl(type),
+	unwrap: type => {
+		assertPl(type);
+		return type.inner;
 	},
+	map: (fn, arg, s) => {
+		assertPl(arg.type);
+		return app(
+			app(
+				λ(fn.type, s, (fn, s) =>
+					λ(arg.type, s, (arg, s) => map(s.var(arg), s.var(fn))),
+				),
+				fn,
+			),
+			arg,
+		);
+	},
+};
+
+const plApplicative: Applicative = {
+	functor: plFunctor,
 	apply: (fn, arg, s) => {
-		if (typeof fn.type === 'string' || fn.type.head !== head)
-			throw new Impossible(`${typeToPlainText(fn.type)} is not a ${head} type`);
+		assertPl(fn.type);
 		const fnType = fn.type.inner;
 		return app(
 			app(
@@ -292,26 +293,132 @@ const setApplicative = (head: SetHead): Applicative => ({
 			arg,
 		);
 	},
-});
-
-const plApplicative = setApplicative('pl');
-const plFunctor = plApplicative.functor;
+};
 
 const plRunner: Runner = {
 	functor: plFunctor,
 	run: λ(Pl('t'), closed, (pl, s) =>
 		every(
 			λ('t', s, (t, s) =>
-				app(app(implies(s), element(s.var(t), s.var(pl))), s.var(t)),
+				app(app(implies(s), among(s.var(t), s.var(pl))), s.var(t)),
 			),
 		),
 	),
 };
 
-const genApplicative = setApplicative('gen');
+const genOrQnApplicative = (
+	head: 'gen' | 'qn',
+	construct: (restriction: Expr, body: Expr) => Expr,
+	deconstruct: (e: Expr, project: Expr) => Expr,
+): Applicative => ({
+	functor: {
+		wrap: (type, like) => {
+			if (typeof like === 'string' || like.head !== head)
+				throw new Impossible(`${typeToPlainText(like)} is not a ${head} type`);
+			return { ...like, inner: type };
+		},
+		unwrap: type => {
+			if (typeof type === 'string' || type.head !== head)
+				throw new Impossible(`${typeToPlainText(type)} is not a ${head} type`);
+			return type.inner;
+		},
+		map: (fn, arg, s) => {
+			if (typeof arg.type === 'string' || arg.type.head !== head)
+				throw new Impossible(
+					`${typeToPlainText(arg.type)} is not a ${head} type`,
+				);
+			const { inner, domain } = arg.type;
+			const restriction = Fn(domain, 't');
+			const body = Fn(domain, inner);
+			return deconstruct(
+				arg,
+				app(
+					λ(fn.type, s, (fn, s) =>
+						λ(restriction, s, (r, s) =>
+							λ(body, s, (b, s) =>
+								construct(
+									s.var(r),
+									λ(domain, s, (val, s) =>
+										app(s.var(fn), app(s.var(b), s.var(val))),
+									),
+								),
+							),
+						),
+					),
+					fn,
+				),
+			);
+		},
+	},
+	apply: (fn, arg, s) => {
+		if (typeof fn.type === 'string' || fn.type.head !== head)
+			throw new Impossible(`${typeToPlainText(fn.type)} is not a ${head} type`);
+		if (typeof arg.type === 'string' || arg.type.head !== head)
+			throw new Impossible(
+				`${typeToPlainText(arg.type)} is not a ${head} type`,
+			);
+		const { inner: inner1, domain: domain1 } = fn.type;
+		const { inner: inner2, domain: domain2 } = arg.type;
+		const domain = Pair(domain1, domain2);
+		const restriction1 = Fn(domain1, 't');
+		const body1 = Fn(domain1, inner1);
+		const restriction2 = Fn(domain2, 't');
+		const body2 = Fn(domain2, inner2);
+
+		return deconstruct(
+			fn,
+			app(
+				λ(arg.type, s, (arg, s) =>
+					λ(restriction1, s, (r1, s) =>
+						λ(body1, s, (b1, s) =>
+							deconstruct(
+								s.var(arg),
+								λ(restriction2, s, (r2, s) =>
+									λ(body2, s, (b2, s) =>
+										construct(
+											λ(domain, s, (d, s) =>
+												unpair(
+													s.var(d),
+													λ(domain1, s, (d1, s) =>
+														λ(domain2, s, (d2, s) =>
+															app(
+																app(and(s), app(s.var(r1), s.var(d1))),
+																app(s.var(r2), s.var(d2)),
+															),
+														),
+													),
+												),
+											),
+											λ(domain, s, (d, s) =>
+												unpair(
+													s.var(d),
+													λ(domain1, s, (d1, s) =>
+														λ(domain2, s, (d2, s) =>
+															app(
+																app(s.var(b1), s.var(d1)),
+																app(s.var(b2), s.var(d2)),
+															),
+														),
+													),
+												),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+				arg,
+			),
+		);
+	},
+});
+
+const genApplicative = genOrQnApplicative('gen', gen, ungen);
 const genFunctor = genApplicative.functor;
 
-const qnApplicative = setApplicative('qn');
+const qnApplicative = genOrQnApplicative('qn', qn, unqn);
 const qnFunctor = qnApplicative.functor;
 
 const pairFunctor: Functor = {

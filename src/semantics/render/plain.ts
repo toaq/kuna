@@ -117,7 +117,7 @@ enum Precedence {
 	And = 2,
 	Implies = 3,
 	Equals = 4,
-	Element = 5,
+	Among = 5,
 	Apply = 6,
 	Bracket = 7,
 }
@@ -135,9 +135,9 @@ interface Infix {
 }
 
 const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
-	element: {
-		symbol: '∈',
-		precedence: Precedence.Element,
+	among: {
+		symbol: '≺',
+		precedence: Precedence.Among,
 		associativity: 'none',
 	},
 	and: { symbol: '∧', precedence: Precedence.And, associativity: 'any' },

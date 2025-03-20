@@ -33,7 +33,7 @@ interface Apply extends ExprBase {
 
 interface Infix extends ExprBase {
 	head: 'infix';
-	op: 'element' | 'and' | 'implies' | 'equals';
+	op: 'among' | 'and' | 'implies' | 'equals';
 	left: RichExpr;
 	right: RichExpr;
 }
@@ -119,7 +119,7 @@ export function toRichExpr(e: Expr): RichExpr {
 			if (
 				e.fn.head === 'apply' &&
 				e.fn.fn.head === 'constant' &&
-				(e.fn.fn.name === 'element' ||
+				(e.fn.fn.name === 'among' ||
 					e.fn.fn.name === 'and' ||
 					e.fn.fn.name === 'implies' ||
 					e.fn.fn.name === 'equals')

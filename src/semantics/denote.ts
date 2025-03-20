@@ -174,10 +174,10 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === 'SA') {
+		if (cCommand === null)
+			throw new Impossible('Cannot denote a covert SA in isolation');
 		let toaq: string;
 		if (leaf.word.covert) {
-			if (cCommand === null)
-				throw new Impossible('Cannot denote a covert SA in isolation');
 			toaq = isQuestion(cCommand.denotation.type) ? 'móq' : 'da';
 		} else if (leaf.word.entry === undefined)
 			throw new Unrecognized(`SA: ${leaf.word.text}`);
@@ -185,7 +185,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 		const type = speechActParticles.get(toaq);
 		if (type === undefined) throw new Unrecognized(`SA: ${toaq}`);
-		return lex(toaq, type, closed);
+		return lex(toaq, type(cCommand.denotation.type), closed);
 	}
 
 	if (leaf.label === '&') {

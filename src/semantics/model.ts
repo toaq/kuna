@@ -58,11 +58,11 @@ export type ExprType =
 	// of {inner}.
 	| { head: 'pl'; inner: ExprType }
 	// A generic reference which behaves in local syntax like {inner}; isomorphic
-	// to a set of {inner}.
-	| { head: 'gen'; inner: ExprType }
-	// A question which behaves in local syntax like {inner}; isomorphic to a set
-	// of {inner}.
-	| { head: 'qn'; inner: ExprType }
+	// to (a set of {domain}) × ({domain} → {inner}).
+	| { head: 'gen'; domain: ExprType; inner: ExprType }
+	// A question which behaves in local syntax like {inner}; isomorphic to
+	// (a set of {domain}) × ({domain} → {inner}).
+	| { head: 'qn'; domain: ExprType; inner: ExprType }
 	// A pair of meanings which behaves in local syntax like {inner} and carries a
 	// {supplement}; isomorphic to {inner} × {supplement}.
 	| { head: 'pair'; inner: ExprType; supplement: ExprType }
@@ -95,12 +95,12 @@ export function Pl(inner: ExprType): ExprType {
 	return { head: 'pl', inner };
 }
 
-export function Gen(inner: ExprType): ExprType {
-	return { head: 'gen', inner };
+export function Gen(domain: ExprType, inner: ExprType): ExprType {
+	return { head: 'gen', domain, inner };
 }
 
-export function Qn(inner: ExprType): ExprType {
-	return { head: 'qn', inner };
+export function Qn(domain: ExprType, inner: ExprType): ExprType {
+	return { head: 'qn', domain, inner };
 }
 
 export function Pair(inner: ExprType, supplement: ExprType): ExprType {
@@ -267,16 +267,27 @@ export function assertCont(
 		throw new Impossible(`${typeToPlainText(type)} is not a continuation type`);
 }
 
-export type SetHead = 'pl' | 'gen' | 'qn';
-
-export function assertSet(
+export function assertPl(
 	type: ExprType,
-): asserts type is { head: SetHead; inner: ExprType } {
-	if (
-		typeof type === 'string' ||
-		(type.head !== 'pl' && type.head !== 'gen' && type.head !== 'qn')
-	)
-		throw new Impossible(`${typeToPlainText(type)} is not a set type`);
+): asserts type is { head: 'pl'; inner: ExprType } {
+	if (typeof type === 'string' || type.head !== 'pl')
+		throw new Impossible(`${typeToPlainText(type)} is not a plurality type`);
+}
+
+export function assertGen(
+	type: ExprType,
+): asserts type is { head: 'gen'; inner: ExprType; domain: ExprType } {
+	if (typeof type === 'string' || type.head !== 'gen')
+		throw new Impossible(
+			`${typeToPlainText(type)} is not a generic reference type`,
+		);
+}
+
+export function assertQn(
+	type: ExprType,
+): asserts type is { head: 'qn'; inner: ExprType; domain: ExprType } {
+	if (typeof type === 'string' || type.head !== 'qn')
+		throw new Impossible(`${typeToPlainText(type)} is not a question type`);
 }
 
 export function assertPair(
@@ -370,13 +381,13 @@ interface Constant extends ExprBase {
 		| 'unint'
 		| 'cont'
 		| 'uncont'
-		| 'empty'
-		| 'cons'
-		| 'build'
-		| 'filter'
 		| 'map'
 		| 'flat_map'
-		| 'element'
+		| 'among'
+		| 'gen'
+		| 'ungen'
+		| 'qn'
+		| 'unqn'
 		| 'some'
 		| 'every'
 		| 'pair'
@@ -569,126 +580,178 @@ export function uncont(cont: Expr): Expr {
 }
 
 /**
- * Constructs an empty set.
+ * Maps a plurality to another plurality by projecting each element.
  */
-export function empty(head: SetHead, inner: ExprType, scope: Scope): Expr {
-	return {
-		head: 'constant',
-		type: { head, inner },
-		scope: scope.types,
-		name: 'empty',
-	};
-}
-
-/**
- * Inserts an element into a set.
- */
-export function cons(el: Expr, set: Expr): Expr {
-	assertSet(set.type);
-	return app(
-		app(
-			{
-				head: 'constant',
-				type: Fn(set.type.inner, Fn(set.type, set.type)),
-				scope: el.scope,
-				name: 'cons',
-			},
-			el,
-		),
-		set,
-	);
-}
-
-/**
- * Builds a set consisting of all values in a given domain.
- */
-export function build(head: SetHead, domain: ExprType, scope: Scope): Expr {
-	return {
-		head: 'constant',
-		type: { head, inner: domain },
-		scope: scope.types,
-		name: 'build',
-	};
-}
-
-/**
- * Filters a set by a predicate.
- */
-export function filter(set: Expr): Expr {
-	assertSet(set.type);
-	return app(
-		{
-			head: 'constant',
-			type: Fn(set.type, Fn(Fn(set.type.inner, 't'), set.type)),
-			scope: set.scope,
-			name: 'filter',
-		},
-		set,
-	);
-}
-
-/**
- * Maps a set to another set by projecting each element.
- */
-export function map(set: Expr, project: Expr): Expr {
-	assertSet(set.type);
+export function map(pl: Expr, project: Expr): Expr {
+	assertPl(pl.type);
 	assertFn(project.type);
 	const range = project.type.range;
 	return app(
 		app(
 			{
 				head: 'constant',
-				type: Fn(
-					set.type,
-					Fn(Fn(set.type.inner, range), { head: set.type.head, inner: range }),
-				),
-				scope: set.scope,
+				type: Fn(pl.type, Fn(Fn(pl.type.inner, range), Pl(range))),
+				scope: pl.scope,
 				name: 'map',
 			},
-			set,
+			pl,
 		),
 		project,
 	);
 }
 
 /**
- * Maps a set to another set by projecting each element and taking the union of
- * all projections.
+ * Maps a plurality to another plurality by projecting each element and taking
+ * the union of all projections.
  */
-export function flatMap(set: Expr, project: Expr): Expr {
+export function flatMap(pl: Expr, project: Expr): Expr {
 	assertFn(project.type);
 	const { domain, range } = project.type;
-	assertSet(range);
+	assertPl(range);
 	return app(
 		app(
 			{
 				head: 'constant',
-				type: Fn({ head: range.head, inner: domain }, Fn(project.type, range)),
-				scope: set.scope,
+				type: Fn(Pl(domain), Fn(project.type, range)),
+				scope: pl.scope,
 				name: 'flat_map',
 			},
-			set,
+			pl,
 		),
 		project,
 	);
 }
 
 /**
- * Determines whether something is an element of a given set.
+ * Determines whether something is among a given plurality.
  */
-export function element(el: Expr, set: Expr): Expr {
-	assertSet(set.type);
+export function among(el: Expr, pl: Expr): Expr {
+	assertPl(pl.type);
 	return app(
 		app(
 			{
 				head: 'constant',
-				type: Fn(set.type.inner, Fn(set.type, 't')),
+				type: Fn(pl.type.inner, Fn(pl.type, 't')),
 				scope: el.scope,
-				name: 'element',
+				name: 'among',
 			},
 			el,
 		),
-		set,
+		pl,
+	);
+}
+
+/**
+ * Constructs a generic reference.
+ */
+export function gen(restriction: Expr, body: Expr): Expr {
+	assertFn(restriction.type);
+	assertFn(body.type);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(
+					Fn(restriction.type.domain, 't'),
+					Fn(
+						Fn(restriction.type.domain, body.type.range),
+						Gen(restriction.type.domain, body.type.range),
+					),
+				),
+				scope: restriction.scope,
+				name: 'gen',
+			},
+			restriction,
+		),
+		body,
+	);
+}
+
+/**
+ * Deconstructs a generic reference.
+ */
+export function ungen(gen: Expr, project: Expr): Expr {
+	assertGen(gen.type);
+	assertFn(project.type);
+	assertFn(project.type.range);
+	const out = project.type.range.range;
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(
+					gen.type,
+					Fn(
+						Fn(
+							Fn(gen.type.domain, 't'),
+							Fn(Fn(gen.type.domain, gen.type.inner), out),
+						),
+						out,
+					),
+				),
+				scope: gen.scope,
+				name: 'ungen',
+			},
+			gen,
+		),
+		project,
+	);
+}
+
+/**
+ * Constructs a question.
+ */
+export function qn(restriction: Expr, body: Expr): Expr {
+	assertFn(restriction.type);
+	assertFn(body.type);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(
+					Fn(restriction.type.domain, 't'),
+					Fn(
+						Fn(restriction.type.domain, body.type.range),
+						Qn(restriction.type.domain, body.type.range),
+					),
+				),
+				scope: restriction.scope,
+				name: 'qn',
+			},
+			restriction,
+		),
+		body,
+	);
+}
+
+/**
+ * Deconstructs a question.
+ */
+export function unqn(qn: Expr, project: Expr): Expr {
+	assertQn(qn.type);
+	assertFn(project.type);
+	assertFn(project.type.range);
+	const out = project.type.range.range;
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(
+					qn.type,
+					Fn(
+						Fn(
+							Fn(qn.type.domain, 't'),
+							Fn(Fn(qn.type.domain, qn.type.inner), out),
+						),
+						out,
+					),
+				),
+				scope: qn.scope,
+				name: 'unqn',
+			},
+			qn,
+		),
+		project,
 	);
 }
 

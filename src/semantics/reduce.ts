@@ -2,13 +2,13 @@ import _ from 'lodash';
 import {
 	type Expr,
 	type ExprType,
+	among,
 	andMap,
 	andThen,
 	app,
 	assertDxOrAct,
-	assertSet,
+	assertPl,
 	closed,
-	element,
 	every,
 	flatMap,
 	implies,
@@ -274,7 +274,7 @@ function reducePass(expr: Expr): Expr {
 
 				// map (map x f) g = map x (λz g (f z))
 				if (expr.fn.fn.name === 'map' && expr.fn.arg.fn.fn.name === 'map') {
-					assertSet(x.type);
+					assertPl(x.type);
 					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
 					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
 					return map(
@@ -290,7 +290,7 @@ function reducePass(expr: Expr): Expr {
 					expr.fn.fn.name === 'flat_map' &&
 					expr.fn.arg.fn.fn.name === 'map'
 				) {
-					assertSet(x.type);
+					assertPl(x.type);
 					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
 					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
 					return flatMap(
@@ -306,7 +306,7 @@ function reducePass(expr: Expr): Expr {
 					expr.fn.fn.name === 'map' &&
 					expr.fn.arg.fn.fn.name === 'flat_map'
 				) {
-					assertSet(x.type);
+					assertPl(x.type);
 					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
 					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
 					return flatMap(
@@ -322,7 +322,7 @@ function reducePass(expr: Expr): Expr {
 					expr.fn.fn.name === 'flat_map' &&
 					expr.fn.arg.fn.fn.name === 'flat_map'
 				) {
-					assertSet(x.type);
+					assertPl(x.type);
 					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
 					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
 					return flatMap(
@@ -346,7 +346,7 @@ function reducePass(expr: Expr): Expr {
 				return expr.fn.arg;
 			}
 
-			// every (λy implies (element y (_ x f)) g)
+			// every (λy implies (among y (_ x f)) g)
 			if (
 				expr.fn.head === 'constant' &&
 				expr.fn.name === 'every' &&
@@ -358,7 +358,7 @@ function reducePass(expr: Expr): Expr {
 				expr.arg.body.fn.arg.head === 'apply' &&
 				expr.arg.body.fn.arg.fn.head === 'apply' &&
 				expr.arg.body.fn.arg.fn.fn.head === 'constant' &&
-				expr.arg.body.fn.arg.fn.fn.name === 'element' &&
+				expr.arg.body.fn.arg.fn.fn.name === 'among' &&
 				expr.arg.body.fn.arg.fn.arg.head === 'variable' &&
 				expr.arg.body.fn.arg.fn.arg.index === 0 &&
 				expr.arg.body.fn.arg.arg.head === 'apply' &&
@@ -370,9 +370,9 @@ function reducePass(expr: Expr): Expr {
 				const g = expr.arg.body.arg;
 				const originalDomain = g.scope[0];
 
-				// every (λy implies (element y (map x f)) g) = every (λz implies (element z x) ((λy g) (f z)))
+				// every (λy implies (among y (map x f)) g) = every (λz implies (among z x) ((λy g) (f z)))
 				if (expr.arg.body.fn.arg.arg.fn.fn.name === 'map') {
-					assertSet(x.type);
+					assertPl(x.type);
 					let varError = false;
 					let xx: Expr;
 					let ff: Expr;
@@ -398,7 +398,7 @@ function reducePass(expr: Expr): Expr {
 						return every(
 							λ(x.type.inner, { ...closed, types: expr.scope }, (z, s) =>
 								app(
-									app(implies(s), element(s.var(z), xx)),
+									app(implies(s), among(s.var(z), xx)),
 									app(
 										λ(originalDomain, s, () => gg),
 										app(ff, s.var(z)),
@@ -409,9 +409,9 @@ function reducePass(expr: Expr): Expr {
 					}
 				}
 
-				// every (λy implies (element y (flat_map x f)) g) = every (λz implies (element z x) (every (λy implies (element y (f z)) g)))
+				// every (λy implies (among y (flat_map x f)) g) = every (λz implies (among z x) (every (λy implies (among y (f z)) g)))
 				if (expr.arg.body.fn.arg.arg.fn.fn.name === 'flat_map') {
-					assertSet(x.type);
+					assertPl(x.type);
 					let varError = false;
 					let xx: Expr;
 					let ff: Expr;
@@ -438,11 +438,11 @@ function reducePass(expr: Expr): Expr {
 						return every(
 							λ(x.type.inner, { ...closed, types: expr.scope }, (z, s) =>
 								app(
-									app(implies(s), element(s.var(z), xx)),
+									app(implies(s), among(s.var(z), xx)),
 									every(
 										λ(originalDomain, s, (y, s) =>
 											app(
-												app(implies(s), element(s.var(y), app(ff, s.var(z)))),
+												app(implies(s), among(s.var(y), app(ff, s.var(z)))),
 												gg,
 											),
 										),
