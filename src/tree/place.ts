@@ -75,8 +75,8 @@ export function boundingRect<C extends DrawContext>(
 		return { left, right, layers };
 	}
 	return {
-		left: 0,
-		right: placedTree.placement.width,
+		left: -placedTree.placement.width / 2,
+		right: placedTree.placement.width / 2,
 		layers: 1,
 	};
 }

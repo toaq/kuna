@@ -9,6 +9,13 @@ import { toScene } from '../../tree/scene';
 import type { Theme } from '../../tree/theme';
 import './TreeBrowser.css';
 
+interface TreeBrowserOptions {
+	theme: Theme;
+	layerHeight: number;
+	compactDenotations: boolean;
+	truncateLabels: string[];
+}
+
 function TreeLabel(props: { label: string }) {
 	const parts = props.label.split(' : ');
 
@@ -17,17 +24,18 @@ function TreeLabel(props: { label: string }) {
 			<strong>{parts[0]}</strong> : {parts[1]}
 		</div>
 	) : (
-		<div className="tree-label">{props.label}</div>
+		<div className="tree-label">
+			<strong>{props.label}</strong>
+		</div>
 	);
 }
 
 export function Node(props: {
 	tree: PlacedTree<Ctx>;
 	expanded: boolean;
-	compactDenotations: boolean;
-	theme: Theme;
+	options: TreeBrowserOptions;
 }) {
-	const { tree, theme } = props;
+	const { tree, options } = props;
 	const key = keyFor(tree);
 
 	return (
@@ -36,7 +44,10 @@ export function Node(props: {
 				<div className="tree-node-contents" id={`node-${key}`}>
 					<TreeLabel label={tree.label} />
 					{tree.text && (
-						<div className="tree-word" style={{ color: theme.wordColor }}>
+						<div
+							className="tree-word"
+							style={{ color: options.theme.wordColor }}
+						>
 							{tree.text}
 						</div>
 					)}
@@ -52,8 +63,8 @@ export function Node(props: {
 						delayHide={0}
 						delayShow={0}
 						style={{
-							background: theme.tipBackgroundColor,
-							color: theme.tipTextColor,
+							background: options.theme.tipBackgroundColor,
+							color: options.theme.tipTextColor,
 							textAlign: 'center',
 							transition: 'opacity 70ms',
 							fontSize: '14px',
@@ -73,17 +84,15 @@ export function Subtree(props: {
 	tree: PlacedTree<Ctx>;
 	left: number;
 	top: number;
-	compactDenotations: boolean;
-	theme: Theme;
-	truncateLabels: string[];
 	lineDx?: number;
+	options: TreeBrowserOptions;
 }) {
-	const shouldTruncate = props.truncateLabels.some(x =>
+	const shouldTruncate = props.options.truncateLabels.some(x =>
 		props.tree.label.startsWith(`${x} `),
 	);
 	const [expanded] = useState(!shouldTruncate);
 
-	const { tree, compactDenotations, theme, truncateLabels } = props;
+	const { tree, options } = props;
 	const children = tree.children;
 	const dist = tree.placement.distanceBetweenChildren;
 
@@ -98,7 +107,7 @@ export function Subtree(props: {
 
 						pointerEvents: 'none',
 						position: 'absolute',
-						background: theme.textColor,
+						background: options.theme.textColor,
 						width: 1,
 						height: Math.hypot(30, props.lineDx) + 1,
 						transformOrigin: '0.5px 0.5px',
@@ -113,12 +122,7 @@ export function Subtree(props: {
 					top: props.top,
 				}}
 			>
-				<Node
-					tree={tree}
-					expanded={expanded}
-					compactDenotations={compactDenotations}
-					theme={theme}
-				/>
+				<Node tree={tree} expanded={expanded} options={options} />
 			</div>
 			{expanded ? (
 				<>
@@ -130,13 +134,11 @@ export function Subtree(props: {
 								((1 - children.length) / 2 + i) * dist -
 								child.placement.width / 2
 							}
-							top={props.top + 70}
+							top={props.top + props.options.layerHeight}
 							lineDx={((1 - children.length) / 2 + i) * dist}
 							tree={child}
 							key={keyFor(child)}
-							compactDenotations={compactDenotations}
-							theme={theme}
-							truncateLabels={truncateLabels}
+							options={options}
 						/>
 					))}
 				</>
@@ -150,7 +152,11 @@ export function Subtree(props: {
 						role="img"
 						aria-label="Roof"
 					>
-						<path d="M25 0 L50 8 L0 8 Z" fill="none" stroke={theme.textColor} />
+						<path
+							d="M25 0 L50 8 L0 8 Z"
+							fill="none"
+							stroke={options.theme.textColor}
+						/>
 					</svg>
 					<div className="tree-word">{'(expand)'}</div>
 				</div>
@@ -175,51 +181,40 @@ export function TreeBrowser(props: {
 	canvasCtx.font = '14px Fira Sans';
 	const ctx: Ctx = {
 		measureText(text: string) {
-			const widest = Math.max(
-				...text.split('\n').map(x => canvasCtx.measureText(x).width),
-			);
-			return { width: widest };
+			const widths = text.split('\n').map(x => canvasCtx.measureText(x).width);
+			return { width: Math.max(...widths) };
 		},
 	};
 
-	const denotationRenderer = (expr: Expr) => {
-		return {
-			draw: async () => {},
-			width: () => 0,
-			height: () => 0,
-			source: '',
-			denotation: expr,
-		};
-	};
-	const placer = new TreePlacer(ctx, denotationRenderer, {
-		theme: theme,
+	const denotationRenderer = (expr: Expr) => ({
+		draw: async () => {},
+		width: () => 0,
+		height: () => 0,
+		source: '',
+		denotation: expr,
 	});
+	const placer = new TreePlacer(ctx, denotationRenderer, { theme });
 	const scene = toScene(tree, false, truncateLabels);
 	const placed = placer.placeScene(scene);
-	console.log(placed);
+	const layerHeight = 'denotation' in tree ? 70 : 50;
 	const rect = boundingRect(placed);
+	console.log(placed);
 
 	return (
-		<div
-			style={{
-				background: theme.backgroundColor,
-			}}
-		>
+		<div style={{ background: theme.backgroundColor }}>
 			<div
 				style={{
 					width: rect.right - rect.left,
-					height: rect.layers * 70,
+					height: rect.layers * layerHeight,
 					margin: '20px 30px',
 					position: 'relative',
 				}}
 			>
 				<Subtree
-					left={-rect.left}
+					left={-rect.left - placed.placement.width / 2}
 					top={0}
 					tree={placed}
-					compactDenotations={compactDenotations}
-					theme={theme}
-					truncateLabels={truncateLabels}
+					options={{ compactDenotations, theme, truncateLabels, layerHeight }}
 				/>
 			</div>
 		</div>
