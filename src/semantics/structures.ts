@@ -442,30 +442,18 @@ const pairFunctor: Functor = {
 	map: (fn, arg, s) => {
 		assertPair(arg.type);
 		const { inner, supplement } = arg.type;
-		return app(
+		return unpair(
+			arg,
 			app(
 				λ(fn.type, s, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
-						pair(
-							app(
-								s.var(fn),
-								unpair(
-									s.var(arg),
-									λ(inner, s, (val, s) =>
-										λ(supplement, s, (_, s) => s.var(val)),
-									),
-								),
-							),
-							unpair(
-								s.var(arg),
-								λ(inner, s, (_, s) => λ(supplement, s, (val, s) => s.var(val))),
-							),
+					λ(inner, s, (val, s) =>
+						λ(supplement, s, (sup, s) =>
+							pair(app(s.var(fn), s.var(val)), s.var(sup)),
 						),
 					),
 				),
 				fn,
 			),
-			arg,
 		);
 	},
 };
