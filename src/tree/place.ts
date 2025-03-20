@@ -37,7 +37,7 @@ export interface DrawContext {
 	measureText(text: string): { width: number };
 }
 
-export interface DrawableDenotation<C extends DrawContext> {
+export interface DrawableDenotation<C extends DrawContext, Source = string> {
 	draw: (
 		ctx: C,
 		centerX: number,
@@ -46,7 +46,9 @@ export interface DrawableDenotation<C extends DrawContext> {
 	) => Promise<void>;
 	width(ctx: C): number;
 	height(ctx: C): number;
-	source: string;
+	source: Source;
+	// This may be absent, for example if rendering from raw LaTeX.
+	denotation?: Expr;
 }
 
 export type PlacedTree<C extends DrawContext> = SceneNode<
@@ -73,8 +75,8 @@ export function boundingRect<C extends DrawContext>(
 		return { left, right, layers };
 	}
 	return {
-		left: placedTree.placement.width / 2,
-		right: placedTree.placement.width / 2,
+		left: 0,
+		right: placedTree.placement.width,
 		layers: 1,
 	};
 }
@@ -97,6 +99,7 @@ export function denotationRenderText(
 			return 30;
 		},
 		source: text,
+		denotation,
 	};
 }
 
@@ -138,6 +141,7 @@ export function denotationRenderRawLatex(
 			return pxHeight;
 		},
 		source: latex,
+		denotation: undefined,
 	};
 }
 
@@ -223,10 +227,7 @@ export class TreePlacer<C extends DrawContext, D> {
 			}
 		}
 
-		const extents = [
-			{ left: -width / 2, right: width / 2 },
-			{ left: -width / 2, right: width / 2 },
-		];
+		const extents = [{ left: -width / 2, right: width / 2 }];
 		for (let i = 0; i < children.length; i++) {
 			const dx = (i - (children.length - 1) / 2) * distanceBetweenChildren;
 			const e = children[i].extents;
