@@ -73,7 +73,7 @@ h1 {
 .settings button {
 	cursor: pointer;
 	padding: 1px 8px;
-	margin: 0 2px;
+	margin: 2px 2px;
 	cursor: pointer;
 }
 
@@ -154,6 +154,7 @@ h1 {
 }
 
 textarea,
+input,
 select,
 button {
 	font-family: inherit;
@@ -192,8 +193,8 @@ button {
 }
 
 .dark-mode .card {
-	border: 2px solid rgba(0, 0, 0, 0.2);
-	background-color: rgba(0, 0, 0, 0.2);
+	border: 2px solid #111111;
+	background-color: #222222;
 }
 
 .settings form {
@@ -239,6 +240,30 @@ math {
 	color: #ff0080;
 	white-space: pre-wrap;
 }
+
+.help {
+	position: relative;
+	padding: 8px 24px;
+	font-size: 13px;
+}
+
+@media only screen and (min-width: 800px) {
+	.help {
+		position: fixed;
+		right: 15px;
+		top: 0px;
+		z-index: 20;
+	}
+	.help-columns {
+		display: flex;
+	}
+	.help-column > h2:first-child {
+		margin-top: 0;
+	}
+}
+
+.help th { text-align: right; padding-right: 12px }
+.help td { padding-right: 12px; }
 
 .toggles {
 	margin-top: 8px;
