@@ -482,33 +482,18 @@ const bindFunctor: Functor = {
 	map: (fn, arg, s) => {
 		assertBind(arg.type);
 		const { binding, inner } = arg.type;
-		return app(
+		return unbind(
+			arg,
 			app(
 				λ(fn.type, s, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
-						bind(
-							binding,
-							unbind(
-								s.var(arg),
-								λ(Int(Pl('e')), s, (val, s) =>
-									λ(inner, s, (_, s) => s.var(val)),
-								),
-							),
-							app(
-								s.var(fn),
-								unbind(
-									s.var(arg),
-									λ(Int(Pl('e')), s, (_, s) =>
-										λ(inner, s, (val, s) => s.var(val)),
-									),
-								),
-							),
+					λ(Int(Pl('e')), s, (boundVal, s) =>
+						λ(inner, s, (val, s) =>
+							bind(binding, s.var(boundVal), app(s.var(fn), s.var(val))),
 						),
 					),
 				),
 				fn,
 			),
-			arg,
 		);
 	},
 };
