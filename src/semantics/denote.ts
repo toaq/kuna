@@ -200,10 +200,10 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Unrecognized(`D: ${leaf.word.text}`);
 
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
-		const type = determiners.get(toaq);
-		if (type === undefined) throw new Unrecognized(`D: ${toaq}`);
-		assertFn(type);
-		const functor = getFunctor(type.range);
+		const data = determiners.get(toaq);
+		if (data === undefined) throw new Unrecognized(`D: ${toaq}`);
+		assertFn(data.type);
+		const functor = getFunctor(data.type.range);
 		if (functor === null)
 			throw new Impossible(`${toaq} doesn't return a functor`);
 		const inner = findInner(cCommand.denotation.type, Gen('e', 'e'));
@@ -211,19 +211,24 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Impossible(
 				`D complement: ${typeToPlainText(cCommand.denotation.type)}`,
 			);
-		return λ(Gen(Int(Pl('e')), inner), closed, (np, s) =>
-			ungen(
-				s.var(np),
-				λ(Fn(Int(Pl('e')), 't'), s, (restriction, s) =>
-					λ(Fn(Int(Pl('e')), inner), s, (body, s) =>
-						functor.map(
-							λ(Int(Pl('e')), s, (x, s) => app(s.var(body), s.var(x))),
-							app(lex(toaq, type, s), s.var(restriction)),
-							s,
+		return app(
+			λ(data.type, closed, (data, s) =>
+				λ(Gen(Int(Pl('e')), inner), s, (np, s) =>
+					ungen(
+						s.var(np),
+						λ(Fn(Int(Pl('e')), 't'), s, (restriction, s) =>
+							λ(Fn(Int(Pl('e')), inner), s, (body, s) =>
+								functor.map(
+									λ(Int(Pl('e')), s, (x, s) => app(s.var(body), s.var(x))),
+									app(s.var(data), s.var(restriction)),
+									s,
+								),
+							),
 						),
 					),
 				),
 			),
+			data,
 		);
 	}
 

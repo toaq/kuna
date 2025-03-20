@@ -3,6 +3,7 @@ import {
 	Act,
 	Cont,
 	Dx,
+	type Expr,
 	type ExprType,
 	Fn,
 	Int,
@@ -13,11 +14,16 @@ import {
 	and,
 	app,
 	closed,
+	cont,
 	equals,
+	every,
 	gen,
+	implies,
 	int,
 	lex,
+	qn,
 	ref,
+	some,
 	unref,
 	λ,
 } from './model';
@@ -69,15 +75,64 @@ export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
 
 export const covertSigma = λ('t', closed, (t, s) => s.var(t));
 
-export const determiners = new Map<string, ExprType>([
-	['sá', Fn(Fn(Int(Pl('e')), 't'), Cont(Int(Pl('e'))))],
-	['tú', Fn(Fn(Int(Pl('e')), 't'), Cont(Int(Pl('e'))))],
-	['sía', Fn(Fn(Int(Pl('e')), 't'), Cont(Int(Pl('e'))))],
-	['hí', Fn(Fn(Int(Pl('e')), 't'), Qn(Int(Pl('e')), Int(Pl('e'))))],
-	['ké', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e'))))],
-	['hú', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e'))))],
-	['ní', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e'))))],
-	['nánı', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e'))))],
+export const determiners = new Map<string, Expr>([
+	[
+		'sá',
+		λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
+			cont(
+				λ(Fn(Int(Pl('e')), 't'), s, (c, s) =>
+					some(
+						λ(Int(Pl('e')), s, (x, s) =>
+							app(
+								app(and(s), app(s.var(predicate), s.var(x))),
+								app(s.var(c), s.var(x)),
+							),
+						),
+					),
+				),
+			),
+		),
+	],
+	[
+		'tú',
+		λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
+			cont(
+				λ(Fn(Int(Pl('e')), 't'), s, (c, s) =>
+					every(
+						λ(Int(Pl('e')), s, (x, s) =>
+							app(
+								app(implies(s), app(s.var(predicate), s.var(x))),
+								app(s.var(c), s.var(x)),
+							),
+						),
+					),
+				),
+			),
+		),
+	],
+	['sía', lex('sía', Fn(Fn(Int(Pl('e')), 't'), Cont(Int(Pl('e')))), closed)],
+	[
+		'báq',
+		λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
+			gen(
+				s.var(predicate),
+				λ(Int(Pl('e')), s, (x, s) => s.var(x)),
+			),
+		),
+	],
+	[
+		'hí',
+		λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
+			qn(
+				s.var(predicate),
+				λ(Int(Pl('e')), s, (x, s) => s.var(x)),
+			),
+		),
+	],
+	['ké', lex('ké', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed)],
+	['hú', lex('hú', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed)],
+	['ní', lex('ní', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed)],
+	['nánı', lex('nánı', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed)],
 ]);
 
 export const littleN = λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
