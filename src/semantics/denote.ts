@@ -31,15 +31,18 @@ import {
 	Int,
 	Pl,
 	Qn,
+	app,
+	assertFn,
 	bind,
 	closed,
 	gen,
 	lex,
+	ungen,
 	λ,
 } from './model';
 import { reduceExpr } from './reduce';
 import { typeToPlainText } from './render';
-import { findInner, unwrapEffects } from './structures';
+import { findInner, getFunctor, unwrapEffects } from './structures';
 
 function findVp(tree: StrictTree): StrictTree | null {
 	if (tree.label === 'VP' || tree.label === "EvA'") {
@@ -199,12 +202,29 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
 		const type = determiners.get(toaq);
 		if (type === undefined) throw new Unrecognized(`D: ${toaq}`);
+		assertFn(type);
+		const functor = getFunctor(type.range);
+		if (functor === null)
+			throw new Impossible(`${toaq} doesn't return a functor`);
 		const inner = findInner(cCommand.denotation.type, Gen('e', 'e'));
 		if (inner === null)
 			throw new Impossible(
 				`D complement: ${typeToPlainText(cCommand.denotation.type)}`,
 			);
-		return lex(toaq, type(inner), closed);
+		return λ(Gen(Int(Pl('e')), inner), closed, (np, s) =>
+			ungen(
+				s.var(np),
+				λ(Fn(Int(Pl('e')), 't'), s, (restriction, s) =>
+					λ(Fn(Int(Pl('e')), inner), s, (body, s) =>
+						functor.map(
+							λ(Int(Pl('e')), s, (x, s) => app(s.var(body), s.var(x))),
+							app(lex(toaq, type, s), s.var(restriction)),
+							s,
+						),
+					),
+				),
+			),
+		);
 	}
 
 	if (leaf.label === '𝘯') {

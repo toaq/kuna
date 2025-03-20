@@ -5,7 +5,6 @@ import {
 	Dx,
 	type ExprType,
 	Fn,
-	Gen,
 	Int,
 	Pl,
 	Qn,
@@ -70,15 +69,15 @@ export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
 
 export const covertSigma = λ('t', closed, (t, s) => s.var(t));
 
-export const determiners = new Map<string, (inner: ExprType) => ExprType>([
-	['sá', inner => Fn(Gen(Int(Pl('e')), inner), Cont(inner))],
-	['tú', inner => Fn(Gen(Int(Pl('e')), inner), Cont(inner))],
-	['sía', inner => Fn(Gen(Int(Pl('e')), inner), Cont(inner))],
-	['hí', inner => Fn(Gen(Int(Pl('e')), inner), Qn(Int(Pl('e')), inner))],
-	['ké', inner => Fn(Gen(Int(Pl('e')), inner), Dx(inner))],
-	['hú', inner => Fn(Gen(Int(Pl('e')), inner), Dx(inner))],
-	['ní', inner => Fn(Gen(Int(Pl('e')), inner), Dx(inner))],
-	['nánı', inner => Fn(Gen(Int(Pl('e')), inner), Dx(inner))],
+export const determiners = new Map<string, ExprType>([
+	['sá', Fn(Fn(Int(Pl('e')), 't'), Cont(Int(Pl('e'))))],
+	['tú', Fn(Fn(Int(Pl('e')), 't'), Cont(Int(Pl('e'))))],
+	['sía', Fn(Fn(Int(Pl('e')), 't'), Cont(Int(Pl('e'))))],
+	['hí', Fn(Fn(Int(Pl('e')), 't'), Qn(Int(Pl('e')), Int(Pl('e'))))],
+	['ké', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e'))))],
+	['hú', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e'))))],
+	['ní', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e'))))],
+	['nánı', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e'))))],
 ]);
 
 export const littleN = λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
