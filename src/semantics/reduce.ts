@@ -208,6 +208,17 @@ function reducePass(expr: Expr): Expr {
 				const f = expr.fn.arg.arg;
 				const g = expr.arg;
 
+				// unpair (pair x f) g = g x f
+				// and so on for Gen, Qn, Bind
+				if (
+					(expr.fn.fn.name === 'ungen' && expr.fn.arg.fn.fn.name === 'gen') ||
+					(expr.fn.fn.name === 'unqn' && expr.fn.arg.fn.fn.name === 'qn') ||
+					(expr.fn.fn.name === 'unpair' && expr.fn.arg.fn.fn.name === 'pair') ||
+					(expr.fn.fn.name === 'unbind' && expr.fn.arg.fn.fn.name === 'bind')
+				) {
+					return app(app(expr.arg, expr.fn.arg.fn.arg), expr.fn.arg.arg);
+				}
+
 				// and_map (and_map x f) g = and_map x (λz g (f z))
 				if (
 					expr.fn.fn.name === 'and_map' &&
