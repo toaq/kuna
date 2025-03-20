@@ -45,7 +45,7 @@ export type ExprType =
 	// A world; a frame of reference which associates intensions with extensions.
 	| 's'
 	// The unit type.
-	| '1'
+	| '()'
 	// A total function from {domain} to {range}.
 	| { head: 'fn'; domain: ExprType; range: ExprType }
 	// An intension which behaves in local syntax like {inner}; isomorphic to

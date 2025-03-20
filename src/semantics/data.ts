@@ -172,19 +172,19 @@ export const speechActParticles = new Map<
 	string,
 	(complement: ExprType) => ExprType
 >([
-	['da', () => Fn(Int('t'), Act('1'))],
-	['dâ', () => Fn(Int('t'), Act('1'))],
-	['ka', () => Fn(Int('t'), Act('1'))],
+	['da', () => Fn(Int('t'), Act('()'))],
+	['dâ', () => Fn(Int('t'), Act('()'))],
+	['ka', () => Fn(Int('t'), Act('()'))],
 	[
 		'móq',
-		(complement: ExprType) => Fn(Qn(qnDomain(complement), Int('t')), Act('1')),
+		(complement: ExprType) => Fn(Qn(qnDomain(complement), Int('t')), Act('()')),
 	],
 	[
 		'môq',
-		(complement: ExprType) => Fn(Qn(qnDomain(complement), Int('t')), Act('1')),
+		(complement: ExprType) => Fn(Qn(qnDomain(complement), Int('t')), Act('()')),
 	],
-	['ba', () => Fn(Int('t'), Act('1'))],
-	['nha', () => Fn(Int('t'), Act('1'))],
-	['doa', () => Fn(Int('t'), Act('1'))],
-	['ꝡo', () => Fn(Int('t'), Act('1'))],
+	['ba', () => Fn(Int('t'), Act('()'))],
+	['nha', () => Fn(Int('t'), Act('()'))],
+	['doa', () => Fn(Int('t'), Act('()'))],
+	['ꝡo', () => Fn(Int('t'), Act('()'))],
 ]);

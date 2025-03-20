@@ -125,7 +125,9 @@ const tSemigroup: Semigroup = {
 };
 
 const unitSemigroup: Semigroup = {
-	plus: λ('1', closed, (_first, s) => λ('1', s, (second, s) => s.var(second))),
+	plus: λ('()', closed, (_first, s) =>
+		λ('()', s, (second, s) => s.var(second)),
+	),
 };
 
 export const idFunctor: Functor = {
@@ -663,7 +665,7 @@ export function getMatchingSemigroup(
 ): Semigroup | null {
 	if (left !== right) return null;
 	if (left === 't') return tSemigroup;
-	if (left === '1') return unitSemigroup;
+	if (left === '()') return unitSemigroup;
 	return null;
 }
 
