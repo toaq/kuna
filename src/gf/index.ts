@@ -2,7 +2,6 @@ import { Impossible, Unimplemented } from '../core/error';
 import { baseForm } from '../morphology/tokenize';
 import {
 	type Branch,
-	type Label,
 	type Leaf,
 	type StrictTree,
 	assertBranch,
@@ -200,7 +199,7 @@ export class GfTranslator {
 	 */
 	private npToGf(tree: StrictTree): G_CN {
 		assertBranch(tree);
-		assertLabel(tree, '𝘯P' as Label); // TODO: 𝘯P doesn't exist anymore
+		assertLabel(tree, '𝘯P');
 		const rs = this.relativeCpToGf(tree.right);
 		return this.simplifyRsToCn(rs) ?? ['RelCN', ['UseN', 'person_N'], rs];
 	}
@@ -281,8 +280,7 @@ export class GfTranslator {
 		}
 		const _d = tree.left;
 		const complement = tree.right as Branch<StrictTree>;
-		// TODO: 𝘯P doesn't exist anymore
-		if (complement.label === ('𝘯P' as Label)) {
+		if (complement.label === '𝘯P') {
 			const cn = this.npToGf(complement);
 			return ['DetCN', this.dToGf(tree.left), cn];
 		}
