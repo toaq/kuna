@@ -14,6 +14,7 @@ import {
 	chooseFunctor,
 	composeFunctors,
 	findInner,
+	getComonad,
 	getDistributive,
 	getMatchingApplicative,
 	getMatchingFunctor,
@@ -33,7 +34,7 @@ export type CompositionMode =
 	| ['→L', CompositionMode] // Push functor inside distributive functor on the left
 	| ['→R', CompositionMode] // Push functor inside distributive functor on the right
 	| ['→', CompositionMode] // Push functor inside distributive functor
-	| ['↓', CompositionMode] // Run effect
+	| ['↓', CompositionMode] // Extract from effect
 	| ['J', CompositionMode]; // Join monads
 
 function coerceInput_(
@@ -64,10 +65,10 @@ function coerceInput_(
 			under === null ? functor : composeFunctors(under, functor),
 		);
 
-	// The functors don't match; let's try pushing the input's outermost functor
-	// inside of a distributive functor and then continuing coercion under the
-	// distributive functor
+	// The functors don't match
 	if (under !== null) {
+		// Let's try pushing the input's outer most functor inside of a distributive
+		// functor and then continuing coercion under the distributive functor
 		const distributive = getDistributive(inputInner);
 		if (distributive !== null) {
 			const coercedInner = under.wrap(
@@ -118,6 +119,39 @@ function coerceInput_(
 				];
 			}
 		}
+
+		// Try simply extracting a value from the functor via a comonad
+		const comonad = getComonad(inputInner);
+		if (comonad !== null) {
+			const coercedInner = under.wrap(
+				comonad.functor.unwrap(inputInner),
+				input,
+			);
+			const result = coerceInput_(fn, coercedInner, inputSide, mode, under);
+			if (result !== null) {
+				const [cont, mode] = result;
+				return [
+					app(
+						λ(cont.type, closed, (cont, s) =>
+							λ(input, s, (input, s) =>
+								app(
+									s.var(cont),
+									under.map(
+										λ(inputInner, s, (inputInner, s) =>
+											comonad.extract(s.var(inputInner), s),
+										),
+										s.var(input),
+										s,
+									),
+								),
+							),
+						),
+						cont,
+					),
+					['↓', mode],
+				];
+			}
+		}
 	}
 
 	return null;
@@ -125,8 +159,8 @@ function coerceInput_(
 
 /**
  * Given a function and an input type, build a function which accepts the type
- * as its input and "coerces" its type using Functor and Distributive instances
- * to feed it to the original function.
+ * as its input and "coerces" its type using Functor, Distributive, and Comonad
+ * instances to feed it to the original function.
  * @param inputSide The side of the tree which the input comes from. If this is
  *   'left' or 'right' then the function will be treated as a binary function so
  *   that functors map like f a → b → f c rather than f a → f (b → c).

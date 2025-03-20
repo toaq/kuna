@@ -106,6 +106,15 @@ export interface Monad {
 	join: (e: Expr, scope: Scope) => Expr;
 }
 
+export interface Comonad {
+	functor: Functor;
+	// There is no 'extend' here because we don't really need it
+	/**
+	 * Extracts an inner value from the comonad.
+	 */
+	extract: (e: Expr, scope: Scope) => Expr;
+}
+
 export interface Runner {
 	functor: Functor;
 	run: Expr;
@@ -504,6 +513,18 @@ const bindFunctor: Functor = {
 	},
 };
 
+const bindComonad: Comonad = {
+	functor: bindFunctor,
+	extract: (e, s) => {
+		assertBind(e.type);
+		const { inner } = e.type;
+		return unbind(
+			e,
+			λ(Int(Pl('e')), s, (_, s) => λ(inner, s, (val, s) => s.var(val))),
+		);
+	},
+};
+
 const refFunctor: Functor = {
 	wrap: (type, like) => {
 		assertRef(like);
@@ -861,6 +882,12 @@ export function getMonad(t: ExprType): Monad | null {
 	if (t.head === 'int') return intMonad;
 	if (t.head === 'dx') return dxMonad;
 	if (t.head === 'act') return actMonad;
+	return null;
+}
+
+export function getComonad(t: ExprType): Comonad | null {
+	if (typeof t === 'string') return null;
+	if (t.head === 'bind') return bindComonad;
 	return null;
 }
 
