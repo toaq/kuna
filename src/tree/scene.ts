@@ -113,15 +113,55 @@ function modeToString(mode: CompositionMode): string {
 				.join(' ');
 }
 
-function toSceneLabel(tree: Tree | DTree): string | RichSceneLabel {
+/**
+ * Turn a label like "𝘷P" into a list of pieces like:
+ *
+ *     [
+ *         { text: "v", font: italicFont },
+ *         { text: "P", font: regularFont },
+ *     ]
+ */
+function patchItalics(
+	label: string,
+	regularFont: string,
+	italicFont: string,
+): { text: string; font: string }[] {
+	const pieces = [];
+	const patches: Record<string, string> = { 𝘢: 'a', 𝘯: 'n', 𝘷: 'v' };
+	for (const character of label) {
+		if (character in patches) {
+			pieces.push({ text: patches[character], font: italicFont });
+		} else if (
+			pieces.length &&
+			pieces[pieces.length - 1].font === regularFont
+		) {
+			pieces[pieces.length - 1].text += character;
+		} else {
+			pieces.push({ text: character, font: regularFont });
+		}
+	}
+	return pieces;
+}
+
+/**
+ * Create a (possibly rich) label for the given subtree.
+ */
+function toSceneLabel(
+	tree: Tree | DTree,
+	font = 'Fira Sans',
+): string | RichSceneLabel {
 	if (!('denotation' in tree && tree.denotation)) return tree.label;
 
 	const typedLabel: RichSceneLabel = {
 		pieces: [
-			{ text: tree.label, font: 'bold 14px Fira Sans' },
+			...patchItalics(
+				tree.label,
+				`bold 14px ${font}`,
+				`italic bold 14px ${font}`,
+			),
 			{
 				text: ` : ${typeToPlainText(tree.denotation.type)}`,
-				font: '14px Fira Sans',
+				font: `14px ${font}`,
 			},
 		],
 	};
@@ -129,7 +169,7 @@ function toSceneLabel(tree: Tree | DTree): string | RichSceneLabel {
 	if (!('mode' in tree && tree.mode)) return typedLabel;
 
 	const modeLabel: RichSceneLabel = {
-		pieces: [{ text: modeToString(tree.mode), font: '12px Fira Sans' }],
+		pieces: [{ text: modeToString(tree.mode), font: `12px ${font}` }],
 	};
 
 	return { stack: [typedLabel, modeLabel] };

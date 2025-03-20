@@ -13,3 +13,7 @@
 	cursor: pointer;
 	padding: 0.5em;
 }
+
+.tree-node span[style*=italic] + span[style*=bold] {
+	margin-left: 1px;
+}
