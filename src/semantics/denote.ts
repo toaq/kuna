@@ -1,9 +1,10 @@
 import { Impossible, Unimplemented, Unrecognized } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
+import type { VerbEntry } from '../morphology/dictionary';
 import { inTone } from '../morphology/tokenize';
 import { Tone } from '../morphology/tone';
 import { getFrame } from '../syntax/serial';
-import type { Leaf, StrictTree } from '../tree';
+import type { CovertWord, Leaf, StrictTree, Word } from '../tree';
 import { compose } from './compose';
 import {
 	causeLittleV,
@@ -19,32 +20,80 @@ import {
 	speechActParticles,
 } from './data';
 import {
+	type AnimacyClass,
 	Bind,
 	Cont,
 	type DTree,
 	Dx,
 	type Expr,
-	type ExprType,
 	Fn,
+	Gen,
 	Int,
 	Pl,
+	Qn,
+	bind,
 	closed,
+	gen,
 	lex,
 	λ,
 } from './model';
 import { reduceExpr } from './reduce';
-import { getFunctor } from './structures';
+import { typeToPlainText } from './render';
+import { findInner, unwrapEffects } from './structures';
 
-function isQuestion(type: ExprType): boolean {
-	if (typeof type === 'string') return false;
-	if (type.head === 'qn') return true;
-	const functor = getFunctor(type);
-	return functor !== null && isQuestion(functor.unwrap(type));
+function findVp(tree: StrictTree): StrictTree | null {
+	if (tree.label === 'VP' || tree.label === "EvA'") {
+		return tree;
+	}
+	if ('word' in tree) {
+		return null;
+	}
+	return findVp(tree.right) ?? findVp(tree.left);
 }
 
-function unwrapEffects(type: ExprType): ExprType {
-	const functor = getFunctor(type);
-	return functor === null ? type : unwrapEffects(functor.unwrap(type));
+function getVerbWord(vp: StrictTree): Word | CovertWord {
+	if ('word' in vp) {
+		if (vp.word.covert) throw new Impossible('Covert VP');
+		return vp.word;
+	}
+	const verb = vp.left;
+	switch (verb.label) {
+		case 'V':
+		case 'EvA':
+			if (!('word' in verb)) throw new Unrecognized(`${verb.label} shape`);
+			return verb.word;
+		case 'VP':
+			return getVerbWord(verb);
+		case 'shuP':
+		case 'mıP':
+			if ('word' in verb || !('word' in verb.left))
+				throw new Unrecognized(`${verb.label} shape`);
+			if (verb.left.word.covert)
+				throw new Impossible(`Covert ${verb.left.label}`);
+			return verb.left.word;
+		case 'teoP':
+			if ('word' in verb || 'word' in verb.left || !('word' in verb.left.left))
+				throw new Unrecognized('teoP shape');
+			if (verb.left.left.word.covert)
+				throw new Impossible(`Covert ${verb.left.left.label}`);
+			return verb.left.left.word;
+		default:
+			throw new Unrecognized('VP shape');
+	}
+}
+
+function animacyClass(verb: VerbEntry): AnimacyClass | null {
+	if (verb.toaq === 'raı') return null;
+	switch (verb.pronominal_class) {
+		case 'ho':
+			return 'animate';
+		case 'maq':
+			return 'inanimate';
+		case 'hoq':
+			return 'abstract';
+		default:
+			return 'descriptive';
+	}
 }
 
 function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
@@ -142,16 +191,49 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (leaf.word.covert)
 			// TODO: This shouldn't be a random lexical entry
 			return lex('ló', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed);
+		if (cCommand === null)
+			throw new Impossible('Cannot denote a D in isolation');
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`D: ${leaf.word.text}`);
 
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
 		const type = determiners.get(toaq);
 		if (type === undefined) throw new Unrecognized(`D: ${toaq}`);
-		return lex(
-			toaq,
-			type(inner => inner),
-			closed,
+		const inner = findInner(cCommand.denotation.type, Gen('e', 'e'));
+		if (inner === null)
+			throw new Impossible(
+				`D complement: ${typeToPlainText(cCommand.denotation.type)}`,
+			);
+		return lex(toaq, type(inner), closed);
+	}
+
+	if (leaf.label === '𝘯') {
+		if (cCommand === null)
+			throw new Impossible('Cannot denote an 𝘯 in isolation');
+		const vp = findVp(cCommand);
+		if (vp === null) throw new Impossible("Can't find the VP for this 𝘯");
+		const verb = getVerbWord(vp);
+		const animacy = verb.covert ? null : animacyClass(verb.entry as VerbEntry);
+		return λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
+			gen(
+				s.var(predicate),
+				λ(Int(Pl('e')), s, (x, s) => {
+					let result: Expr = s.var(x);
+					if (animacy !== null)
+						result = bind(
+							{ type: 'animacy', class: animacy },
+							s.var(x),
+							result,
+						);
+					if (!verb.covert)
+						result = bind(
+							{ type: 'verb', verb: (verb.entry as VerbEntry).toaq },
+							s.var(x),
+							result,
+						);
+					return result;
+				}),
+			),
 		);
 	}
 
@@ -175,10 +257,13 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 	if (leaf.label === 'SA') {
 		if (cCommand === null)
-			throw new Impossible('Cannot denote a covert SA in isolation');
+			throw new Impossible('Cannot denote an SA in isolation');
 		let toaq: string;
 		if (leaf.word.covert) {
-			toaq = isQuestion(cCommand.denotation.type) ? 'móq' : 'da';
+			toaq =
+				findInner(cCommand.denotation.type, Qn('e', 't')) === null
+					? 'da'
+					: 'móq';
 		} else if (leaf.word.entry === undefined)
 			throw new Unrecognized(`SA: ${leaf.word.text}`);
 		else toaq = leaf.word.entry.toaq;

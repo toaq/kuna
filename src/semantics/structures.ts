@@ -909,3 +909,8 @@ export function findInner(inType: ExprType, like: ExprType): ExprType | null {
 		return inType.inner;
 	return null;
 }
+
+export function unwrapEffects(type: ExprType): ExprType {
+	const functor = getFunctor(type);
+	return functor === null ? type : unwrapEffects(functor.unwrap(type));
+}
