@@ -8,7 +8,13 @@ import { TeX } from 'mathjax-full/js/input/tex';
 import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
 import { mathjax } from 'mathjax-full/js/mathjax';
 import { SVG } from 'mathjax-full/js/output/svg';
-import type { Placed, Scene, SceneNode, Unplaced } from './scene';
+import type {
+	Placed,
+	RichSceneLabel,
+	Scene,
+	SceneNode,
+	Unplaced,
+} from './scene';
 import { type Theme, themes } from './theme';
 
 const adaptor = liteAdaptor();
@@ -34,7 +40,7 @@ export function get_mathjax_svg(math: string): {
 }
 
 export interface DrawContext {
-	measureText(text: string): { width: number };
+	measureText(text: string, font?: string): { width: number };
 }
 
 export interface DrawableDenotation<C extends DrawContext, Source = string> {
@@ -199,6 +205,20 @@ export class TreePlacer<C extends DrawContext, D> {
 		);
 	}
 
+	private measureLabelWidth(label: string | RichSceneLabel): number {
+		if (typeof label === 'string') {
+			return this.ctx.measureText(label).width;
+		}
+		if ('pieces' in label) {
+			let sum = 0;
+			for (const piece of label.pieces) {
+				sum += this.ctx.measureText(piece.text, piece.font).width;
+			}
+			return sum;
+		}
+		return Math.max(...label.stack.map(layer => this.measureLabelWidth(layer)));
+	}
+
 	private placeSceneNode(node: SceneNode<D, any>): {
 		tree: PlacedTree<C>;
 		extents: LayerExtent[];
@@ -208,7 +228,7 @@ export class TreePlacer<C extends DrawContext, D> {
 		const text = node.text;
 		const denotation = this.renderDenotation(node);
 		const width = Math.max(
-			this.ctx.measureText(label).width,
+			this.measureLabelWidth(label),
 			this.ctx.measureText(text ?? '').width,
 			this.ctx.measureText(gloss ?? '').width,
 			denotation ? denotation.width(this.ctx) : 0,

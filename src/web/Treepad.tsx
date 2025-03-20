@@ -4,7 +4,13 @@ import { Impossible } from '../core/error';
 import { drawSceneToCanvas } from '../tree/draw';
 import { moveNodeUp } from '../tree/movement';
 import { denotationRenderRawLatex } from '../tree/place';
-import type { MovementArrow, Scene, SceneNode, Unplaced } from '../tree/scene';
+import {
+	type MovementArrow,
+	type Scene,
+	type SceneNode,
+	type Unplaced,
+	sceneLabelToString,
+} from '../tree/scene';
 
 type Node = SceneNode<string, Unplaced>;
 
@@ -23,12 +29,13 @@ const shortcuts: Record<string, string> = {
 };
 
 function makeLeaf(node: Node, text: string): Node {
+	const label = sceneLabelToString(node.label);
 	return {
-		label: node.label.replace(/\^|\_\d+/g, '') as any,
+		label: label.replace(/\^|\_\d+/g, '') as any,
 		denotation: node.denotation,
 		source: text,
 		text,
-		roof: node.label.includes('^'),
+		roof: label.includes('^'),
 		children: [],
 		placement: undefined,
 	};

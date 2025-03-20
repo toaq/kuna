@@ -20,11 +20,23 @@ export enum SceneTextStyle {
 	Trace = 2,
 }
 
+export type RichSceneLabel =
+	| { pieces: { text: string; font: string }[] }
+	| { stack: RichSceneLabel[] };
+
+export function sceneLabelToString(label: string | RichSceneLabel): string {
+	return typeof label === 'string'
+		? label
+		: 'pieces' in label
+			? label.pieces.map(piece => piece.text).join('')
+			: label.stack.map(layer => sceneLabelToString(layer)).join('\n');
+}
+
 export interface SceneNode<Denotation, Placement> {
 	/**
 	 * This node's label, e.g. "DP : e".
 	 */
-	label: string;
+	label: string | RichSceneLabel;
 	/**
 	 * This node's denotation.
 	 */
@@ -101,6 +113,28 @@ function modeToString(mode: CompositionMode): string {
 				.join(' ');
 }
 
+function toSceneLabel(tree: Tree | DTree): string | RichSceneLabel {
+	if (!('denotation' in tree && tree.denotation)) return tree.label;
+
+	const typedLabel: RichSceneLabel = {
+		pieces: [
+			{ text: tree.label, font: 'bold 14px Fira Sans' },
+			{
+				text: ` : ${typeToPlainText(tree.denotation.type)}`,
+				font: '14px Fira Sans',
+			},
+		],
+	};
+
+	if (!('mode' in tree && tree.mode)) return typedLabel;
+
+	const modeLabel: RichSceneLabel = {
+		pieces: [{ text: modeToString(tree.mode), font: '12px Fira Sans' }],
+	};
+
+	return { stack: [typedLabel, modeLabel] };
+}
+
 /**
  * Convert a Toaq syntax tree into a renderable "Scene" for the tree-rendering
  * functions to consume.
@@ -114,12 +148,9 @@ export function toScene(
 	function walk(tree: Tree | DTree): SceneNode<Expr, Unplaced> {
 		const denotation =
 			'denotation' in tree && tree.denotation ? tree.denotation : undefined;
-		const label = denotation
-			? `${tree.label} : ${typeToPlainText(denotation.type)}${'mode' in tree && tree.mode ? `\n${modeToString(tree.mode)}` : ''}`
-			: tree.label;
 		const gloss =
 			'word' in tree && !tree.word.covert ? tree.word.entry?.gloss : undefined;
-		const roof = roofLabels.includes(label);
+		const roof = roofLabels.includes(tree.label);
 		const text = roof
 			? tree.source
 			: 'word' in tree
@@ -145,7 +176,7 @@ export function toScene(
 		}
 
 		return {
-			label,
+			label: toSceneLabel(tree),
 			denotation,
 			roof,
 			text,

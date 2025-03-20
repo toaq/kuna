@@ -5,7 +5,11 @@ import type { DTree, Expr } from '../../semantics/model';
 import { toJsx } from '../../semantics/render';
 import type { Tree } from '../../tree';
 import { type PlacedTree, TreePlacer, boundingRect } from '../../tree/place';
-import { toScene } from '../../tree/scene';
+import {
+	type RichSceneLabel,
+	sceneLabelToString,
+	toScene,
+} from '../../tree/scene';
 import type { Theme } from '../../tree/theme';
 import './TreeBrowser.css';
 
@@ -16,31 +20,26 @@ interface TreeBrowserOptions {
 	truncateLabels: string[];
 }
 
-function TreeLabel(props: { label: string }) {
-	const parts = props.label.split(' : ');
-
-	if (parts.length === 1) {
-		return (
-			<div className="tree-label">
-				<strong>{props.label}</strong>
-			</div>
-		);
+function TreeLabel(props: { label: string | RichSceneLabel }) {
+	if (typeof props.label === 'string') {
+		return props.label;
 	}
-
-	const syntaxLabel = parts[0];
-	const semanticsParts = parts[1].split('\n');
-	if (semanticsParts.length === 1) {
-		return (
-			<div className="tree-label">
-				<strong>{syntaxLabel}</strong> : {parts[1]}
-			</div>
-		);
+	if ('pieces' in props.label) {
+		return props.label.pieces.map((piece, i) => (
+			// biome-ignore lint/suspicious/noArrayIndexKey: Rendering pieces of tree label
+			<span key={i} style={{ font: piece.font, whiteSpace: 'pre' }}>
+				{piece.text}
+			</span>
+		));
 	}
 	return (
-		<div className="tree-label">
-			<strong>{syntaxLabel}</strong> : {semanticsParts[0]}
-			{'\n'}
-			<span>{semanticsParts[1]}</span>
+		<div>
+			{props.label.stack.map((layer, i) => (
+				// biome-ignore lint/suspicious/noArrayIndexKey: Rendering layers of tree label
+				<div key={i}>
+					<TreeLabel label={layer} />
+				</div>
+			))}
 		</div>
 	);
 }
@@ -102,7 +101,7 @@ export function Subtree(props: {
 	options: TreeBrowserOptions;
 }) {
 	const shouldTruncate = props.options.truncateLabels.some(x =>
-		props.tree.label.startsWith(`${x} `),
+		sceneLabelToString(props.tree.label).startsWith(`${x} `),
 	);
 	const [expanded] = useState(!shouldTruncate);
 
@@ -179,7 +178,7 @@ export function Subtree(props: {
 	);
 }
 
-type Ctx = { measureText: (text: string) => { width: number } };
+type Ctx = { measureText: (text: string, font: string) => { width: number } };
 
 export function TreeBrowser(props: {
 	tree: Tree | DTree;
@@ -192,11 +191,10 @@ export function TreeBrowser(props: {
 	const canvas = document.createElement('canvas');
 	const canvasCtx = canvas.getContext('2d');
 	if (!canvasCtx) throw new Error('Could not make canvas context');
-	canvasCtx.font = '14px Fira Sans';
 	const ctx: Ctx = {
-		measureText(text: string) {
-			const widths = text.split('\n').map(x => canvasCtx.measureText(x).width);
-			return { width: Math.max(...widths) };
+		measureText(text: string, font?: string) {
+			canvasCtx.font = font ?? '14px Fira Sans';
+			return canvasCtx.measureText(text);
 		},
 	};
 
