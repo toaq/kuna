@@ -1,63 +1,69 @@
 import { useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Tooltip } from 'react-tooltip';
-import { keyFor } from '../core/misc';
-import type { DTree, Expr } from '../semantics/model';
-import { toJsx } from '../semantics/render';
-import type { Tree } from '../tree';
-import { type PlacedTree, TreePlacer, boundingRect } from '../tree/place';
-import { toScene } from '../tree/scene';
-import type { Theme } from '../tree/theme';
+import { keyFor } from '../../core/misc';
+import type { DTree, Expr } from '../../semantics/model';
+import { toJsx } from '../../semantics/render';
+import type { Tree } from '../../tree';
+import { type PlacedTree, TreePlacer, boundingRect } from '../../tree/place';
+import { toScene } from '../../tree/scene';
+import type { Theme } from '../../tree/theme';
 import './TreeBrowser.css';
+
+function TreeLabel(props: { label: string }) {
+	const parts = props.label.split(' : ');
+
+	return parts.length === 2 ? (
+		<div className="tree-label">
+			<strong>{parts[0]}</strong> : {parts[1]}
+		</div>
+	) : (
+		<div className="tree-label">{props.label}</div>
+	);
+}
 
 export function Node(props: {
 	tree: PlacedTree<Ctx>;
 	expanded: boolean;
 	compactDenotations: boolean;
 	theme: Theme;
-	tooltipDomNode: Element | null;
 }) {
-	const { tree, theme, tooltipDomNode } = props;
+	const { tree, theme } = props;
 	const key = keyFor(tree);
+
 	return (
 		<>
 			<div className="tree-node">
 				<div className="tree-node-contents" id={`node-${key}`}>
-					<div className="tree-label">{tree.label}</div>
+					<TreeLabel label={tree.label} />
 					{tree.text && (
-						<>
-							<div className="tree-word" style={{ color: theme.wordColor }}>
-								{tree.text}
-							</div>
-							{tree.text && tree.gloss ? (
-								<div className="tree-gloss">{tree.gloss}</div>
-							) : undefined}
-						</>
+						<div className="tree-word" style={{ color: theme.wordColor }}>
+							{tree.text}
+						</div>
 					)}
+					{tree.text && tree.gloss ? (
+						<div className="tree-gloss">{tree.gloss}</div>
+					) : undefined}
 				</div>
-				{tooltipDomNode &&
-					createPortal(
-						<Tooltip
-							anchorSelect={`#node-${key}`}
-							clickable
-							place="top"
-							delayHide={0}
-							delayShow={0}
-							style={{
-								background: theme.tipBackgroundColor,
-								color: theme.tipTextColor,
-								textAlign: 'center',
-								transition: 'opacity 70ms',
-								fontSize: '14px',
-							}}
-							opacity="1"
-						>
-							{tree.denotation?.denotation
-								? toJsx(tree.denotation.denotation)
-								: 'nah'}
-						</Tooltip>,
-						tooltipDomNode,
-					)}
+				{tree.denotation?.denotation && (
+					<Tooltip
+						anchorSelect={`#node-${key}`}
+						clickable
+						place="top"
+						delayHide={0}
+						delayShow={0}
+						style={{
+							background: theme.tipBackgroundColor,
+							color: theme.tipTextColor,
+							textAlign: 'center',
+							transition: 'opacity 70ms',
+							fontSize: '14px',
+							zIndex: 5,
+						}}
+						opacity="1"
+					>
+						{toJsx(tree.denotation.denotation)}
+					</Tooltip>
+				)}
 			</div>
 		</>
 	);
@@ -71,15 +77,13 @@ export function Subtree(props: {
 	theme: Theme;
 	truncateLabels: string[];
 	lineDx?: number;
-	tooltipDomNode: Element | null;
 }) {
 	const shouldTruncate = props.truncateLabels.some(x =>
 		props.tree.label.startsWith(`${x} `),
 	);
 	const [expanded] = useState(!shouldTruncate);
 
-	const { tree, compactDenotations, theme, truncateLabels, tooltipDomNode } =
-		props;
+	const { tree, compactDenotations, theme, truncateLabels } = props;
 	const children = tree.children;
 	const dist = tree.placement.distanceBetweenChildren;
 
@@ -114,7 +118,6 @@ export function Subtree(props: {
 					expanded={expanded}
 					compactDenotations={compactDenotations}
 					theme={theme}
-					tooltipDomNode={tooltipDomNode}
 				/>
 			</div>
 			{expanded ? (
@@ -134,7 +137,6 @@ export function Subtree(props: {
 							compactDenotations={compactDenotations}
 							theme={theme}
 							truncateLabels={truncateLabels}
-							tooltipDomNode={tooltipDomNode}
 						/>
 					))}
 				</>
@@ -197,10 +199,6 @@ export function TreeBrowser(props: {
 	console.log(placed);
 	const rect = boundingRect(placed);
 
-	const [tooltipDomNode, setTooltipDomNode] = useState<HTMLDivElement | null>(
-		null,
-	);
-
 	return (
 		<div
 			style={{
@@ -222,12 +220,6 @@ export function TreeBrowser(props: {
 					compactDenotations={compactDenotations}
 					theme={theme}
 					truncateLabels={truncateLabels}
-					tooltipDomNode={tooltipDomNode}
-				/>
-				<div
-					ref={r => {
-						setTooltipDomNode(r);
-					}}
 				/>
 			</div>
 		</div>

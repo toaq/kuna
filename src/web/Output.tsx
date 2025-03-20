@@ -30,7 +30,7 @@ import { Boxes } from './Boxes';
 import GfResult from './GfResult';
 import type { Configuration } from './Settings';
 import { Tokens } from './Tokens';
-import { TreeBrowser } from './TreeBrowser';
+import { TreeBrowser } from './tree/TreeBrowser';
 
 function errorString(e: any): string {
 	const string = String(e);
