@@ -13,6 +13,10 @@ import {
 	flatMap,
 	implies,
 	map,
+	unbind,
+	ungen,
+	unpair,
+	unqn,
 	λ,
 } from './model';
 
@@ -355,6 +359,84 @@ function reducePass(expr: Expr): Expr {
 				expr.arg.body.index === 0
 			) {
 				return expr.fn.arg;
+			}
+
+			// unpair (unpair x (λy λz pair f g)) h = unpair x (λy λz h f g)
+			// and so on for Gen, Qn, Bind
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.arg.head === 'apply' &&
+				expr.fn.arg.fn.head === 'apply' &&
+				expr.fn.arg.fn.fn.head === 'constant' &&
+				expr.fn.arg.arg.head === 'lambda' &&
+				expr.fn.arg.arg.body.head === 'lambda' &&
+				expr.fn.arg.arg.body.body.head === 'apply' &&
+				expr.fn.arg.arg.body.body.fn.head === 'apply' &&
+				expr.fn.arg.arg.body.body.fn.fn.head === 'constant'
+			) {
+				const x = expr.fn.arg.fn.arg;
+				const f = expr.fn.arg.arg.body.body.fn.arg;
+				const g = expr.fn.arg.arg.body.body.arg;
+				const h = expr.arg;
+				const innerScope = expr.fn.arg.arg.body.body.scope;
+				const [z, y] = innerScope;
+
+				if (
+					expr.fn.fn.name === 'ungen' &&
+					expr.fn.arg.fn.fn.name === 'ungen' &&
+					expr.fn.arg.arg.body.body.fn.fn.name === 'gen'
+				) {
+					const hh = rewriteScope(h, innerScope, i => i + 2);
+					return ungen(
+						x,
+						λ(y, { ...closed, types: x.scope }, (_, s) =>
+							λ(z, s, () => app(app(hh, f), g)),
+						),
+					);
+				}
+
+				if (
+					expr.fn.fn.name === 'unqn' &&
+					expr.fn.arg.fn.fn.name === 'unqn' &&
+					expr.fn.arg.arg.body.body.fn.fn.name === 'qn'
+				) {
+					const hh = rewriteScope(h, innerScope, i => i + 2);
+					return unqn(
+						x,
+						λ(y, { ...closed, types: x.scope }, (_, s) =>
+							λ(z, s, () => app(app(hh, f), g)),
+						),
+					);
+				}
+
+				if (
+					expr.fn.fn.name === 'unpair' &&
+					expr.fn.arg.fn.fn.name === 'unpair' &&
+					expr.fn.arg.arg.body.body.fn.fn.name === 'pair'
+				) {
+					const hh = rewriteScope(h, innerScope, i => i + 2);
+					return unpair(
+						x,
+						λ(y, { ...closed, types: x.scope }, (_, s) =>
+							λ(z, s, () => app(app(hh, f), g)),
+						),
+					);
+				}
+
+				if (
+					expr.fn.fn.name === 'unbind' &&
+					expr.fn.arg.fn.fn.name === 'unbind' &&
+					expr.fn.arg.arg.body.body.fn.fn.name === 'bind'
+				) {
+					const hh = rewriteScope(h, innerScope, i => i + 2);
+					return unbind(
+						x,
+						λ(y, { ...closed, types: x.scope }, (_, s) =>
+							λ(z, s, () => app(app(hh, f), g)),
+						),
+					);
+				}
 			}
 
 			// every (λy implies (among y (_ x f)) g)
