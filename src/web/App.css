@@ -55,8 +55,16 @@ h1 {
 	margin: 0;
 }
 
+.card.settings {
+	padding: 12px 24px;
+}
+
 .settings .buttons {
 	margin-top: 8px;
+	display:flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-bottom: 16px;
 }
 
 .settings .button-group {
@@ -70,11 +78,41 @@ h1 {
 	padding: 3px 0px;
 }
 
-.settings button {
+.settings-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.kuna-button {
+	background: light-dark(#ddd, #666);
+	border: none;
+	padding: 8px 14px 8px 12px;
+	color: light-dark(black, white);
+	display: flex;
+	align-items: center;
+	gap: 4px;
 	cursor: pointer;
-	padding: 1px 8px;
-	margin: 2px 2px;
-	cursor: pointer;
+
+    flex: 1;
+    justify-content: center;
+}
+
+.kuna-button:hover {
+	background: light-dark(#ccc, #777);
+
+}
+
+.button-group .kuna-button:last-of-type {
+	border-radius: 0 4px 4px 0;
+}
+
+.button-group .kuna-button:nth-of-type(n+2) {
+	border-left: 1px solid light-dark(#00000040, #ffffff40);
+}
+
+.button-group .kuna-button:first-of-type {
+	border-radius: 4px 0 0 4px;
 }
 
 .kuna {
@@ -211,6 +249,10 @@ button {
 .settings form label {
 	display: flex;
 	justify-content: center;
+}
+
+.output-logical-form-text, .output-logical-form-latex {
+	max-width: 35em;
 }
 
 .output iframe {

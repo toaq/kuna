@@ -1,5 +1,12 @@
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
+import { Button } from './Button';
+import BoxesIcon from './icons/BoxesIcon';
+import DenotedIcon from './icons/DenotedIcon';
+import GlossIcon from './icons/GlossIcon';
+import TextIcon from './icons/TextIcon';
+import TokensIcon from './icons/TokensIcon';
+import TreeIcon from './icons/TreeIcon';
 
 export type TreeMode =
 	| 'syntax-tree'
@@ -45,33 +52,160 @@ export interface SettingsProps {
 }
 
 export function Settings(props: SettingsProps) {
-	const [advanced, setAdvanced] = useLocalStorage('advanced', false);
 	const [text, setText] = useLocalStorage<string>('input', 'De cháq da.');
-	const [treeFormat, setTreeFormat] = useLocalStorage<TreeFormat>(
-		'tree-format',
-		'png-latex',
-	);
+	// const [treeFormat, setTreeFormat] = useLocalStorage<TreeFormat>(
+	// 	'tree-format',
+	// 	'png-latex',
+	// );
 	const [roofLabels, setRoofLabels] = useState('');
 	const [trimNulls, setTrimNulls] = useState(false);
 	const [showMovement, setShowMovement] = useState(false);
-	const [meaningCompact, setMeaningCompact] = useState(false);
+	// const [meaningCompact, setMeaningCompact] = useState(false);
+	const [lastMode, setLastMode] = useLocalStorage<Mode>('mode', 'syntax-tree');
+	const [boxesFormat, setBoxesFormat] = useLocalStorage<Mode>(
+		'boxes-format',
+		'boxes-flat',
+	);
+
+	const [formulaFormat, setFormulaFormat] = useLocalStorage<Mode>(
+		'formula-format',
+		'logical-form-math',
+	);
 
 	function render(mode: Mode) {
+		setLastMode(mode);
 		if (mode) {
 			props.onSubmit({
 				text: text,
-				treeFormat,
+				treeFormat: 'react',
 				roofLabels,
 				trimNulls,
 				showMovement,
-				meaningCompact,
+				meaningCompact: false,
 				mode,
 			});
 		}
 	}
 
+	let modeSettings: ReactNode;
+	switch (lastMode) {
+		case 'boxes-flat':
+		case 'boxes-nest':
+		case 'boxes-split': {
+			modeSettings = (
+				<div>
+					<div>
+						<label>Boxes format: </label>
+						<select
+							value={boxesFormat}
+							onChange={e => {
+								setBoxesFormat(e.target.value as Mode);
+								render(e.target.value as Mode);
+							}}
+						>
+							<option value="boxes-flat">Flat</option>
+							<option value="boxes-nest">Nested</option>
+							<option value="boxes-split">Split</option>
+						</select>
+					</div>
+				</div>
+			);
+			break;
+		}
+		case 'syntax-tree':
+		case 'semantics-tree':
+		case 'semantics-tree-compact':
+		case 'raw-tree':
+			modeSettings = (
+				<div className="settings-stack">
+					{/* <div>
+						<label>Tree format: </label>
+						<select
+							value={treeFormat}
+							onChange={e => setTreeFormat(e.target.value as TreeFormat)}
+						>
+							<option value="png-latex">Image (LaTeX)</option>
+							<option value="png-text">Image (plain text)</option>
+							<option value="react">React (WIP)</option>
+							<option value="textual">Text art</option>
+							<option value="json">JSON</option>
+						</select>
+					</div> */}
+					<div>
+						<label>Shrink: </label>
+						<input
+							type="text"
+							value={roofLabels}
+							onChange={e => setRoofLabels(e.target.value)}
+							placeholder={'DP QP'}
+						/>
+					</div>
+					<div>
+						<label>
+							<input
+								type="checkbox"
+								checked={trimNulls}
+								onChange={e => setTrimNulls(e.target.checked)}
+							/>
+							Trim nulls
+						</label>
+					</div>
+					<div>
+						<label>
+							<input
+								type="checkbox"
+								checked={showMovement}
+								onChange={e => setShowMovement(e.target.checked)}
+							/>
+							Show movement
+						</label>
+					</div>
+				</div>
+			);
+			break;
+
+		case 'gloss':
+		case 'technical-gloss':
+			modeSettings = <div />;
+			break;
+
+		case 'logical-form-math':
+		case 'logical-form-text':
+		case 'logical-form-latex':
+			modeSettings = (
+				<div>
+					<label>Formula format: </label>
+					<select
+						value={formulaFormat}
+						onChange={e => {
+							setFormulaFormat(e.target.value as Mode);
+							render(e.target.value as Mode);
+						}}
+					>
+						<option value="logical-form-math">MathML</option>
+						<option value="logical-form-text">Text</option>
+						<option value="logical-form-latex">LaTeX</option>
+					</select>
+				</div>
+			);
+			break;
+
+		case 'english':
+			modeSettings = <div />;
+			break;
+
+		case 'gf1':
+		case 'gf2':
+			modeSettings = <div />;
+			break;
+
+		case 'tokens':
+			modeSettings = <div />;
+			break;
+	}
+
 	return (
-		<div className="card settings" style={{ width: '30em' }}>
+		<div className="card settings">
 			<textarea
 				rows={3}
 				value={text}
@@ -80,158 +214,37 @@ export function Settings(props: SettingsProps) {
 					props.dismissExplanation();
 				}}
 			/>
-			<div className="toggles">
-				<div>
-					<label>
-						<input
-							type="checkbox"
-							checked={advanced}
-							onChange={e => setAdvanced(e.target.checked)}
-						/>
-						Advanced options
-					</label>
-				</div>
-				{advanced && (
-					<>
-						<div>
-							<label>Tree format:</label>
-							<select
-								value={treeFormat}
-								onChange={e => setTreeFormat(e.target.value as TreeFormat)}
-							>
-								<option value="png-latex">Image (LaTeX)</option>
-								<option value="png-text">Image (plain text)</option>
-								<option value="react">React (WIP)</option>
-								<option value="textual">Text art</option>
-								<option value="json">JSON</option>
-							</select>
-						</div>
-						<div>
-							<label>Roof labels:</label>
-							<input
-								type="text"
-								value={roofLabels}
-								onChange={e => setRoofLabels(e.target.value)}
-								placeholder={'DP QP'}
-							/>
-						</div>
-						<div>
-							<label>
-								<input
-									type="checkbox"
-									checked={trimNulls}
-									onChange={e => setTrimNulls(e.target.checked)}
-								/>
-								Trim nulls
-							</label>
-							<label>
-								<input
-									type="checkbox"
-									checked={showMovement}
-									onChange={e => setShowMovement(e.target.checked)}
-								/>
-								Show movement
-							</label>
-						</div>
-					</>
-				)}
-			</div>
 			<div className="buttons">
-				{advanced && (
-					<div className="button-group">
-						<div className="button-group-name">Debug</div>
-						<button type="button" onClick={() => render('tokens')}>
-							Tokens
-						</button>
-						<button type="button" onClick={() => render('raw-tree')}>
-							Raw tree
-						</button>
-					</div>
-				)}
 				<div className="button-group">
-					<div className="button-group-name">Tree</div>
-					<button type="button" onClick={() => render('syntax-tree')}>
-						Syntax
-					</button>
-					<button type="button" onClick={() => render('semantics-tree')}>
+					<Button icon={<TreeIcon />} onClick={() => render('syntax-tree')}>
+						Tree
+					</Button>
+					<Button
+						icon={<DenotedIcon />}
+						onClick={() => render('semantics-tree')}
+					>
 						Denoted
-					</button>
-					{advanced && (
-						<>
-							<button
-								type="button"
-								onClick={() => render('semantics-tree-compact')}
-							>
-								Compact
-							</button>
-						</>
-					)}
+					</Button>
+					<Button
+						icon={<TextIcon title="Formula" text="λ()" />}
+						onClick={() => render(formulaFormat)}
+					>
+						Formula
+					</Button>
 				</div>
 				<div className="button-group">
-					<div className="button-group-name">Boxes</div>
-					<button type="button" onClick={() => render('boxes-flat')}>
-						Flat
-					</button>
-					<button type="button" onClick={() => render('boxes-nest')}>
-						Nested
-					</button>
-					<button type="button" onClick={() => render('boxes-split')}>
-						Split
-					</button>
+					<Button icon={<TokensIcon />} onClick={() => render('tokens')}>
+						Tokens
+					</Button>
+					<Button icon={<GlossIcon />} onClick={() => render('gloss')}>
+						Gloss
+					</Button>
+					<Button icon={<BoxesIcon />} onClick={() => render(boxesFormat)}>
+						Boxes
+					</Button>
 				</div>
-				<div className="button-group">
-					<div className="button-group-name">Gloss</div>
-					<button type="button" onClick={() => render('gloss')}>
-						Friendly
-					</button>
-					<button type="button" onClick={() => render('technical-gloss')}>
-						Technical
-					</button>
-				</div>
-				<div className="button-group">
-					<div className="button-group-name">Translate</div>
-					<button type="button" onClick={() => render('english')}>
-						English
-					</button>
-					{advanced && (
-						<button type="button" onClick={() => render('gf1')}>
-							GF (Quantity)
-						</button>
-					)}
-					{advanced && (
-						<button type="button" onClick={() => render('gf2')}>
-							GF (Quality)
-						</button>
-					)}
-					{!advanced && (
-						<button type="button" onClick={() => render('gf2')}>
-							GF
-						</button>
-					)}
-				</div>
-				{advanced && (
-					<div className="button-group">
-						<div className="button-group-name">Meaning</div>
-						<button type="button" onClick={() => render('logical-form-math')}>
-							Math
-						</button>
-						<button type="button" onClick={() => render('logical-form-text')}>
-							Text
-						</button>
-						<button type="button" onClick={() => render('logical-form-latex')}>
-							LaTeX code
-						</button>
-						<label>
-							<input
-								type="checkbox"
-								checked={meaningCompact}
-								onChange={e => setMeaningCompact(e.target.checked)}
-							/>
-							Compact
-						</label>
-					</div>
-				)}
 			</div>
+			<div className="mode-settings">{modeSettings}</div>
 		</div>
 	);
 }

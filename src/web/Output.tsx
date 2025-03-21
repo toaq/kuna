@@ -61,7 +61,6 @@ export function Output(props: OutputProps) {
 		meaningCompact,
 		mode,
 	} = props.configuration;
-	const math = props.configuration.mode.startsWith('logical-form');
 	const treeImg = useRef<HTMLImageElement>(null);
 	let trees: Tree[];
 	try {
@@ -256,10 +255,23 @@ export function Output(props: OutputProps) {
 							</button>
 						))}
 					</div>
-					<div className={classNames('output', { math })}>{latestOutput}</div>
+					<div
+						className={classNames(
+							'output',
+							`output-${props.configuration.mode}`,
+						)}
+					>
+						{latestOutput}
+					</div>
 				</div>
 			) : (
-				<div className={classNames('card', 'output', { math })}>
+				<div
+					className={classNames(
+						'card',
+						'output',
+						`output-${props.configuration.mode}`,
+					)}
+				>
 					{latestOutput}
 				</div>
 			)}
