@@ -52,44 +52,41 @@ export function Node(props: {
 	const key = keyFor(tree);
 
 	return (
-		<>
-			<div className="tree-node">
-				<div className="tree-node-contents" id={`node-${key}`}>
+		<div className="tree-node">
+			<div className="tree-node-contents" id={`node-${key}`}>
+				<div className="tree-label">
 					<TreeLabel label={tree.label} />
-					{tree.text && (
-						<div
-							className="tree-word"
-							style={{ color: options.theme.wordColor }}
-						>
-							{tree.text}
-						</div>
-					)}
-					{tree.text && tree.gloss ? (
-						<div className="tree-gloss">{tree.gloss}</div>
-					) : undefined}
 				</div>
-				{tree.denotation?.denotation && (
-					<Tooltip
-						anchorSelect={`#node-${key}`}
-						clickable
-						place="top"
-						delayHide={0}
-						delayShow={0}
-						style={{
-							background: options.theme.tipBackgroundColor,
-							color: options.theme.tipTextColor,
-							textAlign: 'center',
-							transition: 'opacity 70ms',
-							fontSize: '14px',
-							zIndex: 5,
-						}}
-						opacity="1"
-					>
-						{toJsx(tree.denotation.denotation)}
-					</Tooltip>
+				{tree.text && (
+					<div className="tree-word" style={{ color: options.theme.wordColor }}>
+						{tree.text}
+					</div>
 				)}
+				{tree.text && tree.gloss ? (
+					<div className="tree-gloss">{tree.gloss}</div>
+				) : undefined}
 			</div>
-		</>
+			{tree.denotation?.denotation && (
+				<Tooltip
+					anchorSelect={`#node-${key}`}
+					clickable
+					place="top"
+					delayHide={0}
+					delayShow={0}
+					style={{
+						background: options.theme.tipBackgroundColor,
+						color: options.theme.tipTextColor,
+						textAlign: 'center',
+						transition: 'opacity 70ms',
+						fontSize: '14px',
+						zIndex: 5,
+					}}
+					opacity="1"
+				>
+					{toJsx(tree.denotation.denotation)}
+				</Tooltip>
+			)}
+		</div>
 	);
 }
 
@@ -103,7 +100,7 @@ export function Subtree(props: {
 	const shouldTruncate = props.options.truncateLabels.some(x =>
 		sceneLabelToString(props.tree.label).startsWith(`${x} `),
 	);
-	const [expanded] = useState(!shouldTruncate);
+	const [expanded, setExpanded] = useState(!shouldTruncate);
 
 	const { tree, options } = props;
 	const children = tree.children;
@@ -128,50 +125,51 @@ export function Subtree(props: {
 					}}
 				/>
 			)}
+			{/* biome-ignore lint/a11y/useKeyWithClickEvents: No keyboard controls */}
 			<div
 				style={{
 					position: 'absolute',
 					left: props.left,
 					top: props.top,
 				}}
+				onClick={() => setExpanded(!expanded)}
 			>
 				<Node tree={tree} expanded={expanded} options={options} />
 			</div>
 			{expanded ? (
-				<>
-					{children.map((child, i) => (
-						<Subtree
-							left={
-								props.left +
-								tree.placement.width / 2 +
-								((1 - children.length) / 2 + i) * dist -
-								child.placement.width / 2
-							}
-							top={props.top + props.options.layerHeight}
-							lineDx={((1 - children.length) / 2 + i) * dist}
-							tree={child}
-							key={keyFor(child)}
-							options={options}
-						/>
-					))}
-				</>
+				children.map((child, i) => (
+					<Subtree
+						left={
+							props.left +
+							tree.placement.width / 2 +
+							((1 - children.length) / 2 + i) * dist -
+							child.placement.width / 2
+						}
+						top={props.top + props.options.layerHeight}
+						lineDx={((1 - children.length) / 2 + i) * dist}
+						tree={child}
+						key={keyFor(child)}
+						options={options}
+					/>
+				))
 			) : children.length ? (
-				<div className="tree-roof">
-					<svg
-						height="8"
-						width="100%"
-						preserveAspectRatio="none"
-						viewBox="0 0 50 10"
-						role="img"
-						aria-label="Roof"
+				// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+				<div
+					className="tree-roof"
+					style={{
+						position: 'absolute',
+						left: props.left,
+						top: props.top + 30,
+						minWidth: tree.placement.width,
+					}}
+					onClick={() => setExpanded(!expanded)}
+				>
+					<div
+						className="tree-word"
+						style={{ color: options.theme.wordColor, textAlign: 'center' }}
 					>
-						<path
-							d="M25 0 L50 8 L0 8 Z"
-							fill="none"
-							stroke={options.theme.textColor}
-						/>
-					</svg>
-					<div className="tree-word">{'(expand)'}</div>
+						{tree.source}
+					</div>
 				</div>
 			) : undefined}
 		</>
