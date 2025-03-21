@@ -558,6 +558,32 @@ const refApplicative: Applicative = {
 	},
 };
 
+const refDistributive: Distributive = {
+	functor: refFunctor,
+	distribute: (e, functor, s) => {
+		const type = functor.unwrap(e.type);
+		assertRef(type);
+		const inner = type.inner;
+		return app(
+			λ(e.type, s, (e, s) =>
+				ref(
+					type.binding,
+					λ(Int(Pl('e')), s, (val, s) =>
+						functor.map(
+							λ(Ref(type.binding, inner), s, (x, s) =>
+								app(unref(s.var(x)), s.var(val)),
+							),
+							s.var(e),
+							s,
+						),
+					),
+				),
+			),
+			e,
+		);
+	},
+};
+
 const opMonad = <T extends ExprType>(
 	wrap: (inner: ExprType) => ExprType,
 	assertHead: (t: ExprType) => asserts t is T & { inner: ExprType },
@@ -848,6 +874,7 @@ export function getMatchingApplicative(
 
 export function getDistributive(t: ExprType): Distributive | null {
 	if (typeof t === 'string') return null;
+	if (t.head === 'ref') return refDistributive;
 	if (t.head === 'int') return intDistributive;
 	return null;
 }
