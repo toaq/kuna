@@ -688,7 +688,7 @@ const functorPrecedence = new Map(
 );
 
 const bindingTypePrecedence = new Map(
-	(['resumptive', 'verb', 'animacy', 'head'] as Binding['type'][]).map(
+	(['resumptive', 'name', 'animacy', 'head'] as Binding['type'][]).map(
 		(type, i) => [type, i],
 	),
 );
@@ -709,9 +709,9 @@ function chooseFunctor_(left: ExprType, right: ExprType): ExprType {
 				switch (left.binding.type) {
 					case 'resumptive':
 						return left;
-					case 'verb':
+					case 'name':
 						return left.binding.verb <=
-							(rightCasted.binding as Binding & { type: 'verb' }).verb
+							(rightCasted.binding as Binding & { type: 'name' }).verb
 							? left
 							: right;
 					case 'animacy':

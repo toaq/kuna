@@ -49,7 +49,7 @@ export class PlainTextType extends Renderer<ExprType, string> {
 				return 'hóa';
 			case 'covert resumptive':
 				return 'PRO';
-			case 'verb':
+			case 'name':
 				return inTone(b.verb, Tone.T2);
 			case 'animacy':
 				return this.animacy(b.class);

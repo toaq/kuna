@@ -205,7 +205,7 @@ export class ToaqTokenizer {
 					const hu = wordTokens.at(-1)!;
 					hu.value = inTone(hu.value, tone(tokenText));
 					if (tone(tokenText) === Tone.T4) {
-						hu.type = 'incorporated_prefix_pronoun';
+						hu.type = 'incorporated_word_determiner';
 					}
 					wordTokens.push({
 						type: 'word',
@@ -276,12 +276,22 @@ export class ToaqTokenizer {
 				const wordTone = tone(tokenText);
 
 				if (entry) {
-					if (!toneInPrefix)
+					if (!toneInPrefix) {
+						if (wordTone === Tone.T2) {
+							wordTokens.unshift({
+								type: 'word_determiner',
+								value: '◌́',
+								index: m.index,
+							});
+							wordTokens.push({ type: 'word', value: base, index: m.index });
+							continue;
+						}
 						wordTokens.unshift({
-							type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
-							value: wordTone === Tone.T2 ? '◌́' : '◌̂',
+							type: 'preposition',
+							value: '◌̂',
 							index: m.index,
 						});
+					}
 					wordTokens.push({
 						type: entry.type.replace(/ /g, '_'),
 						value: inTone(tokenText, tone(base)),
@@ -296,16 +306,25 @@ export class ToaqTokenizer {
 						index: m.index,
 					});
 				} else if (!toneInPrefix) {
-					wordTokens.unshift({
-						type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
-						value: wordTone === Tone.T2 ? '◌́' : '◌̂',
-						index: m.index,
-					});
-					wordTokens.push({
-						type: 'predicate',
-						value: inTone(tokenText, tone(base)),
-						index: m.index,
-					});
+					if (wordTone === Tone.T2) {
+						wordTokens.unshift({
+							type: 'word_determiner',
+							value: '◌́',
+							index: m.index,
+						});
+						wordTokens.push({ type: 'word', value: base, index: m.index });
+					} else {
+						wordTokens.unshift({
+							type: 'preposition',
+							value: '◌̂',
+							index: m.index,
+						});
+						wordTokens.push({
+							type: 'predicate',
+							value: inTone(tokenText, tone(base)),
+							index: m.index,
+						});
+					}
 				}
 			}
 

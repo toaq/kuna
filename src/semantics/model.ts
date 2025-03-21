@@ -8,7 +8,7 @@ export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 export type Binding =
 	| { type: 'resumptive' }
 	| { type: 'covert resumptive' }
-	| { type: 'verb'; verb: string }
+	| { type: 'name'; verb: string }
 	| { type: 'animacy'; class: AnimacyClass }
 	| { type: 'head'; head: string };
 
@@ -21,8 +21,8 @@ export function bindingsEqual(b1: Binding, b2: Binding): boolean {
 			return b2.type === 'resumptive';
 		case 'covert resumptive':
 			return b2.type === 'covert resumptive';
-		case 'verb':
-			return b2.type === 'verb' && b1.verb === b2.verb;
+		case 'name':
+			return b2.type === 'name' && b1.verb === b2.verb;
 		case 'animacy':
 			return b2.type === 'animacy' && b1.class === b2.class;
 		case 'head':

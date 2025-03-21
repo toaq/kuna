@@ -4,7 +4,13 @@ import type { VerbEntry } from '../morphology/dictionary';
 import { inTone } from '../morphology/tokenize';
 import { Tone } from '../morphology/tone';
 import { getFrame } from '../syntax/serial';
-import type { CovertWord, Leaf, StrictTree, Word } from '../tree';
+import {
+	type CovertWord,
+	type Leaf,
+	type StrictTree,
+	type Word,
+	assertLeaf,
+} from '../tree';
 import { compose } from './compose';
 import {
 	causeLittleV,
@@ -37,6 +43,8 @@ import {
 	closed,
 	gen,
 	lex,
+	quote,
+	ref,
 	ungen,
 	λ,
 } from './model';
@@ -189,7 +197,6 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		return lex(toaq, Fn('t', 't'), closed);
 	}
 
-	// TODO: Add bindings to DPs
 	if (leaf.label === 'D') {
 		if (leaf.word.covert)
 			// TODO: This shouldn't be a random lexical entry
@@ -198,6 +205,31 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Impossible('Cannot denote a D in isolation');
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`D: ${leaf.word.text}`);
+
+		if (leaf.word.text === '◌́') {
+			assertLeaf(cCommand);
+			if (cCommand.word.covert) throw new Impossible('Covert name');
+			if (cCommand.word.entry === undefined)
+				throw new Unrecognized(`name: ${cCommand.word.text}`);
+			const animacy = animacyClass(cCommand.word.entry as VerbEntry);
+			const word = inTone(cCommand.word.entry.toaq, Tone.T2);
+			return λ('e', closed, (_, s) =>
+				ref(
+					{ type: 'name', verb: word },
+					λ(Int(Pl('e')), s, (x, s) => {
+						let result: Expr = s.var(x);
+						if (animacy !== null)
+							result = bind(
+								{ type: 'animacy', class: animacy },
+								s.var(x),
+								result,
+							);
+						result = bind({ type: 'name', verb: word }, s.var(x), result);
+						return result;
+					}),
+				),
+			);
+		}
 
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
 		const data = determiners.get(toaq);
@@ -211,6 +243,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Impossible(
 				`D complement: ${typeToPlainText(cCommand.denotation.type)}`,
 			);
+
 		return app(
 			λ(data.type, closed, (data, s) =>
 				λ(Gen(Int(Pl('e')), inner), s, (np, s) =>
@@ -252,7 +285,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 						);
 					if (!verb.covert)
 						result = bind(
-							{ type: 'verb', verb: (verb.entry as VerbEntry).toaq },
+							{ type: 'name', verb: (verb.entry as VerbEntry).toaq },
 							s.var(x),
 							result,
 						);
@@ -335,6 +368,11 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			),
 			closed,
 		);
+	}
+
+	if (leaf.label === 'word') {
+		if (leaf.word.covert) throw new Impossible('Covert word');
+		return quote(leaf.word.text, closed);
 	}
 
 	throw new Unimplemented(`TODO: ${leaf.label}`);

@@ -311,7 +311,7 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 				return <mi>hóa</mi>;
 			case 'covert resumptive':
 				return <mi>PRO</mi>;
-			case 'verb':
+			case 'name':
 				return <mi>{inTone(b.verb, Tone.T2)}</mi>;
 			case 'animacy':
 				return <mi>{this.animacy(b.class)}</mi>;
