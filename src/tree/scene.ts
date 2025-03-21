@@ -20,8 +20,19 @@ export enum SceneTextStyle {
 	Trace = 2,
 }
 
-export type RichSceneLabelLine = { pieces: { text: string; font: string }[] };
-export type RichSceneLabel = { lines: RichSceneLabelLine[] };
+export interface RichSceneLabelPiece {
+	text: string;
+	font: string;
+	subscript?: boolean;
+}
+
+export interface RichSceneLabelLine {
+	pieces: RichSceneLabelPiece[];
+}
+
+export interface RichSceneLabel {
+	lines: RichSceneLabelLine[];
+}
 
 export function sceneLabelToString(label: string | RichSceneLabel): string {
 	return typeof label === 'string'
@@ -113,30 +124,39 @@ function modeToString(mode: CompositionMode): string {
 }
 
 /**
- * Turn a label like "𝘷P" into a list of pieces like:
+ * Turn a label like "𝘷Prel" into a list of pieces like:
  *
  *     [
- *         { text: "v", font: italicFont },
- *         { text: "P", font: regularFont },
+ *         { text: "v", font: italic },
+ *         { text: "P", font: regular },
+ *         { text: "rel", font: subscript, subscript: true },
  *     ]
  */
-function patchItalics(
+function makeRichLabel(
 	label: string,
-	regularFont: string,
-	italicFont: string,
-): { text: string; font: string }[] {
+	fonts: {
+		regular: string;
+		italic: string;
+		subscript: string;
+	},
+): RichSceneLabelPiece[] {
 	const pieces = [];
 	const patches: Record<string, string> = { 𝘢: 'a', 𝘯: 'n', 𝘷: 'v' };
 	for (const character of label) {
 		if (character in patches) {
-			pieces.push({ text: patches[character], font: italicFont });
+			pieces.push({ text: patches[character], font: fonts.italic });
 		} else if (
 			pieces.length &&
-			pieces[pieces.length - 1].font === regularFont
+			pieces[pieces.length - 1].font === fonts.regular
 		) {
 			pieces[pieces.length - 1].text += character;
+			const last = pieces[pieces.length - 1].text;
+			if (last.endsWith('rel')) {
+				pieces[pieces.length - 1].text = last.substring(0, last.length - 3);
+				pieces.push({ text: 'rel', font: fonts.subscript, subscript: true });
+			}
 		} else {
-			pieces.push({ text: character, font: regularFont });
+			pieces.push({ text: character, font: fonts.regular });
 		}
 	}
 	return pieces;
@@ -153,11 +173,11 @@ function toSceneLabel(
 
 	const typedLabel: RichSceneLabelLine = {
 		pieces: [
-			...patchItalics(
-				tree.label,
-				`bold 14px ${font}`,
-				`italic bold 14px ${font}`,
-			),
+			...makeRichLabel(tree.label, {
+				regular: `bold 14px ${font}`,
+				italic: `italic bold 14px ${font}`,
+				subscript: `bold 12px/0 ${font}`,
+			}),
 			{
 				text: ` : ${typeToPlainText(tree.denotation.type)}`,
 				font: `14px ${font}`,

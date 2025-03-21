@@ -7,6 +7,7 @@ import type { Tree } from '../../tree';
 import { type PlacedTree, TreePlacer, boundingRect } from '../../tree/place';
 import {
 	type RichSceneLabel,
+	type RichSceneLabelPiece,
 	sceneLabelToString,
 	toScene,
 } from '../../tree/scene';
@@ -20,6 +21,19 @@ interface TreeBrowserOptions {
 	truncateLabels: string[];
 }
 
+function TreeLabelPiece({ piece }: { piece: RichSceneLabelPiece }) {
+	const style = {
+		font: piece.font,
+		whiteSpace: 'pre',
+	};
+
+	return piece.subscript ? (
+		<sub style={style}>{piece.text}</sub>
+	) : (
+		<span style={style}>{piece.text}</span>
+	);
+}
+
 function TreeLabel(props: { label: string | RichSceneLabel }) {
 	if (typeof props.label === 'string') {
 		return props.label;
@@ -27,13 +41,11 @@ function TreeLabel(props: { label: string | RichSceneLabel }) {
 	return (
 		<div>
 			{props.label.lines.map((line, i) => (
-				// biome-ignore lint/suspicious/noArrayIndexKey: Rendering layers of tree label
+				// biome-ignore lint/suspicious/noArrayIndexKey: Layers of label
 				<div key={i}>
 					{line.pieces.map((piece, j) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: Rendering pieces of tree label
-						<span key={j} style={{ font: piece.font, whiteSpace: 'pre' }}>
-							{piece.text}
-						</span>
+						// biome-ignore lint/suspicious/noArrayIndexKey: Pieces of label
+						<TreeLabelPiece key={j} piece={piece} />
 					))}
 				</div>
 			))}
