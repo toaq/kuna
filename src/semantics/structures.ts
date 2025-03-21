@@ -699,17 +699,22 @@ const functorPrecedence = new Map(
 	(
 		[
 			// Starting with lowest precedence
+			'int_discourse',
 			'dx',
 			'act',
 			'pair',
 			'qn',
 			'gen',
-			'ref',
 			'bind',
 			'cont',
-			'int',
+			'ref',
+			'int_clause',
 			'pl',
-		] as (ExprType & object)['head'][]
+		] as (
+			| Exclude<(ExprType & object)['head'], 'int'>
+			| 'int_discourse'
+			| 'int_clause'
+		)[]
 	).map((head, i) => [head, i]),
 );
 
@@ -728,6 +733,7 @@ const animacyPrecedence = new Map(
 function chooseFunctor_(left: ExprType, right: ExprType): ExprType {
 	if (typeof left === 'string' || left.head === 'fn') return right;
 	if (typeof right === 'string' || right.head === 'fn') return left;
+
 	if (left.head === right.head) {
 		if (left.head === 'bind' || left.head === 'ref') {
 			const rightCasted = right as ExprType & object & { head: 'bind' | 'ref' };
@@ -759,9 +765,14 @@ function chooseFunctor_(left: ExprType, right: ExprType): ExprType {
 				? left
 				: right;
 		}
-		return left;
 	}
-	return functorPrecedence.get(left.head)! < functorPrecedence.get(right.head)!
+
+	return functorPrecedence.get(
+		left.head === 'int' ? intLevel(left.inner) : left.head,
+	)! <=
+		functorPrecedence.get(
+			right.head === 'int' ? intLevel(right.inner) : right.head,
+		)!
 		? left
 		: right;
 }
@@ -848,13 +859,26 @@ export function composeFunctors(outer: Functor, inner: Functor): Functor {
 	};
 }
 
+function intLevel(type: ExprType): 'int_discourse' | 'int_clause' {
+	const functor = getFunctor(type);
+	if (functor === null) return 'int_clause';
+	return functor === dxFunctor || functor === actFunctor
+		? 'int_discourse'
+		: intLevel(functor.unwrap(type));
+}
+
 export function getMatchingApplicative(
 	left: ExprType,
 	right: ExprType,
 ): Applicative | null {
 	if (typeof left === 'string' || typeof right === 'string') return null;
 	if (left.head !== right.head) return null;
-	if (left.head === 'int') return intApplicative;
+	if (
+		left.head === 'int' &&
+		intLevel(left.inner) ===
+			intLevel((right as ExprType & object & { head: 'int' }).inner)
+	)
+		return intApplicative;
 	if (left.head === 'cont') return contApplicative;
 	if (left.head === 'pl') return plApplicative;
 	if (left.head === 'gen') return genApplicative;
