@@ -675,12 +675,12 @@ const functorPrecedence = new Map(
 			// Starting with lowest precedence
 			'dx',
 			'act',
-			'cont',
 			'pair',
 			'qn',
 			'gen',
 			'ref',
 			'bind',
+			'cont',
 			'int',
 			'pl',
 		] as (ExprType & object)['head'][]
