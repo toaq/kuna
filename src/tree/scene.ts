@@ -20,16 +20,15 @@ export enum SceneTextStyle {
 	Trace = 2,
 }
 
-export type RichSceneLabel =
-	| { pieces: { text: string; font: string }[] }
-	| { stack: RichSceneLabel[] };
+export type RichSceneLabelLine = { pieces: { text: string; font: string }[] };
+export type RichSceneLabel = { lines: RichSceneLabelLine[] };
 
 export function sceneLabelToString(label: string | RichSceneLabel): string {
 	return typeof label === 'string'
 		? label
-		: 'pieces' in label
-			? label.pieces.map(piece => piece.text).join('')
-			: label.stack.map(layer => sceneLabelToString(layer)).join('\n');
+		: label.lines
+				.map(line => line.pieces.map(piece => piece.text).join(''))
+				.join('\n');
 }
 
 export interface SceneNode<Denotation, Placement> {
@@ -152,7 +151,7 @@ function toSceneLabel(
 ): string | RichSceneLabel {
 	if (!('denotation' in tree && tree.denotation)) return tree.label;
 
-	const typedLabel: RichSceneLabel = {
+	const typedLabel: RichSceneLabelLine = {
 		pieces: [
 			...patchItalics(
 				tree.label,
@@ -166,13 +165,13 @@ function toSceneLabel(
 		],
 	};
 
-	if (!('mode' in tree && tree.mode)) return typedLabel;
+	if (!('mode' in tree && tree.mode)) return { lines: [typedLabel] };
 
-	const modeLabel: RichSceneLabel = {
+	const modeLabel: RichSceneLabelLine = {
 		pieces: [{ text: modeToString(tree.mode), font: `12px ${font}` }],
 	};
 
-	return { stack: [typedLabel, modeLabel] };
+	return { lines: [typedLabel, modeLabel] };
 }
 
 /**

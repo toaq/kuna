@@ -11,6 +11,7 @@ import { SVG } from 'mathjax-full/js/output/svg';
 import type {
 	Placed,
 	RichSceneLabel,
+	RichSceneLabelLine,
 	Scene,
 	SceneNode,
 	Unplaced,
@@ -207,18 +208,21 @@ export class TreePlacer<C extends DrawContext, D> {
 		);
 	}
 
+	private measureRichSceneLabelLine(line: RichSceneLabelLine): number {
+		let sum = 0;
+		for (const piece of line.pieces) {
+			sum += this.ctx.measureText(piece.text, piece.font).width;
+		}
+		return sum;
+	}
+
 	private measureLabelWidth(label: string | RichSceneLabel): number {
 		if (typeof label === 'string') {
 			return this.ctx.measureText(label).width;
 		}
-		if ('pieces' in label) {
-			let sum = 0;
-			for (const piece of label.pieces) {
-				sum += this.ctx.measureText(piece.text, piece.font).width;
-			}
-			return sum;
-		}
-		return Math.max(...label.stack.map(layer => this.measureLabelWidth(layer)));
+		return Math.max(
+			...label.lines.map(line => this.measureRichSceneLabelLine(line)),
+		);
 	}
 
 	private placeSceneNode(node: SceneNode<D, any>): {

@@ -24,20 +24,17 @@ function TreeLabel(props: { label: string | RichSceneLabel }) {
 	if (typeof props.label === 'string') {
 		return props.label;
 	}
-	if ('pieces' in props.label) {
-		return props.label.pieces.map((piece, i) => (
-			// biome-ignore lint/suspicious/noArrayIndexKey: Rendering pieces of tree label
-			<span key={i} style={{ font: piece.font, whiteSpace: 'pre' }}>
-				{piece.text}
-			</span>
-		));
-	}
 	return (
 		<div>
-			{props.label.stack.map((layer, i) => (
+			{props.label.lines.map((line, i) => (
 				// biome-ignore lint/suspicious/noArrayIndexKey: Rendering layers of tree label
 				<div key={i}>
-					<TreeLabel label={layer} />
+					{line.pieces.map((piece, j) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: Rendering pieces of tree label
+						<span key={j} style={{ font: piece.font, whiteSpace: 'pre' }}>
+							{piece.text}
+						</span>
+					))}
 				</div>
 			))}
 		</div>
