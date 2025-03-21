@@ -168,6 +168,7 @@ interface LayerExtent {
 interface TreePlacerOptions {
 	theme: Theme;
 	horizontalMargin: number;
+	minimumDistanceBetweenChildren: number;
 	compact: boolean;
 	truncateLabels: string[];
 }
@@ -175,6 +176,7 @@ interface TreePlacerOptions {
 const defaultOptions: TreePlacerOptions = {
 	theme: themes.light,
 	horizontalMargin: 30,
+	minimumDistanceBetweenChildren: 100,
 	compact: false,
 	truncateLabels: [],
 };
@@ -233,9 +235,13 @@ export class TreePlacer<C extends DrawContext, D> {
 			this.ctx.measureText(gloss ?? '').width,
 			denotation ? denotation.width(this.ctx) : 0,
 		);
+
+		// First place all the children...
 		const children = node.children.map(c => this.placeSceneNode(c));
 
-		let distanceBetweenChildren = 0;
+		// Find the smallest x-distance between this node's children that avoids
+		// making any of the descendants overlap.
+		let distanceBetweenChildren = this.options.minimumDistanceBetweenChildren;
 		for (let i = 0; i < children.length - 1; i++) {
 			const l = children[i].extents;
 			const r = children[i + 1].extents;
@@ -247,6 +253,10 @@ export class TreePlacer<C extends DrawContext, D> {
 			}
 		}
 
+		// Quantize the distance to multiples of 20px so the trees look more uniform:
+		distanceBetweenChildren = Math.ceil(distanceBetweenChildren / 20) * 20;
+
+		// Compute new extents for this subtree
 		const extents = [{ left: -width / 2, right: width / 2 }];
 		for (let i = 0; i < children.length; i++) {
 			const dx = (i - (children.length - 1) / 2) * distanceBetweenChildren;
