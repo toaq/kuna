@@ -212,7 +212,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			if (cCommand.word.entry === undefined)
 				throw new Unrecognized(`name: ${cCommand.word.text}`);
 			const animacy = animacyClass(cCommand.word.entry as VerbEntry);
-			const word = inTone(cCommand.word.entry.toaq, Tone.T2);
+			const word = cCommand.word.entry.toaq;
 			return λ('e', closed, (_, s) =>
 				ref(
 					{ type: 'name', verb: word },

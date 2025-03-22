@@ -801,6 +801,9 @@ function chooseFunctor_(left: ExprType, right: ExprType): ExprType {
 		}
 	}
 
+	if (right.head === 'ref' && findInner(left, Bind(right.binding, right.inner)))
+		return left;
+
 	return functorPrecedence.get(
 		left.head === 'int' ? intLevel(left.inner) : left.head,
 	)! <=
