@@ -38,6 +38,8 @@ export type CompositionMode =
 	| ['→L', CompositionMode] // Push traversable functor into applicative on the left
 	| ['→R', CompositionMode] // Push traversable functor into applicative on the right
 	| ['→', CompositionMode] // Push traversable functor into applicative
+	| ['↓L', CompositionMode] // Extract from effect on the left
+	| ['↓R', CompositionMode] // Extract from effect on the right
 	| ['↓', CompositionMode] // Extract from effect
 	| ['JL', CompositionMode] // Join monads on the left
 	| ['JR', CompositionMode] // Join monads on the right
@@ -183,7 +185,10 @@ function coerceInput_(
 						),
 						cont,
 					),
-					['↓', mode],
+					[
+						inputSide === 'out' ? '↓' : inputSide === 'left' ? '↓L' : '↓R',
+						mode,
+					],
 				];
 			}
 		}
