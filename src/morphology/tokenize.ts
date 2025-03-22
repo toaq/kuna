@@ -261,7 +261,7 @@ export class ToaqTokenizer {
 						});
 						toneInPrefix = true;
 					} else {
-						if (exactEntry.type === 'prefix pronoun') {
+						if (exactEntry.type === 'word determiner') {
 							tokenQuote = true;
 						}
 						wordTokens.push({
