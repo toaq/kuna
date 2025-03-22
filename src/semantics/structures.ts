@@ -852,7 +852,14 @@ export function composeFunctors(outer: Functor, inner: Functor): Functor {
 		unwrap: type => inner.unwrap(outer.unwrap(type)),
 		map: (fn, arg, s) =>
 			outer.map(
-				λ(outer.unwrap(arg.type), s, (x, s) => inner.map(fn, s.var(x), s)),
+				app(
+					λ(fn.type, s, (fn, s) =>
+						λ(outer.unwrap(arg.type), s, (x, s) =>
+							inner.map(s.var(fn), s.var(x), s),
+						),
+					),
+					fn,
+				),
 				arg,
 				s,
 			),
