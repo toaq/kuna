@@ -18,6 +18,7 @@ import {
 	getDistributive,
 	getMatchingApplicative,
 	getMatchingFunctor,
+	getMatchingMonad,
 	getMatchingSemigroup,
 	getMonad,
 	getRunner,
@@ -31,10 +32,15 @@ export type CompositionMode =
 	| ['L', CompositionMode] // Lift left into functor
 	| ['R', CompositionMode] // Lift right into functor
 	| ['A', CompositionMode] // Sequence effects via applicative functor
-	| ['→L', CompositionMode] // Push functor inside distributive functor on the left
-	| ['→R', CompositionMode] // Push functor inside distributive functor on the right
-	| ['→', CompositionMode] // Push functor inside distributive functor
+	| ['←L', CompositionMode] // Pull distributive functor out of functor on the left
+	| ['←R', CompositionMode] // Pull distributive functor out of functor on the right
+	| ['←', CompositionMode] // Pull distributive functor out of functor
+	| ['→L', CompositionMode] // Push traversable functor into applicative on the left
+	| ['→R', CompositionMode] // Push traversable functor into applicative on the right
+	| ['→', CompositionMode] // Push traversable functor into applicative
 	| ['↓', CompositionMode] // Extract from effect
+	| ['JL', CompositionMode] // Join monads on the left
+	| ['JR', CompositionMode] // Join monads on the right
 	| ['J', CompositionMode]; // Join monads
 
 function coerceInput_(
@@ -67,8 +73,8 @@ function coerceInput_(
 
 	// The functors don't match
 	if (under !== null) {
-		// Let's try pushing the input's outer most functor inside of a distributive
-		// functor and then continuing coercion under the distributive functor
+		// Let's try pulling a distributive functor out of the input's outermost
+		// functor and then continuing conversion under the distributive functor
 		const distributive = getDistributive(inputInner);
 		if (distributive !== null) {
 			const coercedInner = under.wrap(
@@ -78,10 +84,30 @@ function coerceInput_(
 			const result = coerceInput_(fn, coercedInner, inputSide, mode, under);
 			if (result !== null) {
 				const [cont, mode] = result;
+				let joined = false;
 				return [
 					app(
 						λ(cont.type, closed, (cont, s) =>
 							λ(input, s, (input, s) => {
+								// We're going to have to do something with the effect that floats to
+								// the top after distributing. The most "efficient" thing to do is join
+								// it with the effect just under it.
+								const distributed = distributive.distribute(
+									s.var(input),
+									under,
+									s,
+								);
+								const monad = getMatchingMonad(
+									distributed.type,
+									distributive.functor.unwrap(distributed.type),
+								);
+								if (monad !== null) {
+									joined = true;
+									return app(s.var(cont), monad.join(distributed, s));
+								}
+
+								// Unable to join the effect; map over it instead.
+
 								// If the input came from the left or right then the function is a
 								// binary function, and we need to take special care to lift it into the
 								// functor in the right way (f a → b → f c rather than f a → f (b → c))
@@ -111,10 +137,19 @@ function coerceInput_(
 						cont,
 					),
 					inputSide === 'out'
-						? ['→', mode]
+						? ['←', joined ? ['J', mode] : mode]
 						: [
-								inputSide === 'left' ? '→L' : '→R',
-								[inputSide === 'left' ? 'R' : 'L', mode],
+								inputSide === 'left' ? '←L' : '←R',
+								[
+									joined
+										? inputSide === 'left'
+											? 'JL'
+											: 'JR'
+										: inputSide === 'left'
+											? 'R'
+											: 'L',
+									mode,
+								],
 							],
 				];
 			}

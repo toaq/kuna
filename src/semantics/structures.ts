@@ -91,7 +91,7 @@ export interface Applicative {
 export interface Distributive {
 	functor: Functor;
 	/**
-	 * Pushes a functor inside the distributive functor.
+	 * Pulls the distributive functor out of another functor.
 	 * @param e The expression.
 	 * @param functor The functor for the outer layer of the expression.
 	 */
@@ -805,43 +805,40 @@ export function chooseFunctor(
 	return f && [choice === left ? 'left' : 'right', f];
 }
 
-export function getMatchingFunctor(
-	left: ExprType,
-	right: ExprType,
-): Functor | null {
-	if (typeof left === 'string' || typeof right === 'string') return null;
-	if (left.head !== right.head) return null;
-	if (left.head === 'int') return intFunctor;
-	if (left.head === 'cont') return contFunctor;
-	if (left.head === 'pl') return plFunctor;
-	if (left.head === 'gen') return genFunctor;
-	if (left.head === 'qn') return qnFunctor;
+export function getMatchingFunctor(t1: ExprType, t2: ExprType): Functor | null {
+	if (typeof t1 === 'string' || typeof t2 === 'string') return null;
+	if (t1.head !== t2.head) return null;
+	if (t1.head === 'int') return intFunctor;
+	if (t1.head === 'cont') return contFunctor;
+	if (t1.head === 'pl') return plFunctor;
+	if (t1.head === 'gen') return genFunctor;
+	if (t1.head === 'qn') return qnFunctor;
 	if (
-		left.head === 'pair' &&
+		t1.head === 'pair' &&
 		typesEqual(
-			left.supplement,
-			(right as ExprType & object & { head: 'pair' }).supplement,
+			t1.supplement,
+			(t2 as ExprType & object & { head: 'pair' }).supplement,
 		)
 	)
 		return pairFunctor;
 	if (
-		left.head === 'bind' &&
+		t1.head === 'bind' &&
 		bindingsEqual(
-			left.binding,
-			(right as ExprType & object & { head: 'bind' }).binding,
+			t1.binding,
+			(t2 as ExprType & object & { head: 'bind' }).binding,
 		)
 	)
-		return refFunctor;
+		return bindFunctor;
 	if (
-		left.head === 'ref' &&
+		t1.head === 'ref' &&
 		bindingsEqual(
-			left.binding,
-			(right as ExprType & object & { head: 'ref' }).binding,
+			t1.binding,
+			(t2 as ExprType & object & { head: 'ref' }).binding,
 		)
 	)
 		return refFunctor;
-	if (left.head === 'dx') return dxFunctor;
-	if (left.head === 'act') return actFunctor;
+	if (t1.head === 'dx') return dxFunctor;
+	if (t1.head === 'act') return actFunctor;
 	return null;
 }
 
@@ -875,31 +872,31 @@ function intLevel(type: ExprType): 'int_discourse' | 'int_clause' {
 }
 
 export function getMatchingApplicative(
-	left: ExprType,
-	right: ExprType,
+	t1: ExprType,
+	t2: ExprType,
 ): Applicative | null {
-	if (typeof left === 'string' || typeof right === 'string') return null;
-	if (left.head !== right.head) return null;
+	if (typeof t1 === 'string' || typeof t2 === 'string') return null;
+	if (t1.head !== t2.head) return null;
 	if (
-		left.head === 'int' &&
-		intLevel(left.inner) ===
-			intLevel((right as ExprType & object & { head: 'int' }).inner)
+		t1.head === 'int' &&
+		intLevel(t1.inner) ===
+			intLevel((t2 as ExprType & object & { head: 'int' }).inner)
 	)
 		return intApplicative;
-	if (left.head === 'cont') return contApplicative;
-	if (left.head === 'pl') return plApplicative;
-	if (left.head === 'gen') return genApplicative;
-	if (left.head === 'qn') return qnApplicative;
+	if (t1.head === 'cont') return contApplicative;
+	if (t1.head === 'pl') return plApplicative;
+	if (t1.head === 'gen') return genApplicative;
+	if (t1.head === 'qn') return qnApplicative;
 	if (
-		left.head === 'ref' &&
+		t1.head === 'ref' &&
 		bindingsEqual(
-			left.binding,
-			(right as ExprType & object & { head: 'ref' }).binding,
+			t1.binding,
+			(t2 as ExprType & object & { head: 'ref' }).binding,
 		)
 	)
 		return refApplicative;
-	if (left.head === 'dx') return dxApplicative;
-	if (left.head === 'act') return actApplicative;
+	if (t1.head === 'dx') return dxApplicative;
+	if (t1.head === 'act') return actApplicative;
 	return null;
 }
 
@@ -916,6 +913,10 @@ export function getMonad(t: ExprType): Monad | null {
 	if (t.head === 'dx') return dxMonad;
 	if (t.head === 'act') return actMonad;
 	return null;
+}
+
+export function getMatchingMonad(t1: ExprType, t2: ExprType): Monad | null {
+	return getMatchingFunctor(t1, t2) && getMonad(t1);
 }
 
 export function getComonad(t: ExprType): Comonad | null {
