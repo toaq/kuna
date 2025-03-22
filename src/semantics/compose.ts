@@ -1,15 +1,15 @@
 import { Unimplemented } from '../core/error';
 import {
-	Bind,
 	type Expr,
 	type ExprType,
 	Int,
 	Pl,
-	Ref,
 	app,
 	assertFn,
+	bindingsEqual,
 	closed,
 	subtype,
+	typesEqual,
 	unbind,
 	unref,
 	λ,
@@ -19,7 +19,6 @@ import {
 	type Functor,
 	chooseFunctor,
 	composeFunctors,
-	findInner,
 	getApplicative,
 	getBigTraversable,
 	getComonad,
@@ -63,16 +62,40 @@ export type CompositionMode =
  */
 function findCoercedInner(inType: ExprType, like: ExprType): ExprType | null {
 	if (typeof inType === 'string' || typeof like === 'string') return null;
-	if (inType.head !== like.head) {
-		const traversable = getBigTraversable(inType);
-		if (traversable !== null) {
-			const result = findCoercedInner(traversable.functor.unwrap(inType), like);
-			return result && traversable.functor.wrap(result, inType);
-		}
-		const functor = getFunctor(inType);
-		return functor && findCoercedInner(functor.unwrap(inType), like);
+	if (
+		inType.head === like.head &&
+		(inType.head === 'int' ||
+			inType.head === 'cont' ||
+			inType.head === 'pl' ||
+			inType.head === 'gen' ||
+			inType.head === 'qn' ||
+			(inType.head === 'pair' &&
+				typesEqual(
+					inType.supplement,
+					(like as ExprType & object & { head: 'pair' }).supplement,
+				)) ||
+			(inType.head === 'bind' &&
+				bindingsEqual(
+					inType.binding,
+					(like as ExprType & object & { head: 'bind' }).binding,
+				)) ||
+			(inType.head === 'ref' &&
+				bindingsEqual(
+					inType.binding,
+					(like as ExprType & object & { head: 'ref' }).binding,
+				)) ||
+			inType.head === 'dx' ||
+			inType.head === 'act')
+	)
+		return inType.inner;
+
+	const traversable = getBigTraversable(inType);
+	if (traversable !== null) {
+		const result = findCoercedInner(traversable.functor.unwrap(inType), like);
+		return result && traversable.functor.wrap(result, inType);
 	}
-	return findInner(inType, like);
+	const functor = getFunctor(inType);
+	return functor && findCoercedInner(functor.unwrap(inType), like);
 }
 
 function coerceInput_(
@@ -354,6 +377,39 @@ function composeStep(left: ExprType, right: ExprType): [Expr, CompositionMode] {
 		];
 	}
 
+	if (
+		typeof left !== 'string' &&
+		left.head === 'bind' &&
+		typeof right !== 'string' &&
+		right.head === 'ref' &&
+		bindingsEqual(left.binding, right.binding)
+	) {
+		const [cont, mode] = composeAndSimplify(left.inner, right.inner);
+		return [
+			app(
+				λ(cont.type, closed, (cont, s) =>
+					λ(left, s, (l, s) =>
+						λ(right, s, (r, s) =>
+							unbind(
+								s.var(l),
+								λ(Int(Pl('e')), s, (boundVal, s) =>
+									λ(left.inner, s, (lVal, s) =>
+										app(
+											app(s.var(cont), s.var(lVal)),
+											app(unref(s.var(r)), s.var(boundVal)),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+				cont,
+			),
+			['Z', mode],
+		];
+	}
+
 	const functor = chooseFunctor(left, right);
 	if (functor !== null) {
 		const [choice, { unwrap, map }] = functor;
@@ -476,52 +532,6 @@ function composeAndSimplify(
 						cont,
 					),
 					['J', mode],
-				];
-			}
-		}
-	}
-
-	// Try resolving binding relationships
-	if (typeof out !== 'string' && out.head === 'bind') {
-		const inner = findCoercedInner(out.inner, Ref(out.binding, out.inner));
-		if (inner !== null) {
-			const coerced = coerceInput(
-				λ(Bind(out.binding, Ref(out.binding, inner)), closed, (e, s) =>
-					unbind(
-						s.var(e),
-						λ(Int(Pl('e')), s, (boundVal, s) =>
-							λ(Ref(out.binding, inner), s, (refVal, s) =>
-								app(unref(s.var(refVal)), s.var(boundVal)),
-							),
-						),
-					),
-				),
-				out,
-				'out',
-				mode,
-			);
-			if (coerced !== null) {
-				const [resolve, mode] = coerced;
-				return [
-					app(
-						app(
-							λ(resolve.type, closed, (resolve, s) =>
-								λ(cont.type, s, (cont, s) =>
-									λ(left, s, (l, s) =>
-										λ(right, s, (r, s) =>
-											app(
-												s.var(resolve),
-												app(app(s.var(cont), s.var(l)), s.var(r)),
-											),
-										),
-									),
-								),
-							),
-							resolve,
-						),
-						cont,
-					),
-					['Z', mode],
 				];
 			}
 		}

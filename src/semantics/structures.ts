@@ -737,11 +737,11 @@ const functorPrecedence = new Map(
 			'dx',
 			'act',
 			'pair',
-			'qn',
-			'gen',
 			'bind',
 			'cont',
 			'ref',
+			'qn',
+			'gen',
 			'int_clause',
 			'pl',
 		] as (
@@ -1006,36 +1006,34 @@ export function getRunner(t: ExprType): Runner | null {
  */
 export function findInner(inType: ExprType, like: ExprType): ExprType | null {
 	if (typeof inType === 'string' || typeof like === 'string') return null;
-	if (inType.head !== like.head) {
-		const functor = getFunctor(inType);
-		return functor && findInner(functor.unwrap(inType), like);
-	}
 	if (
-		inType.head === 'int' ||
-		inType.head === 'cont' ||
-		inType.head === 'pl' ||
-		inType.head === 'gen' ||
-		inType.head === 'qn' ||
-		(inType.head === 'pair' &&
-			typesEqual(
-				inType.supplement,
-				(like as ExprType & object & { head: 'pair' }).supplement,
-			)) ||
-		(inType.head === 'bind' &&
-			bindingsEqual(
-				inType.binding,
-				(like as ExprType & object & { head: 'bind' }).binding,
-			)) ||
-		(inType.head === 'ref' &&
-			bindingsEqual(
-				inType.binding,
-				(like as ExprType & object & { head: 'ref' }).binding,
-			)) ||
-		inType.head === 'dx' ||
-		inType.head === 'act'
+		inType.head === like.head &&
+		(inType.head === 'int' ||
+			inType.head === 'cont' ||
+			inType.head === 'pl' ||
+			inType.head === 'gen' ||
+			inType.head === 'qn' ||
+			(inType.head === 'pair' &&
+				typesEqual(
+					inType.supplement,
+					(like as ExprType & object & { head: 'pair' }).supplement,
+				)) ||
+			(inType.head === 'bind' &&
+				bindingsEqual(
+					inType.binding,
+					(like as ExprType & object & { head: 'bind' }).binding,
+				)) ||
+			(inType.head === 'ref' &&
+				bindingsEqual(
+					inType.binding,
+					(like as ExprType & object & { head: 'ref' }).binding,
+				)) ||
+			inType.head === 'dx' ||
+			inType.head === 'act')
 	)
 		return inType.inner;
-	return null;
+	const functor = getFunctor(inType);
+	return functor && findInner(functor.unwrap(inType), like);
 }
 
 export function unwrapEffects(type: ExprType): ExprType {
