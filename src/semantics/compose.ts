@@ -310,6 +310,8 @@ function coerceInput(
 	return coerceInput_(fn, input, inputSide, mode, null);
 }
 
+class UnimplementedComposition extends Error {}
+
 function composeStep(left: ExprType, right: ExprType): [Expr, CompositionMode] {
 	// Functional application
 	if (typeof left !== 'string' && left.head === 'fn') {
@@ -451,9 +453,7 @@ function composeStep(left: ExprType, right: ExprType): [Expr, CompositionMode] {
 		];
 	}
 
-	throw new Unimplemented(
-		`Composition of ${typeToPlainText(left)} and ${typeToPlainText(right)}`,
-	);
+	throw new UnimplementedComposition();
 }
 
 function composeAndSimplify(
@@ -545,6 +545,14 @@ function composeAndSimplify(
  * @returns The denotation and the steps that were taken to compose it.
  */
 export function compose(left: Expr, right: Expr): [Expr, CompositionMode] {
-	const [cont, mode] = composeAndSimplify(left.type, right.type);
-	return [app(app(cont, left), right), mode];
+	try {
+		const [cont, mode] = composeAndSimplify(left.type, right.type);
+		return [app(app(cont, left), right), mode];
+	} catch (e) {
+		if (e instanceof UnimplementedComposition)
+			throw new Unimplemented(
+				`Composition of ${typeToPlainText(left.type)} and ${typeToPlainText(right.type)}`,
+			);
+		throw e;
+	}
 }
