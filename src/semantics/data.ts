@@ -1,6 +1,7 @@
 import { Impossible } from '../core/error';
 import {
 	Act,
+	type AnimacyClass,
 	Cont,
 	Dx,
 	type Expr,
@@ -13,6 +14,7 @@ import {
 	agent,
 	and,
 	app,
+	bind,
 	closed,
 	cont,
 	equals,
@@ -50,6 +52,11 @@ export const causeLittleV = int(
 	),
 );
 
+export const covertResumptive = ref(
+	{ type: 'covert resumptive' },
+	λ(Int(Pl('e')), closed, (x, s) => s.var(x)),
+);
+
 const personalPronouns = [
 	'jí',
 	'súq',
@@ -62,13 +69,29 @@ const personalPronouns = [
 	'áma',
 ];
 
-export const covertResumptive = ref(
-	{ type: 'covert resumptive' },
-	λ(Int(Pl('e')), closed, (x, s) => s.var(x)),
-);
+const anaphoricPronouns: [string, AnimacyClass][] = [
+	['hó', 'animate'],
+	['máq', 'inanimate'],
+	['hóq', 'abstract'],
+	['tá', 'descriptive'],
+];
 
-export const pronouns = new Map<string, ExprType>([
-	...personalPronouns.map(toaq => [toaq, Dx(Int(Pl('e')))] as const),
+export const pronouns = new Map<string, Expr>([
+	...personalPronouns.map(
+		toaq => [toaq, lex(toaq, Dx(Int(Pl('e'))), closed)] as const,
+	),
+	...anaphoricPronouns.map(
+		([toaq, animacy]) =>
+			[
+				toaq,
+				ref(
+					{ type: 'animacy', class: animacy },
+					λ(Int(Pl('e')), closed, (x, s) =>
+						bind({ type: 'animacy', class: animacy }, s.var(x), s.var(x)),
+					),
+				),
+			] as const,
+	),
 ]);
 
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);

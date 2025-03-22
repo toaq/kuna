@@ -151,9 +151,9 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Unrecognized(`DP: ${leaf.word.text}`);
 
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
-		const type = pronouns.get(toaq);
-		if (type === undefined) throw new Unrecognized(`DP: ${toaq}`);
-		return lex(toaq, type, closed);
+		const data = pronouns.get(toaq);
+		if (data === undefined) throw new Unrecognized(`DP: ${toaq}`);
+		return data;
 	}
 
 	if (leaf.label === 'Asp') {
