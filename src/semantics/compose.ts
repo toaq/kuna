@@ -1,11 +1,17 @@
 import { Unimplemented } from '../core/error';
 import {
+	Bind,
 	type Expr,
 	type ExprType,
+	Int,
+	Pl,
+	Ref,
 	app,
 	assertFn,
 	closed,
 	subtype,
+	unbind,
+	unref,
 	λ,
 } from './model';
 import { typeToPlainText } from './render';
@@ -46,7 +52,8 @@ export type CompositionMode =
 	| ['↓', CompositionMode] // Extract from effect
 	| ['JL', CompositionMode] // Join monads on the left
 	| ['JR', CompositionMode] // Join monads on the right
-	| ['J', CompositionMode]; // Join monads
+	| ['J', CompositionMode] // Join monads
+	| ['Z', CompositionMode]; // Resolve binding relationship
 
 /**
  * Given a type and a type constructor to search for, find the inner type given
@@ -469,6 +476,52 @@ function composeAndSimplify(
 						cont,
 					),
 					['J', mode],
+				];
+			}
+		}
+	}
+
+	// Try resolving binding relationships
+	if (typeof out !== 'string' && out.head === 'bind') {
+		const inner = findCoercedInner(out.inner, Ref(out.binding, out.inner));
+		if (inner !== null) {
+			const coerced = coerceInput(
+				λ(Bind(out.binding, Ref(out.binding, inner)), closed, (e, s) =>
+					unbind(
+						s.var(e),
+						λ(Int(Pl('e')), s, (boundVal, s) =>
+							λ(Ref(out.binding, inner), s, (refVal, s) =>
+								app(unref(s.var(refVal)), s.var(boundVal)),
+							),
+						),
+					),
+				),
+				out,
+				'out',
+				mode,
+			);
+			if (coerced !== null) {
+				const [resolve, mode] = coerced;
+				return [
+					app(
+						app(
+							λ(resolve.type, closed, (resolve, s) =>
+								λ(cont.type, s, (cont, s) =>
+									λ(left, s, (l, s) =>
+										λ(right, s, (r, s) =>
+											app(
+												s.var(resolve),
+												app(app(s.var(cont), s.var(l)), s.var(r)),
+											),
+										),
+									),
+								),
+							),
+							resolve,
+						),
+						cont,
+					),
+					['Z', mode],
 				];
 			}
 		}
