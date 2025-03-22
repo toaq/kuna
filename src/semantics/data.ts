@@ -177,11 +177,11 @@ export const speechActParticles = new Map<
 	['ka', () => Fn(Int('t'), Act('()'))],
 	[
 		'móq',
-		(complement: ExprType) => Fn(Qn(qnDomain(complement), Int('t')), Act('()')),
+		(complement: ExprType) => Fn(Int(Qn(qnDomain(complement), 't')), Act('()')),
 	],
 	[
 		'môq',
-		(complement: ExprType) => Fn(Qn(qnDomain(complement), Int('t')), Act('()')),
+		(complement: ExprType) => Fn(Int(Qn(qnDomain(complement), 't')), Act('()')),
 	],
 	['ba', () => Fn(Int('t'), Act('()'))],
 	['nha', () => Fn(Int('t'), Act('()'))],
