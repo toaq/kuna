@@ -14,8 +14,11 @@ import {
 	chooseFunctor,
 	composeFunctors,
 	findInner,
+	getApplicative,
+	getBigTraversable,
 	getComonad,
 	getDistributive,
+	getFunctor,
 	getMatchingApplicative,
 	getMatchingFunctor,
 	getMatchingMonad,
@@ -44,6 +47,26 @@ export type CompositionMode =
 	| ['JL', CompositionMode] // Join monads on the left
 	| ['JR', CompositionMode] // Join monads on the right
 	| ['J', CompositionMode]; // Join monads
+
+/**
+ * Given a type and a type constructor to search for, find the inner type given
+ * by pushing all traversables into the first occurrence of that type
+ * constructor and unwrapping the type constructor. The idea is that this
+ * represents the inner type after coercion.
+ */
+function findCoercedInner(inType: ExprType, like: ExprType): ExprType | null {
+	if (typeof inType === 'string' || typeof like === 'string') return null;
+	if (inType.head !== like.head) {
+		const traversable = getBigTraversable(inType);
+		if (traversable !== null) {
+			const result = findCoercedInner(traversable.functor.unwrap(inType), like);
+			return result && traversable.functor.wrap(result, inType);
+		}
+		const functor = getFunctor(inType);
+		return functor && findCoercedInner(functor.unwrap(inType), like);
+	}
+	return findInner(inType, like);
+}
 
 function coerceInput_(
 	fn: Expr,
@@ -157,6 +180,49 @@ function coerceInput_(
 			}
 		}
 
+		const traversable = getBigTraversable(inputInner);
+		if (traversable !== null) {
+			const traversableInner = traversable.functor.unwrap(inputInner);
+			const applicative = getApplicative(traversableInner);
+			if (applicative !== null) {
+				const applicativeInner = applicative.functor.unwrap(traversableInner);
+				const coercedInner = under.wrap(
+					applicative.functor.wrap(
+						traversable.functor.wrap(applicativeInner, inputInner),
+						traversableInner,
+					),
+					input,
+				);
+				const result = coerceInput_(fn, coercedInner, inputSide, mode, under);
+				if (result !== null) {
+					const [cont, mode] = result;
+					return [
+						app(
+							λ(cont.type, closed, (cont, s) =>
+								λ(input, s, (input, s) =>
+									app(
+										s.var(cont),
+										under.map(
+											λ(inputInner, s, (inputInner, s) =>
+												traversable.sequence(s.var(inputInner), applicative, s),
+											),
+											s.var(input),
+											s,
+										),
+									),
+								),
+							),
+							cont,
+						),
+						[
+							inputSide === 'out' ? '→' : inputSide === 'left' ? '→L' : '→R',
+							mode,
+						],
+					];
+				}
+			}
+		}
+
 		// Try simply extracting a value from the functor via a comonad
 		const comonad = getComonad(inputInner);
 		if (comonad !== null) {
@@ -199,8 +265,8 @@ function coerceInput_(
 
 /**
  * Given a function and an input type, build a function which accepts the type
- * as its input and "coerces" its type using Functor, Distributive, and Comonad
- * instances to feed it to the original function.
+ * as its input and "coerces" its type using Functor, Distributive, Traversable,
+ * and Comonad instances to feed it to the original function.
  * @param inputSide The side of the tree which the input comes from. If this is
  *   'left' or 'right' then the function will be treated as a binary function so
  *   that functors map like f a → b → f c rather than f a → f (b → c).
@@ -373,7 +439,7 @@ function composeAndSimplify(
 			},
 			join,
 		} = monad;
-		const inner = findInner(unwrap(out), out);
+		const inner = findCoercedInner(unwrap(out), out);
 		if (inner !== null) {
 			const coerced = coerceInput(
 				λ(wrap(wrap(inner, out), out), closed, (e, s) => join(s.var(e), s)),

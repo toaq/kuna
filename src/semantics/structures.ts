@@ -98,6 +98,17 @@ export interface Distributive {
 	distribute: (e: Expr, functor: Functor, scope: Scope) => Expr;
 }
 
+export interface Traversable {
+	functor: Functor;
+	/**
+	 * Pushes the traversable functor into an applicative functor.
+	 * @param e The expression.
+	 * @param applicative The applicative functor for the inner layer of the
+	 *   expression.
+	 */
+	sequence: (e: Expr, applicative: Applicative, scope: Scope) => Expr;
+}
+
 export interface Monad {
 	applicative: Applicative;
 	/**
@@ -488,6 +499,29 @@ const bindFunctor: Functor = {
 	},
 };
 
+const bindTraversable: Traversable = {
+	functor: bindFunctor,
+	sequence: (e, applicative, s) => {
+		assertBind(e.type);
+		const { binding, inner } = e.type;
+		const innerInner = applicative.functor.unwrap(inner);
+		return unbind(
+			e,
+			λ(Int(Pl('e')), s, (boundVal, s) =>
+				λ(inner, s, (val, s) =>
+					applicative.functor.map(
+						λ(innerInner, s, (innerVal, s) =>
+							bind(binding, s.var(boundVal), s.var(innerVal)),
+						),
+						s.var(val),
+						s,
+					),
+				),
+			),
+		);
+	},
+};
+
 const bindComonad: Comonad = {
 	functor: bindFunctor,
 	extract: (e, s) => {
@@ -871,33 +905,24 @@ function intLevel(type: ExprType): 'int_discourse' | 'int_clause' {
 		: intLevel(functor.unwrap(type));
 }
 
+export function getApplicative(t: ExprType): Applicative | null {
+	if (typeof t === 'string') return null;
+	if (t.head === 'int') return intApplicative;
+	if (t.head === 'cont') return contApplicative;
+	if (t.head === 'pl') return plApplicative;
+	if (t.head === 'gen') return genApplicative;
+	if (t.head === 'qn') return qnApplicative;
+	if (t.head === 'ref') return refApplicative;
+	if (t.head === 'dx') return dxApplicative;
+	if (t.head === 'act') return actApplicative;
+	return null;
+}
+
 export function getMatchingApplicative(
 	t1: ExprType,
 	t2: ExprType,
 ): Applicative | null {
-	if (typeof t1 === 'string' || typeof t2 === 'string') return null;
-	if (t1.head !== t2.head) return null;
-	if (
-		t1.head === 'int' &&
-		intLevel(t1.inner) ===
-			intLevel((t2 as ExprType & object & { head: 'int' }).inner)
-	)
-		return intApplicative;
-	if (t1.head === 'cont') return contApplicative;
-	if (t1.head === 'pl') return plApplicative;
-	if (t1.head === 'gen') return genApplicative;
-	if (t1.head === 'qn') return qnApplicative;
-	if (
-		t1.head === 'ref' &&
-		bindingsEqual(
-			t1.binding,
-			(t2 as ExprType & object & { head: 'ref' }).binding,
-		)
-	)
-		return refApplicative;
-	if (t1.head === 'dx') return dxApplicative;
-	if (t1.head === 'act') return actApplicative;
-	return null;
+	return getMatchingFunctor(t1, t2) && getApplicative(t1);
 }
 
 export function getDistributive(t: ExprType): Distributive | null {
@@ -905,6 +930,45 @@ export function getDistributive(t: ExprType): Distributive | null {
 	if (t.head === 'ref') return refDistributive;
 	if (t.head === 'int') return intDistributive;
 	return null;
+}
+
+export function getTraversable(t: ExprType): Traversable | null {
+	if (typeof t === 'string') return null;
+	if (t.head === 'bind') return bindTraversable;
+	return null;
+}
+
+function composeTraversables(
+	outer: Traversable,
+	inner: Traversable,
+): Traversable {
+	return {
+		functor: composeFunctors(outer.functor, inner.functor),
+		sequence: (e, applicative, s) => {
+			return outer.sequence(
+				outer.functor.map(
+					λ(outer.functor.unwrap(e.type), s, (x, s) =>
+						inner.sequence(s.var(x), applicative, s),
+					),
+					e,
+					s,
+				),
+				applicative,
+				s,
+			);
+		},
+	};
+}
+
+/**
+ * Gets the "largest" possible Traversable instance for a given type by
+ * composing multiple Traversable instances together.
+ */
+export function getBigTraversable(t: ExprType): Traversable | null {
+	const outer = getTraversable(t);
+	if (outer === null) return null;
+	const inner = getBigTraversable(outer.functor.unwrap(t));
+	return inner === null ? outer : composeTraversables(outer, inner);
 }
 
 export function getMonad(t: ExprType): Monad | null {
