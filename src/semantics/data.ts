@@ -174,7 +174,7 @@ export const covertCrel = λ(
 
 export const complementizers = new Map<string, ExprType>([
 	['ꝡa', Fn(Int('t'), Int('t'))],
-	['ma', Fn(Int('t'), Qn(Fn('t', 't'), Int('t')))],
+	['ma', Fn(Int('t'), Int(Qn(Fn('t', 't'), 't')))],
 	['ꝡä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't')))],
 	['mä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't')))],
 ]);
