@@ -33,7 +33,7 @@ import {
 import { typeToPlainText } from './render';
 import { getFunctor } from './structures';
 
-export const covertV = lex('raı', Fn('e', Fn('v', Fn('s', 't'))), closed);
+export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))), closed);
 
 export const causeLittleV = int(
 	λ('s', closed, (w, s) =>
