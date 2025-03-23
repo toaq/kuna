@@ -104,6 +104,42 @@ export function getFrame(verb: Tree): string {
 	throw new Unimplemented(`Can't get frame of ${verb.label}`);
 }
 
+export function getDistribution(verb: Tree): string {
+	if ('word' in verb) {
+		if (verb.word.covert) {
+			// Must be the covert "raı" after a "sá".
+			return 'd';
+		}
+		if (verb.word.entry?.type === 'predicate') {
+			return verb.word.entry.distribution;
+		}
+		if (verb.word.entry?.type === 'predicatizer') {
+			return `${verb.word.entry.distribution} n`;
+		}
+		throw new Impossible('weird verb');
+	}
+	if (verb.label === 'mıP') {
+		return 'n';
+	}
+	if (verb.label === 'shuP' || verb.label === 'teoP') {
+		return 'd';
+	}
+	if (verb.label === 'EvAP') {
+		return 'd';
+	}
+	if (verb.label === 'haP' || verb.label === 'suP') {
+		const distribution = getDistribution((verb as Branch<Tree>).right);
+		return `${distribution} ${distribution}`;
+	}
+	if (verb.label === 'boP' || verb.label === 'teP') {
+		const distribution = getDistribution((verb as Branch<Tree>).right);
+		const firstSpace = distribution.indexOf(' ');
+		if (firstSpace === -1) throw new Ungrammatical('Verb is not transitive');
+		return distribution.slice(firstSpace + 1);
+	}
+	throw new Unimplemented(`Can't get distribution of ${verb.label}`);
+}
+
 function makevP(verb: Tree, args: Tree[]): Tree {
 	const agent =
 		'word' in verb &&

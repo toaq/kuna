@@ -3,7 +3,7 @@ import { splitNonEmpty } from '../core/misc';
 import type { VerbEntry } from '../morphology/dictionary';
 import { inTone } from '../morphology/tokenize';
 import { Tone } from '../morphology/tone';
-import { getFrame } from '../syntax/serial';
+import { getDistribution, getFrame } from '../syntax/serial';
 import {
 	type CovertWord,
 	type Leaf,
@@ -122,9 +122,14 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		// In case we don't have lexical data on this word, make sure we're at least
 		// providing the minimum number of arguments
 		if (leaf.label === 'V') arity = Math.max(1, arity);
+		const distribution = splitNonEmpty(getDistribution(leaf), ' ');
 
 		let type = Fn('v', 't');
-		for (let i = 0; i < arity; i++) type = Fn('e', type);
+		for (let i = 0; i < arity; i++)
+			type = Fn(
+				distribution[distribution.length - arity + i] === 'd' ? 'e' : Pl('e'),
+				type,
+			);
 		type = Int(type);
 		return lex(entry.toaq, type, closed);
 	}
