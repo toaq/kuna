@@ -733,27 +733,22 @@ const functorPrecedence = new Map(
 	(
 		[
 			// Starting with lowest precedence
-			'int_discourse',
 			'dx',
 			'act',
+			'int',
 			'pair',
 			'bind',
 			'cont',
 			'ref',
 			'qn',
 			'gen',
-			'int_clause',
 			'pl',
-		] as (
-			| Exclude<(ExprType & object)['head'], 'int'>
-			| 'int_discourse'
-			| 'int_clause'
-		)[]
+		] as (ExprType & object)['head'][]
 	).map((head, i) => [head, i]),
 );
 
 const bindingTypePrecedence = new Map(
-	(['resumptive', 'name', 'animacy', 'head'] as Binding['type'][]).map(
+	(['head', 'animacy', 'name', 'resumptive'] as Binding['type'][]).map(
 		(type, i) => [type, i],
 	),
 );
@@ -763,56 +758,6 @@ const animacyPrecedence = new Map(
 		(animacy, i) => [animacy, i],
 	),
 );
-
-function chooseFunctor_(left: ExprType, right: ExprType): ExprType {
-	if (typeof left === 'string' || left.head === 'fn') return right;
-	if (typeof right === 'string' || right.head === 'fn') return left;
-
-	if (left.head === right.head) {
-		if (left.head === 'bind' || left.head === 'ref') {
-			const rightCasted = right as ExprType & object & { head: 'bind' | 'ref' };
-			if (left.binding.type === rightCasted.binding.type) {
-				switch (left.binding.type) {
-					case 'resumptive':
-						return left;
-					case 'name':
-						return left.binding.verb <=
-							(rightCasted.binding as Binding & { type: 'name' }).verb
-							? left
-							: right;
-					case 'animacy':
-						return animacyPrecedence.get(left.binding.class)! <=
-							animacyPrecedence.get(
-								(rightCasted.binding as Binding & { type: 'animacy' }).class,
-							)!
-							? left
-							: right;
-					case 'head':
-						return left.binding.head <=
-							(rightCasted.binding as Binding & { type: 'head' }).head
-							? left
-							: right;
-				}
-			}
-			return bindingTypePrecedence.get(left.binding.type)! <
-				bindingTypePrecedence.get(rightCasted.binding.type)!
-				? left
-				: right;
-		}
-	}
-
-	if (right.head === 'ref' && findInner(left, Bind(right.binding, right.inner)))
-		return left;
-
-	return functorPrecedence.get(
-		left.head === 'int' ? intLevel(left.inner) : left.head,
-	)! <=
-		functorPrecedence.get(
-			right.head === 'int' ? intLevel(right.inner) : right.head,
-		)!
-		? left
-		: right;
-}
 
 export function getFunctor(t: ExprType): Functor | null {
 	if (typeof t === 'string') return null;
@@ -829,9 +774,51 @@ export function getFunctor(t: ExprType): Functor | null {
 	return null;
 }
 
+function chooseFunctor_(left: ExprType, right: ExprType): ExprType {
+	if (typeof left === 'string' || left.head === 'fn') return right;
+	if (typeof right === 'string' || right.head === 'fn') return left;
+
+	if (left.head === right.head) {
+		if (left.head === 'bind' || left.head === 'ref') {
+			const rightCasted = right as ExprType & object & { head: 'bind' | 'ref' };
+			if (left.binding.type === rightCasted.binding.type) {
+				switch (left.binding.type) {
+					case 'resumptive':
+						return right;
+					case 'name':
+						return (rightCasted.binding as Binding & { type: 'name' }).verb <=
+							left.binding.verb
+							? right
+							: left;
+					case 'animacy':
+						return animacyPrecedence.get(
+							(rightCasted.binding as Binding & { type: 'animacy' }).class,
+						)! <= animacyPrecedence.get(left.binding.class)!
+							? right
+							: left;
+					case 'head':
+						return (rightCasted.binding as Binding & { type: 'head' }).head <=
+							left.binding.head
+							? right
+							: left;
+				}
+			}
+			return bindingTypePrecedence.get(rightCasted.binding.type)! >
+				bindingTypePrecedence.get(left.binding.type)!
+				? right
+				: left;
+		}
+	}
+
+	return functorPrecedence.get(right.head)! > functorPrecedence.get(left.head)!
+		? right
+		: left;
+}
+
 /**
  * Given two types which may or may not be functors, determine which functor
- * should scope over the other. Biased toward the left.
+ * has higher precedence (should scope under the other). Biased toward the
+ * right.
  */
 export function chooseFunctor(
 	left: ExprType,
@@ -898,14 +885,6 @@ export function composeFunctors(outer: Functor, inner: Functor): Functor {
 				s,
 			),
 	};
-}
-
-function intLevel(type: ExprType): 'int_discourse' | 'int_clause' {
-	const functor = getFunctor(type);
-	if (functor === null) return 'int_clause';
-	return functor === dxFunctor || functor === actFunctor
-		? 'int_discourse'
-		: intLevel(functor.unwrap(type));
 }
 
 export function getApplicative(t: ExprType): Applicative | null {
@@ -990,6 +969,10 @@ export function getComonad(t: ExprType): Comonad | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'bind') return bindComonad;
 	return null;
+}
+
+export function getMatchingComonad(t1: ExprType, t2: ExprType): Comonad | null {
+	return getMatchingFunctor(t1, t2) && getComonad(t1);
 }
 
 export function getRunner(t: ExprType): Runner | null {
