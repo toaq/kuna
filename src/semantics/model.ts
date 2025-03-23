@@ -398,6 +398,7 @@ interface Constant extends ExprBase {
 		| 'unref'
 		| 'and_map'
 		| 'and_then'
+		| 'not'
 		| 'and'
 		| 'implies'
 		| 'equals'
@@ -957,6 +958,15 @@ export function andThen(first: Expr, continuation: Expr): Expr {
 		),
 		continuation,
 	);
+}
+
+export function not(scope: Scope): Expr {
+	return {
+		head: 'constant',
+		type: Fn('t', 't'),
+		scope: scope.types,
+		name: 'not',
+	};
 }
 
 export function and(scope: Scope): Expr {

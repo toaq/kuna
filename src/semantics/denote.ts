@@ -17,10 +17,10 @@ import {
 	complementizers,
 	covertCrel,
 	covertResumptive,
-	covertSigma,
 	covertV,
 	declarativeComplementizer,
 	determiners,
+	polarities,
 	pronominalTenses,
 	pronouns,
 	speechActParticles,
@@ -158,13 +158,10 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 	if (leaf.label === 'Asp') {
 		let toaq: string;
-		if (leaf.word.covert) {
-			toaq = 'tam';
-		} else if (leaf.word.entry === undefined) {
+		if (leaf.word.covert) toaq = 'tam';
+		else if (leaf.word.entry === undefined)
 			throw new Unrecognized(`Asp: ${leaf.word.text}`);
-		} else {
-			toaq = leaf.word.entry.toaq.replace(/-$/, '');
-		}
+		else toaq = leaf.word.entry.toaq.replace(/-$/, '');
 
 		// TODO: chum will need a different type
 		return lex(toaq, Int(Fn(Fn('v', 't'), Fn('i', 't'))), closed);
@@ -172,13 +169,10 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 	if (leaf.label === 'T') {
 		let toaq: string;
-		if (leaf.word.covert) {
-			toaq = 'tuom';
-		} else if (leaf.word.entry === undefined) {
+		if (leaf.word.covert) toaq = 'tuom';
+		else if (leaf.word.entry === undefined)
 			throw new Unrecognized(`T: ${leaf.word.text}`);
-		} else {
-			toaq = leaf.word.entry.toaq.replace(/-$/, '');
-		}
+		else toaq = leaf.word.entry.toaq.replace(/-$/, '');
 
 		return lex(
 			toaq,
@@ -190,11 +184,15 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === 'Σ') {
-		if (leaf.word.covert) return covertSigma;
-		if (leaf.word.entry === undefined)
+		let toaq: string;
+		if (leaf.word.covert) toaq = 'jeo';
+		else if (leaf.word.entry === undefined)
 			throw new Unrecognized(`Σ: ${leaf.word.text}`);
-		const toaq = leaf.word.entry.toaq.replace(/-$/, '');
-		return lex(toaq, Fn('t', 't'), closed);
+		else toaq = leaf.word.entry.toaq.replace(/-$/, '');
+
+		const data = polarities.get(toaq);
+		if (data === undefined) throw new Unrecognized(`Σ: ${toaq}`);
+		return data;
 	}
 
 	if (leaf.label === 'D') {

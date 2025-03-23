@@ -23,6 +23,7 @@ import {
 	implies,
 	int,
 	lex,
+	not,
 	qn,
 	ref,
 	some,
@@ -96,7 +97,10 @@ export const pronouns = new Map<string, Expr>([
 
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
 
-export const covertSigma = λ('t', closed, (t, s) => s.var(t));
+export const polarities = new Map<string, Expr>([
+	['jeo', λ('t', closed, (t, s) => s.var(t))],
+	['bu', not(closed)],
+]);
 
 export const determiners = new Map<string, Expr>([
 	[

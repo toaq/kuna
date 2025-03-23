@@ -119,13 +119,18 @@ enum Precedence {
 	Equals = 4,
 	Among = 5,
 	Apply = 6,
-	Bracket = 7,
+	Prefix = 7,
+	Bracket = 8,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
 	lambda: 'λ',
 	some: '∃',
 	every: '∀',
+};
+
+const prefixes: Record<(RichExpr & { head: 'prefix' })['op'], string> = {
+	not: '¬',
 };
 
 interface Infix {
@@ -175,6 +180,13 @@ export class PlainText extends Renderer<RichExpr, string> {
 					token(' '),
 					this.go(e.arg, names),
 				]);
+			case 'prefix': {
+				const prefix = prefixes[e.op];
+				return join(Precedence.Prefix, 'right', [
+					token(prefix),
+					this.go(e.body, names),
+				]);
+			}
 			case 'infix': {
 				const infix = infixes[e.op];
 				return join(infix.precedence, infix.associativity, [

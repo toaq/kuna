@@ -385,14 +385,19 @@ enum Precedence {
 	Equals = 4,
 	Among = 5,
 	Apply = 6,
-	Subscript = 7,
-	Bracket = 8,
+	Prefix = 7,
+	Subscript = 8,
+	Bracket = 9,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
 	lambda: 'λ',
 	some: '∃',
 	every: '∀',
+};
+
+const prefixes: Record<(RichExpr & { head: 'prefix' })['op'], string> = {
+	not: '¬',
 };
 
 interface Infix {
@@ -519,6 +524,13 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 					),
 					this.go(e.arg, names),
 				]);
+			case 'prefix': {
+				const prefix = prefixes[e.op];
+				return join(Precedence.Prefix, 'right', [
+					token(<mo rspace="0">{prefix}</mo>),
+					this.go(e.body, names),
+				]);
+			}
 			case 'infix': {
 				const infix = infixes[e.op];
 				return join(infix.precedence, infix.associativity, [

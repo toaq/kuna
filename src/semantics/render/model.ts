@@ -31,6 +31,12 @@ interface Apply extends ExprBase {
 	arg: RichExpr;
 }
 
+interface Prefix extends ExprBase {
+	head: 'prefix';
+	op: 'not';
+	body: RichExpr;
+}
+
 interface Infix extends ExprBase {
 	head: 'infix';
 	op: 'among' | 'and' | 'implies' | 'equals';
@@ -73,6 +79,7 @@ export type RichExpr =
 	| Variable
 	| Quantify
 	| Apply
+	| Prefix
 	| Infix
 	| Subscript
 	| Do
@@ -113,6 +120,16 @@ export function toRichExpr(e: Expr): RichExpr {
 					head: 'quantify',
 					q: e.fn.name,
 					body: toRichExpr(e.arg.body),
+				};
+
+			// Prefix notation
+			if (e.fn.head === 'constant' && e.fn.name === 'not')
+				return {
+					type: e.type,
+					scope: e.scope,
+					head: 'prefix',
+					op: 'not',
+					body: toRichExpr(e.arg),
 				};
 
 			// Infix notation
