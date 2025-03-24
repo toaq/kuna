@@ -1,7 +1,6 @@
 import { Impossible } from '../core/error';
 import type { Entry } from '../morphology/dictionary';
 import type { Tone } from '../morphology/tone';
-import type { Movement } from './movement';
 
 export interface Word {
 	covert: false;
@@ -132,6 +131,23 @@ export type Label =
 	| 'word'
 	| 'Σ'
 	| 'ΣP';
+
+export type MovementID = number;
+
+export interface Movement {
+	/**
+	 * A number identifying this leaf for the movement renderer.
+	 */
+	id: MovementID;
+	/**
+	 * The id of the leaf this leaf has moved to.
+	 */
+	movedTo?: MovementID;
+	/**
+	 * New phonological content of this leaf due to movement.
+	 */
+	text?: string;
+}
 
 interface TreeBase {
 	/**

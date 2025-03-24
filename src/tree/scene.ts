@@ -2,8 +2,7 @@ import type { CompositionMode } from '../semantics/compose';
 import type { DTree, Expr } from '../semantics/model';
 import { typeToPlainText } from '../semantics/render';
 import { treeChildren } from './functions';
-import type { MovementID } from './movement';
-import type { Tree } from './types';
+import type { MovementID, Tree } from './types';
 
 export enum SceneTextStyle {
 	/**

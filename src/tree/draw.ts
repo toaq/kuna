@@ -4,8 +4,7 @@ import {
 	createCanvas,
 } from 'canvas';
 import type { DTree, Expr } from '../semantics/model';
-import type { Tree } from '../tree';
-import type { MovementID } from './movement';
+import type { MovementID, Tree } from '../tree';
 import { type DrawableDenotation, type PlacedTree, TreePlacer } from './place';
 import {
 	type Scene,

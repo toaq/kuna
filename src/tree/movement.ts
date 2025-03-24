@@ -1,24 +1,7 @@
 import { repairTones } from '../morphology/tone';
 import { leafText } from './functions';
 import { type MovementArrow, type SceneNode, SceneTextStyle } from './scene';
-import type { Leaf } from './types';
-
-export type MovementID = number;
-
-export interface Movement {
-	/**
-	 * A number identifying this leaf for the movement renderer.
-	 */
-	id: MovementID;
-	/**
-	 * The id of the leaf this leaf has moved to.
-	 */
-	movedTo?: MovementID;
-	/**
-	 * New phonological content of this leaf due to movement.
-	 */
-	text?: string;
-}
+import type { Leaf, Movement, MovementID } from './types';
 
 let movementId: MovementID = 0;
 export function makeMovement(): Movement {
