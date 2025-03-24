@@ -1,7 +1,7 @@
 import toaduaGlossesJson from '../../data/toadua/toadua.json';
 import { type Entry, dictionary } from './dictionary';
-import { bare, clean, splitPrefixes, tone } from './tokenize';
-import { Tone } from './tone';
+import { bare, clean, splitPrefixes } from './tokenize';
+import { Tone, tone } from './tone';
 
 interface Gloss {
 	toaq: string;

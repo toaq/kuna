@@ -1,7 +1,7 @@
-import { Impossible } from '../../core/error';
-import { bare, inTone } from '../../morphology/tokenize';
-import { Tone } from '../../morphology/tone';
-import type { AnimacyClass, Binding, ExprType } from '../model';
+import { Impossible, Unimplemented } from '../../core/error';
+import { bare } from '../../morphology/tokenize';
+import { Tone, inTone } from '../../morphology/tone';
+import type { AnimacyClass, Binding, Expr, ExprType } from '../model';
 import {
 	type Associativity,
 	type Names,
@@ -13,7 +13,7 @@ import {
 	noNames,
 	token,
 } from './format';
-import type { RichExpr } from './model';
+import { type RichExpr, toRichExpr } from './model';
 
 enum TypePrecedence {
 	Function = 1,
@@ -231,4 +231,17 @@ export class PlainText extends Renderer<RichExpr, string> {
 	protected join(tokens: string[]): string {
 		return tokens.join('');
 	}
+}
+
+export function toPlainText(e: Expr, compact?: boolean): string {
+	if (compact) throw new Unimplemented();
+	return new PlainText().render(toRichExpr(e));
+}
+
+export function typeToPlainText(t: ExprType): string {
+	return new PlainTextType().render(t);
+}
+
+export function typesToPlainText(ts: ExprType[]): string {
+	return ts.map(typeToPlainText).join(', ');
 }

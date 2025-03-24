@@ -7,8 +7,8 @@ import type {
 } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { Impossible } from '../../core/error';
-import { bare, inTone } from '../../morphology/tokenize';
-import { Tone } from '../../morphology/tone';
+import { bare } from '../../morphology/tokenize';
+import { Tone, inTone } from '../../morphology/tone';
 import type { AnimacyClass, Binding, ExprType } from '../model';
 import {
 	type Associativity,

@@ -1,4 +1,4 @@
-import { repairTones } from '../morphology/tokenize';
+import { repairTones } from '../morphology/tone';
 import { leafText } from './functions';
 import { type MovementArrow, type SceneNode, SceneTextStyle } from './scene';
 import type { Leaf } from './types';

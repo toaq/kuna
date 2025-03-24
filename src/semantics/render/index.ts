@@ -3,12 +3,7 @@ import { Unimplemented } from '../../core/error';
 import type { Expr, ExprType } from '../model';
 import { Jsx, JsxType } from './jsx';
 import { toRichExpr } from './model';
-import { PlainText, PlainTextType } from './plain';
-
-export function toPlainText(e: Expr, compact?: boolean): string {
-	if (compact) throw new Unimplemented();
-	return new PlainText().render(toRichExpr(e));
-}
+export { toPlainText, typeToPlainText, typesToPlainText } from './plain';
 
 export function toLatex(_e: Expr, _compact?: boolean): string {
 	throw new Unimplemented();
@@ -46,18 +41,10 @@ export function jsonStringifyCompact(expr: any): string {
 		.join('\n');
 }
 
-export function typeToPlainText(t: ExprType): string {
-	return new PlainTextType().render(t);
-}
-
 export function typeToJsx(t: ExprType): ReactNode {
 	return new JsxType().render(t);
 }
 
 export function typeToLatex(_t: ExprType): string {
 	throw new Unimplemented();
-}
-
-export function typesToPlainText(ts: ExprType[]): string {
-	return ts.map(typeToPlainText).join(', ');
 }

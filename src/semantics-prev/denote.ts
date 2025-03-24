@@ -6,8 +6,7 @@ import {
 } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
 import type { VerbEntry } from '../morphology/dictionary';
-import { inTone } from '../morphology/tokenize';
-import { Tone } from '../morphology/tone';
+import { Tone, inTone } from '../morphology/tone';
 import { getFrame } from '../syntax/serial';
 import {
 	type Branch,
