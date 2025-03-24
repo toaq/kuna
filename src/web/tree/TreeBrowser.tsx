@@ -217,7 +217,6 @@ export function TreeBrowser(props: {
 	const placed = placer.placeScene(scene);
 	const layerHeight = 'denotation' in tree ? 70 : 50;
 	const rect = boundingRect(placed);
-	console.log(placed);
 
 	return (
 		<div style={{ background: theme.backgroundColor }}>

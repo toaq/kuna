@@ -80,7 +80,6 @@ function parseTreepad(
 			const id = lexeme.replaceAll(/[<>]/g, '');
 			arrows.push(moveNodeUp(top, movementTargets[id]));
 		} else if (lexeme.startsWith('$')) {
-			console.log(lexeme);
 			const latex = token[1];
 			const top = stack.at(-1);
 			if (!top) throw new Error('no subtree to denote');

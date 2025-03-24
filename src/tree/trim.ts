@@ -21,7 +21,6 @@ export function trimTree(tree: Tree): Tree {
 	if (isBoringNull(tree.left)) {
 		const result = { ...trimTree(tree.right) };
 		result.label = `${tree.label}·${result.label}` as any;
-		console.log({ result, tree });
 		if ((tree as any).denotation)
 			(result as any).denotation = (tree as any).denotation;
 		return result;
