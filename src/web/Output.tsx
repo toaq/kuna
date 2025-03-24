@@ -25,6 +25,7 @@ import { ToaqTokenizer } from '../morphology/tokenize';
 import type { Expr } from '../semantics/types';
 import type { Tree } from '../tree';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
+import { toScene } from '../tree/scene';
 import { themes } from '../tree/theme';
 import { Boxes } from './Boxes';
 import GfResult from './GfResult';
@@ -143,10 +144,13 @@ export function Output(props: OutputProps) {
 				const themeName = props.isDarkMode ? 'dark' : 'light';
 				return (
 					<TreeBrowser
-						tree={tree}
+						scene={toScene(
+							tree,
+							showMovement,
+							roofLabels.trim().split(/[\s,]+/),
+						)}
 						key={new Date().toString()}
 						compactDenotations={mode === 'semantics-tree-compact'}
-						showMovement={showMovement}
 						theme={themes[themeName]}
 						truncateLabels={roofLabels.trim().split(/[\s,]+/)}
 					/>

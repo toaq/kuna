@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { keyFor } from '../../core/misc';
 import { toJsx } from '../../semantics/render';
-import type { DTree, Expr } from '../../semantics/types';
-import type { MovementID, Tree } from '../../tree';
+import type { Expr } from '../../semantics/types';
+import type { MovementID } from '../../tree';
 import {
 	type PlacedTree,
 	TreePlacer,
@@ -15,8 +15,8 @@ import {
 	type RichSceneLabelPiece,
 	type Scene,
 	SceneTextStyle,
+	type Unplaced,
 	sceneLabelToString,
-	toScene,
 } from '../../tree/scene';
 import type { Theme } from '../../tree/theme';
 import './TreeBrowser.css';
@@ -209,9 +209,9 @@ export function Subtree(props: {
 
 type Ctx = { measureText: (text: string, font: string) => { width: number } };
 
-function Arrows(props: {
+function Arrows<D>(props: {
 	theme: Theme;
-	scene: Scene<Expr, undefined>;
+	scene: Scene<D, undefined>;
 	points: Map<MovementID, { x: number; width: number; layer: number }>;
 	rect: { left: number; right: number; layers: number };
 	layerHeight: number;
@@ -255,15 +255,13 @@ function Arrows(props: {
 	);
 }
 
-export function TreeBrowser(props: {
-	tree: Tree | DTree;
+export function TreeBrowser<D extends Expr | string>(props: {
+	scene: Scene<D, Unplaced>;
 	compactDenotations: boolean;
-	showMovement: boolean;
 	theme: Theme;
 	truncateLabels: string[];
 }) {
-	const { tree, compactDenotations, showMovement, theme, truncateLabels } =
-		props;
+	const { scene, compactDenotations, theme, truncateLabels } = props;
 
 	const canvas = document.createElement('canvas');
 	const canvasCtx = canvas.getContext('2d');
@@ -275,17 +273,21 @@ export function TreeBrowser(props: {
 		},
 	};
 
-	const denotationRenderer = (expr: Expr) => ({
+	const denotationRenderer = (denotation: D) => ({
 		draw: async () => {},
 		width: () => 0,
 		height: () => 0,
 		source: '',
-		denotation: expr,
+		denotation:
+			typeof denotation === 'string' ? undefined : (denotation as Expr),
 	});
-	const placer = new TreePlacer(ctx, denotationRenderer, { theme });
-	const scene = toScene(tree, showMovement, truncateLabels);
+
+	const placer = new TreePlacer<Ctx, D>(ctx, denotationRenderer, { theme });
 	const placed = placer.placeScene(scene);
-	const layerHeight = 'denotation' in tree ? 70 : 50;
+	const layerHeight =
+		typeof scene.root.label === 'string' || scene.root.label.lines.length === 1
+			? 50
+			: 70;
 	const rect = boundingRect(placed);
 	const points = movementPoints(placed);
 	const x0 = -rect.left;
