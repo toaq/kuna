@@ -9,6 +9,7 @@ import {
 	bindingsEqual,
 	closed,
 	subtype,
+	typesEqual,
 	unbind,
 	unref,
 	λ,
@@ -16,7 +17,7 @@ import {
 import { typeToPlainText } from './render';
 import {
 	type Functor,
-	chooseFunctor,
+	chooseEffect,
 	composeFunctors,
 	getApplicative,
 	getBigTraversable,
@@ -24,15 +25,59 @@ import {
 	getDistributive,
 	getFunctor,
 	getMatchingApplicative,
-	getMatchingComonad,
 	getMatchingFunctor,
 	getMatchingMonad,
 	getMatchingSemigroup,
+	getMonad,
 	getRunner,
 	idFunctor,
 	unwrapEffects,
 } from './structures';
-import type { CompositionMode, Expr, ExprType } from './types';
+import type { Binding, CompositionMode, Expr, ExprType } from './types';
+
+/**
+ * Given a type and a type constructor to search for, find the inner type given
+ * by pushing all traversables into the first occurrence of that type
+ * constructor and unwrapping the type constructor. The idea is that this
+ * represents the inner type after coercion.
+ */
+function findCoercedInner(inType: ExprType, like: ExprType): ExprType | null {
+	if (typeof inType === 'string' || typeof like === 'string') return null;
+	if (
+		inType.head === like.head &&
+		(inType.head === 'int' ||
+			inType.head === 'cont' ||
+			inType.head === 'pl' ||
+			inType.head === 'gen' ||
+			inType.head === 'qn' ||
+			(inType.head === 'pair' &&
+				typesEqual(
+					inType.supplement,
+					(like as ExprType & object & { head: 'pair' }).supplement,
+				)) ||
+			(inType.head === 'bind' &&
+				bindingsEqual(
+					inType.binding,
+					(like as ExprType & object & { head: 'bind' }).binding,
+				)) ||
+			(inType.head === 'ref' &&
+				bindingsEqual(
+					inType.binding,
+					(like as ExprType & object & { head: 'ref' }).binding,
+				)) ||
+			inType.head === 'dx' ||
+			inType.head === 'act')
+	)
+		return inType.inner;
+
+	const traversable = getBigTraversable(inType);
+	if (traversable !== null) {
+		const result = findCoercedInner(traversable.functor.unwrap(inType), like);
+		return result && traversable.functor.wrap(result, inType);
+	}
+	const functor = getFunctor(inType);
+	return functor && findCoercedInner(functor.unwrap(inType), like);
+}
 
 function coerceInput_(
 	fn: Expr,
@@ -323,21 +368,45 @@ function unwrapAndCoerce(
 		const effect = functor.wrap('()', unwrapped) as ExprType & object;
 		effects.push(effect);
 		const highestPrecedenceSoFar = precedences[precedences.length - 1] ?? '()';
-		const [choice, newHighestPrecedence] = chooseFunctor(
-			highestPrecedenceSoFar,
-			effect,
-		)!;
-		precedences.push(
-			newHighestPrecedence.wrap(
-				'()',
-				choice === 'left' ? highestPrecedenceSoFar : effect,
-			) as ExprType & object,
-		);
+		const { choice, strong } = chooseEffect(highestPrecedenceSoFar, effect)!;
+		if (strong) {
+			const newHighestPrecedence = getFunctor(choice)!;
+			precedences.push(
+				newHighestPrecedence.wrap('()', choice) as ExprType & object,
+			);
+		} else {
+			precedences.push(effect);
+		}
 		unwrapped = functor.unwrap(unwrapped);
 	}
 }
 
-export function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
+function shadowedByLowPrecedence(
+	binding: Binding,
+	leftPrecedence: ExprType & object,
+	rightEffects: (ExprType & object)[],
+	rightPrecedences: (ExprType & object)[],
+): boolean {
+	for (let i = rightEffects.length - 1; i >= 0; i--) {
+		const rightEffect = rightEffects[i];
+		const rightPrecedence = rightPrecedences[i];
+		if (
+			chooseEffect(leftPrecedence, rightPrecedence).choice === rightPrecedence
+		)
+			return false;
+		if (
+			rightEffect.head === 'bind' &&
+			bindingsEqual(binding, rightEffect.binding)
+		)
+			return !rightEffects.some(
+				effect =>
+					effect.head === 'ref' && bindingsEqual(effect.binding, binding),
+			);
+	}
+	return false;
+}
+
+function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 	// Determine what basic mode (>, <, +) the types should ultimately compose by
 	const [innerFn, innerMode] = composeInner(left.type, right.type);
 	const {
@@ -427,6 +496,36 @@ export function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 		} else if (
 			typeof leftEffect !== 'string' &&
 			leftEffect.head === 'bind' &&
+			shadowedByLowPrecedence(
+				leftEffect.binding,
+				leftPrecedence,
+				rightEffects,
+				rightPrecedences,
+			)
+		) {
+			// Drop any bindings on the left that are shadowed by a higher-precedence
+			// binding on the right
+			const {
+				functor: { wrap },
+				extract,
+			} = getComonad(leftEffect)!;
+			leftType = wrap(leftType, leftEffect);
+			leftEffects.pop();
+			leftPrecedences.pop();
+			fn = app(
+				λ(fn.type, closed, (fn, s) =>
+					λ(leftType, s, (l, s) =>
+						λ(rightType, s, (r, s) =>
+							app(app(s.var(fn), extract(s.var(l), s)), s.var(r)),
+						),
+					),
+				),
+				fn,
+			);
+			mode = ['↓L', mode];
+		} else if (
+			typeof leftEffect !== 'string' &&
+			leftEffect.head === 'bind' &&
 			typeof rightEffect !== 'string' &&
 			rightEffect.head === 'ref' &&
 			bindingsEqual(leftEffect.binding, rightEffect.binding)
@@ -460,13 +559,38 @@ export function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 			);
 			mode = ['Z', mode];
 		} else {
-			const comonad = getMatchingComonad(leftEffect, rightEffect);
-			if (comonad !== null) {
-				// Get rid of duplicate comonadic effects
-				const {
-					functor: { wrap },
-					extract,
-				} = comonad;
+			let choice: 'left' | 'right';
+			if (
+				leftEffect.head === 'bind' &&
+				rightEffects.some(
+					effect =>
+						effect.head === 'ref' &&
+						bindingsEqual(leftEffect.binding, effect.binding),
+				)
+			)
+				choice = 'right';
+			else if (
+				rightEffect.head === 'ref' &&
+				leftEffects.some(
+					effect =>
+						effect.head === 'bind' &&
+						bindingsEqual(rightEffect.binding, effect.binding),
+				)
+			)
+				choice = 'left';
+			else
+				choice =
+					chooseEffect(leftPrecedence, rightPrecedence).choice ===
+					leftPrecedence
+						? 'left'
+						: 'right';
+
+			const functor = getFunctor(choice === 'left' ? leftEffect : rightEffect);
+			if (functor === null) throw new UnimplementedComposition();
+			const { wrap, map } = functor;
+
+			if (choice === 'left') {
+				const leftUnwrapped = leftType;
 				leftType = wrap(leftType, leftEffect);
 				leftEffects.pop();
 				leftPrecedences.pop();
@@ -474,57 +598,34 @@ export function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 					λ(fn.type, closed, (fn, s) =>
 						λ(leftType, s, (l, s) =>
 							λ(rightType, s, (r, s) =>
-								app(app(s.var(fn), extract(s.var(l), s)), s.var(r)),
+								map(
+									λ(leftUnwrapped, s, (l_, s) =>
+										app(app(s.var(fn), s.var(l_)), s.var(r)),
+									),
+									s.var(l),
+									s,
+								),
 							),
 						),
 					),
 					fn,
 				);
-				mode = ['↓', mode];
+				mode = ['R', mode];
 			} else {
-				const functor = chooseFunctor(leftPrecedence, rightPrecedence);
-				if (functor === null) throw new UnimplementedComposition();
-				const [choice] = functor;
-				if (choice === 'left') {
-					const { wrap, map } = getFunctor(leftEffect)!;
-					const leftUnwrapped = leftType;
-					leftType = wrap(leftType, leftEffect);
-					leftEffects.pop();
-					leftPrecedences.pop();
-					fn = app(
-						λ(fn.type, closed, (fn, s) =>
-							λ(leftType, s, (l, s) =>
-								λ(rightType, s, (r, s) =>
-									map(
-										λ(leftUnwrapped, s, (l_, s) =>
-											app(app(s.var(fn), s.var(l_)), s.var(r)),
-										),
-										s.var(l),
-										s,
-									),
-								),
+				rightType = wrap(rightType, rightEffect);
+				rightEffects.pop();
+				rightPrecedences.pop();
+				fn = app(
+					λ(fn.type, closed, (fn, s) =>
+						λ(leftType, s, (l, s) =>
+							λ(rightType, s, (r, s) =>
+								map(app(s.var(fn), s.var(l)), s.var(r), s),
 							),
 						),
-						fn,
-					);
-					mode = ['R', mode];
-				} else {
-					const { wrap, map } = getFunctor(rightEffect)!;
-					rightType = wrap(rightType, rightEffect);
-					rightEffects.pop();
-					rightPrecedences.pop();
-					fn = app(
-						λ(fn.type, closed, (fn, s) =>
-							λ(leftType, s, (l, s) =>
-								λ(rightType, s, (r, s) =>
-									map(app(s.var(fn), s.var(l)), s.var(r), s),
-								),
-							),
-						),
-						fn,
-					);
-					mode = ['L', mode];
-				}
+					),
+					fn,
+				);
+				mode = ['L', mode];
 			}
 		}
 
@@ -556,6 +657,52 @@ export function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 					fn,
 				);
 				mode = ['↓', coercedMode];
+			}
+		}
+
+		// Try joining repeated monadic effects
+		const monad = getMonad(out);
+		if (monad !== null) {
+			const {
+				applicative: {
+					functor: { wrap, unwrap },
+				},
+				join,
+			} = monad;
+			let coerced: [Expr, CompositionMode] | null;
+			if (getDistributive(out) === null) {
+				const inner = findCoercedInner(unwrap(out), out);
+				coerced =
+					inner &&
+					coerceInput(
+						λ(wrap(wrap(inner, out), out), closed, (e, s) => join(s.var(e), s)),
+						out,
+						'out',
+						mode,
+					);
+			} else if (getMatchingMonad(out, unwrap(out))) {
+				coerced = [λ(out, closed, (e, s) => join(s.var(e), s)), mode];
+			} else {
+				coerced = null;
+			}
+			if (coerced !== null) {
+				const [join, coercedMode] = coerced;
+				fn = app(
+					app(
+						λ(join.type, closed, (join, s) =>
+							λ(fn.type, s, (fn, s) =>
+								λ(leftType, s, (l, s) =>
+									λ(rightType, s, (r, s) =>
+										app(s.var(join), app(app(s.var(fn), s.var(l)), s.var(r))),
+									),
+								),
+							),
+						),
+						join,
+					),
+					fn,
+				);
+				mode = ['J', coercedMode];
 			}
 		}
 	}

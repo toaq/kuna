@@ -731,11 +731,9 @@ const functorPrecedence = new Map(
 			// Starting with lowest precedence
 			'dx',
 			'act',
-			'int',
 			'pair',
 			'bind',
 			'cont',
-			'ref',
 			'qn',
 			'gen',
 			'pl',
@@ -770,7 +768,7 @@ export function getFunctor(t: ExprType): Functor | null {
 	return null;
 }
 
-function chooseFunctor_(left: ExprType, right: ExprType): ExprType {
+function chooseEffect_(left: ExprType, right: ExprType): ExprType {
 	if (typeof left === 'string' || left.head === 'fn') return right;
 	if (typeof right === 'string' || right.head === 'fn') return left;
 
@@ -806,23 +804,27 @@ function chooseFunctor_(left: ExprType, right: ExprType): ExprType {
 		}
 	}
 
-	return functorPrecedence.get(right.head)! > functorPrecedence.get(left.head)!
+	return functorPrecedence.get(right.head)! >= functorPrecedence.get(left.head)!
 		? right
 		: left;
 }
 
 /**
- * Given two types which may or may not be functors, determine which functor
- * has higher precedence (should scope under the other). Biased toward the
- * right.
+ * Given two types which may or may not be effectful, determine which effect has
+ * higher precedence (should scope under the other). Biased toward the right.
  */
-export function chooseFunctor(
+export function chooseEffect(
 	left: ExprType,
 	right: ExprType,
-): ['left' | 'right', Functor] | null {
-	const choice = chooseFunctor_(left, right);
-	const f = getFunctor(choice);
-	return f && [choice === left ? 'left' : 'right', f];
+): { choice: ExprType; strong: boolean } {
+	if (typeof left === 'string' || left.head === 'fn')
+		return { choice: right, strong: false };
+	if (typeof right === 'string' || right.head === 'fn')
+		return { choice: left, strong: false };
+	if (!functorPrecedence.has(left.head)) return { choice: left, strong: false };
+	if (!functorPrecedence.has(right.head))
+		return { choice: right, strong: false };
+	return { choice: chooseEffect_(left, right), strong: true };
 }
 
 export function getMatchingFunctor(t1: ExprType, t2: ExprType): Functor | null {
