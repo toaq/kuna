@@ -3,7 +3,7 @@ import {
 	type CanvasRenderingContext2D,
 	createCanvas,
 } from 'canvas';
-import type { DTree, Expr } from '../semantics/model';
+import type { DTree, Expr } from '../semantics/types';
 import type { MovementID, Tree } from '../tree';
 import { type DrawableDenotation, type PlacedTree, TreePlacer } from './place';
 import {

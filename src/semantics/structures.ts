@@ -1,19 +1,14 @@
 import { Impossible } from '../core/error';
 import {
 	Act,
-	type AnimacyClass,
 	Bind,
-	type Binding,
 	Cont,
 	Dx,
-	type Expr,
-	type ExprType,
 	Fn,
 	Int,
 	Pair,
 	Pl,
 	Ref,
-	type Scope,
 	among,
 	and,
 	andMap,
@@ -52,6 +47,7 @@ import {
 	λ,
 } from './model';
 import { typeToPlainText } from './render';
+import type { AnimacyClass, Binding, Expr, ExprType, Scope } from './types';
 
 export interface Semigroup {
 	/**

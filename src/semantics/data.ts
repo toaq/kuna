@@ -1,11 +1,8 @@
 import { Impossible } from '../core/error';
 import {
 	Act,
-	type AnimacyClass,
 	Cont,
 	Dx,
-	type Expr,
-	type ExprType,
 	Fn,
 	Int,
 	Pl,
@@ -32,6 +29,7 @@ import {
 } from './model';
 import { typeToPlainText } from './render';
 import { getFunctor } from './structures';
+import type { AnimacyClass, Expr, ExprType } from './types';
 
 export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))), closed);
 

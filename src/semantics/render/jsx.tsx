@@ -9,7 +9,7 @@ import { Tooltip } from 'react-tooltip';
 import { Impossible } from '../../core/error';
 import { bare } from '../../morphology/tokenize';
 import { Tone, inTone } from '../../morphology/tone';
-import type { AnimacyClass, Binding, ExprType } from '../model';
+import type { AnimacyClass, Binding, ExprType } from '../types';
 import {
 	type Associativity,
 	type Names,

@@ -22,7 +22,7 @@ import { trimTree } from '../tree/trim';
 import { keyFor } from '../core/misc';
 import { GfTarget, GfTranslator } from '../gf';
 import { ToaqTokenizer } from '../morphology/tokenize';
-import type { Expr } from '../semantics/model';
+import type { Expr } from '../semantics/types';
 import type { Tree } from '../tree';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
 import { themes } from '../tree/theme';

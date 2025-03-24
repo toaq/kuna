@@ -1,7 +1,5 @@
 import _ from 'lodash';
 import {
-	type Expr,
-	type ExprType,
 	among,
 	andMap,
 	andThen,
@@ -19,6 +17,7 @@ import {
 	unqn,
 	λ,
 } from './model';
+import type { Expr, ExprType } from './types';
 
 function mapVariables(
 	e: Expr,

@@ -1,7 +1,7 @@
 import { Impossible, Unimplemented } from '../../core/error';
 import { bare } from '../../morphology/tokenize';
 import { Tone, inTone } from '../../morphology/tone';
-import type { AnimacyClass, Binding, Expr, ExprType } from '../model';
+import type { AnimacyClass, Binding, Expr, ExprType } from '../types';
 import {
 	type Associativity,
 	type Names,

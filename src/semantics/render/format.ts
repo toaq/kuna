@@ -1,4 +1,4 @@
-import type { ExprType } from '../model';
+import type { ExprType } from '../types';
 
 export type Associativity = 'left' | 'right' | 'any' | 'none';
 

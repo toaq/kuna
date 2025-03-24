@@ -1,8 +1,6 @@
 import { Unimplemented } from '../core/error';
 import {
 	Bind,
-	type Expr,
-	type ExprType,
 	Int,
 	Pl,
 	Ref,
@@ -34,27 +32,7 @@ import {
 	idFunctor,
 	unwrapEffects,
 } from './structures';
-
-export type CompositionMode =
-	| '>' // Functional application
-	| '<' // Reverse functional application
-	| '+' // Semigroup combination
-	| ['L', CompositionMode] // Lift left into functor
-	| ['R', CompositionMode] // Lift right into functor
-	| ['A', CompositionMode] // Sequence effects via applicative functor
-	| ['←L', CompositionMode] // Pull distributive functor out of functor on the left
-	| ['←R', CompositionMode] // Pull distributive functor out of functor on the right
-	| ['←', CompositionMode] // Pull distributive functor out of functor
-	| ['→L', CompositionMode] // Push traversable functor into applicative on the left
-	| ['→R', CompositionMode] // Push traversable functor into applicative on the right
-	| ['→', CompositionMode] // Push traversable functor into applicative
-	| ['↓L', CompositionMode] // Extract from effect on the left
-	| ['↓R', CompositionMode] // Extract from effect on the right
-	| ['↓', CompositionMode] // Extract from effect
-	| ['JL', CompositionMode] // Join monads on the left
-	| ['JR', CompositionMode] // Join monads on the right
-	| ['J', CompositionMode] // Join monads
-	| ['Z', CompositionMode]; // Resolve binding relationship
+import type { CompositionMode, Expr, ExprType } from './types';
 
 function coerceInput_(
 	fn: Expr,

@@ -26,12 +26,9 @@ import {
 	speechActParticles,
 } from './data';
 import {
-	type AnimacyClass,
 	Bind,
 	Cont,
-	type DTree,
 	Dx,
-	type Expr,
 	Fn,
 	Gen,
 	Int,
@@ -51,6 +48,7 @@ import {
 import { reduceExpr } from './reduce';
 import { typeToPlainText } from './render';
 import { findInner, getFunctor, unwrapEffects } from './structures';
+import type { AnimacyClass, DTree, Expr } from './types';
 
 function findVp(tree: StrictTree): StrictTree | null {
 	if (tree.label === 'VP' || tree.label === "EvA'") {

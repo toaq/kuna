@@ -1,6 +1,6 @@
 import type { CanvasRenderingContext2D } from 'canvas';
-import type { Expr } from '../semantics/model';
 import { toLatex, toPlainText } from '../semantics/render';
+import type { Expr } from '../semantics/types';
 
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';

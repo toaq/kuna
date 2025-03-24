@@ -1,6 +1,5 @@
-import type { CompositionMode } from '../semantics/compose';
-import type { DTree, Expr } from '../semantics/model';
 import { typeToPlainText } from '../semantics/render';
+import type { CompositionMode, DTree, Expr } from '../semantics/types';
 import { treeChildren } from './functions';
 import type { MovementID, Tree } from './types';
 

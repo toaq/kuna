@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Unimplemented } from '../../core/error';
-import type { Expr, ExprType } from '../model';
+import type { Expr, ExprType } from '../types';
 import { Jsx, JsxType } from './jsx';
 import { toRichExpr } from './model';
 export { toPlainText, typeToPlainText, typesToPlainText } from './plain';

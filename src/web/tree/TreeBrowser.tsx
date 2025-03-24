@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { keyFor } from '../../core/misc';
-import type { DTree, Expr } from '../../semantics/model';
 import { toJsx } from '../../semantics/render';
+import type { DTree, Expr } from '../../semantics/types';
 import type { Tree } from '../../tree';
 import { type PlacedTree, TreePlacer, boundingRect } from '../../tree/place';
 import {

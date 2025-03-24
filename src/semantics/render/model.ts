@@ -1,4 +1,4 @@
-import type { Expr, ExprType } from '../model';
+import type { Expr, ExprType } from '../types';
 
 interface ExprBase {
 	/**

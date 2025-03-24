@@ -1,5 +1,5 @@
-import type { DTree } from '../semantics/model';
 import { toLatex as exprToLatex, typeToLatex } from '../semantics/render';
+import type { DTree } from '../semantics/types';
 import type { Tree } from '../tree';
 
 export function latexEscape(text: string): string {
