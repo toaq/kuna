@@ -2,7 +2,7 @@ import { dictionary } from '../morphology/dictionary';
 import { toadua } from '../morphology/toadua';
 import { type ToaqToken, bare } from '../morphology/tokenize';
 import { tone } from '../morphology/tone';
-import { describeSerial } from '../syntax/serial';
+import { describeSerial } from '../syntax/frame';
 import {
 	catSource,
 	endsInClauseBoundary,

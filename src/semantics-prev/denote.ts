@@ -7,7 +7,7 @@ import {
 import { splitNonEmpty } from '../core/misc';
 import type { VerbEntry } from '../morphology/dictionary';
 import { Tone, inTone } from '../morphology/tone';
-import { getFrame } from '../syntax/serial';
+import { getFrame } from '../syntax/frame';
 import {
 	type Branch,
 	type CovertWord,

@@ -1,7 +1,8 @@
 import { expect, test } from 'vitest';
 import { parse } from '../modes/parse';
 import { assertRose, findSubtree } from '../tree';
-import { describeSerial, segmentSerial } from './serial';
+import { describeSerial } from './frame';
+import { segmentSerial } from './serial';
 
 function parseAndSegmentSerial(text: string): string[][] {
 	const tree = parse(text)[0];

@@ -2,7 +2,8 @@ import { Impossible, Unimplemented, Unrecognized } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
 import type { VerbEntry } from '../morphology/dictionary';
 import { Tone, inTone } from '../morphology/tone';
-import { getDistribution, getFrame } from '../syntax/serial';
+import { getFrame } from '../syntax/frame';
+import { getDistribution } from '../syntax/serial';
 import {
 	type CovertWord,
 	type Leaf,

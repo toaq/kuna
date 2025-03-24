@@ -10,7 +10,7 @@ import { type Tree, circled, effectiveLabel, findSubtree } from '../tree';
 import './Boxes.css';
 import { keyFor, splitNonEmpty } from '../core/misc';
 import { repairTones } from '../morphology/tone';
-import { describeSerial, getFrame } from '../syntax/serial';
+import { describeSerial, getFrame } from '../syntax/frame';
 
 interface BoxesContext {
 	cpIndices: Map<Tree, number>;
