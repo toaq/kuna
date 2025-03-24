@@ -1,4 +1,5 @@
-import { type Tree, isBoringNull } from '.';
+import { isBoringNull } from './functions';
+import type { Tree } from './types';
 
 /**
  * Trim null leaves from a tree and coalesce the labels. For example,

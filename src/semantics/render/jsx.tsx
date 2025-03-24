@@ -6,7 +6,6 @@ import type {
 	ReactNode,
 } from 'react';
 import { Tooltip } from 'react-tooltip';
-import { typeToPlainText } from '.';
 import { Impossible } from '../../core/error';
 import { bare, inTone } from '../../morphology/tokenize';
 import { Tone } from '../../morphology/tone';
@@ -24,6 +23,7 @@ import {
 	wrap,
 } from './format';
 import type { RichExpr } from './model';
+import { typeToPlainText } from './plain';
 
 // @types/react does not yet support MathML. The following type declarations are
 // borrowed from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/71187.
