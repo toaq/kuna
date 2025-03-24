@@ -3,11 +3,18 @@ import { Tooltip } from 'react-tooltip';
 import { keyFor } from '../../core/misc';
 import { toJsx } from '../../semantics/render';
 import type { DTree, Expr } from '../../semantics/types';
-import type { Tree } from '../../tree';
-import { type PlacedTree, TreePlacer, boundingRect } from '../../tree/place';
+import type { MovementID, Tree } from '../../tree';
+import {
+	type PlacedTree,
+	TreePlacer,
+	boundingRect,
+	movementPoints,
+} from '../../tree/place';
 import {
 	type RichSceneLabel,
 	type RichSceneLabelPiece,
+	type Scene,
+	SceneTextStyle,
 	sceneLabelToString,
 	toScene,
 } from '../../tree/scene';
@@ -59,6 +66,12 @@ export function Node(props: {
 }) {
 	const { tree, options } = props;
 	const key = keyFor(tree);
+	const color =
+		tree.textStyle === SceneTextStyle.Trace
+			? options.theme.traceColor
+			: tree.textStyle === SceneTextStyle.MovedHere
+				? options.theme.movedWordColor
+				: options.theme.wordColor;
 
 	return (
 		<div className="tree-node">
@@ -67,7 +80,16 @@ export function Node(props: {
 					<TreeLabel label={tree.label} />
 				</div>
 				{tree.text && (
-					<div className="tree-word" style={{ color: options.theme.wordColor }}>
+					<div
+						className="tree-word"
+						style={{
+							color,
+							textDecoration:
+								tree.textStyle === SceneTextStyle.Trace
+									? 'line-through'
+									: undefined,
+						}}
+					>
 						{tree.text}
 					</div>
 				)}
@@ -187,13 +209,61 @@ export function Subtree(props: {
 
 type Ctx = { measureText: (text: string, font: string) => { width: number } };
 
+function Arrows(props: {
+	theme: Theme;
+	scene: Scene<Expr, undefined>;
+	points: Map<MovementID, { x: number; width: number; layer: number }>;
+	rect: { left: number; right: number; layers: number };
+	layerHeight: number;
+}) {
+	const { rect, layerHeight, scene, points, theme } = props;
+	const x0 = -rect.left;
+
+	return (
+		<svg
+			width={rect.right - rect.left}
+			height={rect.layers * layerHeight}
+			style={{ pointerEvents: 'none', position: 'absolute', inset: 0 }}
+		>
+			<title>Movement arrows</title>
+			{scene.arrows.flatMap(a => {
+				const source = points.get(a.from);
+				const target = points.get(a.to);
+				if (!source || !target) return undefined;
+				const x1 = x0 + source.x;
+				const y1 = source.layer * layerHeight + 35;
+				const x2 = x0 + target.x;
+				const y2 = target.layer * layerHeight + 40;
+				const tip = 5;
+
+				return [
+					<path
+						stroke={theme.movedWordColor}
+						fill="none"
+						key={`${a.from}_${a.to}`}
+						d={`M${x1} ${y1} C${(x1 + x2) / 2} ${y1 + 25}, ${x2} ${y2 + 50}, ${x2} ${y2}`}
+					/>,
+					<path
+						stroke={theme.movedWordColor}
+						fill="none"
+						key={`${a.from}_${a.to}_tip`}
+						d={`M${x2 - tip} ${y2 + tip} L${x2} ${y2} l${tip} ${tip}`}
+					/>,
+				];
+			})}
+		</svg>
+	);
+}
+
 export function TreeBrowser(props: {
 	tree: Tree | DTree;
 	compactDenotations: boolean;
+	showMovement: boolean;
 	theme: Theme;
 	truncateLabels: string[];
 }) {
-	const { tree, compactDenotations, theme, truncateLabels } = props;
+	const { tree, compactDenotations, showMovement, theme, truncateLabels } =
+		props;
 
 	const canvas = document.createElement('canvas');
 	const canvasCtx = canvas.getContext('2d');
@@ -213,10 +283,12 @@ export function TreeBrowser(props: {
 		denotation: expr,
 	});
 	const placer = new TreePlacer(ctx, denotationRenderer, { theme });
-	const scene = toScene(tree, false, truncateLabels);
+	const scene = toScene(tree, showMovement, truncateLabels);
 	const placed = placer.placeScene(scene);
 	const layerHeight = 'denotation' in tree ? 70 : 50;
 	const rect = boundingRect(placed);
+	const points = movementPoints(placed);
+	const x0 = -rect.left;
 
 	return (
 		<div style={{ background: theme.backgroundColor }}>
@@ -229,10 +301,17 @@ export function TreeBrowser(props: {
 				}}
 			>
 				<Subtree
-					left={-rect.left - placed.placement.width / 2}
+					left={x0 - placed.placement.width / 2}
 					top={0}
 					tree={placed}
 					options={{ compactDenotations, theme, truncateLabels, layerHeight }}
+				/>
+				<Arrows
+					theme={theme}
+					scene={scene}
+					points={points}
+					rect={rect}
+					layerHeight={layerHeight}
 				/>
 			</div>
 		</div>

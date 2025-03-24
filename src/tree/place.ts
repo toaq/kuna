@@ -17,6 +17,7 @@ import type {
 	Unplaced,
 } from './scene';
 import { type Theme, themes } from './theme';
+import type { MovementID } from './types';
 
 const adaptor = liteAdaptor();
 RegisterHTMLHandler(adaptor);
@@ -282,6 +283,8 @@ export class TreePlacer<C extends DrawContext, D> {
 			text,
 			gloss,
 			denotation,
+			id: node.id,
+			textStyle: node.textStyle,
 			source: node.source,
 			roof: node.roof,
 		};
@@ -291,4 +294,23 @@ export class TreePlacer<C extends DrawContext, D> {
 	public placeScene(scene: Scene<D, Unplaced>): PlacedTree<C> {
 		return this.placeSceneNode(scene.root).tree;
 	}
+}
+
+export function movementPoints<C extends DrawContext>(
+	placed: PlacedTree<C>,
+): Map<MovementID, { x: number; width: number; layer: number }> {
+	const points = new Map();
+	function walk(tree: PlacedTree<C>, x: number, layer: number): void {
+		console.log(tree);
+		if (tree.id) {
+			points.set(tree.id, { x, width: tree.placement.width, layer });
+		}
+		const n = tree.children.length;
+		for (let i = 0; i < n; i++) {
+			const dx = (i - (n - 1) / 2) * tree.placement.distanceBetweenChildren;
+			walk(tree.children[i], x + dx, layer + 1);
+		}
+	}
+	walk(placed, 0, 0);
+	return points;
 }

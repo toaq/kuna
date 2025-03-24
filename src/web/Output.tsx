@@ -146,6 +146,7 @@ export function Output(props: OutputProps) {
 						tree={tree}
 						key={new Date().toString()}
 						compactDenotations={mode === 'semantics-tree-compact'}
+						showMovement={showMovement}
 						theme={themes[themeName]}
 						truncateLabels={roofLabels.trim().split(/[\s,]+/)}
 					/>
