@@ -379,15 +379,16 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 
 enum Precedence {
 	Do = 0,
-	Quantify = 1,
-	And = 2,
-	Implies = 3,
-	Equals = 4,
-	Among = 5,
-	Apply = 6,
-	Prefix = 7,
-	Subscript = 8,
-	Bracket = 9,
+	Assign = 1,
+	Quantify = 2,
+	And = 3,
+	Implies = 4,
+	Equals = 5,
+	Among = 6,
+	Apply = 7,
+	Prefix = 8,
+	Subscript = 9,
+	Bracket = 10,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -501,15 +502,15 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 				const newNames = addName(e.body.scope[0], names);
 				return join(Precedence.Quantify, 'any', [
 					token(
-						<>
-							<mo lspace="0" rspace="0">
-								{quantifiers[e.q]}
-							</mo>
-							{this.name(0, newNames)}
-							<mo lspace="0" rspace="0">
-								&nbsp;
-							</mo>
-						</>,
+						<mo lspace="0" rspace="0">
+							{quantifiers[e.q]}
+						</mo>,
+					),
+					this.go(e.parameter, newNames),
+					token(
+						<mo lspace="0" rspace="0">
+							&nbsp;
+						</mo>,
 					),
 					this.go(e.body, newNames),
 				]);
@@ -562,14 +563,14 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 							null,
 							inner => (
 								<mtr>
-									<mtd>
-										{this.name(0, newNames)}
-										<mo>⇐</mo>
-										{inner}
-									</mtd>
+									<mtd>{inner}</mtd>
 								</mtr>
 							),
-							this.go(e.source, names),
+							join(Precedence.Assign, 'none', [
+								this.go(e.left, newNames),
+								token(<mo>⇐</mo>),
+								this.go(e.right, names),
+							]),
 						),
 						wrap(
 							null,

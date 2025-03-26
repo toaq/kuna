@@ -113,14 +113,15 @@ export class PlainTextType extends Renderer<ExprType, string> {
 
 enum Precedence {
 	Do = 0,
-	Quantify = 1,
-	And = 2,
-	Implies = 3,
-	Equals = 4,
-	Among = 5,
-	Apply = 6,
-	Prefix = 7,
-	Bracket = 8,
+	Assign = 1,
+	Quantify = 2,
+	And = 3,
+	Implies = 4,
+	Equals = 5,
+	Among = 6,
+	Apply = 7,
+	Prefix = 8,
+	Bracket = 9,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -170,7 +171,9 @@ export class PlainText extends Renderer<RichExpr, string> {
 			case 'quantify': {
 				const newNames = addName(e.body.scope[0], names);
 				return join(Precedence.Quantify, 'any', [
-					token(`${quantifiers[e.q]}${this.name(0, newNames)} `),
+					token(quantifiers[e.q]),
+					this.go(e.parameter, newNames),
+					token(' '),
 					this.go(e.body, newNames),
 				]);
 			}
@@ -204,8 +207,11 @@ export class PlainText extends Renderer<RichExpr, string> {
 			case 'do': {
 				const newNames = addName(e.result.scope[0], names);
 				return join(Precedence.Do, 'right', [
-					token(`${this.name(0, newNames)} ⇐ `),
-					this.go(e.source, names),
+					join(Precedence.Assign, 'none', [
+						this.go(e.left, newNames),
+						token(' ⇐ '),
+						this.go(e.right, names),
+					]),
 					token(e.pure ? '; ' : ', '),
 					this.go(e.result, newNames),
 				]);

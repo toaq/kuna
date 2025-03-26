@@ -22,6 +22,7 @@ interface Variable extends ExprBase {
 interface Quantify extends ExprBase {
 	head: 'quantify';
 	q: 'lambda' | 'some' | 'every';
+	parameter: RichExpr;
 	body: RichExpr;
 }
 
@@ -52,7 +53,8 @@ interface Subscript extends ExprBase {
 
 interface Do extends ExprBase {
 	head: 'do';
-	source: RichExpr;
+	left: RichExpr;
+	right: RichExpr;
 	result: RichExpr;
 	pure: boolean;
 }
@@ -95,7 +97,18 @@ export function toRichExpr(e: Expr): RichExpr {
 		case 'constant':
 			return e;
 		case 'lambda':
-			return { ...e, head: 'quantify', q: 'lambda', body: toRichExpr(e.body) };
+			return {
+				...e,
+				head: 'quantify',
+				q: 'lambda',
+				parameter: {
+					type: e.body.scope[0],
+					scope: e.body.scope,
+					head: 'variable',
+					index: 0,
+				},
+				body: toRichExpr(e.body),
+			};
 		case 'apply':
 			// Hide int/cont/uncont/ref/unref applications
 			if (
@@ -119,6 +132,12 @@ export function toRichExpr(e: Expr): RichExpr {
 					scope: e.scope,
 					head: 'quantify',
 					q: e.fn.name,
+					parameter: {
+						type: e.arg.body.scope[0],
+						scope: e.arg.body.scope,
+						head: 'variable',
+						index: 0,
+					},
 					body: toRichExpr(e.arg.body),
 				};
 
@@ -175,7 +194,13 @@ export function toRichExpr(e: Expr): RichExpr {
 					type: e.type,
 					scope: e.scope,
 					head: 'do',
-					source: toRichExpr(e.fn.arg),
+					left: {
+						type: e.arg.body.scope[0],
+						scope: e.arg.body.scope,
+						head: 'variable',
+						index: 0,
+					},
+					right: toRichExpr(e.fn.arg),
 					result: toRichExpr(e.arg.body),
 					pure: e.fn.fn.name === 'and_map',
 				};
