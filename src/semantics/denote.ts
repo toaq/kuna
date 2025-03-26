@@ -57,7 +57,7 @@ function findVp(tree: StrictTree): StrictTree | null {
 	if ('word' in tree) {
 		return null;
 	}
-	return findVp(tree.right) ?? findVp(tree.left);
+	return findVp(tree.left) ?? findVp(tree.right);
 }
 
 function getVerbWord(vp: StrictTree): Word | CovertWord {
@@ -298,7 +298,13 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 	if (leaf.label === 'Crel') {
 		if (leaf.word.covert) return covertCrel;
-		throw new Unimplemented('Overt Crel');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`Crel: ${leaf.word.text}`);
+		const toaq = leaf.word.entry.toaq;
+
+		const data = complementizers.get(toaq);
+		if (data === undefined) throw new Unrecognized(`C: ${toaq}`);
+		return data;
 	}
 
 	if (leaf.label === 'C') {
@@ -309,9 +315,9 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		else toaq = leaf.word.entry.toaq;
 		if (toaq === 'ꝡa') return declarativeComplementizer;
 
-		const type = complementizers.get(toaq);
-		if (type === undefined) throw new Unrecognized(`C: ${toaq}`);
-		return lex(toaq, type, closed);
+		const data = complementizers.get(toaq);
+		if (data === undefined) throw new Unrecognized(`C: ${toaq}`);
+		return data;
 	}
 
 	if (leaf.label === 'SA') {
@@ -337,6 +343,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`&: ${leaf.word.text}`);
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+
 		// TODO: Generalize to more than just verbal arguments
 		return lex(
 			toaq,
@@ -363,6 +370,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		// TODO: Generalize to more than just verbal arguments
 		return lex(
 			leaf.word.entry.toaq,
+
 			Fn(
 				Int(Pl('e')),
 				Cont(Bind({ type: 'head', head: leaf.word.entry.toaq }, Int(Pl('e')))),

@@ -719,9 +719,43 @@ export function getMatchingSemigroup(
 	left: ExprType,
 	right: ExprType,
 ): Semigroup | null {
-	if (left !== right) return null;
-	if (left === 't') return tSemigroup;
-	if (left === '()') return unitSemigroup;
+	if (typeof left === 'string') {
+		if (left !== right) return null;
+		// Trivial semigroups
+		if (left === 't') return tSemigroup;
+		if (left === '()') return unitSemigroup;
+	} else if (
+		left.head === 'fn' &&
+		typeof right !== 'string' &&
+		right.head === 'fn' &&
+		typesCompatible(left.domain, right.domain)
+	) {
+		const semigroup = getMatchingSemigroup(left.range, right.range);
+		if (semigroup !== null) {
+			// Predicate modification
+			const { plus } = semigroup;
+			const domain = subtype(left.domain, right.domain)
+				? left.domain
+				: right.domain;
+			return {
+				plus: app(
+					λ(plus.type, closed, (plus, s) =>
+						λ(left, s, (l, s) =>
+							λ(right, s, (r, s) =>
+								λ(domain, s, (x, s) =>
+									app(
+										app(s.var(plus), app(s.var(l), s.var(x))),
+										app(s.var(r), s.var(x)),
+									),
+								),
+							),
+						),
+					),
+					plus,
+				),
+			};
+		}
+	}
 	return null;
 }
 

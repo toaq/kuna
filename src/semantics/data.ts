@@ -24,6 +24,7 @@ import {
 	qn,
 	ref,
 	some,
+	unint,
 	unref,
 	λ,
 } from './model';
@@ -91,6 +92,13 @@ export const pronouns = new Map<string, Expr>([
 				),
 			] as const,
 	),
+	[
+		'hóa',
+		ref(
+			{ type: 'resumptive' },
+			λ(Int(Pl('e')), closed, (x, s) => s.var(x)),
+		),
+	],
 ]);
 
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
@@ -174,11 +182,23 @@ export const covertCrel = λ(
 		λ(Int(Pl('e')), s, (arg, s) => app(unref(s.var(predicate)), s.var(arg))),
 );
 
-export const complementizers = new Map<string, ExprType>([
-	['ꝡa', Fn(Int('t'), Int('t'))],
-	['ma', Fn(Int('t'), Int(Qn(Fn('t', 't'), 't')))],
-	['ꝡä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't')))],
-	['mä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't')))],
+export const complementizers = new Map<string, Expr>([
+	['ꝡa', lex('ꝡa', Fn(Int('t'), Int('t')), closed)],
+	['ma', lex('ma', Fn(Int('t'), Int(Qn(Fn('t', 't'), 't'))), closed)],
+	['ꝡä', lex('ꝡä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't'))), closed)],
+	['mä', lex('mä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't'))), closed)],
+	[
+		'ꝡë',
+		λ(Ref({ type: 'resumptive' }, Int('t')), closed, (p, s) =>
+			int(
+				λ('s', s, (w, s) =>
+					λ(Int(Pl('e')), s, (x, s) =>
+						app(unint(app(unref(s.var(p)), s.var(x))), s.var(w)),
+					),
+				),
+			),
+		),
+	],
 ]);
 
 export const declarativeComplementizer = λ(Int('t'), closed, (t, s) =>
