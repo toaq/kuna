@@ -35,13 +35,11 @@ import {
 } from './structures';
 import type { Binding, CompositionMode, Expr, ExprType } from './types';
 
-/**
- * Given a type and a type constructor to search for, find the inner type given
- * by pushing all traversables into the first occurrence of that type
- * constructor and unwrapping the type constructor. The idea is that this
- * represents the inner type after coercion.
- */
-function findCoercedInner(inType: ExprType, like: ExprType): ExprType | null {
+function coerceType_(
+	inType: ExprType,
+	like: ExprType,
+	cont: (inner: ExprType) => ExprType,
+): ExprType | null {
 	if (typeof inType === 'string' || typeof like === 'string') return null;
 	if (
 		inType.head === like.head &&
@@ -68,15 +66,26 @@ function findCoercedInner(inType: ExprType, like: ExprType): ExprType | null {
 			inType.head === 'dx' ||
 			inType.head === 'act')
 	)
-		return inType.inner;
+		return { ...inType, inner: cont(inType.inner) };
 
 	const traversable = getBigTraversable(inType);
 	if (traversable !== null) {
-		const result = findCoercedInner(traversable.functor.unwrap(inType), like);
-		return result && traversable.functor.wrap(result, inType);
+		return coerceType_(traversable.functor.unwrap(inType), like, inner =>
+			traversable.functor.wrap(cont(inner), inType),
+		);
 	}
 	const functor = getFunctor(inType);
-	return functor && findCoercedInner(functor.unwrap(inType), like);
+	return functor && coerceType_(functor.unwrap(inType), like, cont);
+}
+
+/**
+ * Given a type and a type constructor to search for, find the inner type given
+ * by unwrapping all unrelated effects and pushing all traversables into the
+ * first occurrence of that type constructor. The idea is that this represents
+ * the type after coercion.
+ */
+function coerceType(inType: ExprType, like: ExprType): ExprType | null {
+	return coerceType_(inType, like, inner => inner);
 }
 
 function coerceInput_(
@@ -406,6 +415,95 @@ function shadowedByLowPrecedence(
 	return false;
 }
 
+function simplifyOutput(
+	fn: Expr,
+	mode: CompositionMode,
+): [Expr, CompositionMode] | null {
+	assertFn(fn.type);
+	assertFn(fn.type.range);
+	const {
+		domain: left,
+		range: { domain: right, range: out },
+	} = fn.type;
+
+	// Try running the output effect
+	const runner = getRunner(out);
+	if (runner !== null) {
+		const coerced = coerceInput(runner.run, out, 'out', mode);
+		if (coerced !== null) {
+			const [run, coercedMode] = coerced;
+			return [
+				app(
+					app(
+						λ(run.type, closed, (run, s) =>
+							λ(fn.type, s, (fn, s) =>
+								λ(left, s, (l, s) =>
+									λ(right, s, (r, s) =>
+										app(s.var(run), app(app(s.var(fn), s.var(l)), s.var(r))),
+									),
+								),
+							),
+						),
+						run,
+					),
+					fn,
+				),
+				['↓', coercedMode],
+			];
+		}
+	}
+
+	// Try joining repeated monadic effects
+	const monad = getMonad(out);
+	if (monad !== null) {
+		const {
+			applicative: {
+				functor: { wrap, unwrap },
+			},
+			join,
+		} = monad;
+		let coerced: [Expr, CompositionMode] | null;
+		if (getDistributive(out) === null) {
+			const inner = coerceType(unwrap(out), out);
+			coerced =
+				inner &&
+				coerceInput(
+					λ(wrap(inner, out), closed, (e, s) => join(s.var(e), s)),
+					out,
+					'out',
+					mode,
+				);
+		} else if (getMatchingMonad(out, unwrap(out))) {
+			coerced = [λ(out, closed, (e, s) => join(s.var(e), s)), mode];
+		} else {
+			coerced = null;
+		}
+		if (coerced !== null) {
+			const [join, coercedMode] = coerced;
+			return [
+				app(
+					app(
+						λ(join.type, closed, (join, s) =>
+							λ(fn.type, s, (fn, s) =>
+								λ(left, s, (l, s) =>
+									λ(right, s, (r, s) =>
+										app(s.var(join), app(app(s.var(fn), s.var(l)), s.var(r))),
+									),
+								),
+							),
+						),
+						join,
+					),
+					fn,
+				),
+				['J', coercedMode],
+			];
+		}
+	}
+
+	return null;
+}
+
 function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 	// Determine what basic mode (>, <, +) the types should ultimately compose by
 	const [innerFn, innerMode] = composeInner(left.type, right.type);
@@ -630,80 +728,10 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 		}
 
 		// Check for possible ways to simplify the output type
-		const out = (
-			(fn.type as ExprType & object & { head: 'fn' }).range as ExprType &
-				object & { head: 'fn' }
-		).range;
-
-		// Try running the output effect
-		const runner = getRunner(out);
-		if (runner !== null) {
-			const coerced = coerceInput(runner.run, out, 'out', mode);
-			if (coerced !== null) {
-				const [run, coercedMode] = coerced;
-				fn = app(
-					app(
-						λ(run.type, closed, (run, s) =>
-							λ(fn.type, s, (fn, s) =>
-								λ(leftType, s, (l, s) =>
-									λ(rightType, s, (r, s) =>
-										app(s.var(run), app(app(s.var(fn), s.var(l)), s.var(r))),
-									),
-								),
-							),
-						),
-						run,
-					),
-					fn,
-				);
-				mode = ['↓', coercedMode];
-			}
-		}
-
-		// Try joining repeated monadic effects
-		const monad = getMonad(out);
-		if (monad !== null) {
-			const {
-				applicative: {
-					functor: { wrap, unwrap },
-				},
-				join,
-			} = monad;
-			let coerced: [Expr, CompositionMode] | null;
-			if (getDistributive(out) === null) {
-				const inner = findCoercedInner(unwrap(out), out);
-				coerced =
-					inner &&
-					coerceInput(
-						λ(wrap(wrap(inner, out), out), closed, (e, s) => join(s.var(e), s)),
-						out,
-						'out',
-						mode,
-					);
-			} else if (getMatchingMonad(out, unwrap(out))) {
-				coerced = [λ(out, closed, (e, s) => join(s.var(e), s)), mode];
-			} else {
-				coerced = null;
-			}
-			if (coerced !== null) {
-				const [join, coercedMode] = coerced;
-				fn = app(
-					app(
-						λ(join.type, closed, (join, s) =>
-							λ(fn.type, s, (fn, s) =>
-								λ(leftType, s, (l, s) =>
-									λ(rightType, s, (r, s) =>
-										app(s.var(join), app(app(s.var(fn), s.var(l)), s.var(r))),
-									),
-								),
-							),
-						),
-						join,
-					),
-					fn,
-				);
-				mode = ['J', coercedMode];
-			}
+		while (true) {
+			const simplified = simplifyOutput(fn, mode);
+			if (simplified === null) break;
+			[fn, mode] = simplified;
 		}
 	}
 
