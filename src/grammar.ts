@@ -228,7 +228,7 @@ const grammar: Grammar = {
     {"name": "CPargcon", "symbols": ["CPargfoc", "Conjunction", "CPargcon"], "postprocess": makeConn},
     {"name": "CPargfoc", "symbols": ["CParg"], "postprocess": id},
     {"name": "CPargfoc", "symbols": ["Focus", "CParg"], "postprocess": makeBranch('FocusP')},
-    {"name": "CParg", "symbols": ["CPsub"], "postprocess": makeBranchCovertLeft('DP', 'D')},
+    {"name": "CParg", "symbols": ["CPsub"], "postprocess": makeBranchCovertLeft('𝘯P', '𝘯')},
     {"name": "CPrelcon", "symbols": ["CPrel"], "postprocess": id},
     {"name": "CPrelcon", "symbols": ["CPrel", "Conjunction", "CPrelcon"], "postprocess": makeConn},
     {"name": "Sigmacon", "symbols": ["Sigma"], "postprocess": id},

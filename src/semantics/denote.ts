@@ -51,12 +51,9 @@ import { findInner, getFunctor, unwrapEffects } from './structures';
 import type { AnimacyClass, DTree, Expr, ExprType } from './types';
 
 function findVp(tree: StrictTree): StrictTree | null {
-	if (tree.label === 'VP' || tree.label === "EvA'") {
+	if (tree.label === 'VP' || tree.label === 'CP' || tree.label === "EvA'")
 		return tree;
-	}
-	if ('word' in tree) {
-		return null;
-	}
+	if ('word' in tree) return null;
 	return findVp(tree.left) ?? findVp(tree.right);
 }
 
@@ -68,6 +65,7 @@ function getVerbWord(vp: StrictTree): Word | CovertWord {
 	const verb = vp.left;
 	switch (verb.label) {
 		case 'V':
+		case 'C':
 		case 'EvA':
 			if (!('word' in verb)) throw new Unrecognized(`${verb.label} shape`);
 			return verb.word;
@@ -207,9 +205,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === 'D') {
-		if (leaf.word.covert)
-			// TODO: This shouldn't be a random lexical entry
-			return lex('ló', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed);
+		if (leaf.word.covert) throw new Impossible('Covert D');
 		if (cCommand === null)
 			throw new Impossible('Cannot denote a D in isolation');
 		if (leaf.word.entry === undefined)
@@ -281,7 +277,14 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		const vp = findVp(cCommand);
 		if (vp === null) throw new Impossible("Can't find the VP for this 𝘯");
 		const verb = getVerbWord(vp);
-		const animacy = verb.covert ? null : animacyClass(verb.entry as VerbEntry);
+
+		const animacy =
+			!verb.covert &&
+			verb.entry !== undefined &&
+			'pronominal_class' in verb.entry
+				? animacyClass(verb.entry)
+				: null;
+
 		return λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
 			gen(
 				s.var(predicate),
@@ -293,9 +296,11 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 							s.var(x),
 							result,
 						);
-					if (!verb.covert)
+					if (!verb.covert && verb.entry !== undefined)
 						result = bind(
-							{ type: 'name', verb: (verb.entry as VerbEntry).toaq },
+							'pronominal_class' in verb.entry
+								? { type: 'name', verb: verb.entry.toaq }
+								: { type: 'head', head: verb.entry.toaq },
 							s.var(x),
 							result,
 						);

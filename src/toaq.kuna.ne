@@ -195,7 +195,7 @@ CPargcon -> CPargfoc {% id %}
 CPargcon -> CPargfoc Conjunction CPargcon {% makeConn %}
 CPargfoc -> CParg {% id %}
 CPargfoc -> Focus CParg {% makeBranch('FocusP') %}
-CParg -> CPsub {% makeBranchCovertLeft('DP', 'D') %}
+CParg -> CPsub {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 CPrelcon -> CPrel {% id %}
 CPrelcon -> CPrel Conjunction CPrelcon {% makeConn %}
 Sigmacon -> Sigma {% id %}

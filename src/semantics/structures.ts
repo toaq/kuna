@@ -838,9 +838,9 @@ const functorPrecedence = new Map(
 			'act',
 			'pair',
 			'bind',
-			'cont',
 			'qn',
 			'gen',
+			'cont',
 			'pl',
 		] as (ExprType & object)['head'][]
 	).map((head, i) => [head, i]),

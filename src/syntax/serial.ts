@@ -373,7 +373,7 @@ export function fixSerial(
 	const lateAdjuncts: Tree[] = [];
 	for (const term of terms) {
 		const label = effectiveLabel(term);
-		if (label === 'DP') args.push(term);
+		if (label === 'DP' || label === '𝘯P') args.push(term);
 		else if (args.length) lateAdjuncts.push(term);
 		else earlyAdjuncts.push(term);
 	}
