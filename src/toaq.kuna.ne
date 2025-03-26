@@ -86,6 +86,8 @@ CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C') %}
 CPrel -> Crel Clause<sub> {% makeBranch('CPrel') %}
 # (ráı nä) hao
 CPrelna<S> -> Clause<S> {% makeBranchCovertLeft('CPrel', 'Crel') %}
+# (sá) ꝡë hao
+CPdet -> CPdet CPrelcon {% makeBranch('CPrel') %}
 # (sá) ∅ hao
 CPdet -> MSPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 
@@ -95,8 +97,6 @@ DP -> %pronoun Free:* {% makeLeaf('DP') %}
 DP -> WordD Word {% makeBranch('DP') %}
 # sá ...
 DP -> D nP {% makeBranch('DP') %}
-# (sá) ꝡë hao
-nP -> nP CPrelcon {% makeBranch('𝘯P') %}
 # (sá) ∅ hao
 nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 
