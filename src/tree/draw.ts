@@ -3,11 +3,16 @@ import {
 	type CanvasRenderingContext2D,
 	createCanvas,
 } from 'canvas';
-import type { DTree, Expr } from '../semantics/model';
-import type { Tree } from '../tree';
-import type { MovementID } from './movement';
+import type { DTree, Expr } from '../semantics/types';
+import type { MovementID, Tree } from '../tree';
 import { type DrawableDenotation, type PlacedTree, TreePlacer } from './place';
-import { type Scene, SceneTextStyle, type Unplaced, toScene } from './scene';
+import {
+	type Scene,
+	SceneTextStyle,
+	type Unplaced,
+	sceneLabelToString,
+	toScene,
+} from './scene';
 import { type Theme, type ThemeName, themes } from './theme';
 
 interface Location {
@@ -26,7 +31,7 @@ interface TreeDrawerOptions {
 
 class TreeDrawer {
 	private margin = 40;
-	private font = '27px Noto Sans Math, Noto Sans';
+	private font = '27px Iosevka Toaq Aile, Noto Sans Math, Noto Sans';
 
 	private canvas: Canvas;
 	readonly ctx: CanvasRenderingContext2D;
@@ -104,7 +109,7 @@ class TreeDrawer {
 		// 	this.drawText(tree.label, x - w2 / 2, y, this.theme.textColor);
 		// 	this.drawText(tree.coindex, x + w1 / 2, y + 8, this.theme.textColor);
 		// } else {
-		this.drawText(tree.label, x, y, this.theme.textColor);
+		this.drawText(sceneLabelToString(tree.label), x, y, this.theme.textColor);
 		// }
 	}
 

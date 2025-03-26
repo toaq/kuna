@@ -1,8 +1,7 @@
-import type { DTree, Expr } from '../semantics/model';
 import { typeToPlainText } from '../semantics/render';
+import type { CompositionMode, DTree, Expr } from '../semantics/types';
 import { treeChildren } from './functions';
-import type { MovementID } from './movement';
-import type { Tree } from './types';
+import type { MovementID, Tree } from './types';
 
 export enum SceneTextStyle {
 	/**
@@ -19,11 +18,33 @@ export enum SceneTextStyle {
 	Trace = 2,
 }
 
+export interface RichSceneLabelPiece {
+	text: string;
+	font: string;
+	subscript?: boolean;
+}
+
+export interface RichSceneLabelLine {
+	pieces: RichSceneLabelPiece[];
+}
+
+export interface RichSceneLabel {
+	lines: RichSceneLabelLine[];
+}
+
+export function sceneLabelToString(label: string | RichSceneLabel): string {
+	return typeof label === 'string'
+		? label
+		: label.lines
+				.map(line => line.pieces.map(piece => piece.text).join(''))
+				.join('\n');
+}
+
 export interface SceneNode<Denotation, Placement> {
 	/**
 	 * This node's label, e.g. "DP : e".
 	 */
-	label: string;
+	label: string | RichSceneLabel;
 	/**
 	 * This node's denotation.
 	 */
@@ -91,6 +112,86 @@ export interface Placed {
 	distanceBetweenChildren: number;
 }
 
+function modeToString(mode: CompositionMode): string {
+	return typeof mode === 'string'
+		? mode
+		: // @ts-ignore TypeScript can't handle the infinite types here
+			mode
+				.flat(Number.POSITIVE_INFINITY)
+				.join(' ');
+}
+
+/**
+ * Turn a label like "𝘷Prel" into a list of pieces like:
+ *
+ *     [
+ *         { text: "v", font: italic },
+ *         { text: "P", font: regular },
+ *         { text: "rel", font: subscript, subscript: true },
+ *     ]
+ */
+function makeRichLabel(
+	label: string,
+	fonts: {
+		regular: string;
+		italic: string;
+		subscript: string;
+	},
+): RichSceneLabelPiece[] {
+	const pieces = [];
+	const patches: Record<string, string> = { 𝘢: 'a', 𝘯: 'n', 𝘷: 'v' };
+	for (const character of label) {
+		if (character in patches) {
+			pieces.push({ text: patches[character], font: fonts.italic });
+		} else if (
+			pieces.length &&
+			pieces[pieces.length - 1].font === fonts.regular
+		) {
+			pieces[pieces.length - 1].text += character;
+			const last = pieces[pieces.length - 1].text;
+			if (last.endsWith('rel')) {
+				pieces[pieces.length - 1].text = last.substring(0, last.length - 3);
+				pieces.push({ text: 'rel', font: fonts.subscript, subscript: true });
+			}
+		} else {
+			pieces.push({ text: character, font: fonts.regular });
+		}
+	}
+	return pieces;
+}
+
+/**
+ * Create a (possibly rich) label for the given subtree.
+ */
+function toSceneLabel(
+	tree: Tree | DTree,
+	font = 'Fira Sans',
+): string | RichSceneLabel {
+	if (!('denotation' in tree && tree.denotation)) return tree.label;
+
+	const typedLabel: RichSceneLabelLine = {
+		pieces: [
+			...makeRichLabel(tree.label, {
+				regular: `bold 14px ${font}`,
+				italic: `italic bold 14px ${font}`,
+				subscript: `bold 12px/0 ${font}`,
+			}),
+			{
+				text: ` : ${typeToPlainText(tree.denotation.type)}`,
+				font: `14px ${font}`,
+			},
+		],
+	};
+
+	if (!('mode' in tree && tree.mode)) return { lines: [typedLabel] };
+
+	const modeLabel: RichSceneLabelLine = {
+		pieces: [{ text: modeToString(tree.mode), font: `12px ${font}` }],
+	};
+
+	return { lines: [typedLabel, modeLabel] };
+}
+
 /**
  * Convert a Toaq syntax tree into a renderable "Scene" for the tree-rendering
  * functions to consume.
@@ -104,12 +205,9 @@ export function toScene(
 	function walk(tree: Tree | DTree): SceneNode<Expr, Unplaced> {
 		const denotation =
 			'denotation' in tree && tree.denotation ? tree.denotation : undefined;
-		const label = denotation
-			? `${tree.label} : ${typeToPlainText(denotation.type)}`
-			: tree.label;
 		const gloss =
 			'word' in tree && !tree.word.covert ? tree.word.entry?.gloss : undefined;
-		const roof = roofLabels.includes(label);
+		const roof = roofLabels.includes(tree.label);
 		const text = roof
 			? tree.source
 			: 'word' in tree
@@ -135,7 +233,7 @@ export function toScene(
 		}
 
 		return {
-			label,
+			label: toSceneLabel(tree),
 			denotation,
 			roof,
 			text,

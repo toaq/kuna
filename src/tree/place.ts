@@ -1,6 +1,6 @@
 import type { CanvasRenderingContext2D } from 'canvas';
-import type { Expr } from '../semantics/model';
 import { toLatex, toPlainText } from '../semantics/render';
+import type { Expr } from '../semantics/types';
 
 import { liteAdaptor } from 'mathjax-full/js/adaptors/liteAdaptor';
 import { RegisterHTMLHandler } from 'mathjax-full/js/handlers/html';
@@ -8,8 +8,16 @@ import { TeX } from 'mathjax-full/js/input/tex';
 import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages';
 import { mathjax } from 'mathjax-full/js/mathjax';
 import { SVG } from 'mathjax-full/js/output/svg';
-import type { Placed, Scene, SceneNode, Unplaced } from './scene';
+import type {
+	Placed,
+	RichSceneLabel,
+	RichSceneLabelLine,
+	Scene,
+	SceneNode,
+	Unplaced,
+} from './scene';
 import { type Theme, themes } from './theme';
+import type { MovementID } from './types';
 
 const adaptor = liteAdaptor();
 RegisterHTMLHandler(adaptor);
@@ -34,10 +42,10 @@ export function get_mathjax_svg(math: string): {
 }
 
 export interface DrawContext {
-	measureText(text: string): { width: number };
+	measureText(text: string, font?: string): { width: number };
 }
 
-export interface DrawableDenotation<C extends DrawContext> {
+export interface DrawableDenotation<C extends DrawContext, Source = string> {
 	draw: (
 		ctx: C,
 		centerX: number,
@@ -46,7 +54,9 @@ export interface DrawableDenotation<C extends DrawContext> {
 	) => Promise<void>;
 	width(ctx: C): number;
 	height(ctx: C): number;
-	source: string;
+	source: Source;
+	// This may be absent, for example if rendering from raw LaTeX.
+	denotation?: Expr;
 }
 
 export type PlacedTree<C extends DrawContext> = SceneNode<
@@ -73,7 +83,7 @@ export function boundingRect<C extends DrawContext>(
 		return { left, right, layers };
 	}
 	return {
-		left: placedTree.placement.width / 2,
+		left: -placedTree.placement.width / 2,
 		right: placedTree.placement.width / 2,
 		layers: 1,
 	};
@@ -97,6 +107,7 @@ export function denotationRenderText(
 			return 30;
 		},
 		source: text,
+		denotation,
 	};
 }
 
@@ -138,6 +149,7 @@ export function denotationRenderRawLatex(
 			return pxHeight;
 		},
 		source: latex,
+		denotation: undefined,
 	};
 }
 
@@ -158,6 +170,7 @@ interface LayerExtent {
 interface TreePlacerOptions {
 	theme: Theme;
 	horizontalMargin: number;
+	minimumDistanceBetweenChildren: number;
 	compact: boolean;
 	truncateLabels: string[];
 }
@@ -165,6 +178,7 @@ interface TreePlacerOptions {
 const defaultOptions: TreePlacerOptions = {
 	theme: themes.light,
 	horizontalMargin: 30,
+	minimumDistanceBetweenChildren: 100,
 	compact: false,
 	truncateLabels: [],
 };
@@ -195,6 +209,23 @@ export class TreePlacer<C extends DrawContext, D> {
 		);
 	}
 
+	private measureRichSceneLabelLine(line: RichSceneLabelLine): number {
+		let sum = 0;
+		for (const piece of line.pieces) {
+			sum += this.ctx.measureText(piece.text, piece.font).width;
+		}
+		return sum;
+	}
+
+	private measureLabelWidth(label: string | RichSceneLabel): number {
+		if (typeof label === 'string') {
+			return this.ctx.measureText(label).width;
+		}
+		return Math.max(
+			...label.lines.map(line => this.measureRichSceneLabelLine(line)),
+		);
+	}
+
 	private placeSceneNode(node: SceneNode<D, any>): {
 		tree: PlacedTree<C>;
 		extents: LayerExtent[];
@@ -204,14 +235,18 @@ export class TreePlacer<C extends DrawContext, D> {
 		const text = node.text;
 		const denotation = this.renderDenotation(node);
 		const width = Math.max(
-			this.ctx.measureText(label).width,
+			this.measureLabelWidth(label),
 			this.ctx.measureText(text ?? '').width,
 			this.ctx.measureText(gloss ?? '').width,
 			denotation ? denotation.width(this.ctx) : 0,
 		);
+
+		// First place all the children...
 		const children = node.children.map(c => this.placeSceneNode(c));
 
-		let distanceBetweenChildren = 0;
+		// Find the smallest x-distance between this node's children that avoids
+		// making any of the descendants overlap.
+		let distanceBetweenChildren = this.options.minimumDistanceBetweenChildren;
 		for (let i = 0; i < children.length - 1; i++) {
 			const l = children[i].extents;
 			const r = children[i + 1].extents;
@@ -223,10 +258,11 @@ export class TreePlacer<C extends DrawContext, D> {
 			}
 		}
 
-		const extents = [
-			{ left: -width / 2, right: width / 2 },
-			{ left: -width / 2, right: width / 2 },
-		];
+		// Quantize the distance to multiples of 20px so the trees look more uniform:
+		distanceBetweenChildren = Math.ceil(distanceBetweenChildren / 20) * 20;
+
+		// Compute new extents for this subtree
+		const extents = [{ left: -width / 2, right: width / 2 }];
 		for (let i = 0; i < children.length; i++) {
 			const dx = (i - (children.length - 1) / 2) * distanceBetweenChildren;
 			const e = children[i].extents;
@@ -247,6 +283,8 @@ export class TreePlacer<C extends DrawContext, D> {
 			text,
 			gloss,
 			denotation,
+			id: node.id,
+			textStyle: node.textStyle,
 			source: node.source,
 			roof: node.roof,
 		};
@@ -256,4 +294,23 @@ export class TreePlacer<C extends DrawContext, D> {
 	public placeScene(scene: Scene<D, Unplaced>): PlacedTree<C> {
 		return this.placeSceneNode(scene.root).tree;
 	}
+}
+
+export function movementPoints<C extends DrawContext>(
+	placed: PlacedTree<C>,
+): Map<MovementID, { x: number; width: number; layer: number }> {
+	const points = new Map();
+	function walk(tree: PlacedTree<C>, x: number, layer: number): void {
+		console.log(tree);
+		if (tree.id) {
+			points.set(tree.id, { x, width: tree.placement.width, layer });
+		}
+		const n = tree.children.length;
+		for (let i = 0; i < n; i++) {
+			const dx = (i - (n - 1) / 2) * tree.placement.distanceBetweenChildren;
+			walk(tree.children[i], x + dx, layer + 1);
+		}
+	}
+	walk(placed, 0, 0);
+	return points;
 }

@@ -1,484 +1,728 @@
-import { Impossible, Unimplemented } from '../core/error';
-import { some } from '../core/misc';
-import { type Branch, type StrictTree, effectiveLabel } from '../tree';
+import { Unimplemented } from '../core/error';
 import {
-	type Bindings,
-	type DTree,
-	type Expr,
-	type ExprType,
-	and,
+	Bind,
+	Int,
+	Pl,
+	Ref,
 	app,
+	assertFn,
+	bindingsEqual,
+	closed,
 	subtype,
-	v,
+	typesEqual,
+	unbind,
+	unref,
 	λ,
 } from './model';
+import { typeToPlainText } from './render';
 import {
-	bindTimeIntervals,
-	filterPresuppositions,
-	freeVariableUsages,
-	makeWorldExplicit,
-	mapBindings,
-	reduce,
-	rewriteContext,
-	skolemize,
-	unifyDenotations,
-} from './operations';
+	type Functor,
+	chooseEffect,
+	composeFunctors,
+	getApplicative,
+	getBigTraversable,
+	getComonad,
+	getDistributive,
+	getFunctor,
+	getMatchingApplicative,
+	getMatchingFunctor,
+	getMatchingMonad,
+	getMatchingSemigroup,
+	getMonad,
+	getRunner,
+	idFunctor,
+	unwrapEffects,
+} from './structures';
+import type { Binding, CompositionMode, Expr, ExprType } from './types';
 
-export type CompositionRule = (
-	branch: Branch<StrictTree>,
-	left: DTree,
-	right: DTree,
-) => DTree;
+/**
+ * Given a type and a type constructor to search for, find the inner type given
+ * by pushing all traversables into the first occurrence of that type
+ * constructor and unwrapping the type constructor. The idea is that this
+ * represents the inner type after coercion.
+ */
+function findCoercedInner(inType: ExprType, like: ExprType): ExprType | null {
+	if (typeof inType === 'string' || typeof like === 'string') return null;
+	if (
+		inType.head === like.head &&
+		(inType.head === 'int' ||
+			inType.head === 'cont' ||
+			inType.head === 'pl' ||
+			inType.head === 'gen' ||
+			inType.head === 'qn' ||
+			(inType.head === 'pair' &&
+				typesEqual(
+					inType.supplement,
+					(like as ExprType & object & { head: 'pair' }).supplement,
+				)) ||
+			(inType.head === 'bind' &&
+				bindingsEqual(
+					inType.binding,
+					(like as ExprType & object & { head: 'bind' }).binding,
+				)) ||
+			(inType.head === 'ref' &&
+				bindingsEqual(
+					inType.binding,
+					(like as ExprType & object & { head: 'ref' }).binding,
+				)) ||
+			inType.head === 'dx' ||
+			inType.head === 'act')
+	)
+		return inType.inner;
 
-function functionalApplication_(
-	branch: Branch<StrictTree>,
-	left: DTree,
-	right: DTree,
-	fn: DTree,
-	argument: DTree,
-): DTree {
-	let denotation: Expr | null;
-	let bindings: Bindings;
-
-	if (fn.denotation === null) {
-		({ denotation, bindings } = argument);
-	} else if (argument.denotation === null) {
-		({ denotation, bindings } = fn);
-	} else {
-		const compatArgument = subtype(
-			argument.denotation.type,
-			(fn.denotation.type as [ExprType, ExprType])[0],
-		)
-			? argument
-			: makeWorldExplicit(argument);
-		const [l, r, b] =
-			fn === left
-				? unifyDenotations(fn, compatArgument)
-				: unifyDenotations(compatArgument, fn);
-		denotation = reduce(fn === left ? app(l, r) : app(r, l));
-		bindings = b;
+	const traversable = getBigTraversable(inType);
+	if (traversable !== null) {
+		const result = findCoercedInner(traversable.functor.unwrap(inType), like);
+		return result && traversable.functor.wrap(result, inType);
 	}
-
-	return { ...branch, left, right, denotation, bindings };
+	const functor = getFunctor(inType);
+	return functor && findCoercedInner(functor.unwrap(inType), like);
 }
 
-const functionalApplication: CompositionRule = (branch, left, right) =>
-	functionalApplication_(branch, left, right, left, right);
+function coerceInput_(
+	fn: Expr,
+	input: ExprType,
+	inputSide: 'left' | 'right' | 'out',
+	mode: CompositionMode,
+	under: Functor | null,
+): [Expr, CompositionMode] | null {
+	assertFn(fn.type);
+	const { unwrap } = under ?? idFunctor;
+	const inputInner = unwrap(input);
+	const domainInner = unwrap(fn.type.domain);
+	const range = fn.type.range;
 
-const reverseFunctionalApplication: CompositionRule = (branch, left, right) =>
-	functionalApplication_(branch, left, right, right, left);
+	// If the types match there is nothing to do
+	if (subtype(inputInner, domainInner)) return [fn, mode];
 
-// λ𝘗. λ𝘘. λ𝘢. λ𝘦. 𝘗(𝘢)(𝘦) ∧ 𝘘(𝘦)
-const eventIdentificationTemplate = (context: ExprType[]) =>
-	λ(['e', ['v', 't']], context, c =>
-		λ(['v', 't'], c, c =>
-			λ('e', c, c =>
-				λ('v', c, c =>
-					and(app(app(v(3, c), v(1, c)), v(0, c)), app(v(2, c), v(0, c))),
-				),
-			),
-		),
-	);
+	// If there are matching functors in the input type and the domain, then we
+	// don't need to move them around; simply continue coercion under the functor
+	const functor = getMatchingFunctor(inputInner, domainInner);
+	if (functor !== null)
+		return coerceInput_(
+			fn,
+			input,
+			inputSide,
+			mode,
+			under === null ? functor : composeFunctors(under, functor),
+		);
 
-// λ𝘗. λ𝘢. λ𝘦. 𝘗(𝘦)
-const eventIdentificationRightOnlyTemplate = (context: ExprType[]) =>
-	λ(['v', 't'], context, c =>
-		λ('e', c, c => λ('v', c, c => app(v(2, c), v(0, c)))),
-	);
+	// The functors don't match
+	if (under !== null) {
+		// Let's try pulling a distributive functor out of the input's outermost
+		// functor and then continuing conversion under the distributive functor
+		const distributive = getDistributive(inputInner);
+		if (distributive !== null) {
+			const coercedInner = under.wrap(
+				distributive.functor.unwrap(inputInner),
+				input,
+			);
+			const result = coerceInput_(fn, coercedInner, inputSide, mode, under);
+			if (result !== null) {
+				const [cont, mode] = result;
+				let joined = false;
+				return [
+					app(
+						λ(cont.type, closed, (cont, s) =>
+							λ(input, s, (input, s) => {
+								// We're going to have to do something with the effect that floats to
+								// the top after distributing. The most "efficient" thing to do is join
+								// it with the effect just under it.
+								const distributed = distributive.distribute(
+									s.var(input),
+									under,
+									s,
+								);
+								const monad = getMatchingMonad(
+									distributed.type,
+									distributive.functor.unwrap(distributed.type),
+								);
+								if (monad !== null) {
+									joined = true;
+									return app(s.var(cont), monad.join(distributed, s));
+								}
 
-const eventIdentification: CompositionRule = (branch, left, right) => {
-	let denotation: Expr | null;
-	let bindings: Bindings;
+								// Unable to join the effect; map over it instead.
 
-	if (left.denotation === null) {
-		denotation =
-			right.denotation === null
-				? null
-				: reduce(
-						app(
-							eventIdentificationRightOnlyTemplate(right.denotation.context),
-							right.denotation,
+								// If the input came from the left or right then the function is a
+								// binary function, and we need to take special care to lift it into the
+								// functor in the right way (f a → b → f c rather than f a → f (b → c))
+								if (inputSide !== 'out') {
+									assertFn(range);
+									return λ(range.domain, s, (otherInput, s) =>
+										distributive.functor.map(
+											λ(coercedInner, s, (inputInner, s) =>
+												app(
+													app(s.var(cont), s.var(inputInner)),
+													s.var(otherInput),
+												),
+											),
+											distributive.distribute(s.var(input), under, s),
+											s,
+										),
+									);
+								}
+								// This is a unary function; just 'map' it
+								return distributive.functor.map(
+									s.var(cont),
+									distributive.distribute(s.var(input), under, s),
+									s,
+								);
+							}),
 						),
-					);
-		bindings = right.bindings;
-	} else if (right.denotation === null) {
-		({ denotation, bindings } = left);
-	} else {
-		const [l, r, b] = unifyDenotations(left, right);
-		denotation = reduce(app(app(eventIdentificationTemplate(l.context), l), r));
-		bindings = b;
-	}
-
-	return { ...branch, left, right, denotation, bindings };
-};
-
-// λ𝘗. λ𝘘. λ𝘢. 𝘗(𝘢) ∧ 𝘘(𝘢)
-const predicateModificationTemplate = (type: ExprType, context: ExprType[]) =>
-	λ([type, 't'], context, c =>
-		λ([type, 't'], c, c =>
-			λ(type, c, c => and(app(v(2, c), v(0, c)), app(v(1, c), v(0, c)))),
-		),
-	);
-
-const predicateModification: CompositionRule = (branch, left, right) => {
-	let denotation: Expr | null;
-	let bindings: Bindings;
-
-	if (left.denotation === null) {
-		({ denotation, bindings } = right);
-	} else if (right.denotation === null) {
-		({ denotation, bindings } = left);
-	} else {
-		const [l, r, b] = unifyDenotations(left, right);
-		denotation = reduce(
-			app(
-				app(
-					predicateModificationTemplate(
-						(l.type as [ExprType, ExprType])[0],
-						l.context,
+						cont,
 					),
-					l,
-				),
-				r,
-			),
-		);
-		bindings = b;
-	}
-
-	return { ...branch, left, right, denotation, bindings };
-};
-
-const propositionAbstraction: CompositionRule = (branch, left, right) => {
-	if (right.denotation === null) {
-		throw new Impossible(`Proposition abstraction on a null ${right.label}`);
-	}
-	const worldIndex = right.denotation.context.findIndex(t => t === 's');
-	if (worldIndex === -1)
-		throw new Impossible(
-			'Proposition abstraction on something without a world variable',
-		);
-
-	const newContext = [...right.denotation.context];
-	newContext.splice(worldIndex, 1);
-	const indexMapping = (i: number) => (i < worldIndex ? i : i - 1);
-
-	return {
-		...branch,
-		left,
-		right,
-		denotation: reduce(
-			λ('s', newContext, c =>
-				rewriteContext(right.denotation!, c, i =>
-					i === worldIndex ? 0 : indexMapping(i) + 1,
-				),
-			),
-		),
-		bindings: mapBindings(right.bindings, b => ({
-			index: indexMapping(b.index),
-			subordinate: true,
-			timeIntervals: b.timeIntervals.map(indexMapping),
-		})),
-	};
-};
-
-const cRelComposition: CompositionRule = (branch, left, right) => {
-	if (right.denotation === null) {
-		throw new Impossible(`Crel composition on a null ${right.label}`);
-	}
-	const hoa = right.bindings.resumptive ?? right.bindings.covertResumptive;
-	if (hoa === undefined) {
-		return {
-			...branch,
-			left,
-			right,
-			denotation: reduce(
-				λ('e', right.denotation.context, c =>
-					rewriteContext(right.denotation!, c, i => i + 1),
-				),
-			),
-			bindings: mapBindings(right.bindings, b => ({
-				...b,
-				subordinate: true,
-			})),
-		};
-	}
-	const newContext = [...right.denotation.context];
-	newContext.splice(hoa.index, 1);
-	const indexMapping = (i: number) => (i > hoa.index ? i - 1 : i);
-
-	return {
-		...branch,
-		left,
-		right,
-		denotation: reduce(
-			λ('e', newContext, c =>
-				rewriteContext(right.denotation!, c, i =>
-					i === hoa.index ? 0 : indexMapping(i) + 1,
-				),
-			),
-		),
-		bindings: mapBindings(right.bindings, b =>
-			b.index === hoa.index
-				? undefined
-				: {
-						index: indexMapping(b.index),
-						subordinate: true,
-						timeIntervals: b.timeIntervals.map(indexMapping),
-					},
-		),
-	};
-};
-
-const dComposition: CompositionRule = (branch, left, right) => {
-	if (left.denotation === null) {
-		throw new Impossible(`D composition on a null ${left.label}`);
-	}
-	if (right.denotation === null) {
-		throw new Impossible(`D composition on a null ${right.label}`);
-	}
-	const [d, np, bindings] = unifyDenotations(left, right);
-	if (bindings.covertResumptive === undefined)
-		throw new Impossible("𝘯P doesn't create a binding");
-	const index = bindings.covertResumptive.index;
-	// Delete the covert resumptive binding as it was only needed to perform this
-	// composition and should not leak outside the DP
-	bindings.covertResumptive = undefined;
-
-	return {
-		...branch,
-		left,
-		right,
-		denotation: reduce(app(d, np)),
-		// Associate all new time interval variables with this binding
-		bindings: bindTimeIntervals(np, bindings, index),
-	};
-};
-
-const qComposition: CompositionRule = (branch, left, right) => {
-	if (left.denotation === null) {
-		throw new Impossible(`Q composition on a null ${left.label}`);
-	}
-	if (right.denotation === null) {
-		throw new Impossible(`Q composition on a null ${right.label}`);
-	}
-	if (branch.binding === undefined) throw new Impossible('QP without binding');
-	const [l, r, bindings] = unifyDenotations(left, right);
-	if (bindings.covertResumptive === undefined)
-		throw new Impossible("Can't identify the references to be dropped");
-	const index = bindings.covertResumptive.index;
-	// Create an index binding
-	bindings.index.set(branch.binding, bindings.covertResumptive);
-	// Drop all references to the bindings originating in 𝘯
-	const rPruned = filterPresuppositions(
-		r,
-		p => !some(freeVariableUsages(p), i => i === index),
-	);
-	// Delete the covert resumptive binding as it was only needed to perform this
-	// composition and should not leak outside the QP
-	bindings.covertResumptive = undefined;
-
-	return {
-		...branch,
-		left,
-		right,
-		denotation: reduce(app(l, rPruned)),
-		// Associate all new time interval variables with this binding
-		bindings: bindTimeIntervals(r, bindings, index),
-	};
-};
-
-const andComposition: CompositionRule = (branch, left, right) => {
-	if (left.denotation === null) {
-		throw new Impossible(`and-composition on a null ${left.label}`);
-	}
-	if (right.denotation === null) {
-		throw new Impossible(`and-composition on a null ${right.label}`);
-	}
-	const [l, r, bindings] = unifyDenotations(left, right);
-	return { ...branch, left, right, denotation: and(l, r), bindings };
-};
-
-const predicateAbstraction: CompositionRule = (branch, left, right) => {
-	if (left.denotation === null) {
-		throw new Impossible(`Predicate abstraction on a null ${left.label}`);
-	}
-	if (right.denotation === null) {
-		throw new Impossible(`Predicate abstraction on a null ${right.label}`);
-	}
-	const predicate = (
-		left.denotation.type as [[ExprType, ExprType], ExprType]
-	)[0];
-	let l: Expr;
-	let r: Expr;
-	let bindings: Bindings;
-	let index: number;
-	if (left.binding === undefined) {
-		[l, r, bindings] = unifyDenotations(left, right);
-		if (bindings.covertResumptive === undefined)
-			throw new Impossible("Can't identify the variable to be abstracted");
-		index = bindings.covertResumptive.index;
-	} else {
-		const compatRight = subtype(
-			[predicate[0], right.denotation.type],
-			predicate,
-		)
-			? right
-			: makeWorldExplicit(right);
-
-		const rightBinding = compatRight.bindings.index.get(left.binding);
-		if (rightBinding === undefined)
-			throw new Impossible("Can't identify the variable to be abstracted");
-		// Skolemize all variables that are defined in terms of the variable to be
-		// abstracted
-		const [skm, skmMapping] = skolemize(
-			compatRight.denotation!,
-			rightBinding.index,
-		);
-		const skmRight: DTree = {
-			...compatRight,
-			denotation: skm,
-			bindings: mapBindings(compatRight.bindings, b => {
-				const index = skmMapping[b.index];
-				return index === null
-					? undefined
-					: {
-							index,
-							subordinate: b.subordinate,
-							timeIntervals: b.timeIntervals.map(i => skmMapping[i]!),
-						};
-			}),
-		};
-
-		// Because unifyDenotations works asymmetrically and assumes that the left
-		// has more binding information than the right, we need to pretend here that
-		// the branches are the other way around; the right may in fact have more
-		// binding information than the left's hoisted sub-tree.
-		// TODO: I think this still doesn't get us quite the right behavior if
-		// something in between the binding site and the bound structure shadows the
-		// binding. For example, in "Do sá raı sá raı sá raq lô raı".
-		[r, l, bindings] = unifyDenotations(skmRight, left);
-		index = bindings.index.get(left.binding)!.index;
-	}
-
-	// Remove the abstracted binding from the final denotation
-	const newContext = [...r.context];
-	newContext.splice(index, 1);
-	const indexMapping = (i: number) => {
-		if (i === index) throw new Impossible('Abstracted variable is still used');
-		return i > index ? i - 1 : i;
-	};
-
-	return {
-		...branch,
-		left,
-		right,
-		denotation: reduce(
-			app(
-				rewriteContext(l, newContext, indexMapping),
-				λ(predicate[0], newContext, c =>
-					rewriteContext(r, c, i => (i === index ? 0 : i > index ? i : i + 1)),
-				),
-			),
-		),
-		bindings: mapBindings(bindings, b =>
-			b.index === index
-				? undefined
-				: {
-						index: indexMapping(b.index),
-						subordinate: b.subordinate,
-						timeIntervals: b.timeIntervals.map(indexMapping),
-					},
-		),
-	};
-};
-
-function getCompositionRule(left: DTree, right: DTree): CompositionRule {
-	const leftLabel = effectiveLabel(left);
-	switch (leftLabel) {
-		case 'V':
-		case 'VP':
-		case 'Asp':
-		case '𝘯':
-		case 'Σ':
-		case '&':
-		case '&Q':
-		case 'Modal':
-		case 'ModalP':
-		case 'Topic':
-		case 'mı':
-		case 'mıP':
-		case 'shu':
-		case 'shuP':
-		case 'mo':
-		case 'moP':
-		case 'teoP':
-		case 'EvA':
-		case 'Focus':
-		case 'FocAdv':
-			return functionalApplication;
-		case 'T':
-			// Existential tenses use FA, while pronomial tenses use reverse FA
-			return Array.isArray(left.denotation?.type)
-				? functionalApplication
-				: reverseFunctionalApplication;
-		case '𝘷':
-			if (left.denotation === null) {
-				return effectiveLabel(right) === 'TP'
-					? propositionAbstraction
-					: functionalApplication;
+					inputSide === 'out'
+						? ['←', joined ? ['J', mode] : mode]
+						: [
+								inputSide === 'left' ? '←L' : '←R',
+								[
+									joined
+										? inputSide === 'left'
+											? 'JL'
+											: 'JR'
+										: inputSide === 'left'
+											? 'R'
+											: 'L',
+									mode,
+								],
+							],
+				];
 			}
-			return subtype(left.denotation.type, ['e', ['v', 't']])
-				? eventIdentification
-				: functionalApplication;
-		case 'C':
-			return propositionAbstraction;
-		case 'Crel':
-			return cRelComposition;
-		case 'D':
-			return effectiveLabel(right) === '𝘯P'
-				? dComposition
-				: functionalApplication;
-		case 'Q':
-			return qComposition;
-		case 'QP':
-		case 'FocAdvP':
-		case 'Adjunct':
-		case '&QP':
-			return predicateAbstraction;
-		case 'SAP':
-			return andComposition;
+		}
+
+		const traversable = getBigTraversable(inputInner);
+		if (traversable !== null) {
+			const traversableInner = traversable.functor.unwrap(inputInner);
+			const applicative = getApplicative(traversableInner);
+			if (applicative !== null) {
+				const applicativeInner = applicative.functor.unwrap(traversableInner);
+				const coercedInner = under.wrap(
+					applicative.functor.wrap(
+						traversable.functor.wrap(applicativeInner, inputInner),
+						traversableInner,
+					),
+					input,
+				);
+				const result = coerceInput_(fn, coercedInner, inputSide, mode, under);
+				if (result !== null) {
+					const [cont, mode] = result;
+					return [
+						app(
+							λ(cont.type, closed, (cont, s) =>
+								λ(input, s, (input, s) =>
+									app(
+										s.var(cont),
+										under.map(
+											λ(inputInner, s, (inputInner, s) =>
+												traversable.sequence(s.var(inputInner), applicative, s),
+											),
+											s.var(input),
+											s,
+										),
+									),
+								),
+							),
+							cont,
+						),
+						[
+							inputSide === 'out' ? '→' : inputSide === 'left' ? '→L' : '→R',
+							mode,
+						],
+					];
+				}
+			}
+		}
+
+		// Try simply extracting a value from the functor via a comonad
+		const comonad = getComonad(inputInner);
+		if (comonad !== null) {
+			const coercedInner = under.wrap(
+				comonad.functor.unwrap(inputInner),
+				input,
+			);
+			const result = coerceInput_(fn, coercedInner, inputSide, mode, under);
+			if (result !== null) {
+				const [cont, mode] = result;
+				return [
+					app(
+						λ(cont.type, closed, (cont, s) =>
+							λ(input, s, (input, s) =>
+								app(
+									s.var(cont),
+									under.map(
+										λ(inputInner, s, (inputInner, s) =>
+											comonad.extract(s.var(inputInner), s),
+										),
+										s.var(input),
+										s,
+									),
+								),
+							),
+						),
+						cont,
+					),
+					[
+						inputSide === 'out' ? '↓' : inputSide === 'left' ? '↓L' : '↓R',
+						mode,
+					],
+				];
+			}
+		}
 	}
 
-	const rightLabel = effectiveLabel(right);
-	switch (rightLabel) {
-		case "𝘷'":
-		case 'SA':
-		case "V'":
-		case "&'":
-		case "&Q'":
-		case "EvA'":
-		case "Topic'":
-			return reverseFunctionalApplication;
-		case 'CPrel':
-		case 'AdjunctP':
-			return predicateModification;
-	}
+	return null;
+}
 
-	// AdjunctP is placed here because &' should take precedence over it
-	if (leftLabel === 'AdjunctP') return predicateModification;
+/**
+ * Given a function and an input type, build a function which accepts the type
+ * as its input and "coerces" its type using Functor, Distributive, Traversable,
+ * and Comonad instances to feed it to the original function.
+ * @param inputSide The side of the tree which the input comes from. If this is
+ *   'left' or 'right' then the function will be treated as a binary function so
+ *   that functors map like f a → b → f c rather than f a → f (b → c).
+ */
+function coerceInput(
+	fn: Expr,
+	input: ExprType,
+	inputSide: 'left' | 'right' | 'out',
+	mode: CompositionMode,
+): [Expr, CompositionMode] | null {
+	return coerceInput_(fn, input, inputSide, mode, null);
+}
+
+class UnimplementedComposition extends Error {}
+
+function composeInner(
+	left: ExprType,
+	right: ExprType,
+): [Expr, CompositionMode] {
+	const leftInner = unwrapEffects(left);
+	const rightInner = unwrapEffects(right);
+
+	if (
+		typeof leftInner !== 'string' &&
+		leftInner.head === 'fn' &&
+		subtype(rightInner, unwrapEffects(leftInner.domain))
+	)
+		return [λ(leftInner, closed, (l, s) => s.var(l)), '>'];
+
+	if (
+		typeof rightInner !== 'string' &&
+		rightInner.head === 'fn' &&
+		subtype(leftInner, unwrapEffects(rightInner.domain))
+	)
+		return [
+			λ(rightInner.domain, closed, (l, s) =>
+				λ(rightInner, s, (r, s) => app(s.var(r), s.var(l))),
+			),
+			'<',
+		];
+
+	const semigroup = getMatchingSemigroup(leftInner, rightInner);
+	if (semigroup !== null) return [semigroup.plus, '+'];
 
 	throw new Unimplemented(
-		`TODO: composition of ${leftLabel} and ${rightLabel}`,
+		`Composition of ${typeToPlainText(leftInner)} and ${typeToPlainText(rightInner)}`,
 	);
 }
 
 /**
- * Denotes a branch by composing the denotations of its children.
+ * Unwrap effects from the input type until it becomes possible to coerce it
+ * into a type that the function accepts, then return the unwrapped input type
+ * and coerced function and the details of the effects that were unwrapped along
+ * the way.
  */
-export function compose(
-	branch: Branch<StrictTree>,
-	left: DTree,
-	right: DTree,
-): DTree {
-	return getCompositionRule(left, right)(branch, left, right);
+function unwrapAndCoerce(
+	input: ExprType,
+	fn: Expr,
+	inputSide: 'left' | 'right',
+	mode: CompositionMode,
+): {
+	input: ExprType;
+	fn: Expr;
+	effects: (ExprType & object)[];
+	precedences: (ExprType & object)[];
+	mode: CompositionMode;
+} {
+	assertFn(fn.type);
+	let unwrapped = input;
+	const effects: (ExprType & object)[] = [];
+	const precedences: (ExprType & object)[] = [];
+	const associatesWithEffects = getFunctor(fn.type.domain) !== null;
+	while (true) {
+		const functor = getFunctor(unwrapped);
+		if (functor === null) {
+			if (associatesWithEffects) throw new UnimplementedComposition();
+			return { input: unwrapped, fn, effects, precedences, mode };
+		}
+
+		if (getMatchingFunctor(unwrapped, fn.type.domain) !== null) {
+			const result = coerceInput(fn, unwrapped, inputSide, mode);
+			if (result !== null) {
+				const [coerced, mode] = result;
+				return { input: unwrapped, fn: coerced, effects, precedences, mode };
+			}
+		}
+
+		const effect = functor.wrap('()', unwrapped) as ExprType & object;
+		effects.push(effect);
+		const highestPrecedenceSoFar = precedences[precedences.length - 1] ?? '()';
+		const { choice, strong } = chooseEffect(highestPrecedenceSoFar, effect)!;
+		if (strong) {
+			const newHighestPrecedence = getFunctor(choice)!;
+			precedences.push(
+				newHighestPrecedence.wrap('()', choice) as ExprType & object,
+			);
+		} else {
+			precedences.push(effect);
+		}
+		unwrapped = functor.unwrap(unwrapped);
+	}
+}
+
+function shadowedByLowPrecedence(
+	binding: Binding,
+	leftPrecedence: ExprType & object,
+	rightEffects: (ExprType & object)[],
+	rightPrecedences: (ExprType & object)[],
+): boolean {
+	for (let i = rightEffects.length - 1; i >= 0; i--) {
+		const rightEffect = rightEffects[i];
+		const rightPrecedence = rightPrecedences[i];
+		if (
+			chooseEffect(leftPrecedence, rightPrecedence).choice === rightPrecedence
+		)
+			return false;
+		if (
+			rightEffect.head === 'bind' &&
+			bindingsEqual(binding, rightEffect.binding)
+		)
+			return !rightEffects.some(
+				effect =>
+					effect.head === 'ref' && bindingsEqual(effect.binding, binding),
+			);
+	}
+	return false;
+}
+
+function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
+	// Determine what basic mode (>, <, +) the types should ultimately compose by
+	const [innerFn, innerMode] = composeInner(left.type, right.type);
+	const {
+		range: { domain: rightInner },
+	} = innerFn.type as ExprType &
+		object & { head: 'fn'; range: ExprType & object & { head: 'fn' } };
+
+	// Now figure out how to coerce the types to feed them to that composition mode
+	const {
+		input: leftInnerCoerced,
+		fn: innerFnPartiallyCoerced,
+		effects: leftEffects,
+		precedences: leftPrecedences,
+		mode: innerModePartiallyCoerced,
+	} = unwrapAndCoerce(left.type, innerFn, 'left', innerMode);
+	const innerFnPartiallyCoercedFlipped = app(
+		λ(innerFnPartiallyCoerced.type, closed, (fn, s) =>
+			λ(rightInner, s, (r, s) =>
+				λ(leftInnerCoerced, s, (l, s) =>
+					app(app(s.var(fn), s.var(l)), s.var(r)),
+				),
+			),
+		),
+		innerFnPartiallyCoerced,
+	);
+	const {
+		input: rightInnerCoerced,
+		fn: innerFnCoercedFlipped,
+		effects: rightEffects,
+		precedences: rightPrecedences,
+		mode: innerModeCoerced,
+	} = unwrapAndCoerce(
+		right.type,
+		innerFnPartiallyCoercedFlipped,
+		'right',
+		innerModePartiallyCoerced,
+	);
+	const innerFnCoerced = app(
+		λ(innerFnCoercedFlipped.type, closed, (fn, s) =>
+			λ(leftInnerCoerced, s, (l, s) =>
+				λ(rightInnerCoerced, s, (r, s) =>
+					app(app(s.var(fn), s.var(r)), s.var(l)),
+				),
+			),
+		),
+		innerFnCoercedFlipped,
+	);
+
+	let leftType = leftInnerCoerced;
+	let rightType = rightInnerCoerced;
+	let fn = innerFnCoerced;
+	let mode = innerModeCoerced;
+
+	// Work our way back up the effects stack, adding 1 layer to the left or right
+	// at a time, until we finally have a composition mode compatible with the
+	// original types
+	while (leftEffects.length || rightEffects.length) {
+		const leftEffect = leftEffects[leftEffects.length - 1] ?? '()';
+		const rightEffect = rightEffects[rightEffects.length - 1] ?? '()';
+		const leftPrecedence = leftPrecedences[leftPrecedences.length - 1] ?? '()';
+		const rightPrecedence =
+			rightPrecedences[rightPrecedences.length - 1] ?? '()';
+
+		const applicative = getMatchingApplicative(leftEffect, rightEffect);
+		if (applicative !== null) {
+			const {
+				functor: { wrap, map },
+				apply,
+			} = applicative;
+			leftType = wrap(leftType, leftEffect);
+			rightType = wrap(rightType, rightEffect);
+			leftEffects.pop();
+			rightEffects.pop();
+			leftPrecedences.pop();
+			rightPrecedences.pop();
+			fn = app(
+				λ(fn.type, closed, (fn, s) =>
+					λ(leftType, s, (l, s) =>
+						λ(rightType, s, (r, s) =>
+							apply(map(s.var(fn), s.var(l), s), s.var(r), s),
+						),
+					),
+				),
+				fn,
+			);
+			mode = ['A', mode];
+		} else if (
+			typeof leftEffect !== 'string' &&
+			leftEffect.head === 'bind' &&
+			shadowedByLowPrecedence(
+				leftEffect.binding,
+				leftPrecedence,
+				rightEffects,
+				rightPrecedences,
+			)
+		) {
+			// Drop any bindings on the left that are shadowed by a higher-precedence
+			// binding on the right
+			const {
+				functor: { wrap },
+				extract,
+			} = getComonad(leftEffect)!;
+			leftType = wrap(leftType, leftEffect);
+			leftEffects.pop();
+			leftPrecedences.pop();
+			fn = app(
+				λ(fn.type, closed, (fn, s) =>
+					λ(leftType, s, (l, s) =>
+						λ(rightType, s, (r, s) =>
+							app(app(s.var(fn), extract(s.var(l), s)), s.var(r)),
+						),
+					),
+				),
+				fn,
+			);
+			mode = ['↓L', mode];
+		} else if (
+			typeof leftEffect !== 'string' &&
+			leftEffect.head === 'bind' &&
+			typeof rightEffect !== 'string' &&
+			rightEffect.head === 'ref' &&
+			bindingsEqual(leftEffect.binding, rightEffect.binding)
+		) {
+			const leftUnwrapped = leftType;
+			leftType = Bind(leftEffect.binding, leftType);
+			rightType = Ref(rightEffect.binding, rightType);
+			leftEffects.pop();
+			rightEffects.pop();
+			leftPrecedences.pop();
+			rightPrecedences.pop();
+			fn = app(
+				λ(fn.type, closed, (fn, s) =>
+					λ(leftType, s, (l, s) =>
+						λ(rightType, s, (r, s) =>
+							unbind(
+								s.var(l),
+								λ(Int(Pl('e')), s, (boundVal, s) =>
+									λ(leftUnwrapped, s, (lVal, s) =>
+										app(
+											app(s.var(fn), s.var(lVal)),
+											app(unref(s.var(r)), s.var(boundVal)),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+				fn,
+			);
+			mode = ['Z', mode];
+		} else {
+			let choice: 'left' | 'right';
+			if (
+				leftEffect.head === 'bind' &&
+				rightEffects.some(
+					effect =>
+						effect.head === 'ref' &&
+						bindingsEqual(leftEffect.binding, effect.binding),
+				)
+			)
+				choice = 'right';
+			else if (
+				rightEffect.head === 'ref' &&
+				leftEffects.some(
+					effect =>
+						effect.head === 'bind' &&
+						bindingsEqual(rightEffect.binding, effect.binding),
+				)
+			)
+				choice = 'left';
+			else
+				choice =
+					chooseEffect(leftPrecedence, rightPrecedence).choice ===
+					leftPrecedence
+						? 'left'
+						: 'right';
+
+			const functor = getFunctor(choice === 'left' ? leftEffect : rightEffect);
+			if (functor === null) throw new UnimplementedComposition();
+			const { wrap, map } = functor;
+
+			if (choice === 'left') {
+				const leftUnwrapped = leftType;
+				leftType = wrap(leftType, leftEffect);
+				leftEffects.pop();
+				leftPrecedences.pop();
+				fn = app(
+					λ(fn.type, closed, (fn, s) =>
+						λ(leftType, s, (l, s) =>
+							λ(rightType, s, (r, s) =>
+								map(
+									λ(leftUnwrapped, s, (l_, s) =>
+										app(app(s.var(fn), s.var(l_)), s.var(r)),
+									),
+									s.var(l),
+									s,
+								),
+							),
+						),
+					),
+					fn,
+				);
+				mode = ['R', mode];
+			} else {
+				rightType = wrap(rightType, rightEffect);
+				rightEffects.pop();
+				rightPrecedences.pop();
+				fn = app(
+					λ(fn.type, closed, (fn, s) =>
+						λ(leftType, s, (l, s) =>
+							λ(rightType, s, (r, s) =>
+								map(app(s.var(fn), s.var(l)), s.var(r), s),
+							),
+						),
+					),
+					fn,
+				);
+				mode = ['L', mode];
+			}
+		}
+
+		// Check for possible ways to simplify the output type
+		const out = (
+			(fn.type as ExprType & object & { head: 'fn' }).range as ExprType &
+				object & { head: 'fn' }
+		).range;
+
+		// Try running the output effect
+		const runner = getRunner(out);
+		if (runner !== null) {
+			const coerced = coerceInput(runner.run, out, 'out', mode);
+			if (coerced !== null) {
+				const [run, coercedMode] = coerced;
+				fn = app(
+					app(
+						λ(run.type, closed, (run, s) =>
+							λ(fn.type, s, (fn, s) =>
+								λ(leftType, s, (l, s) =>
+									λ(rightType, s, (r, s) =>
+										app(s.var(run), app(app(s.var(fn), s.var(l)), s.var(r))),
+									),
+								),
+							),
+						),
+						run,
+					),
+					fn,
+				);
+				mode = ['↓', coercedMode];
+			}
+		}
+
+		// Try joining repeated monadic effects
+		const monad = getMonad(out);
+		if (monad !== null) {
+			const {
+				applicative: {
+					functor: { wrap, unwrap },
+				},
+				join,
+			} = monad;
+			let coerced: [Expr, CompositionMode] | null;
+			if (getDistributive(out) === null) {
+				const inner = findCoercedInner(unwrap(out), out);
+				coerced =
+					inner &&
+					coerceInput(
+						λ(wrap(wrap(inner, out), out), closed, (e, s) => join(s.var(e), s)),
+						out,
+						'out',
+						mode,
+					);
+			} else if (getMatchingMonad(out, unwrap(out))) {
+				coerced = [λ(out, closed, (e, s) => join(s.var(e), s)), mode];
+			} else {
+				coerced = null;
+			}
+			if (coerced !== null) {
+				const [join, coercedMode] = coerced;
+				fn = app(
+					app(
+						λ(join.type, closed, (join, s) =>
+							λ(fn.type, s, (fn, s) =>
+								λ(leftType, s, (l, s) =>
+									λ(rightType, s, (r, s) =>
+										app(s.var(join), app(app(s.var(fn), s.var(l)), s.var(r))),
+									),
+								),
+							),
+						),
+						join,
+					),
+					fn,
+				);
+				mode = ['J', coercedMode];
+			}
+		}
+	}
+
+	// The types are now compatible; compose them
+	return [app(app(fn, left), right), mode];
+}
+
+/**
+ * Composes the denotations of two trees together.
+ * @returns The denotation and the steps that were taken to compose it.
+ */
+export function compose(left: Expr, right: Expr): [Expr, CompositionMode] {
+	try {
+		return compose_(left, right);
+	} catch (e) {
+		if (e instanceof UnimplementedComposition)
+			throw new Unimplemented(
+				`Composition of ${typeToPlainText(left.type)} and ${typeToPlainText(right.type)}`,
+			);
+		throw e;
+	}
 }

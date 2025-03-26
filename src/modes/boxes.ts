@@ -187,7 +187,6 @@ class Boxifier {
 						node = node.left;
 						break;
 					default:
-						console.log(node);
 						throw new Unimplemented(`in boxifyClause: ${node.label}`);
 				}
 			} else {

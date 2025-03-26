@@ -12,13 +12,13 @@ import { textual_tree_from_json } from './modes/textual-tree';
 import { Glosser } from './morphology/gloss';
 import { ToaqTokenizer } from './morphology/tokenize';
 import { denote } from './semantics/denote';
-import type { DTree } from './semantics/model';
 import {
 	jsonStringifyCompact,
 	toJson,
 	toLatex,
 	toPlainText,
 } from './semantics/render';
+import type { DTree } from './semantics/types';
 import { recover } from './syntax/recover';
 import type { Tree } from './tree';
 import { drawTreeToCanvas } from './tree/draw';

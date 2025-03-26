@@ -4,12 +4,10 @@ import {
 	bare,
 	baseForm,
 	clean,
-	inTone,
 	splitIntoRaku,
 	splitPrefixes,
-	tone,
 } from './tokenize';
-import { Tone } from './tone';
+import { Tone, inTone, tone } from './tone';
 
 test('it cleans up Toaq words', () => {
 	expect(clean('gi')).toEqual('gı');

@@ -1,7 +1,7 @@
 .tree-node {
+	white-space: pre;
 	padding-bottom: 20px;
 	display: inline-block;
-	transform: translateX(-50%);
 	text-align: center;
 }
 
@@ -12,4 +12,8 @@
 .tree-roof {
 	cursor: pointer;
 	padding: 0.5em;
+}
+
+.tree-node span[style*=italic] + span[style*=bold] {
+	margin-left: 1px;
 }

@@ -1,97 +1,54 @@
-import {
-	Impossible,
-	Ungrammatical,
-	Unimplemented,
-	Unrecognized,
-} from '../core/error';
+import { Impossible, Unimplemented, Unrecognized } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
 import type { VerbEntry } from '../morphology/dictionary';
-import { inTone } from '../morphology/tokenize';
-import { Tone } from '../morphology/tone';
-import { getFrame } from '../syntax/serial';
+import { Tone, inTone } from '../morphology/tone';
+import { getFrame } from '../syntax/frame';
+import { getDistribution } from '../syntax/serial';
 import {
-	type Branch,
 	type CovertWord,
 	type Leaf,
 	type StrictTree,
 	type Word,
-	effectiveLabel,
+	assertLeaf,
 } from '../tree';
 import { compose } from './compose';
 import {
-	adjuncts,
-	animacies,
-	argumentConjunctions,
-	argumentCoordinator,
-	aspects,
-	boundTheCp,
-	boundTheNp,
-	clausalConjunctions,
-	covertCp,
-	covertHoaBindings,
-	covertLittleVs,
+	causeLittleV,
+	complementizers,
+	covertCrel,
+	covertResumptive,
 	covertV,
-	defaultTense,
-	dps,
-	eventAccessor,
-	focus,
-	focusAdverbs,
-	headAnaphor,
-	modals,
-	nameVerbs,
-	overtLittleVs,
-	pluralCoordinator,
+	declarativeComplementizer,
+	determiners,
 	polarities,
-	quantifiers,
-	quoteVerb,
-	speechActs,
-	tenses,
-	topic,
+	pronominalTenses,
+	pronouns,
+	speechActParticles,
 } from './data';
 import {
-	type AnimacyClass,
-	type DTree,
-	type Expr,
-	cloneBindings,
-	noBindings,
+	Bind,
+	Cont,
+	Dx,
+	Fn,
+	Gen,
+	Int,
+	Pl,
+	Qn,
+	app,
+	assertFn,
+	bind,
+	closed,
+	gen,
+	lex,
 	quote,
-	v,
-	verb,
+	ref,
+	ungen,
 	λ,
 } from './model';
-
-function denoteVerb(toaq: string, arity: number): Expr {
-	switch (arity) {
-		case 0:
-			return λ('v', ['s'], c => verb(toaq, [], v(0, c), v(1, c)));
-		case 1:
-			return λ('e', ['s'], c =>
-				λ('v', c, c => verb(toaq, [v(1, c)], v(0, c), v(2, c))),
-			);
-		case 2:
-			return λ('e', ['s'], c =>
-				λ('e', c, c =>
-					λ('v', c, c => verb(toaq, [v(1, c), v(2, c)], v(0, c), v(3, c))),
-				),
-			);
-		default:
-			throw new Impossible(`Invalid verb arity: ${toaq} (${arity})`);
-	}
-}
-
-function animacyClass(verb: VerbEntry): AnimacyClass | null {
-	if (verb.toaq === 'raı') return null;
-	switch (verb.pronominal_class) {
-		case 'ho':
-			return 'animate';
-		case 'maq':
-			return 'inanimate';
-		case 'hoq':
-			return 'abstract';
-		default:
-			return 'descriptive';
-	}
-}
+import { reduceExpr } from './reduce';
+import { typeToPlainText } from './render';
+import { findInner, getFunctor, unwrapEffects } from './structures';
+import type { AnimacyClass, DTree, Expr, ExprType } from './types';
 
 function findVp(tree: StrictTree): StrictTree | null {
 	if (tree.label === 'VP' || tree.label === "EvA'") {
@@ -100,7 +57,7 @@ function findVp(tree: StrictTree): StrictTree | null {
 	if ('word' in tree) {
 		return null;
 	}
-	return findVp(tree.right) ?? findVp(tree.left);
+	return findVp(tree.left) ?? findVp(tree.right);
 }
 
 function getVerbWord(vp: StrictTree): Word | CovertWord {
@@ -134,310 +91,330 @@ function getVerbWord(vp: StrictTree): Word | CovertWord {
 	}
 }
 
-function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
-	let denotation: Expr | null;
-	let bindings = noBindings;
+function animacyClass(verb: VerbEntry): AnimacyClass | null {
+	if (verb.toaq === 'raı') return null;
+	switch (verb.pronominal_class) {
+		case 'ho':
+			return 'animate';
+		case 'maq':
+			return 'inanimate';
+		case 'hoq':
+			return 'abstract';
+		default:
+			return 'descriptive';
+	}
+}
 
+function findGen(t: ExprType): (ExprType & object & { head: 'gen' }) | null {
+	if (typeof t === 'string') return null;
+	if (t.head === 'gen') return t;
+	const functor = getFunctor(t);
+	return functor && findGen(functor.unwrap(t));
+}
+
+function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	if (leaf.label === 'V' || leaf.label === 'VP') {
+		if (leaf.word.covert) return covertV;
+
+		const entry = leaf.word.entry;
+		if (!entry) throw new Unrecognized(`verb: ${leaf.word.text}`);
+		if (entry.type !== 'predicate' && entry.type !== 'predicatizer')
+			throw new Impossible('non-predicate V');
+
+		let arity = splitNonEmpty(getFrame(leaf), ' ').length;
+		// Agents are external to the verb, so not counted in the arity
+		if (entry.subject === 'agent') arity--;
+		// In case we don't have lexical data on this word, make sure we're at least
+		// providing the minimum number of arguments
+		if (leaf.label === 'V') arity = Math.max(1, arity);
+		const distribution = splitNonEmpty(getDistribution(leaf), ' ');
+
+		let type = Fn('v', 't');
+		for (let i = 0; i < arity; i++)
+			type = Fn(
+				distribution[distribution.length - arity + i] === 'd' ? 'e' : Pl('e'),
+				type,
+			);
+		type = Int(type);
+		return lex(entry.toaq, type, closed);
+	}
+
+	if (leaf.label === '𝘷') {
 		if (leaf.word.covert) {
-			denotation = covertV;
-		} else {
-			const entry = leaf.word.entry;
-			if (!entry) throw new Unrecognized(`verb: ${leaf.word.text}`);
-			if (entry.type !== 'predicate' && entry.type !== 'predicatizer')
-				throw new Impossible('non-predicate V');
-
-			let arity = splitNonEmpty(getFrame(leaf), ' ').length;
-			// Agents are external to the verb, so not counted in the arity
-			if (entry.subject === 'agent') arity--;
-			// In case we don't have lexical data on this word, make sure we're at least
-			// providing the minimum number of arguments
-			if (leaf.label === 'V') arity = Math.max(1, arity);
-			denotation = denoteVerb(entry.toaq, arity);
-		}
-	} else if (leaf.label === 'DP') {
-		if (leaf.word.covert) {
-			[denotation] = dps.hóa;
-			bindings = covertHoaBindings;
-		} else if (leaf.word.entry === undefined) {
-			throw new Unrecognized(`DP: ${leaf.word.text}`);
-		} else {
-			const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
-			const data = dps[toaq];
-			if (data === undefined) throw new Unrecognized(`DP: ${toaq}`);
-			[denotation, bindings] = data;
-		}
-	} else if (leaf.label === 'D') {
-		if (cCommand === null)
-			throw new Impossible("Can't denote a D in isolation");
-
-		const binding = { index: 0, subordinate: false, timeIntervals: [] };
-		if (cCommand.label === 'CP') {
-			denotation = boundTheCp;
-		} else {
-			if (leaf.word.covert) throw new Impossible('Covert D');
-			if (leaf.word.text === 'hú-') {
-				if (
-					cCommand.label !== 'word' ||
-					!('word' in cCommand) ||
-					cCommand.word.covert
-				)
-					throw new Unrecognized('hú- DP shape');
-				denotation = headAnaphor;
-				bindings = {
-					...noBindings,
-					head: new Map([[cCommand.word.bare, binding]]),
-				};
-			} else {
-				const vp = findVp(cCommand);
-				if (vp === null) throw new Impossible("Can't find the VP for this D");
-				const verb = getVerbWord(vp);
-
-				denotation = boundTheNp;
-				bindings = cloneBindings(noBindings);
-				bindings.covertResumptive = binding;
-				if (leaf.word.text !== '◌́') {
-					bindings.head.set(leaf.word.bare, binding);
-					if (leaf.binding !== undefined)
-						bindings.index.set(leaf.binding, binding);
-				}
-				if (!verb.covert) {
-					bindings.variable.set((verb.entry as VerbEntry).toaq, binding);
-					const animacy = animacyClass(verb.entry as VerbEntry);
-					if (animacy !== null) bindings.animacy.set(animacy, binding);
-				}
+			const value = leaf.word.value;
+			if (value === 'CAUSE') return causeLittleV;
+			if (value === 'BE') {
+				if (cCommand === null)
+					throw new Impossible("Can't denote BE in isolation");
+				return λ(unwrapEffects(cCommand.denotation.type), closed, (pred, s) =>
+					s.var(pred),
+				);
 			}
+			throw new Unrecognized(`𝘷: ${value}`);
 		}
-	} else if (leaf.label === '𝘯') {
+		throw new Unimplemented('Overt 𝘷');
+	}
+
+	if (leaf.label === 'DP') {
+		if (leaf.word.covert) return covertResumptive;
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`DP: ${leaf.word.text}`);
+
+		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+
+		const data = pronouns.get(toaq);
+		if (data === undefined) throw new Unrecognized(`DP: ${toaq}`);
+		return data;
+	}
+
+	if (leaf.label === 'Asp') {
+		let toaq: string;
+		if (leaf.word.covert) toaq = 'tam';
+		else if (leaf.word.entry === undefined)
+			throw new Unrecognized(`Asp: ${leaf.word.text}`);
+		else toaq = leaf.word.entry.toaq.replace(/-$/, '');
+
+		// TODO: chum will need a different type
+		return lex(toaq, Int(Fn(Fn('v', 't'), Fn('i', 't'))), closed);
+	}
+
+	if (leaf.label === 'T') {
+		let toaq: string;
+		if (leaf.word.covert) toaq = 'tuom';
+		else if (leaf.word.entry === undefined)
+			throw new Unrecognized(`T: ${leaf.word.text}`);
+		else toaq = leaf.word.entry.toaq.replace(/-$/, '');
+
+		return lex(
+			toaq,
+			toaq === 'sula'
+				? Fn(Fn('i', 't'), 't')
+				: Dx(pronominalTenses.has(toaq) ? 'i' : Fn(Fn('i', 't'), 't')),
+			closed,
+		);
+	}
+
+	if (leaf.label === 'Σ') {
+		let toaq: string;
+		if (leaf.word.covert) toaq = 'jeo';
+		else if (leaf.word.entry === undefined)
+			throw new Unrecognized(`Σ: ${leaf.word.text}`);
+		else toaq = leaf.word.entry.toaq.replace(/-$/, '');
+
+		const data = polarities.get(toaq);
+		if (data === undefined) throw new Unrecognized(`Σ: ${toaq}`);
+		return data;
+	}
+
+	if (leaf.label === 'D') {
+		if (leaf.word.covert)
+			// TODO: This shouldn't be a random lexical entry
+			return lex('ló', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed);
 		if (cCommand === null)
-			throw new Impossible("Can't denote an 𝘯 in isolation");
+			throw new Impossible('Cannot denote a D in isolation');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`D: ${leaf.word.text}`);
+
+		if (leaf.word.text === '◌́') {
+			assertLeaf(cCommand);
+			if (cCommand.word.covert) throw new Impossible('Covert name');
+			if (cCommand.word.entry === undefined)
+				throw new Unrecognized(`name: ${cCommand.word.text}`);
+			const animacy = animacyClass(cCommand.word.entry as VerbEntry);
+			const word = cCommand.word.entry.toaq;
+			return λ('e', closed, (_, s) =>
+				ref(
+					{ type: 'name', verb: word },
+					λ(Int(Pl('e')), s, (x, s) => {
+						let result: Expr = s.var(x);
+						if (animacy !== null)
+							result = bind(
+								{ type: 'animacy', class: animacy },
+								s.var(x),
+								result,
+							);
+						result = bind({ type: 'name', verb: word }, s.var(x), result);
+						return result;
+					}),
+				),
+			);
+		}
+
+		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+
+		const gen = findGen(cCommand.denotation.type);
+		if (gen === null)
+			throw new Impossible(
+				`D complement: ${typeToPlainText(cCommand.denotation.type)}`,
+			);
+		const data = determiners.get(toaq)?.(gen.domain);
+		if (data === undefined) throw new Unrecognized(`D: ${toaq}`);
+		assertFn(data.type);
+		const functor = getFunctor(data.type.range);
+		if (functor === null)
+			throw new Impossible(`${toaq} doesn't return a functor`);
+
+		return app(
+			λ(data.type, closed, (data, s) =>
+				λ(Gen(gen.domain, gen.inner), s, (np, s) =>
+					ungen(
+						s.var(np),
+						λ(Fn(gen.domain, 't'), s, (restriction, s) =>
+							λ(Fn(gen.domain, gen.inner), s, (body, s) =>
+								functor.map(
+									λ(gen.domain, s, (x, s) => app(s.var(body), s.var(x))),
+									app(s.var(data), s.var(restriction)),
+									s,
+								),
+							),
+						),
+					),
+				),
+			),
+			data,
+		);
+	}
+
+	if (leaf.label === '𝘯') {
+		if (cCommand === null)
+			throw new Impossible('Cannot denote an 𝘯 in isolation');
 		const vp = findVp(cCommand);
 		if (vp === null) throw new Impossible("Can't find the VP for this 𝘯");
 		const verb = getVerbWord(vp);
+		const animacy = verb.covert ? null : animacyClass(verb.entry as VerbEntry);
+		return λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
+			gen(
+				s.var(predicate),
+				λ(Int(Pl('e')), s, (x, s) => {
+					let result: Expr = s.var(x);
+					if (animacy !== null)
+						result = bind(
+							{ type: 'animacy', class: animacy },
+							s.var(x),
+							result,
+						);
+					if (!verb.covert)
+						result = bind(
+							{ type: 'name', verb: (verb.entry as VerbEntry).toaq },
+							s.var(x),
+							result,
+						);
+					return result;
+				}),
+			),
+		);
+	}
 
-		denotation =
-			animacies[
-				verb.covert
-					? 'descriptive'
-					: animacyClass(verb.entry as VerbEntry) ?? 'descriptive'
-			];
-		bindings = covertHoaBindings;
-	} else if (leaf.label === '𝘷') {
-		if (leaf.word.covert) {
-			const value = leaf.word.value;
-			const data = covertLittleVs[value];
-			if (data === undefined) throw new Unrecognized(`𝘷: ${value}`);
-			denotation = data;
-		} else if (leaf.word.entry === undefined) {
-			throw new Unrecognized(`𝘷: ${leaf.word.text}`);
-		} else {
-			const toaq = leaf.word.entry.toaq;
-			denotation = overtLittleVs[toaq];
-			if (denotation === undefined) throw new Unrecognized(`𝘷: ${toaq}`);
-		}
-	} else if (leaf.label === 'Adjunct') {
+	if (leaf.label === 'Crel') {
+		if (leaf.word.covert) return covertCrel;
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`Crel: ${leaf.word.text}`);
+		const toaq = leaf.word.entry.toaq;
+
+		const data = complementizers.get(toaq);
+		if (data === undefined) throw new Unrecognized(`C: ${toaq}`);
+		return data;
+	}
+
+	if (leaf.label === 'C') {
+		let toaq: string;
+		if (leaf.word.covert) toaq = 'ꝡa';
+		else if (leaf.word.entry === undefined)
+			throw new Unrecognized(`C: ${leaf.word.text}`);
+		else toaq = leaf.word.entry.toaq;
+		if (toaq === 'ꝡa') return declarativeComplementizer;
+
+		const data = complementizers.get(toaq);
+		if (data === undefined) throw new Unrecognized(`C: ${toaq}`);
+		return data;
+	}
+
+	if (leaf.label === 'SA') {
 		if (cCommand === null)
-			throw new Impossible("Can't denote an Adjunct in isolation");
-		const vp = findVp(cCommand);
-		if (vp === null) throw new Impossible("Can't find the VP for this Adjunct");
-		const word = getVerbWord(vp);
-		if (word.covert) throw new Impossible('Covert Adjunct verb');
-		if (word.entry === undefined || word.entry.type !== 'predicate')
-			throw new Unrecognized(`V in AdjunctP: ${word.text}`);
-
-		const data = adjuncts[word.entry.subject];
-		if (data === undefined)
-			throw new Ungrammatical(
-				`${word.entry.toaq} may not be used as an adverbial adjunct`,
-			);
-		denotation = data;
-	} else if (leaf.label === 'Asp') {
+			throw new Impossible('Cannot denote an SA in isolation');
 		let toaq: string;
 		if (leaf.word.covert) {
-			toaq = 'tam';
-		} else if (leaf.word.entry === undefined) {
-			throw new Unrecognized(`Asp: ${leaf.word.text}`);
-		} else {
-			toaq = leaf.word.entry.toaq.replace(/-$/, '');
-		}
-
-		denotation = aspects[toaq];
-		if (denotation === undefined) throw new Unrecognized(`Asp: ${toaq}`);
-	} else if (leaf.label === 'T') {
-		if (leaf.word.covert) {
-			denotation = defaultTense;
-		} else if (leaf.word.entry === undefined) {
-			throw new Unrecognized(`T: ${leaf.word.text}`);
-		} else {
-			const toaq = leaf.word.entry.toaq.replace(/-$/, '');
-			denotation = tenses[toaq];
-			if (denotation === undefined) throw new Unrecognized(`T: ${toaq}`);
-		}
-	} else if (leaf.label === 'Σ') {
-		if (leaf.word.covert) {
-			denotation = null;
-		} else if (leaf.word.entry === undefined) {
-			throw new Unrecognized(`Σ: ${leaf.word.text}`);
-		} else {
-			const toaq = leaf.word.entry.toaq.replace(/-$/, '');
-			denotation = polarities[toaq];
-			if (denotation === undefined) throw new Unrecognized(`Σ: ${toaq}`);
-		}
-	} else if (leaf.label === 'SA') {
-		let toaq: string;
-		if (leaf.word.covert) {
-			toaq = 'da'; // TODO: covert móq
-		} else if (leaf.word.entry === undefined) {
+			toaq =
+				findInner(cCommand.denotation.type, Qn('e', 't')) === null
+					? 'da'
+					: 'móq';
+		} else if (leaf.word.entry === undefined)
 			throw new Unrecognized(`SA: ${leaf.word.text}`);
-		} else {
-			toaq = leaf.word.entry.toaq;
-		}
+		else toaq = leaf.word.entry.toaq;
 
-		denotation = speechActs[toaq];
-		if (denotation === undefined) throw new Unrecognized(`SA: ${toaq}`);
-	} else if (leaf.label === 'Q') {
-		if (!leaf.word.covert) throw new Impossible(`Overt Q: ${leaf.word.text}`);
-		const value = leaf.word.value;
-		const data = quantifiers[value];
-		if (data === undefined) throw new Unrecognized(`Q: ${value}`);
-		denotation = data;
-	} else if (leaf.label === '&') {
-		if (cCommand === null)
-			throw new Impossible("Can't denote an & in isolation");
+		const type = speechActParticles.get(toaq);
+		if (type === undefined) throw new Unrecognized(`SA: ${toaq}`);
+		return lex(toaq, type(cCommand.denotation.type), closed);
+	}
+
+	if (leaf.label === '&') {
 		if (leaf.word.covert) throw new Impossible('Covert &');
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`&: ${leaf.word.text}`);
-
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
-		if (toaq === 'róı') {
-			denotation = pluralCoordinator;
-		} else {
-			const conjunct = effectiveLabel(cCommand);
-			if (conjunct === 'DP') {
-				denotation = argumentCoordinator;
-				const binding = { index: 0, subordinate: false, timeIntervals: [] };
-				if (leaf.binding !== undefined)
-					bindings = {
-						...noBindings,
-						index: new Map([[leaf.binding, binding]]),
-						head: new Map([[leaf.word.bare, binding]]),
-					};
-			} else {
-				const data = clausalConjunctions[effectiveLabel(cCommand)]?.[toaq];
-				if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
-				denotation = data;
-			}
-		}
-	} else if (leaf.label === '&Q') {
-		if (cCommand === null)
-			throw new Impossible("Can't denote an &Q in isolation");
-		if (!leaf.word.covert) throw new Impossible(`Overt &Q: ${leaf.word.text}`);
-		if (leaf.binding === undefined) throw new Impossible('&Q without binding');
 
-		const value = leaf.word.value;
-		const data = argumentConjunctions[value];
-		if (data === undefined) throw new Unrecognized(`&Q: ${value}`);
-		denotation = data;
-		bindings = {
-			...noBindings,
-			index: new Map([
-				[leaf.binding, { index: 0, subordinate: false, timeIntervals: [] }],
-			]),
-		};
-	} else if (leaf.label === 'Modal') {
-		if (leaf.word.covert) throw new Impossible('Covert Modal');
-		if (leaf.word.entry === undefined)
-			throw new Unrecognized(`Modal: ${leaf.word.text}`);
-
-		const toaq = inTone(leaf.word.entry.toaq, Tone.T4);
-		denotation = modals[toaq];
-		if (denotation === undefined) throw new Unrecognized(`Modal: ${toaq}`);
-	} else if (leaf.label === 'Topic') {
-		denotation = topic;
-	} else if (leaf.label === 'CP') {
-		if (!leaf.word.covert) throw new Impossible('Overt leaf CP');
-		denotation = covertCp;
-	} else if (leaf.label === 'mı') {
-		if (leaf.word.covert) throw new Impossible('Covert mı');
-		if (leaf.word.entry === undefined)
-			throw new Unrecognized(`mı: ${leaf.word.text}`);
-
-		const toaq = leaf.word.entry.toaq;
-		denotation = nameVerbs[toaq];
-		if (denotation === undefined) throw new Unrecognized(`mı: ${toaq}`);
-	} else if (leaf.label === 'shu' || leaf.label === 'mo') {
-		denotation = quoteVerb;
-	} else if (leaf.label === 'word' || leaf.label === 'text') {
-		if (leaf.word.covert) throw new Impossible(`Covert ${leaf.label}`);
-		denotation = quote(leaf.word.text, []);
-	} else if (leaf.label === 'EvA') {
-		denotation = eventAccessor;
-	} else if (leaf.label === 'Focus') {
-		if (leaf.word.covert) throw new Impossible('Covert Focus');
-		if (cCommand === null)
-			throw new Impossible("Can't denote a Focus in isolation");
-
-		const data = focus[cCommand.label];
-		if (data === undefined) throw new Unrecognized(`Focus(${cCommand.label})`);
-		denotation = data;
-		const binding = { index: 0, subordinate: false, timeIntervals: [] };
-		if (leaf.binding !== undefined)
-			bindings = {
-				...noBindings,
-				index: new Map([[leaf.binding, binding]]),
-				head: new Map([[leaf.word.bare, binding]]),
-			};
-	} else if (leaf.label === 'FocAdv') {
-		if (cCommand === null)
-			throw new Impossible("Can't denote a FocAdv in isolation");
-		if (!leaf.word.covert)
-			throw new Impossible(`Overt FocAdv: ${leaf.word.text}`);
-		if (leaf.binding === undefined)
-			throw new Impossible('FocAdv without binding');
-
-		const value = leaf.word.value;
-		const data1 = focusAdverbs[cCommand.label];
-		if (data1 === undefined)
-			throw new Unrecognized(`FocAdv(${cCommand.label})`);
-		const data2 = data1[value];
-		if (data2 === undefined) throw new Unrecognized(`FocAdv: ${value}`);
-		denotation = data2;
-		bindings = {
-			...noBindings,
-			index: new Map([
-				[leaf.binding, { index: 0, subordinate: false, timeIntervals: [] }],
-			]),
-		};
-	} else if (
-		leaf.label === 'C' ||
-		leaf.label === 'Crel' ||
-		leaf.label === 'teo'
-	) {
-		denotation = null;
-	} else {
-		throw new Unimplemented(`TODO: ${leaf.label}`);
+		// TODO: Generalize to more than just verbal arguments
+		return lex(
+			toaq,
+			toaq === 'róı'
+				? Fn(
+						Int(Pl('e')),
+						Fn(Int(Pl('e')), Bind({ type: 'head', head: 'róı' }, Int(Pl('e')))),
+					)
+				: Fn(
+						Int(Pl('e')),
+						Fn(
+							Int(Pl('e')),
+							Cont(Bind({ type: 'head', head: toaq }, Int(Pl('e')))),
+						),
+					),
+			closed,
+		);
 	}
 
-	return { ...leaf, denotation, bindings };
+	if (leaf.label === 'Focus') {
+		if (leaf.word.covert) throw new Impossible('Covert Focus');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`Focus: ${leaf.word.text}`);
+		// TODO: Generalize to more than just verbal arguments
+		return lex(
+			leaf.word.entry.toaq,
+
+			Fn(
+				Int(Pl('e')),
+				Cont(Bind({ type: 'head', head: leaf.word.entry.toaq }, Int(Pl('e')))),
+			),
+			closed,
+		);
+	}
+
+	if (leaf.label === 'word') {
+		if (leaf.word.covert) throw new Impossible('Covert word');
+		return quote(leaf.word.text, closed);
+	}
+
+	throw new Unimplemented(`TODO: ${leaf.label}`);
 }
 
-const branchCache = new WeakMap<Branch<StrictTree>, DTree>();
-
-export function denote_(tree: StrictTree, cCommand: StrictTree | null): DTree {
+export function denote_(tree: StrictTree, cCommand: DTree | null): DTree {
 	if ('word' in tree) {
-		return denoteLeaf(tree, cCommand);
+		const denotation = denoteLeaf(tree, cCommand);
+		return { ...tree, denotation };
 	}
-	// Because the denotation of a branch is a pure function of the branch, and
-	// some structures like quantified nPs and focused DPs tend to appear at
-	// multiple points in the tree, we can cache their denotations
-	const cached = branchCache.get(tree);
-	if (cached !== undefined) return cached;
 
-	const left = denote_(tree.left, tree.right);
-	const right = denote_(tree.right, tree.left);
-	const denoted = compose(tree, left, right);
-	branchCache.set(tree, denoted);
-	return denoted;
+	let left: DTree;
+	let right: DTree;
+	if ('word' in tree.left) {
+		right = denote_(tree.right, null);
+		left = denote_(tree.left, right);
+	} else {
+		left = denote_(tree.left, null);
+		right = denote_(tree.right, left);
+	}
+
+	const [expr, mode] = compose(left.denotation, right.denotation);
+	const denotation = reduceExpr(expr);
+	return { ...tree, left, right, denotation, mode };
 }
 
 /**

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
+import { ErrorBoundary } from './ErrorBoundary';
 import { Output } from './Output';
 import { type Configuration, Settings } from './Settings';
 
@@ -38,9 +39,11 @@ export function Interactive(props: { isDarkMode: boolean }) {
 				onSubmit={config => setConfiguration(config)}
 				dismissExplanation={() => setDismissed(true)}
 			/>
-			{configuration && (
-				<Output configuration={configuration} isDarkMode={props.isDarkMode} />
-			)}
+			<ErrorBoundary>
+				{configuration && (
+					<Output configuration={configuration} isDarkMode={props.isDarkMode} />
+				)}
+			</ErrorBoundary>
 		</>
 	);
 }

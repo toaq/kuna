@@ -21,8 +21,8 @@ declare var incorporated_determiner: any;
 declare var event_accessor: any;
 declare var focus_particle: any;
 declare var retroactive_cleft: any;
-declare var prefix_pronoun: any;
-declare var incorporated_prefix_pronoun: any;
+declare var word_determiner: any;
+declare var incorporated_word_determiner: any;
 declare var interjection: any;
 declare var adjective_marker: any;
 declare var name_verb: any;
@@ -129,13 +129,13 @@ const grammar: Grammar = {
     {"name": "CPrel", "symbols": ["Crel", "Clause_sub"], "postprocess": makeBranch('CPrel')},
     {"name": "CPrelna_main", "symbols": ["Clause_main"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
     {"name": "CPrelna_sub", "symbols": ["Clause_sub"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
+    {"name": "CPdet", "symbols": ["CPdet", "CPrelcon"], "postprocess": makeBranch('CPrel')},
     {"name": "CPdet", "symbols": ["MSPdet"], "postprocess": makeBranchCovertLeft('CPrel', 'Crel')},
     {"name": "DP$ebnf$1", "symbols": []},
     {"name": "DP$ebnf$1", "symbols": ["DP$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "DP", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun), "DP$ebnf$1"], "postprocess": makeLeaf('DP')},
-    {"name": "DP", "symbols": ["Hu", "Word"], "postprocess": makeBranch('DP')},
+    {"name": "DP", "symbols": ["WordD", "Word"], "postprocess": makeBranch('DP')},
     {"name": "DP", "symbols": ["D", "nP"], "postprocess": makeBranch('DP')},
-    {"name": "nP", "symbols": ["nP", "CPrelcon"], "postprocess": makeBranch('𝘯P')},
     {"name": "nP", "symbols": ["CPdet"], "postprocess": makeBranchCovertLeft('𝘯P', '𝘯')},
     {"name": "Clause_main", "symbols": ["Argument", "Bi", "Clause_main"], "postprocess": make3L('TopicP', "Topic'")},
     {"name": "Clause_sub", "symbols": ["Argument", "Bi", "Clause_sub"], "postprocess": make3L('TopicP', "Topic'")},
@@ -163,9 +163,12 @@ const grammar: Grammar = {
     {"name": "SigmaPcon_sub", "symbols": ["SigmaP_sub"], "postprocess": id},
     {"name": "SigmaPcon_main", "symbols": ["SigmaP_main", "Conjunction", "SigmaPcon_main"], "postprocess": makeConn},
     {"name": "SigmaPcon_sub", "symbols": ["SigmaP_sub", "Conjunction", "SigmaPcon_sub"], "postprocess": makeConn},
-    {"name": "SigmaP_main", "symbols": ["Sigmaconopt", "TP_main"], "postprocess": makeBranch('ΣP')},
-    {"name": "SigmaP_sub", "symbols": ["Sigmaconopt", "TP_sub"], "postprocess": makeBranch('ΣP')},
-    {"name": "SigmaPdet", "symbols": ["Sigmaconopt", "TPdet"], "postprocess": makeBranch('ΣP')},
+    {"name": "SigmaP_main", "symbols": ["TP_main"], "postprocess": id},
+    {"name": "SigmaP_sub", "symbols": ["TP_sub"], "postprocess": id},
+    {"name": "SigmaP_main", "symbols": ["Sigmacon", "TP_main"], "postprocess": makeBranch('ΣP')},
+    {"name": "SigmaP_sub", "symbols": ["Sigmacon", "TP_sub"], "postprocess": makeBranch('ΣP')},
+    {"name": "SigmaPdet", "symbols": ["TPdet"], "postprocess": id},
+    {"name": "SigmaPdet", "symbols": ["Sigmacon", "TPdet"], "postprocess": makeBranch('ΣP')},
     {"name": "TP_main", "symbols": ["Tconopt", "AspP_main"], "postprocess": makeBranch('TP')},
     {"name": "TP_sub", "symbols": ["Tconopt", "AspP_sub"], "postprocess": makeBranch('TP')},
     {"name": "TP_main", "symbols": ["EvA", "vP_sub", "DPcon"], "postprocess": makeEvAP},
@@ -208,7 +211,7 @@ const grammar: Grammar = {
     {"name": "DPincorp$ebnf$1", "symbols": []},
     {"name": "DPincorp$ebnf$1", "symbols": ["DPincorp$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "DPincorp", "symbols": [(lexer.has("incorporated_pronoun") ? {type: "incorporated_pronoun"} : incorporated_pronoun), "DPincorp$ebnf$1"], "postprocess": makeLeaf('DP')},
-    {"name": "DPincorp", "symbols": ["Huincorp", "Word"], "postprocess": makeBranch('DP')},
+    {"name": "DPincorp", "symbols": ["WordDincorp", "Word"], "postprocess": makeBranch('DP')},
     {"name": "DPincorp", "symbols": ["Dincorp", "nP"], "postprocess": makeBranch('DP')},
     {"name": "Argument", "symbols": ["DPcon"], "postprocess": id},
     {"name": "Argument", "symbols": ["CPargcon"], "postprocess": id},
@@ -228,9 +231,6 @@ const grammar: Grammar = {
     {"name": "CParg", "symbols": ["CPsub"], "postprocess": makeBranchCovertLeft('DP', 'D')},
     {"name": "CPrelcon", "symbols": ["CPrel"], "postprocess": id},
     {"name": "CPrelcon", "symbols": ["CPrel", "Conjunction", "CPrelcon"], "postprocess": makeConn},
-    {"name": "Sigmaconopt$ebnf$1", "symbols": ["Sigmacon"], "postprocess": id},
-    {"name": "Sigmaconopt$ebnf$1", "symbols": [], "postprocess": () => null},
-    {"name": "Sigmaconopt", "symbols": ["Sigmaconopt$ebnf$1"], "postprocess": makeOptLeaf('Σ')},
     {"name": "Sigmacon", "symbols": ["Sigma"], "postprocess": id},
     {"name": "Sigmacon", "symbols": ["Sigma", "Conjunction", "Sigmacon"], "postprocess": makeConn},
     {"name": "Tconopt$ebnf$1", "symbols": ["Tcon"], "postprocess": id},
@@ -321,12 +321,12 @@ const grammar: Grammar = {
     {"name": "Go$ebnf$1", "symbols": []},
     {"name": "Go$ebnf$1", "symbols": ["Go$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "Go", "symbols": [(lexer.has("retroactive_cleft") ? {type: "retroactive_cleft"} : retroactive_cleft), "Go$ebnf$1"], "postprocess": makeLeaf('𝘷')},
-    {"name": "Hu$ebnf$1", "symbols": []},
-    {"name": "Hu$ebnf$1", "symbols": ["Hu$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "Hu", "symbols": [(lexer.has("prefix_pronoun") ? {type: "prefix_pronoun"} : prefix_pronoun), "Hu$ebnf$1"], "postprocess": makeLeaf('D')},
-    {"name": "Huincorp$ebnf$1", "symbols": []},
-    {"name": "Huincorp$ebnf$1", "symbols": ["Huincorp$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "Huincorp", "symbols": [(lexer.has("incorporated_prefix_pronoun") ? {type: "incorporated_prefix_pronoun"} : incorporated_prefix_pronoun), "Huincorp$ebnf$1"], "postprocess": makeLeaf('D')},
+    {"name": "WordD$ebnf$1", "symbols": []},
+    {"name": "WordD$ebnf$1", "symbols": ["WordD$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "WordD", "symbols": [(lexer.has("word_determiner") ? {type: "word_determiner"} : word_determiner), "WordD$ebnf$1"], "postprocess": makeLeaf('D')},
+    {"name": "WordDincorp$ebnf$1", "symbols": []},
+    {"name": "WordDincorp$ebnf$1", "symbols": ["WordDincorp$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
+    {"name": "WordDincorp", "symbols": [(lexer.has("incorporated_word_determiner") ? {type: "incorporated_word_determiner"} : incorporated_word_determiner), "WordDincorp$ebnf$1"], "postprocess": makeLeaf('D')},
     {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Ki$ebnf$1", "symbols": []},
     {"name": "Ki$ebnf$1", "symbols": ["Ki$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},

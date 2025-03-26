@@ -1,5 +1,4 @@
-import { inTone } from './tokenize';
-import { Tone } from './tone';
+import { Tone, inTone } from './tone';
 
 export const verbTypes = [
 	'name quote',
@@ -29,8 +28,8 @@ export const nonVerbTypes = [
 	'illocution',
 	'incorporated complementizer',
 	'incorporated determiner',
-	'incorporated prefix pronoun', // hû-
 	'incorporated pronoun',
+	'incorporated word determiner', // lô, hû-
 	'interjection',
 	'modality',
 	'modality with complement',
@@ -41,7 +40,6 @@ export const nonVerbTypes = [
 	'prefix conjunctionizer', // ná-
 	'prefix conjunctionizer in t1', // na-
 	'prefix conjunctionizer in t4', // nâ-
-	'prefix pronoun', // hú-
 	'prefix tense',
 	'preposition',
 	'pronoun',
@@ -53,6 +51,7 @@ export const nonVerbTypes = [
 	'tense',
 	'topic marker',
 	'vocative',
+	'word determiner', // ló, hú-
 ] as const;
 
 export const wordTypes = [...verbTypes, ...nonVerbTypes];
@@ -163,7 +162,7 @@ export class Dictionary {
 			// We'll assume "prefix" is a verb-to-verb prefix, and make some
 			// sub-types for special prefixes.
 			if (e.toaq === 'hu-') {
-				e.type = 'prefix pronoun';
+				e.type = 'word determiner';
 			}
 			if (e.toaq === 'na-') {
 				e.type = 'prefix conjunctionizer';

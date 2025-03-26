@@ -1,6 +1,6 @@
 import { Impossible, Ungrammatical } from '../core/error';
 import { dictionary, underscoredWordTypes } from './dictionary';
-import { Tone } from './tone';
+import { Tone, inTone, tone } from './tone';
 
 /**
  * Cleans up a Toaq word or string by normalizing ı, ꝡ, apostrophes,
@@ -43,52 +43,6 @@ export function baseForm(word: string): string {
 	if (bareForm === 'e') return 'ë';
 	if (bareForm === 'ꝡe') return 'ꝡë';
 	return bareForm;
-}
-
-/**
- * Return the combining diacritic character for the given tone.
- */
-export function diacriticForTone(tone: Tone): string {
-	return ['', '', '\u0301', '\u0308', '\u0302'][tone];
-}
-
-/**
- * Change a word to have the given tone.
- *
- * For example, `inTone('Suao', Tone.T2)` is `'Súao'`.
- */
-export function inTone(word: string, tone: Tone): string {
-	return word
-		.normalize('NFKD')
-		.replace(/\p{Diacritic}/gu, '')
-		.replace(/[aeiıou]/iu, m => m.replace('ı', 'i') + diacriticForTone(tone))
-		.normalize()
-		.replace(/i/gu, 'ı');
-}
-
-/**
- * Repair tones in a given string, replacing substrings like `'◌́ hao'` with `'háo'`.
- */
-export function repairTones(text: string): string {
-	return text.replace(/◌(.) (\S+)/g, (_m, diacritic, word) => {
-		const tone = diacritic === '\u0301' ? Tone.T2 : Tone.T4;
-		return inTone(word, tone);
-	});
-}
-
-/**
- * Detect what tone a word is in.
- */
-export function tone(word: string): Tone {
-	// This is faster than regex:
-	const norm = word.normalize('NFKD');
-	return norm.includes('\u0301')
-		? Tone.T2
-		: norm.includes('\u0308')
-			? Tone.T3
-			: norm.includes('\u0302')
-				? Tone.T4
-				: Tone.T1;
 }
 
 /**
@@ -205,7 +159,7 @@ export class ToaqTokenizer {
 					const hu = wordTokens.at(-1)!;
 					hu.value = inTone(hu.value, tone(tokenText));
 					if (tone(tokenText) === Tone.T4) {
-						hu.type = 'incorporated_prefix_pronoun';
+						hu.type = 'incorporated_word_determiner';
 					}
 					wordTokens.push({
 						type: 'word',
@@ -244,7 +198,6 @@ export class ToaqTokenizer {
 
 				if (exactEntry) {
 					if (exactEntry.type === 'prefix conjunctionizer') {
-						console.log(wordTokens, prefixes);
 						const wordTone = tone(m[0]);
 						if (wordTone === Tone.T3) {
 							throw new Ungrammatical('na- in t3 word');
@@ -261,7 +214,7 @@ export class ToaqTokenizer {
 						});
 						toneInPrefix = true;
 					} else {
-						if (exactEntry.type === 'prefix pronoun') {
+						if (exactEntry.type === 'word determiner') {
 							tokenQuote = true;
 						}
 						wordTokens.push({
@@ -276,12 +229,22 @@ export class ToaqTokenizer {
 				const wordTone = tone(tokenText);
 
 				if (entry) {
-					if (!toneInPrefix)
+					if (!toneInPrefix) {
+						if (wordTone === Tone.T2) {
+							wordTokens.unshift({
+								type: 'word_determiner',
+								value: '◌́',
+								index: m.index,
+							});
+							wordTokens.push({ type: 'word', value: base, index: m.index });
+							continue;
+						}
 						wordTokens.unshift({
-							type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
-							value: wordTone === Tone.T2 ? '◌́' : '◌̂',
+							type: 'preposition',
+							value: '◌̂',
 							index: m.index,
 						});
+					}
 					wordTokens.push({
 						type: entry.type.replace(/ /g, '_'),
 						value: inTone(tokenText, tone(base)),
@@ -296,16 +259,25 @@ export class ToaqTokenizer {
 						index: m.index,
 					});
 				} else if (!toneInPrefix) {
-					wordTokens.unshift({
-						type: wordTone === Tone.T2 ? 'determiner' : 'preposition',
-						value: wordTone === Tone.T2 ? '◌́' : '◌̂',
-						index: m.index,
-					});
-					wordTokens.push({
-						type: 'predicate',
-						value: inTone(tokenText, tone(base)),
-						index: m.index,
-					});
+					if (wordTone === Tone.T2) {
+						wordTokens.unshift({
+							type: 'word_determiner',
+							value: '◌́',
+							index: m.index,
+						});
+						wordTokens.push({ type: 'word', value: base, index: m.index });
+					} else {
+						wordTokens.unshift({
+							type: 'preposition',
+							value: '◌̂',
+							index: m.index,
+						});
+						wordTokens.push({
+							type: 'predicate',
+							value: inTone(tokenText, tone(base)),
+							index: m.index,
+						});
+					}
 				}
 			}
 

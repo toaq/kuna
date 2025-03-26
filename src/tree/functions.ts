@@ -1,5 +1,6 @@
 import { Impossible } from '../core/error';
-import { bare, clean, repairTones } from '../morphology/tokenize';
+import { bare, clean } from '../morphology/tokenize';
+import { repairTones } from '../morphology/tone';
 import { type Label, type Tree, assertBranch } from './types';
 
 export function isBoringNull(tree: Tree): boolean {

@@ -1,10 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './Sentences.css';
 import { Impossible } from '../core/error';
-import { drawSceneToCanvas } from '../tree/draw';
 import { moveNodeUp } from '../tree/movement';
-import { denotationRenderRawLatex } from '../tree/place';
-import type { MovementArrow, Scene, SceneNode, Unplaced } from '../tree/scene';
+import {
+	type MovementArrow,
+	type Scene,
+	type SceneNode,
+	type Unplaced,
+	sceneLabelToString,
+} from '../tree/scene';
+import { themes } from '../tree/theme';
+import { TreeBrowser } from './tree/TreeBrowser';
 
 type Node = SceneNode<string, Unplaced>;
 
@@ -23,12 +29,13 @@ const shortcuts: Record<string, string> = {
 };
 
 function makeLeaf(node: Node, text: string): Node {
+	const label = sceneLabelToString(node.label);
 	return {
-		label: node.label.replace(/\^|\_\d+/g, '') as any,
+		label: label.replace(/\^|\_\d+/g, '') as any,
 		denotation: node.denotation,
 		source: text,
 		text,
-		roof: node.label.includes('^'),
+		roof: label.includes('^'),
 		children: [],
 		placement: undefined,
 	};
@@ -73,7 +80,6 @@ function parseTreepad(
 			const id = lexeme.replaceAll(/[<>]/g, '');
 			arrows.push(moveNodeUp(top, movementTargets[id]));
 		} else if (lexeme.startsWith('$')) {
-			console.log(lexeme);
 			const latex = token[1];
 			const top = stack.at(-1);
 			if (!top) throw new Error('no subtree to denote');
@@ -122,7 +128,7 @@ export function Treepad(props: { isDarkMode: boolean }) {
 	const [source, setSource] = useState('');
 	const [pos, setPos] = useState(0);
 	const [error, setError] = useState('');
-	const treeImg = useRef<HTMLImageElement>(null);
+	const [currentScene, setCurrentScene] = useState<Scene<string, Unplaced>>();
 
 	useEffect(() => {
 		let scene: Scene<string, Unplaced> | undefined;
@@ -133,30 +139,20 @@ export function Treepad(props: { isDarkMode: boolean }) {
 			setError(String(e));
 		}
 		if (scene) {
-			drawSceneToCanvas(scene, {
-				themeName: props.isDarkMode ? 'dark' : 'light',
-				tall: false,
-				renderer: denotationRenderRawLatex,
-				showMovement: true,
-				compact: false,
-				truncateLabels: [],
-			}).then(canvas => {
-				setTimeout(() => {
-					if (treeImg.current) {
-						treeImg.current.src = canvas.toDataURL();
-					}
-				}, 0);
-			});
+			setCurrentScene(scene);
 		}
-	}, [source, pos, props.isDarkMode]);
+	}, [source, pos]);
 	return (
 		<div
 			style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
 		>
-			<div className="card" style={{ maxWidth: '35em' }}>
+			<div className="card">
 				<h1 style={{ textAlign: 'center' }}>Treepad</h1>
 				<p>You can use this tool to create syntax trees from bracketed text.</p>
-				<pre>[TP [^DP This tool] [T' [T 0] [VP [V is] [A useful]]]]</pre>
+				<pre style={{ margin: '-4px 0' }}>
+					[TP [^DP This tool] [T' [T 0] [VP [V is] [A useful]]]]
+				</pre>
+				<p>When you're done, take a screenshot of the tree.</p>
 				<textarea
 					value={source}
 					placeholder={''}
@@ -174,17 +170,15 @@ export function Treepad(props: { isDarkMode: boolean }) {
 			</div>
 			{error ? (
 				error
-			) : (
-				<img
-					ref={treeImg}
-					style={{
-						maxWidth: '90vw',
-						maxHeight: '90vh',
-						objectFit: 'contain',
-					}}
-					src={''}
-					aria-label="Tree diagram"
+			) : currentScene ? (
+				<TreeBrowser
+					scene={currentScene}
+					compactDenotations={false}
+					theme={props.isDarkMode ? themes.dark : themes.light}
+					truncateLabels={[]}
 				/>
+			) : (
+				'No tree'
 			)}
 		</div>
 	);

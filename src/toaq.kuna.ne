@@ -86,17 +86,17 @@ CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C') %}
 CPrel -> Crel Clause<sub> {% makeBranch('CPrel') %}
 # (ráı nä) hao
 CPrelna<S> -> Clause<S> {% makeBranchCovertLeft('CPrel', 'Crel') %}
+# (sá) ꝡë hao
+CPdet -> CPdet CPrelcon {% makeBranch('CPrel') %}
 # (sá) ∅ hao
 CPdet -> MSPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 
 # jí
 DP -> %pronoun Free:* {% makeLeaf('DP') %}
-# hụ́ꝡa
-DP -> Hu Word {% makeBranch('DP') %}
+# háo/hụ́ꝡa
+DP -> WordD Word {% makeBranch('DP') %}
 # sá ...
 DP -> D nP {% makeBranch('DP') %}
-# (sá) ꝡë hao
-nP -> nP CPrelcon {% makeBranch('𝘯P') %}
 # (sá) ∅ hao
 nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 
@@ -129,10 +129,12 @@ MSPdet -> Sigma Modal SigmaPdet {% makeSigmaT1ModalvP %}
 # jeo pu chum hao jí
 SigmaPcon<S> -> SigmaP<S> {% id %}
 SigmaPcon<S> -> SigmaP<S> Conjunction SigmaPcon<S> {% makeConn %}
-SigmaP<S> -> Sigmaconopt TP<S> {% makeBranch('ΣP') %}
+SigmaP<S> -> TP<S> {% id %}
+SigmaP<S> -> Sigmacon TP<S> {% makeBranch('ΣP') %}
 
 # (sá) jeo pu chum hao
-SigmaPdet -> Sigmaconopt TPdet {% makeBranch('ΣP') %}
+SigmaPdet -> TPdet {% id %}
+SigmaPdet -> Sigmacon TPdet {% makeBranch('ΣP') %}
 
 # pu chum hao jí
 TP<S> -> Tconopt AspP<S> {% makeBranch('TP') %}
@@ -173,7 +175,7 @@ Serialdet -> null {% makeEmptySerial() %}
 # jî
 DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
 # hụ̂ꝡa
-DPincorp -> Huincorp Word {% makeBranch('DP') %}
+DPincorp -> WordDincorp Word {% makeBranch('DP') %}
 # sâ ...
 DPincorp -> Dincorp nP {% makeBranch('DP') %}
 
@@ -196,7 +198,6 @@ CPargfoc -> Focus CParg {% makeBranch('FocusP') %}
 CParg -> CPsub {% makeBranchCovertLeft('DP', 'D') %}
 CPrelcon -> CPrel {% id %}
 CPrelcon -> CPrel Conjunction CPrelcon {% makeConn %}
-Sigmaconopt -> Sigmacon:? {% makeOptLeaf('Σ') %}
 Sigmacon -> Sigma {% id %}
 Sigmacon -> Sigma Conjunction Sigmacon {% makeConn %}
 Tconopt -> Tcon:? {% makeOptLeaf('T') %}
@@ -248,8 +249,8 @@ Dincorp -> %incorporated_determiner Free:* {% makeLeaf('D') %}
 EvA -> %event_accessor Free:* {% makeLeaf('EvA') %}
 Focus -> %focus_particle Free:* {% makeLeaf('Focus') %}
 Go -> %retroactive_cleft Free:* {% makeLeaf('𝘷') %}
-Hu -> %prefix_pronoun Free:* {% makeLeaf('D') %}
-Huincorp -> %incorporated_prefix_pronoun Free:* {% makeLeaf('D') %}
+WordD -> %word_determiner Free:* {% makeLeaf('D') %}
+WordDincorp -> %incorporated_word_determiner Free:* {% makeLeaf('D') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
 Ki -> %adjective_marker Free:* {% makeLeaf('𝘢') %}
 Mi -> %name_verb Free:* {% makeLeaf('mı') %}
