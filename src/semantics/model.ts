@@ -835,6 +835,15 @@ export function and(scope: Scope): Expr {
 	};
 }
 
+export function or(scope: Scope): Expr {
+	return {
+		head: 'constant',
+		type: Fn('t', Fn('t', 't')),
+		scope: scope.types,
+		name: 'or',
+	};
+}
+
 export function implies(scope: Scope): Expr {
 	return {
 		head: 'constant',

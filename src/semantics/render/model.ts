@@ -47,7 +47,7 @@ interface Prefix extends ExprBase {
 
 interface Infix extends ExprBase {
 	head: 'infix';
-	op: 'among' | 'and' | 'implies' | 'equals';
+	op: 'among' | 'and' | 'or' | 'implies' | 'equals';
 	left: RichExpr;
 	right: RichExpr;
 }
@@ -213,6 +213,7 @@ export function enrich(e: Expr): RichExpr {
 				e.fn.fn.head === 'constant' &&
 				(e.fn.fn.name === 'among' ||
 					e.fn.fn.name === 'and' ||
+					e.fn.fn.name === 'or' ||
 					e.fn.fn.name === 'implies' ||
 					e.fn.fn.name === 'equals')
 			)

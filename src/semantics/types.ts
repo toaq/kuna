@@ -124,6 +124,7 @@ interface Constant extends ExprBase {
 		| 'and_then'
 		| 'not'
 		| 'and'
+		| 'or'
 		| 'implies'
 		| 'equals'
 		| 'agent';

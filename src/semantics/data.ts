@@ -21,6 +21,7 @@ import {
 	int,
 	lex,
 	not,
+	or,
 	qn,
 	ref,
 	some,
@@ -188,7 +189,32 @@ export const covertCrel = λ(
 
 export const complementizers = new Map<string, Expr>([
 	['ꝡa', lex('ꝡa', Fn(Int('t'), Int('t')), closed)],
-	['ma', lex('ma', Fn(Int('t'), Int(Qn(Fn('t', 't'), 't'))), closed)],
+	[
+		'ma',
+		λ(Int('t'), closed, (p, s) =>
+			int(
+				λ('s', s, (w, s) =>
+					qn(
+						λ(Fn('t', 't'), s, (polarity, s) =>
+							app(
+								app(
+									or(s),
+									equals(
+										s.var(polarity),
+										λ('t', s, (t, s) => s.var(t)),
+									),
+								),
+								equals(s.var(polarity), not(s)),
+							),
+						),
+						λ(Fn('t', 't'), s, (polarity, s) =>
+							app(s.var(polarity), app(unint(s.var(p)), s.var(w))),
+						),
+					),
+				),
+			),
+		),
+	],
 	['ꝡä', lex('ꝡä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't'))), closed)],
 	['mä', lex('mä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't'))), closed)],
 	[
