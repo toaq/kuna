@@ -17,6 +17,7 @@ import {
 	unqn,
 	λ,
 } from './model';
+import { getFunctor } from './structures';
 import type { Expr, ExprType } from './types';
 
 function mapVariables(
@@ -153,6 +154,31 @@ function varOccurrences(expr: Expr, index: number): number {
 	return count;
 }
 
+function isGenOrQn(t: ExprType): boolean {
+	if (typeof t === 'string') return false;
+	if (t.head === 'fn') return isGenOrQn(t.range);
+	if (t.head === 'gen' || t.head === 'qn') return true;
+	const functor = getFunctor(t);
+	return functor !== null && isGenOrQn(functor.unwrap(t));
+}
+
+function pairlikeDeconstructor(
+	name: (Expr & object & { head: 'constant' })['name'],
+): ((e: Expr, project: Expr) => Expr) | null {
+	switch (name) {
+		case 'ungen':
+			return ungen;
+		case 'unqn':
+			return unqn;
+		case 'unpair':
+			return unpair;
+		case 'unbind':
+			return unbind;
+		default:
+			return null;
+	}
+}
+
 /**
  * Simplify an expression by walking through the tree looking for patterns like
  * β-reduction and `unint (int x)`.
@@ -170,7 +196,14 @@ function reducePass(expr: Expr): Expr {
 		case 'apply': {
 			if (expr.fn.head === 'lambda') {
 				// (λx body) arg
-				if (isSmallExpr(expr.arg) || varOccurrences(expr.fn.body, 0) < 2) {
+				if (
+					isSmallExpr(expr.arg) ||
+					varOccurrences(expr.fn.body, 0) < 2 ||
+					// Allow Gen or Qn expressions to be substituted multiple times, because
+					// the Monad instances for these types have no choice but to reference the
+					// inner Gen/Qn twice
+					isGenOrQn(expr.arg.type)
+				) {
 					return reducePass(substitute(0, expr.arg, expr.fn.body));
 				}
 			}
@@ -360,82 +393,83 @@ function reducePass(expr: Expr): Expr {
 				return expr.fn.arg;
 			}
 
-			// unpair (unpair x (λy λz pair f g)) h = unpair x (λy λz h f g)
+			// f (unpair x (λy λz g)) = unpair x (λy λz f g)
+			// and so on for Gen, Qn, Bind
+			if (
+				expr.arg.head === 'apply' &&
+				expr.arg.fn.head === 'apply' &&
+				expr.arg.fn.fn.head === 'constant' &&
+				expr.arg.arg.head === 'lambda' &&
+				expr.arg.arg.body.head === 'lambda'
+			) {
+				const deconstruct = pairlikeDeconstructor(expr.arg.fn.fn.name);
+				if (deconstruct !== null) {
+					const f = expr.fn;
+					const x = expr.arg.fn.arg;
+					const g = expr.arg.arg.body.body;
+					const [z, y] = g.scope;
+					const ff = rewriteScope(f, g.scope, i => i + 2);
+					return deconstruct(
+						x,
+						λ(y, { ...closed, types: f.scope }, (_, s) =>
+							λ(z, s, () => app(ff, g)),
+						),
+					);
+				}
+			}
+
+			// unpair x (λy λz g) f = unpair x (λy λz g f)
+			// and so on for Gen, Qn, Bind
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'apply' &&
+				expr.fn.fn.fn.head === 'constant' &&
+				expr.fn.arg.head === 'lambda' &&
+				expr.fn.arg.body.head === 'lambda'
+			) {
+				const deconstruct = pairlikeDeconstructor(expr.fn.fn.fn.name);
+				if (deconstruct !== null) {
+					const f = expr.arg;
+					const x = expr.fn.fn.arg;
+					const g = expr.fn.arg.body.body;
+					const [z, y] = g.scope;
+					const ff = rewriteScope(f, g.scope, i => i + 2);
+					return deconstruct(
+						x,
+						λ(y, { ...closed, types: f.scope }, (_, s) =>
+							λ(z, s, () => app(g, ff)),
+						),
+					);
+				}
+			}
+
+			// unpair x (λy λz unpair x f) = unpair x (λy λz f y z)
 			// and so on for Gen, Qn, Bind
 			if (
 				expr.fn.head === 'apply' &&
 				expr.fn.fn.head === 'constant' &&
-				expr.fn.arg.head === 'apply' &&
-				expr.fn.arg.fn.head === 'apply' &&
-				expr.fn.arg.fn.fn.head === 'constant' &&
-				expr.fn.arg.arg.head === 'lambda' &&
-				expr.fn.arg.arg.body.head === 'lambda' &&
-				expr.fn.arg.arg.body.body.head === 'apply' &&
-				expr.fn.arg.arg.body.body.fn.head === 'apply' &&
-				expr.fn.arg.arg.body.body.fn.fn.head === 'constant'
+				(expr.fn.fn.name === 'ungen' ||
+					expr.fn.fn.name === 'unqn' ||
+					expr.fn.fn.name === 'unpair' ||
+					expr.fn.fn.name === 'unbind') &&
+				expr.fn.arg.head === 'variable' &&
+				expr.arg.head === 'lambda' &&
+				expr.arg.body.head === 'lambda' &&
+				expr.arg.body.body.head === 'apply' &&
+				expr.arg.body.body.fn.head === 'apply' &&
+				expr.arg.body.body.fn.fn.head === 'constant' &&
+				expr.arg.body.body.fn.fn.name === expr.fn.fn.name &&
+				expr.arg.body.body.fn.arg.head === 'variable' &&
+				expr.arg.body.body.fn.arg.index === expr.fn.arg.index + 2
 			) {
-				const x = expr.fn.arg.fn.arg;
-				const f = expr.fn.arg.arg.body.body.fn.arg;
-				const g = expr.fn.arg.arg.body.body.arg;
-				const h = expr.arg;
-				const innerScope = expr.fn.arg.arg.body.body.scope;
-				const [z, y] = innerScope;
-
-				if (
-					expr.fn.fn.name === 'ungen' &&
-					expr.fn.arg.fn.fn.name === 'ungen' &&
-					expr.fn.arg.arg.body.body.fn.fn.name === 'gen'
-				) {
-					const hh = rewriteScope(h, innerScope, i => i + 2);
-					return ungen(
-						x,
-						λ(y, { ...closed, types: x.scope }, (_, s) =>
-							λ(z, s, () => app(app(hh, f), g)),
-						),
-					);
-				}
-
-				if (
-					expr.fn.fn.name === 'unqn' &&
-					expr.fn.arg.fn.fn.name === 'unqn' &&
-					expr.fn.arg.arg.body.body.fn.fn.name === 'qn'
-				) {
-					const hh = rewriteScope(h, innerScope, i => i + 2);
-					return unqn(
-						x,
-						λ(y, { ...closed, types: x.scope }, (_, s) =>
-							λ(z, s, () => app(app(hh, f), g)),
-						),
-					);
-				}
-
-				if (
-					expr.fn.fn.name === 'unpair' &&
-					expr.fn.arg.fn.fn.name === 'unpair' &&
-					expr.fn.arg.arg.body.body.fn.fn.name === 'pair'
-				) {
-					const hh = rewriteScope(h, innerScope, i => i + 2);
-					return unpair(
-						x,
-						λ(y, { ...closed, types: x.scope }, (_, s) =>
-							λ(z, s, () => app(app(hh, f), g)),
-						),
-					);
-				}
-
-				if (
-					expr.fn.fn.name === 'unbind' &&
-					expr.fn.arg.fn.fn.name === 'unbind' &&
-					expr.fn.arg.arg.body.body.fn.fn.name === 'bind'
-				) {
-					const hh = rewriteScope(h, innerScope, i => i + 2);
-					return unbind(
-						x,
-						λ(y, { ...closed, types: x.scope }, (_, s) =>
-							λ(z, s, () => app(app(hh, f), g)),
-						),
-					);
-				}
+				const f = expr.arg.body.body.arg;
+				const [z, y] = f.scope;
+				return app(
+					expr.fn,
+					λ(y, { ...closed, types: expr.scope }, (y, s) =>
+						λ(z, s, (z, s) => app(app(f, s.var(y)), s.var(z))),
+					),
+				);
 			}
 
 			// every (λy implies (among y (_ x f)) g)
