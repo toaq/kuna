@@ -15,7 +15,7 @@ import {
 	type Names,
 	type Render,
 	Renderer,
-	addName,
+	addNames,
 	alphabets,
 	join,
 	noNames,
@@ -275,10 +275,10 @@ declare global {
 }
 
 enum TypePrecedence {
+	Pair = 0,
 	Function = 1,
 	Apply = 2,
-	Pair = 3,
-	Bracket = 4,
+	Bracket = 3,
 }
 
 export class JsxType extends Renderer<ExprType, ReactNode> {
@@ -341,11 +341,9 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 				return this.app(token(<mi>Qn</mi>), this.sub(t.inner));
 			case 'pair':
 				return join(TypePrecedence.Pair, 'none', [
-					token(<mo>(</mo>),
 					this.sub(t.inner),
 					token(<mo lspace="0">,</mo>),
 					this.sub(t.supplement),
-					token(<mo>)</mo>),
 				]);
 			case 'bind':
 				return this.app(
@@ -380,15 +378,16 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 enum Precedence {
 	Do = 0,
 	Assign = 1,
-	Quantify = 2,
-	And = 3,
-	Implies = 4,
-	Equals = 5,
-	Among = 6,
-	Apply = 7,
-	Prefix = 8,
-	Subscript = 9,
-	Bracket = 10,
+	Pair = 2,
+	Quantify = 3,
+	And = 4,
+	Implies = 5,
+	Equals = 6,
+	Among = 7,
+	Apply = 8,
+	Prefix = 9,
+	Subscript = 10,
+	Bracket = 11,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -499,14 +498,14 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 			case 'variable':
 				return token(this.name(e.index, names));
 			case 'quantify': {
-				const newNames = addName(e.body.scope[0], names);
+				const newNames = addNames(e.param.scope, names);
 				return join(Precedence.Quantify, 'any', [
 					token(
 						<mo lspace="0" rspace="0">
 							{quantifiers[e.q]}
 						</mo>,
 					),
-					this.go(e.parameter, newNames),
+					this.go(e.param, newNames),
 					token(
 						<mo lspace="0" rspace="0">
 							&nbsp;
@@ -549,8 +548,14 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 						wrap(null, inner => <mrow>{inner}</mrow>, this.go(e.sub, names)),
 					]),
 				);
+			case 'pair':
+				return join(Precedence.Pair, 'any', [
+					this.go(e.left, names),
+					token(<mo lspace="0">,</mo>),
+					this.go(e.right, names),
+				]);
 			case 'do': {
-				const newNames = addName(e.result.scope[0], names);
+				const newNames = addNames(e.left.scope, names);
 				return wrap(
 					null,
 					inner => (

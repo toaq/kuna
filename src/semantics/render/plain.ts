@@ -7,19 +7,19 @@ import {
 	type Names,
 	type Render,
 	Renderer,
-	addName,
+	addNames,
 	alphabets,
 	join,
 	noNames,
 	token,
 } from './format';
-import { type RichExpr, toRichExpr } from './model';
+import { type RichExpr, enrich } from './model';
 
 enum TypePrecedence {
+	Pair = 0,
 	Function = 1,
 	Apply = 2,
-	Pair = 3,
-	Bracket = 4,
+	Bracket = 3,
 }
 
 export class PlainTextType extends Renderer<ExprType, string> {
@@ -79,11 +79,9 @@ export class PlainTextType extends Renderer<ExprType, string> {
 				return this.app(token('Qn'), this.sub(t.inner));
 			case 'pair':
 				return join(TypePrecedence.Pair, 'none', [
-					token('('),
 					this.sub(t.inner),
 					token(', '),
 					this.sub(t.supplement),
-					token(')'),
 				]);
 			case 'bind':
 				return this.app(
@@ -114,14 +112,15 @@ export class PlainTextType extends Renderer<ExprType, string> {
 enum Precedence {
 	Do = 0,
 	Assign = 1,
-	Quantify = 2,
-	And = 3,
-	Implies = 4,
-	Equals = 5,
-	Among = 6,
-	Apply = 7,
-	Prefix = 8,
-	Bracket = 9,
+	Pair = 2,
+	Quantify = 3,
+	And = 4,
+	Implies = 5,
+	Equals = 6,
+	Among = 7,
+	Apply = 8,
+	Prefix = 9,
+	Bracket = 10,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -169,10 +168,10 @@ export class PlainText extends Renderer<RichExpr, string> {
 			case 'variable':
 				return token(this.name(e.index, names));
 			case 'quantify': {
-				const newNames = addName(e.body.scope[0], names);
+				const newNames = addNames(e.param.scope, names);
 				return join(Precedence.Quantify, 'any', [
 					token(quantifiers[e.q]),
-					this.go(e.parameter, newNames),
+					this.go(e.param, newNames),
 					token(' '),
 					this.go(e.body, newNames),
 				]);
@@ -204,8 +203,14 @@ export class PlainText extends Renderer<RichExpr, string> {
 					token(' '),
 					this.go(e.sub, names),
 				]);
+			case 'pair':
+				return join(Precedence.Pair, 'any', [
+					this.go(e.left, names),
+					token(', '),
+					this.go(e.right, names),
+				]);
 			case 'do': {
-				const newNames = addName(e.result.scope[0], names);
+				const newNames = addNames(e.left.scope, names);
 				return join(Precedence.Do, 'right', [
 					join(Precedence.Assign, 'none', [
 						this.go(e.left, newNames),
@@ -241,7 +246,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 
 export function toPlainText(e: Expr, compact?: boolean): string {
 	if (compact) throw new Unimplemented();
-	return new PlainText().render(toRichExpr(e));
+	return new PlainText().render(enrich(e));
 }
 
 export function typeToPlainText(t: ExprType): string {

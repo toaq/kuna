@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Unimplemented } from '../../core/error';
 import type { Expr, ExprType } from '../types';
 import { Jsx, JsxType } from './jsx';
-import { toRichExpr } from './model';
+import { enrich } from './model';
 export { toPlainText, typeToPlainText, typesToPlainText } from './plain';
 
 export function toLatex(_e: Expr, _compact?: boolean): string {
@@ -11,7 +11,7 @@ export function toLatex(_e: Expr, _compact?: boolean): string {
 
 export function toJsx(e: Expr, compact?: boolean): ReactNode {
 	if (compact) throw new Unimplemented();
-	return new Jsx().render(toRichExpr(e));
+	return new Jsx().render(enrich(e));
 }
 
 export function toJson(_e: Expr, _compact?: boolean): unknown {

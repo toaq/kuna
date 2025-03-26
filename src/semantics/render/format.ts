@@ -158,19 +158,28 @@ export function getNameType(type: ExprType): NameType {
 }
 
 /**
- * Adds a new name of type 'type' to the given naming context.
+ * Adds names for all variables in scope to the given naming context.
  */
-export function addName(type: ExprType, { scope, nextIds }: Names): Names {
-	const nameType = getNameType(type);
-	const alphabetSize = alphabets[nameType].length;
+export function addNames(
+	scope: ExprType[],
+	{ scope: prevScope, nextIds: prevNextIds }: Names,
+): Names {
+	const newScope = [...prevScope];
+	const newNextIds = { ...prevNextIds };
 
-	let id = nextIds[nameType];
-	// If this name is already taken, try the same name one alphabetSize later
-	while (scope.some(n => n.type === type && n.id === id)) id += alphabetSize;
+	for (let i = scope.length - prevScope.length - 1; i >= 0; i--) {
+		const type = scope[i];
+		const nameType = getNameType(type);
+		const alphabetSize = alphabets[nameType].length;
 
-	const name = { id, type: nameType };
-	return {
-		scope: [name, ...scope],
-		nextIds: { ...nextIds, [nameType]: nextIds[nameType] + 1 },
-	};
+		let id = newNextIds[nameType];
+		// If this name is already taken, try the same name one alphabetSize later
+		while (newScope.some(n => n.type === type && n.id === id))
+			id += alphabetSize;
+
+		newScope.unshift({ id, type: nameType });
+		newNextIds[nameType]++;
+	}
+
+	return { scope: newScope, nextIds: newNextIds };
 }

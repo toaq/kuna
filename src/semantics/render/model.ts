@@ -1,3 +1,10 @@
+import { pair } from '../model';
+import {
+	VariableDeletedError,
+	rewriteScope,
+	substitute,
+	varOccurrences,
+} from '../reduce';
 import type { Expr, ExprType } from '../types';
 
 interface ExprBase {
@@ -22,7 +29,7 @@ interface Variable extends ExprBase {
 interface Quantify extends ExprBase {
 	head: 'quantify';
 	q: 'lambda' | 'some' | 'every';
-	parameter: RichExpr;
+	param: RichExpr;
 	body: RichExpr;
 }
 
@@ -49,6 +56,12 @@ interface Subscript extends ExprBase {
 	head: 'subscript';
 	base: RichExpr;
 	sub: RichExpr;
+}
+
+interface Pair extends ExprBase {
+	head: 'pair';
+	left: RichExpr;
+	right: RichExpr;
 }
 
 interface Do extends ExprBase {
@@ -84,31 +97,77 @@ export type RichExpr =
 	| Prefix
 	| Infix
 	| Subscript
+	| Pair
 	| Do
 	| Lexeme
 	| Quote
 	| Constant;
 
-export function toRichExpr(e: Expr): RichExpr {
+function enrichLambda_(param: Expr, body: Expr): { param: Expr; body: Expr } {
+	// Pair destructuring
+	if (
+		body.head === 'apply' &&
+		body.fn.head === 'apply' &&
+		body.fn.fn.head === 'constant' &&
+		body.fn.fn.name === 'unpair' &&
+		body.fn.arg.head === 'variable' &&
+		varOccurrences(param, body.fn.arg.index) > 0 &&
+		body.arg.head === 'lambda' &&
+		body.arg.body.head === 'lambda'
+	) {
+		const index = body.fn.arg.index + 2;
+		const prevScope = body.arg.body.body.scope;
+		const newScope = [
+			...prevScope.slice(0, index),
+			...prevScope.slice(index + 1),
+		];
+		try {
+			return enrichLambda_(
+				substitute(
+					index,
+					pair(
+						{ type: newScope[1], scope: newScope, head: 'variable', index: 1 },
+						{ type: newScope[0], scope: newScope, head: 'variable', index: 0 },
+					),
+					rewriteScope(param, prevScope, i => i + 2),
+				),
+				rewriteScope(body.arg.body.body, newScope, i => {
+					if (i === index) throw new VariableDeletedError();
+					return i > index ? i - 1 : i;
+				}),
+			);
+		} catch (e) {
+			if (!(e instanceof VariableDeletedError)) throw e;
+		}
+	}
+
+	return { param, body };
+}
+
+function enrichLambda(body: Expr): { param: Expr; body: Expr } {
+	return enrichLambda_(
+		{ type: body.scope[0], scope: body.scope, head: 'variable', index: 0 },
+		body,
+	);
+}
+
+export function enrich(e: Expr): RichExpr {
 	switch (e.head) {
 		case 'variable':
 		case 'lexeme':
 		case 'quote':
 		case 'constant':
 			return e;
-		case 'lambda':
+		case 'lambda': {
+			const { param, body } = enrichLambda(e.body);
 			return {
 				...e,
 				head: 'quantify',
 				q: 'lambda',
-				parameter: {
-					type: e.body.scope[0],
-					scope: e.body.scope,
-					head: 'variable',
-					index: 0,
-				},
-				body: toRichExpr(e.body),
+				param: enrich(param),
+				body: enrich(body),
 			};
+		}
 		case 'apply':
 			// Hide int/cont/uncont/ref/unref applications
 			if (
@@ -119,27 +178,24 @@ export function toRichExpr(e: Expr): RichExpr {
 					e.fn.name === 'ref' ||
 					e.fn.name === 'unref')
 			)
-				return { ...toRichExpr(e.arg), type: e.type };
+				return { ...enrich(e.arg), type: e.type };
 
 			// Quantifier notation
 			if (
 				e.fn.head === 'constant' &&
 				(e.fn.name === 'some' || e.fn.name === 'every') &&
 				e.arg.head === 'lambda'
-			)
+			) {
+				const { param, body } = enrichLambda(e.arg.body);
 				return {
 					type: e.type,
 					scope: e.scope,
 					head: 'quantify',
 					q: e.fn.name,
-					parameter: {
-						type: e.arg.body.scope[0],
-						scope: e.arg.body.scope,
-						head: 'variable',
-						index: 0,
-					},
-					body: toRichExpr(e.arg.body),
+					param: enrich(param),
+					body: enrich(body),
 				};
+			}
 
 			// Prefix notation
 			if (e.fn.head === 'constant' && e.fn.name === 'not')
@@ -148,7 +204,7 @@ export function toRichExpr(e: Expr): RichExpr {
 					scope: e.scope,
 					head: 'prefix',
 					op: 'not',
-					body: toRichExpr(e.arg),
+					body: enrich(e.arg),
 				};
 
 			// Infix notation
@@ -165,8 +221,8 @@ export function toRichExpr(e: Expr): RichExpr {
 					scope: e.scope,
 					head: 'infix',
 					op: e.fn.fn.name,
-					left: toRichExpr(e.fn.arg),
-					right: toRichExpr(e.arg),
+					left: enrich(e.fn.arg),
+					right: enrich(e.arg),
 				};
 
 			// Subscript notation
@@ -179,8 +235,22 @@ export function toRichExpr(e: Expr): RichExpr {
 					type: e.type,
 					scope: e.scope,
 					head: 'subscript',
-					base: toRichExpr(e.fn.arg),
-					sub: toRichExpr(e.arg),
+					base: enrich(e.fn.arg),
+					sub: enrich(e.arg),
+				};
+
+			// Pair notation
+			if (
+				e.fn.head === 'apply' &&
+				e.fn.fn.head === 'constant' &&
+				e.fn.fn.name === 'pair'
+			)
+				return {
+					type: e.type,
+					scope: e.scope,
+					head: 'pair',
+					left: enrich(e.fn.arg),
+					right: enrich(e.arg),
 				};
 
 			// Do notation
@@ -189,22 +259,19 @@ export function toRichExpr(e: Expr): RichExpr {
 				e.fn.fn.head === 'constant' &&
 				(e.fn.fn.name === 'and_map' || e.fn.fn.name === 'and_then') &&
 				e.arg.head === 'lambda'
-			)
+			) {
+				const { param, body } = enrichLambda(e.arg.body);
 				return {
 					type: e.type,
 					scope: e.scope,
 					head: 'do',
-					left: {
-						type: e.arg.body.scope[0],
-						scope: e.arg.body.scope,
-						head: 'variable',
-						index: 0,
-					},
-					right: toRichExpr(e.fn.arg),
-					result: toRichExpr(e.arg.body),
+					left: enrich(param),
+					right: enrich(e.fn.arg),
+					result: enrich(body),
 					pure: e.fn.fn.name === 'and_map',
 				};
+			}
 
-			return { ...e, fn: toRichExpr(e.fn), arg: toRichExpr(e.arg) };
+			return { ...e, fn: enrich(e.fn), arg: enrich(e.arg) };
 	}
 }

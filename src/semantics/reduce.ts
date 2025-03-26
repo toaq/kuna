@@ -86,7 +86,7 @@ export class VariableDeletedError extends Error {}
  * expression that has the scope
  * [...e.scope.slice(0, index), ...e.scope.slice(index + 1)].
  */
-function substitute(index: number, target: Expr, e: Expr): Expr {
+export function substitute(index: number, target: Expr, e: Expr): Expr {
 	const newScope = [...e.scope];
 	newScope.splice(index, 1);
 
@@ -130,7 +130,7 @@ function isSmallExpr(e: Expr): boolean {
 /**
  * Count occurrences of a variable in an expression.
  */
-function varOccurrences(expr: Expr, index: number): number {
+export function varOccurrences(expr: Expr, index: number): number {
 	let count = 0;
 	function walk(e: Expr, index: number) {
 		switch (e.head) {
