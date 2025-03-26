@@ -236,6 +236,22 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			);
 		}
 
+		if (leaf.word.text === 'hú-') {
+			assertLeaf(cCommand);
+			if (cCommand.word.covert) throw new Impossible('Covert head');
+			if (cCommand.word.entry === undefined)
+				throw new Unrecognized(`head: ${cCommand.word.text}`);
+			const word = cCommand.word.bare;
+			return λ('e', closed, (_, s) =>
+				ref(
+					{ type: 'head', head: word },
+					λ(Int(Pl('e')), s, (x, s) =>
+						bind({ type: 'head', head: word }, s.var(x), s.var(x)),
+					),
+				),
+			);
+		}
+
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
 
 		const gen = findGen(cCommand.denotation.type);
@@ -300,7 +316,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 						result = bind(
 							'pronominal_class' in verb.entry
 								? { type: 'name', verb: verb.entry.toaq }
-								: { type: 'head', head: verb.entry.toaq },
+								: { type: 'head', head: verb.bare },
 							s.var(x),
 							result,
 						);
@@ -357,22 +373,14 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`&: ${leaf.word.text}`);
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+		const out = Bind({ type: 'head', head: leaf.word.bare }, Int(Pl('e')));
 
 		// TODO: Generalize to more than just verbal arguments
 		return lex(
 			toaq,
 			toaq === 'róı'
-				? Fn(
-						Int(Pl('e')),
-						Fn(Int(Pl('e')), Bind({ type: 'head', head: 'róı' }, Int(Pl('e')))),
-					)
-				: Fn(
-						Int(Pl('e')),
-						Fn(
-							Int(Pl('e')),
-							Cont(Bind({ type: 'head', head: toaq }, Int(Pl('e')))),
-						),
-					),
+				? Fn(Int(Pl('e')), Fn(Int(Pl('e')), out))
+				: Fn(Int(Pl('e')), Fn(Int(Pl('e')), Cont(out))),
 			closed,
 		);
 	}
@@ -387,7 +395,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 			Fn(
 				Int(Pl('e')),
-				Cont(Bind({ type: 'head', head: leaf.word.entry.toaq }, Int(Pl('e')))),
+				Cont(Bind({ type: 'head', head: leaf.word.bare }, Int(Pl('e')))),
 			),
 			closed,
 		);
