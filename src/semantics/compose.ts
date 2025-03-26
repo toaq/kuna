@@ -94,6 +94,7 @@ function coerceInput_(
 	inputSide: 'left' | 'right' | 'out',
 	mode: CompositionMode,
 	under: Functor | null,
+	force: boolean,
 ): [Expr, CompositionMode] | null {
 	assertFn(fn.type);
 	const { unwrap } = under ?? idFunctor;
@@ -114,6 +115,7 @@ function coerceInput_(
 			inputSide,
 			mode,
 			under === null ? functor : composeFunctors(under, functor),
+			force,
 		);
 
 	// The functors don't match
@@ -126,7 +128,14 @@ function coerceInput_(
 				distributive.functor.unwrap(inputInner),
 				input,
 			);
-			const result = coerceInput_(fn, coercedInner, inputSide, mode, under);
+			const result = coerceInput_(
+				fn,
+				coercedInner,
+				inputSide,
+				mode,
+				under,
+				force,
+			);
 			if (result !== null) {
 				const [cont, mode] = result;
 				let joined = false;
@@ -200,6 +209,7 @@ function coerceInput_(
 			}
 		}
 
+		// Try pushing a traversable functor into another functor
 		const traversable = getBigTraversable(inputInner);
 		if (traversable !== null) {
 			const traversableInner = traversable.functor.unwrap(inputInner);
@@ -213,7 +223,14 @@ function coerceInput_(
 					),
 					input,
 				);
-				const result = coerceInput_(fn, coercedInner, inputSide, mode, under);
+				const result = coerceInput_(
+					fn,
+					coercedInner,
+					inputSide,
+					mode,
+					under,
+					force,
+				);
 				if (result !== null) {
 					const [cont, mode] = result;
 					return [
@@ -243,6 +260,49 @@ function coerceInput_(
 			}
 		}
 
+		// Try running the effect
+		const runner = getRunner(inputInner);
+		if (runner !== null && (runner.eager || force)) {
+			const coercedInner = under.wrap(
+				runner.functor.wrap('t', inputInner),
+				input,
+			);
+			const result = coerceInput_(
+				app(
+					λ(fn.type, closed, (fn, s) =>
+						λ(coercedInner, s, (input, s) =>
+							app(
+								s.var(fn),
+								under.map(
+									λ(runner.functor.wrap('t', inputInner), s, (inner, s) =>
+										runner.run(s.var(inner), s),
+									),
+									s.var(input),
+									s,
+								),
+							),
+						),
+					),
+					fn,
+				),
+				input,
+				inputSide,
+				mode,
+				under,
+				true,
+			);
+			if (result !== null) {
+				const [cont, mode] = result;
+				return [
+					cont,
+					[
+						inputSide === 'out' ? '↓' : inputSide === 'left' ? '↓L' : '↓R',
+						mode,
+					],
+				];
+			}
+		}
+
 		// Try simply extracting a value from the functor via a comonad
 		const comonad = getComonad(inputInner);
 		if (comonad !== null) {
@@ -250,7 +310,14 @@ function coerceInput_(
 				comonad.functor.unwrap(inputInner),
 				input,
 			);
-			const result = coerceInput_(fn, coercedInner, inputSide, mode, under);
+			const result = coerceInput_(
+				fn,
+				coercedInner,
+				inputSide,
+				mode,
+				under,
+				force,
+			);
 			if (result !== null) {
 				const [cont, mode] = result;
 				return [
@@ -286,18 +353,20 @@ function coerceInput_(
 /**
  * Given a function and an input type, build a function which accepts the type
  * as its input and "coerces" its type using Functor, Distributive, Traversable,
- * and Comonad instances to feed it to the original function.
+ * Runner, and Comonad instances to feed it to the original function.
  * @param inputSide The side of the tree which the input comes from. If this is
  *   'left' or 'right' then the function will be treated as a binary function so
  *   that functors map like f a → b → f c rather than f a → f (b → c).
+ * @param force Forces even non-eager Runner instances to be run.
  */
 function coerceInput(
 	fn: Expr,
 	input: ExprType,
 	inputSide: 'left' | 'right' | 'out',
 	mode: CompositionMode,
+	force = false,
 ): [Expr, CompositionMode] | null {
-	return coerceInput_(fn, input, inputSide, mode, null);
+	return coerceInput_(fn, input, inputSide, mode, null, force);
 }
 
 class UnimplementedComposition extends Error {}
@@ -428,8 +497,16 @@ function simplifyOutput(
 
 	// Try running the output effect
 	const runner = getRunner(out);
-	if (runner !== null) {
-		const coerced = coerceInput(runner.run, out, 'out', mode);
+	if (runner?.eager) {
+		const coerced = coerceInput(
+			λ(runner.functor.wrap('t', out), closed, (x, s) =>
+				runner.run(s.var(x), s),
+			),
+			out,
+			'out',
+			mode,
+			true,
+		);
 		if (coerced !== null) {
 			const [run, coercedMode] = coerced;
 			return [

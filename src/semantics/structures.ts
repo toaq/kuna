@@ -19,6 +19,7 @@ import {
 	assertCont,
 	assertDx,
 	assertFn,
+	assertGen,
 	assertInt,
 	assertPair,
 	assertPl,
@@ -36,6 +37,7 @@ import {
 	pair,
 	qn,
 	ref,
+	some,
 	subtype,
 	typesCompatible,
 	typesEqual,
@@ -126,7 +128,15 @@ export interface Comonad {
 
 export interface Runner {
 	functor: Functor;
-	run: Expr;
+	/**
+	 * Whether this effect "likes" to be run. A non-eager effect will instead
+	 * prefer to scope out of scope islands.
+	 */
+	eager: boolean;
+	/**
+	 * Performs some sort of closure over the effect.
+	 */
+	run: (e: Expr, scope: Scope) => Expr;
 }
 
 const tSemigroup: Semigroup = {
@@ -265,12 +275,12 @@ const contApplicative: Applicative = {
 
 const contRunner: Runner = {
 	functor: contFunctor,
-	run: λ(Cont('t'), closed, (cont, s) =>
+	eager: true,
+	run: (e, s) =>
 		app(
-			uncont(s.var(cont)),
+			uncont(e),
 			λ('t', s, (t, s) => s.var(t)),
 		),
-	),
 };
 
 const plFunctor: Functor = {
@@ -317,13 +327,18 @@ const plApplicative: Applicative = {
 
 const plRunner: Runner = {
 	functor: plFunctor,
-	run: λ(Pl('t'), closed, (pl, s) =>
+	eager: true,
+	run: (e, s) =>
 		every(
-			λ('t', s, (t, s) =>
-				app(app(implies(s), among(s.var(t), s.var(pl))), s.var(t)),
+			app(
+				λ(e.type, s, (e, s) =>
+					λ('t', s, (t, s) =>
+						app(app(implies(s), among(s.var(t), s.var(e))), s.var(t)),
+					),
+				),
+				e,
 			),
 		),
-	),
 };
 
 const genOrQnMonad = (
@@ -505,6 +520,30 @@ const genOrQnMonad = (
 const genMonad = genOrQnMonad('gen', gen, ungen);
 const genApplicative = genMonad.applicative;
 const genFunctor = genApplicative.functor;
+
+const genRunner: Runner = {
+	functor: genFunctor,
+	eager: false,
+	run: (e, s) => {
+		assertGen(e.type);
+		const { domain } = e.type;
+		return ungen(
+			e,
+			λ(Fn(domain, 't'), s, (r, s) =>
+				λ(Fn(domain, 't'), s, (b, s) =>
+					some(
+						λ(domain, s, (d, s) =>
+							app(
+								app(and(s), app(s.var(r), s.var(d))),
+								app(s.var(b), s.var(d)),
+							),
+						),
+					),
+				),
+			),
+		);
+	},
+};
 
 const qnMonad = genOrQnMonad('qn', qn, unqn);
 const qnApplicative = qnMonad.applicative;
@@ -1082,8 +1121,9 @@ export function getMatchingComonad(t1: ExprType, t2: ExprType): Comonad | null {
 
 export function getRunner(t: ExprType): Runner | null {
 	if (typeof t === 'string') return null;
-	if (t.head === 'pl') return plRunner;
 	if (t.head === 'cont') return contRunner;
+	if (t.head === 'pl') return plRunner;
+	if (t.head === 'gen') return genRunner;
 	return null;
 }
 
