@@ -156,6 +156,7 @@ export function Treepad(props: { isDarkMode: boolean }) {
 				<textarea
 					value={source}
 					placeholder={''}
+					spellCheck={false}
 					onClick={e => {
 						setPos(e.currentTarget.selectionEnd);
 					}}

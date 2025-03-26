@@ -209,6 +209,7 @@ export function Settings(props: SettingsProps) {
 			<textarea
 				rows={3}
 				value={text}
+				spellCheck={false}
 				onChange={e => {
 					setText(e.target.value);
 					props.dismissExplanation();
