@@ -86,9 +86,17 @@ export function subtype(t1: ExprType, t2: ExprType): boolean {
 		case 'pl':
 			return t2.head === 'pl' && subtype(t1.inner, t2.inner);
 		case 'gen':
-			return t2.head === 'gen' && subtype(t1.inner, t2.inner);
+			return (
+				t2.head === 'gen' &&
+				subtype(t2.domain, t1.domain) &&
+				subtype(t1.inner, t2.inner)
+			);
 		case 'qn':
-			return t2.head === 'qn' && subtype(t1.inner, t2.inner);
+			return (
+				t2.head === 'qn' &&
+				subtype(t2.domain, t1.domain) &&
+				subtype(t1.inner, t2.inner)
+			);
 		case 'pair':
 			return (
 				t2.head === 'pair' &&
