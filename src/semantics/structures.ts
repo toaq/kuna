@@ -36,6 +36,8 @@ import {
 	pair,
 	qn,
 	ref,
+	subtype,
+	typesCompatible,
 	typesEqual,
 	unbind,
 	uncont,
@@ -324,97 +326,105 @@ const plRunner: Runner = {
 	),
 };
 
-const genOrQnApplicative = (
+const genOrQnMonad = (
 	head: 'gen' | 'qn',
 	construct: (restriction: Expr, body: Expr) => Expr,
 	deconstruct: (e: Expr, project: Expr) => Expr,
-): Applicative => ({
-	functor: {
-		wrap: (type, like) => {
-			if (typeof like === 'string' || like.head !== head)
-				throw new Impossible(`${typeToPlainText(like)} is not a ${head} type`);
-			return { ...like, inner: type };
-		},
-		unwrap: type => {
-			if (typeof type === 'string' || type.head !== head)
-				throw new Impossible(`${typeToPlainText(type)} is not a ${head} type`);
-			return type.inner;
-		},
-		map: (fn, arg, s) => {
-			if (typeof arg.type === 'string' || arg.type.head !== head)
-				throw new Impossible(
-					`${typeToPlainText(arg.type)} is not a ${head} type`,
-				);
-			const { inner, domain } = arg.type;
-			const restriction = Fn(domain, 't');
-			const body = Fn(domain, inner);
-			return deconstruct(
-				arg,
-				app(
-					λ(fn.type, s, (fn, s) =>
-						λ(restriction, s, (r, s) =>
-							λ(body, s, (b, s) =>
-								construct(
-									s.var(r),
-									λ(domain, s, (val, s) =>
-										app(s.var(fn), app(s.var(b), s.var(val))),
+): Monad => ({
+	applicative: {
+		functor: {
+			wrap: (type, like) => {
+				if (typeof like === 'string' || like.head !== head)
+					throw new Impossible(
+						`${typeToPlainText(like)} is not a ${head} type`,
+					);
+				return { ...like, inner: type };
+			},
+			unwrap: type => {
+				if (typeof type === 'string' || type.head !== head)
+					throw new Impossible(
+						`${typeToPlainText(type)} is not a ${head} type`,
+					);
+				return type.inner;
+			},
+			map: (fn, arg, s) => {
+				if (typeof arg.type === 'string' || arg.type.head !== head)
+					throw new Impossible(
+						`${typeToPlainText(arg.type)} is not a ${head} type`,
+					);
+				const { inner, domain } = arg.type;
+				const restriction = Fn(domain, 't');
+				const body = Fn(domain, inner);
+				return deconstruct(
+					arg,
+					app(
+						λ(fn.type, s, (fn, s) =>
+							λ(restriction, s, (r, s) =>
+								λ(body, s, (b, s) =>
+									construct(
+										s.var(r),
+										λ(domain, s, (val, s) =>
+											app(s.var(fn), app(s.var(b), s.var(val))),
+										),
 									),
 								),
 							),
 						),
+						fn,
 					),
-					fn,
-				),
-			);
+				);
+			},
 		},
-	},
-	apply: (fn, arg, s) => {
-		if (typeof fn.type === 'string' || fn.type.head !== head)
-			throw new Impossible(`${typeToPlainText(fn.type)} is not a ${head} type`);
-		if (typeof arg.type === 'string' || arg.type.head !== head)
-			throw new Impossible(
-				`${typeToPlainText(arg.type)} is not a ${head} type`,
-			);
-		const { inner: inner1, domain: domain1 } = fn.type;
-		const { inner: inner2, domain: domain2 } = arg.type;
-		const domain = Pair(domain1, domain2);
-		const restriction1 = Fn(domain1, 't');
-		const body1 = Fn(domain1, inner1);
-		const restriction2 = Fn(domain2, 't');
-		const body2 = Fn(domain2, inner2);
+		apply: (fn, arg, s) => {
+			if (typeof fn.type === 'string' || fn.type.head !== head)
+				throw new Impossible(
+					`${typeToPlainText(fn.type)} is not a ${head} type`,
+				);
+			if (typeof arg.type === 'string' || arg.type.head !== head)
+				throw new Impossible(
+					`${typeToPlainText(arg.type)} is not a ${head} type`,
+				);
+			const { inner: inner1, domain: domain1 } = fn.type;
+			const { inner: inner2, domain: domain2 } = arg.type;
+			const domain = Pair(domain1, domain2);
+			const restriction1 = Fn(domain1, 't');
+			const body1 = Fn(domain1, inner1);
+			const restriction2 = Fn(domain2, 't');
+			const body2 = Fn(domain2, inner2);
 
-		return deconstruct(
-			fn,
-			app(
-				λ(arg.type, s, (arg, s) =>
-					λ(restriction1, s, (r1, s) =>
-						λ(body1, s, (b1, s) =>
-							deconstruct(
-								s.var(arg),
-								λ(restriction2, s, (r2, s) =>
-									λ(body2, s, (b2, s) =>
-										construct(
-											λ(domain, s, (d, s) =>
-												unpair(
-													s.var(d),
-													λ(domain1, s, (d1, s) =>
-														λ(domain2, s, (d2, s) =>
-															app(
-																app(and(s), app(s.var(r1), s.var(d1))),
-																app(s.var(r2), s.var(d2)),
+			return deconstruct(
+				fn,
+				app(
+					λ(arg.type, s, (arg, s) =>
+						λ(restriction1, s, (r1, s) =>
+							λ(body1, s, (b1, s) =>
+								deconstruct(
+									s.var(arg),
+									λ(restriction2, s, (r2, s) =>
+										λ(body2, s, (b2, s) =>
+											construct(
+												λ(domain, s, (d, s) =>
+													unpair(
+														s.var(d),
+														λ(domain1, s, (d1, s) =>
+															λ(domain2, s, (d2, s) =>
+																app(
+																	app(and(s), app(s.var(r1), s.var(d1))),
+																	app(s.var(r2), s.var(d2)),
+																),
 															),
 														),
 													),
 												),
-											),
-											λ(domain, s, (d, s) =>
-												unpair(
-													s.var(d),
-													λ(domain1, s, (d1, s) =>
-														λ(domain2, s, (d2, s) =>
-															app(
-																app(s.var(b1), s.var(d1)),
-																app(s.var(b2), s.var(d2)),
+												λ(domain, s, (d, s) =>
+													unpair(
+														s.var(d),
+														λ(domain1, s, (d1, s) =>
+															λ(domain2, s, (d2, s) =>
+																app(
+																	app(s.var(b1), s.var(d1)),
+																	app(s.var(b2), s.var(d2)),
+																),
 															),
 														),
 													),
@@ -426,17 +436,78 @@ const genOrQnApplicative = (
 							),
 						),
 					),
+					arg,
 				),
-				arg,
+			);
+		},
+	},
+	join: (e, s) => {
+		if (typeof e.type === 'string' || e.type.head !== head)
+			throw new Impossible(`${typeToPlainText(e.type)} is not a ${head} type`);
+		if (typeof e.type.inner === 'string' || e.type.inner.head !== head)
+			throw new Impossible(
+				`${typeToPlainText(e.type.inner)} is not a ${head} type`,
+			);
+		const {
+			domain: domain1,
+			inner: { domain: domain2, inner },
+		} = e.type;
+		const domain = Pair(domain1, domain2);
+		const restriction1 = Fn(domain1, 't');
+		const body1 = Fn(domain1, e.type.inner);
+		const restriction2 = Fn(domain2, 't');
+		const body2 = Fn(domain2, inner);
+		return deconstruct(
+			e,
+			λ(restriction1, s, (r1, s) =>
+				λ(body1, s, (b1, s) =>
+					construct(
+						λ(domain, s, (d, s) =>
+							unpair(
+								s.var(d),
+								λ(domain1, s, (d1, s) =>
+									λ(domain2, s, (d2, s) =>
+										app(
+											app(and(s), app(s.var(r1), s.var(d1))),
+											deconstruct(
+												app(s.var(b1), s.var(d1)),
+												λ(restriction2, s, (r2, s) =>
+													λ(body2, s, (_, s) => app(s.var(r2), s.var(d2))),
+												),
+											),
+										),
+									),
+								),
+							),
+						),
+						λ(domain, s, (d, s) =>
+							unpair(
+								s.var(d),
+								λ(domain1, s, (d1, s) =>
+									λ(domain2, s, (d2, s) =>
+										deconstruct(
+											app(s.var(b1), s.var(d1)),
+											λ(restriction2, s, (_, s) =>
+												λ(body2, s, (b2, s) => app(s.var(b2), s.var(d2))),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
 			),
 		);
 	},
 });
 
-const genApplicative = genOrQnApplicative('gen', gen, ungen);
+const genMonad = genOrQnMonad('gen', gen, ungen);
+const genApplicative = genMonad.applicative;
 const genFunctor = genApplicative.functor;
 
-const qnApplicative = genOrQnApplicative('qn', qn, unqn);
+const qnMonad = genOrQnMonad('qn', qn, unqn);
+const qnApplicative = qnMonad.applicative;
 const qnFunctor = qnApplicative.functor;
 
 const pairFunctor: Functor = {
@@ -990,6 +1061,8 @@ export function getMonad(t: ExprType): Monad | null {
 	if (t.head === 'int') return intMonad;
 	if (t.head === 'dx') return dxMonad;
 	if (t.head === 'act') return actMonad;
+	if (t.head === 'gen') return genMonad;
+	if (t.head === 'qn') return qnMonad;
 	return null;
 }
 

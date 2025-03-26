@@ -108,64 +108,68 @@ export const polarities = new Map<string, Expr>([
 	['bu', not(closed)],
 ]);
 
-export const determiners = new Map<string, Expr>([
+export const determiners = new Map<string, (domain: ExprType) => Expr>([
 	[
 		'sá',
-		λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
-			cont(
-				λ(Fn(Int(Pl('e')), 't'), s, (c, s) =>
-					some(
-						λ(Int(Pl('e')), s, (x, s) =>
-							app(
-								app(and(s), app(s.var(predicate), s.var(x))),
-								app(s.var(c), s.var(x)),
+		domain =>
+			λ(Fn(domain, 't'), closed, (predicate, s) =>
+				cont(
+					λ(Fn(domain, 't'), s, (c, s) =>
+						some(
+							λ(domain, s, (x, s) =>
+								app(
+									app(and(s), app(s.var(predicate), s.var(x))),
+									app(s.var(c), s.var(x)),
+								),
 							),
 						),
 					),
 				),
 			),
-		),
 	],
 	[
 		'tú',
-		λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
-			cont(
-				λ(Fn(Int(Pl('e')), 't'), s, (c, s) =>
-					every(
-						λ(Int(Pl('e')), s, (x, s) =>
-							app(
-								app(implies(s), app(s.var(predicate), s.var(x))),
-								app(s.var(c), s.var(x)),
+		domain =>
+			λ(Fn(domain, 't'), closed, (predicate, s) =>
+				cont(
+					λ(Fn(domain, 't'), s, (c, s) =>
+						every(
+							λ(domain, s, (x, s) =>
+								app(
+									app(implies(s), app(s.var(predicate), s.var(x))),
+									app(s.var(c), s.var(x)),
+								),
 							),
 						),
 					),
 				),
 			),
-		),
 	],
-	['sía', lex('sía', Fn(Fn(Int(Pl('e')), 't'), Cont(Int(Pl('e')))), closed)],
+	['sía', domain => lex('sía', Fn(Fn(domain, 't'), Cont(domain)), closed)],
 	[
 		'báq',
-		λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
-			gen(
-				s.var(predicate),
-				λ(Int(Pl('e')), s, (x, s) => s.var(x)),
+		domain =>
+			λ(Fn(domain, 't'), closed, (predicate, s) =>
+				gen(
+					s.var(predicate),
+					λ(domain, s, (x, s) => s.var(x)),
+				),
 			),
-		),
 	],
 	[
 		'hí',
-		λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
-			qn(
-				s.var(predicate),
-				λ(Int(Pl('e')), s, (x, s) => s.var(x)),
+		domain =>
+			λ(Fn(domain, 't'), closed, (predicate, s) =>
+				qn(
+					s.var(predicate),
+					λ(domain, s, (x, s) => s.var(x)),
+				),
 			),
-		),
 	],
-	['ké', lex('ké', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed)],
-	['hú', lex('hú', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed)],
-	['ní', lex('ní', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed)],
-	['nánı', lex('nánı', Fn(Fn(Int(Pl('e')), 't'), Dx(Int(Pl('e')))), closed)],
+	['ké', domain => lex('ké', Fn(Fn(domain, 't'), Dx(domain)), closed)],
+	['hú', domain => lex('hú', Fn(Fn(domain, 't'), Dx(domain)), closed)],
+	['ní', domain => lex('ní', Fn(Fn(domain, 't'), Dx(domain)), closed)],
+	['nánı', domain => lex('nánı', Fn(Fn(domain, 't'), Dx(domain)), closed)],
 ]);
 
 export const littleN = λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>

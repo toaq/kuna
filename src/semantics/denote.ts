@@ -48,7 +48,7 @@ import {
 import { reduceExpr } from './reduce';
 import { typeToPlainText } from './render';
 import { findInner, getFunctor, unwrapEffects } from './structures';
-import type { AnimacyClass, DTree, Expr } from './types';
+import type { AnimacyClass, DTree, Expr, ExprType } from './types';
 
 function findVp(tree: StrictTree): StrictTree | null {
 	if (tree.label === 'VP' || tree.label === "EvA'") {
@@ -105,6 +105,13 @@ function animacyClass(verb: VerbEntry): AnimacyClass | null {
 	}
 }
 
+function findGen(t: ExprType): (ExprType & object & { head: 'gen' }) | null {
+	if (typeof t === 'string') return null;
+	if (t.head === 'gen') return t;
+	const functor = getFunctor(t);
+	return functor && findGen(functor.unwrap(t));
+}
+
 function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	if (leaf.label === 'V' || leaf.label === 'VP') {
 		if (leaf.word.covert) return covertV;
@@ -154,6 +161,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Unrecognized(`DP: ${leaf.word.text}`);
 
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+
 		const data = pronouns.get(toaq);
 		if (data === undefined) throw new Unrecognized(`DP: ${toaq}`);
 		return data;
@@ -233,27 +241,28 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		}
 
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
-		const data = determiners.get(toaq);
+
+		const gen = findGen(cCommand.denotation.type);
+		if (gen === null)
+			throw new Impossible(
+				`D complement: ${typeToPlainText(cCommand.denotation.type)}`,
+			);
+		const data = determiners.get(toaq)?.(gen.domain);
 		if (data === undefined) throw new Unrecognized(`D: ${toaq}`);
 		assertFn(data.type);
 		const functor = getFunctor(data.type.range);
 		if (functor === null)
 			throw new Impossible(`${toaq} doesn't return a functor`);
-		const inner = findInner(cCommand.denotation.type, Gen('e', 'e'));
-		if (inner === null)
-			throw new Impossible(
-				`D complement: ${typeToPlainText(cCommand.denotation.type)}`,
-			);
 
 		return app(
 			λ(data.type, closed, (data, s) =>
-				λ(Gen(Int(Pl('e')), inner), s, (np, s) =>
+				λ(Gen(gen.domain, gen.inner), s, (np, s) =>
 					ungen(
 						s.var(np),
-						λ(Fn(Int(Pl('e')), 't'), s, (restriction, s) =>
-							λ(Fn(Int(Pl('e')), inner), s, (body, s) =>
+						λ(Fn(gen.domain, 't'), s, (restriction, s) =>
+							λ(Fn(gen.domain, gen.inner), s, (body, s) =>
 								functor.map(
-									λ(Int(Pl('e')), s, (x, s) => app(s.var(body), s.var(x))),
+									λ(gen.domain, s, (x, s) => app(s.var(body), s.var(x))),
 									app(s.var(data), s.var(restriction)),
 									s,
 								),
