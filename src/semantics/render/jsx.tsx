@@ -340,7 +340,7 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 			case 'qn':
 				return this.app(token(<mi>Qn</mi>), this.sub(t.inner));
 			case 'pair':
-				return join(TypePrecedence.Pair, 'none', [
+				return join(TypePrecedence.Pair, 'any', [
 					this.sub(t.inner),
 					token(<mo lspace="0">,</mo>),
 					this.sub(t.supplement),

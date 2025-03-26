@@ -78,7 +78,7 @@ export class PlainTextType extends Renderer<ExprType, string> {
 			case 'qn':
 				return this.app(token('Qn'), this.sub(t.inner));
 			case 'pair':
-				return join(TypePrecedence.Pair, 'none', [
+				return join(TypePrecedence.Pair, 'any', [
 					this.sub(t.inner),
 					token(', '),
 					this.sub(t.supplement),
