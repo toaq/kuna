@@ -82,6 +82,14 @@ interface DoSet extends ExprBase {
 	pure: boolean;
 }
 
+interface DoRun extends ExprBase {
+	head: 'do';
+	op: 'run';
+	right: RichExpr;
+	result: RichExpr;
+	pure: boolean;
+}
+
 interface Lexeme extends ExprBase {
 	head: 'lexeme';
 	name: string;
@@ -110,6 +118,7 @@ export type RichExpr =
 	| Pair
 	| DoGet
 	| DoSet
+	| DoRun
 	| Lexeme
 	| Quote
 	| Constant;
@@ -268,6 +277,27 @@ export function enrich(e: Expr): RichExpr {
 				(e.fn.fn.name === 'and_map' || e.fn.fn.name === 'and_then') &&
 				e.arg.head === 'lambda'
 			) {
+				if (e.arg.body.scope[0] === '()') {
+					// Assume that unit type values will be unused
+					try {
+						return {
+							type: e.type,
+							scope: e.scope,
+							head: 'do',
+							op: 'run',
+							right: enrich(e.fn.arg),
+							result: enrich(
+								rewriteScope(e.arg.body, e.arg.body.scope.slice(1), i => {
+									if (i === 0) throw new VariableDeletedError();
+									return i - 1;
+								}),
+							),
+							pure: e.fn.fn.name === 'and_map',
+						};
+					} catch (e) {
+						if (!(e instanceof VariableDeletedError)) throw e;
+					}
+				}
 				const { param, body } = enrichLambda(e.arg.body);
 				return {
 					type: e.type,

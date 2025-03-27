@@ -121,6 +121,7 @@ interface Constant extends ExprBase {
 		| 'ref'
 		| 'unref'
 		| 'and_map'
+		| 'then'
 		| 'and_then'
 		| 'not'
 		| 'and'

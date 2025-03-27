@@ -495,6 +495,31 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 		);
 	}
 
+	private do(pure: boolean, contents: Render<ReactNode>): Render<ReactNode> {
+		return wrap(
+			null,
+			inner => (
+				<mtable className={classNames('kuna-do', { 'kuna-pure': pure })}>
+					{inner}
+				</mtable>
+			),
+			contents,
+		);
+	}
+
+	private doRow(contents: Render<ReactNode>): Render<ReactNode> {
+		return wrap(
+			null,
+			inner => (
+				<mtr>
+					{' '}
+					<mtd>{inner}</mtd>{' '}
+				</mtr>
+			),
+			contents,
+		);
+	}
+
 	private go_(e: RichExpr, names: Names): Render<ReactNode> {
 		switch (e.head) {
 			case 'variable':
@@ -556,85 +581,56 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 					token(<mo lspace="0">,</mo>),
 					this.go(e.right, names),
 				]);
-			case 'do': {
-				if (e.op === 'get') {
-					const newNames = addNames(e.left.scope, names);
-					return wrap(
-						null,
-						inner => (
-							<mtable
-								className={classNames('kuna-do', { 'kuna-pure': e.pure })}
-							>
-								{inner}
-							</mtable>
-						),
-						join(Precedence.Do, 'right', [
-							wrap(
-								null,
-								inner => (
-									<mtr>
-										<mtd>{inner}</mtd>
-									</mtr>
+			// biome-ignore lint/suspicious/noFallthroughSwitchClause: false positive
+			case 'do':
+				switch (e.op) {
+					case 'get': {
+						const newNames = addNames(e.left.scope, names);
+						return this.do(
+							e.pure,
+							join(Precedence.Do, 'right', [
+								this.doRow(
+									join(Precedence.Assign, 'none', [
+										this.go(e.left, newNames),
+										token(<mo>⇐</mo>),
+										'scope' in e.right
+											? this.go(e.right, names)
+											: token(
+													<mi className="kuna-lexeme">{binding(e.right)}</mi>,
+												),
+									]),
 								),
-								join(Precedence.Assign, 'none', [
-									this.go(e.left, newNames),
-									token(<mo>⇐</mo>),
-									'scope' in e.right
-										? this.go(e.right, names)
-										: token(
-												<mi className="kuna-lexeme">{binding(e.right)}</mi>,
-											),
-								]),
-							),
-							wrap(
-								null,
-								inner => (
-									<mtr>
-										<mtd>{inner}</mtd>
-									</mtr>
-								),
-								this.go(e.result, newNames),
-							),
-						]),
-					);
-				}
-				return wrap(
-					null,
-					inner => (
-						<mtable className={classNames('kuna-do', { 'kuna-pure': e.pure })}>
-							{inner}
-						</mtable>
-					),
-					join(Precedence.Do, 'right', [
-						wrap(
-							null,
-							inner => (
-								<mtr>
-									<mtd>{inner}</mtd>
-								</mtr>
-							),
-							join(Precedence.Assign, 'none', [
-								this.go(e.left, names),
-								token(
-									<>
-										<mo>⇒</mo>
-										<mi className="kuna-lexeme">{binding(e.right)}</mi>
-									</>,
-								),
+								this.doRow(this.go(e.result, newNames)),
 							]),
-						),
-						wrap(
-							null,
-							inner => (
-								<mtr>
-									<mtd>{inner}</mtd>
-								</mtr>
-							),
-							this.go(e.result, names),
-						),
-					]),
-				);
-			}
+						);
+					}
+					case 'set':
+						return this.do(
+							e.pure,
+							join(Precedence.Do, 'right', [
+								this.doRow(
+									join(Precedence.Assign, 'none', [
+										this.go(e.left, names),
+										token(
+											<>
+												<mo>⇒</mo>
+												<mi className="kuna-lexeme">{binding(e.right)}</mi>
+											</>,
+										),
+									]),
+								),
+								this.doRow(this.go(e.result, names)),
+							]),
+						);
+					case 'run':
+						return this.do(
+							e.pure,
+							join(Precedence.Do, 'right', [
+								this.doRow(this.go(e.right, names)),
+								this.doRow(this.go(e.result, names)),
+							]),
+						);
+				}
 			case 'lexeme':
 				return token(<mi className="kuna-lexeme">{e.name}</mi>);
 			case 'quote':

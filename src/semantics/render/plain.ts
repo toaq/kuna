@@ -211,28 +211,39 @@ export class PlainText extends Renderer<RichExpr, string> {
 					token(', '),
 					this.go(e.right, names),
 				]);
-			case 'do': {
-				if (e.op === 'get') {
-					const newNames = addNames(e.left.scope, names);
-					return join(Precedence.Do, 'right', [
-						join(Precedence.Assign, 'none', [
-							this.go(e.left, newNames),
-							token(' ⇐ '),
+			// biome-ignore lint/suspicious/noFallthroughSwitchClause: false positive
+			case 'do':
+				switch (e.op) {
+					case 'get': {
+						const newNames = addNames(e.left.scope, names);
+						return join(Precedence.Do, 'right', [
+							join(Precedence.Assign, 'none', [
+								this.go(e.left, newNames),
+								token(' ⇐ '),
+								'scope' in e.right
+									? this.go(e.right, names)
+									: token(binding(e.right)),
+							]),
+							token(e.pure ? '; ' : ', '),
+							this.go(e.result, newNames),
+						]);
+					}
+					case 'set':
+						return join(Precedence.Do, 'right', [
+							join(Precedence.Assign, 'none', [
+								this.go(e.left, names),
+								token(` ⇒ ${binding(e.right)}`),
+							]),
+							token(e.pure ? '; ' : ', '),
+							this.go(e.result, names),
+						]);
+					case 'run':
+						return join(Precedence.Do, 'right', [
 							this.go(e.right, names),
-						]),
-						token(e.pure ? '; ' : ', '),
-						this.go(e.result, newNames),
-					]);
+							token(e.pure ? '; ' : ', '),
+							this.go(e.result, names),
+						]);
 				}
-				return join(Precedence.Do, 'right', [
-					join(Precedence.Assign, 'none', [
-						this.go(e.left, names),
-						token(` ⇒ ${binding(e.right)}`),
-					]),
-					token(e.pure ? '; ' : ', '),
-					this.go(e.result, names),
-				]);
-			}
 			case 'lexeme':
 				return token(`⟦${e.name}⟧`);
 			case 'quote':
