@@ -1,11 +1,11 @@
-import { pair } from '../model';
+import { assertBind, assertFn, assertRef, pair } from '../model';
 import {
 	VariableDeletedError,
 	rewriteScope,
 	substitute,
 	varOccurrences,
 } from '../reduce';
-import type { Expr, ExprType } from '../types';
+import type { Binding, Expr, ExprType } from '../types';
 
 interface ExprBase {
 	/**
@@ -64,10 +64,20 @@ interface Pair extends ExprBase {
 	right: RichExpr;
 }
 
-interface Do extends ExprBase {
+interface DoGet extends ExprBase {
 	head: 'do';
+	op: 'get';
 	left: RichExpr;
-	right: RichExpr;
+	right: RichExpr | Binding;
+	result: RichExpr;
+	pure: boolean;
+}
+
+interface DoSet extends ExprBase {
+	head: 'do';
+	op: 'set';
+	left: RichExpr;
+	right: Binding;
 	result: RichExpr;
 	pure: boolean;
 }
@@ -98,7 +108,8 @@ export type RichExpr =
 	| Infix
 	| Subscript
 	| Pair
-	| Do
+	| DoGet
+	| DoSet
 	| Lexeme
 	| Quote
 	| Constant;
@@ -169,14 +180,10 @@ export function enrich(e: Expr): RichExpr {
 			};
 		}
 		case 'apply':
-			// Hide int/cont/uncont/ref/unref applications
+			// Hide int/cont/uncont applications
 			if (
 				e.fn.head === 'constant' &&
-				(e.fn.name === 'int' ||
-					e.fn.name === 'cont' ||
-					e.fn.name === 'uncont' ||
-					e.fn.name === 'ref' ||
-					e.fn.name === 'unref')
+				(e.fn.name === 'int' || e.fn.name === 'cont' || e.fn.name === 'uncont')
 			)
 				return { ...enrich(e.arg), type: e.type };
 
@@ -254,7 +261,7 @@ export function enrich(e: Expr): RichExpr {
 					right: enrich(e.arg),
 				};
 
-			// Do notation
+			// Do notation (get value from monad)
 			if (
 				e.fn.head === 'apply' &&
 				e.fn.fn.head === 'constant' &&
@@ -266,10 +273,54 @@ export function enrich(e: Expr): RichExpr {
 					type: e.type,
 					scope: e.scope,
 					head: 'do',
+					op: 'get',
 					left: enrich(param),
 					right: enrich(e.fn.arg),
 					result: enrich(body),
 					pure: e.fn.fn.name === 'and_map',
+				};
+			}
+
+			// Do notation (get reference)
+			if (
+				e.fn.head === 'constant' &&
+				e.fn.name === 'ref' &&
+				e.arg.head === 'lambda'
+			) {
+				assertFn(e.fn.type);
+				assertRef(e.fn.type.range);
+				const { param, body } = enrichLambda(e.arg.body);
+				return {
+					type: e.type,
+					scope: e.scope,
+					head: 'do',
+					op: 'get',
+					left: enrich(param),
+					right: e.fn.type.range.binding,
+					result: enrich(body),
+					pure: true,
+				};
+			}
+
+			// Do notation (set binding)
+			if (
+				e.fn.head === 'apply' &&
+				e.fn.fn.head === 'constant' &&
+				e.fn.fn.name === 'bind'
+			) {
+				assertFn(e.fn.fn.type);
+				assertFn(e.fn.fn.type.range);
+				assertBind(e.fn.fn.type.range.range);
+				const result = enrich(e.arg);
+				return {
+					type: e.type,
+					scope: e.scope,
+					head: 'do',
+					op: 'set',
+					left: enrich(e.fn.arg),
+					right: e.fn.fn.type.range.range.binding,
+					result,
+					pure: !(result.head === 'do' && result.op === 'set'),
 				};
 			}
 

@@ -22,40 +22,40 @@ enum TypePrecedence {
 	Bracket = 3,
 }
 
+function animacy(a: AnimacyClass): string {
+	switch (a) {
+		case 'animate':
+			return 'hó';
+		case 'inanimate':
+			return 'máq';
+		case 'abstract':
+			return 'hóq';
+		case 'descriptive':
+			return 'tá';
+	}
+}
+
+function binding(b: Binding): string {
+	switch (b.type) {
+		case 'resumptive':
+			return 'hóa';
+		case 'covert resumptive':
+			return 'PRO';
+		case 'name':
+			return inTone(b.verb, Tone.T2);
+		case 'animacy':
+			return animacy(b.class);
+		case 'head':
+			return `hụ́${bare(b.head)}`;
+	}
+}
+
 export class PlainTextType extends Renderer<ExprType, string> {
 	private app(fn: Render<string>, arg: Render<string>): Render<string> {
 		// Note: it's okay for type constructor application to get an associativity of
 		// 'any' because only one grouping will ever make sense. For example we know
 		// that Qn Pl e is Qn (Pl e) and not (Qn Pl) e, because (Qn Pl) is illegal.
 		return join(TypePrecedence.Apply, 'any', [fn, token(' '), arg]);
-	}
-
-	private animacy(a: AnimacyClass): string {
-		switch (a) {
-			case 'animate':
-				return 'hó';
-			case 'inanimate':
-				return 'máq';
-			case 'abstract':
-				return 'hóq';
-			case 'descriptive':
-				return 'tá';
-		}
-	}
-
-	private binding(b: Binding): string {
-		switch (b.type) {
-			case 'resumptive':
-				return 'hóa';
-			case 'covert resumptive':
-				return 'PRO';
-			case 'name':
-				return inTone(b.verb, Tone.T2);
-			case 'animacy':
-				return this.animacy(b.class);
-			case 'head':
-				return `hụ́${bare(b.head)}`;
-		}
 	}
 
 	protected sub(t: ExprType): Render<string> {
@@ -85,12 +85,12 @@ export class PlainTextType extends Renderer<ExprType, string> {
 				]);
 			case 'bind':
 				return this.app(
-					this.app(token('Bind'), token(this.binding(t.binding))),
+					this.app(token('Bind'), token(binding(t.binding))),
 					this.sub(t.inner),
 				);
 			case 'ref':
 				return this.app(
-					this.app(token('Ref'), token(this.binding(t.binding))),
+					this.app(token('Ref'), token(binding(t.binding))),
 					this.sub(t.inner),
 				);
 			case 'dx':
@@ -212,15 +212,25 @@ export class PlainText extends Renderer<RichExpr, string> {
 					this.go(e.right, names),
 				]);
 			case 'do': {
-				const newNames = addNames(e.left.scope, names);
+				if (e.op === 'get') {
+					const newNames = addNames(e.left.scope, names);
+					return join(Precedence.Do, 'right', [
+						join(Precedence.Assign, 'none', [
+							this.go(e.left, newNames),
+							token(' ⇐ '),
+							this.go(e.right, names),
+						]),
+						token(e.pure ? '; ' : ', '),
+						this.go(e.result, newNames),
+					]);
+				}
 				return join(Precedence.Do, 'right', [
 					join(Precedence.Assign, 'none', [
-						this.go(e.left, newNames),
-						token(' ⇐ '),
-						this.go(e.right, names),
+						this.go(e.left, names),
+						token(` ⇒ ${binding(e.right)}`),
 					]),
 					token(e.pure ? '; ' : ', '),
-					this.go(e.result, newNames),
+					this.go(e.result, names),
 				]);
 			}
 			case 'lexeme':

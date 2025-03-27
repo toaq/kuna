@@ -274,6 +274,34 @@ declare global {
 	}
 }
 
+function animacy(a: AnimacyClass): ReactNode {
+	switch (a) {
+		case 'animate':
+			return 'hó';
+		case 'inanimate':
+			return 'máq';
+		case 'abstract':
+			return 'hóq';
+		case 'descriptive':
+			return 'tá';
+	}
+}
+
+function binding(b: Binding): ReactNode {
+	switch (b.type) {
+		case 'resumptive':
+			return <mi>hóa</mi>;
+		case 'covert resumptive':
+			return <mi>PRO</mi>;
+		case 'name':
+			return <mi>{inTone(b.verb, Tone.T2)}</mi>;
+		case 'animacy':
+			return <mi>{animacy(b.class)}</mi>;
+		case 'head':
+			return <mi>hụ́{bare(b.head)}</mi>;
+	}
+}
+
 enum TypePrecedence {
 	Pair = 0,
 	Function = 1,
@@ -290,34 +318,6 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 		// 'any' because only one grouping will ever make sense. For example we know
 		// that Qn Pl e is Qn (Pl e) and not (Qn Pl) e, because (Qn Pl) is illegal.
 		return join(TypePrecedence.Apply, 'any', [fn, token(' '), arg]);
-	}
-
-	private animacy(a: AnimacyClass): ReactNode {
-		switch (a) {
-			case 'animate':
-				return 'hó';
-			case 'inanimate':
-				return 'máq';
-			case 'abstract':
-				return 'hóq';
-			case 'descriptive':
-				return 'tá';
-		}
-	}
-
-	private binding(b: Binding): ReactNode {
-		switch (b.type) {
-			case 'resumptive':
-				return <mi>hóa</mi>;
-			case 'covert resumptive':
-				return <mi>PRO</mi>;
-			case 'name':
-				return <mi>{inTone(b.verb, Tone.T2)}</mi>;
-			case 'animacy':
-				return <mi>{this.animacy(b.class)}</mi>;
-			case 'head':
-				return <mi>hụ́{bare(b.head)}</mi>;
-		}
 	}
 
 	protected sub(t: ExprType): Render<ReactNode> {
@@ -347,12 +347,12 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 				]);
 			case 'bind':
 				return this.app(
-					this.app(token(<mi>Bind</mi>), token(this.binding(t.binding))),
+					this.app(token(<mi>Bind</mi>), token(binding(t.binding))),
 					this.sub(t.inner),
 				);
 			case 'ref':
 				return this.app(
-					this.app(token(<mi>Ref</mi>), token(this.binding(t.binding))),
+					this.app(token(<mi>Ref</mi>), token(binding(t.binding))),
 					this.sub(t.inner),
 				);
 			case 'dx':
@@ -557,7 +557,47 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 					this.go(e.right, names),
 				]);
 			case 'do': {
-				const newNames = addNames(e.left.scope, names);
+				if (e.op === 'get') {
+					const newNames = addNames(e.left.scope, names);
+					return wrap(
+						null,
+						inner => (
+							<mtable
+								className={classNames('kuna-do', { 'kuna-pure': e.pure })}
+							>
+								{inner}
+							</mtable>
+						),
+						join(Precedence.Do, 'right', [
+							wrap(
+								null,
+								inner => (
+									<mtr>
+										<mtd>{inner}</mtd>
+									</mtr>
+								),
+								join(Precedence.Assign, 'none', [
+									this.go(e.left, newNames),
+									token(<mo>⇐</mo>),
+									'scope' in e.right
+										? this.go(e.right, names)
+										: token(
+												<mi className="kuna-lexeme">{binding(e.right)}</mi>,
+											),
+								]),
+							),
+							wrap(
+								null,
+								inner => (
+									<mtr>
+										<mtd>{inner}</mtd>
+									</mtr>
+								),
+								this.go(e.result, newNames),
+							),
+						]),
+					);
+				}
 				return wrap(
 					null,
 					inner => (
@@ -574,9 +614,13 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 								</mtr>
 							),
 							join(Precedence.Assign, 'none', [
-								this.go(e.left, newNames),
-								token(<mo>⇐</mo>),
-								this.go(e.right, names),
+								this.go(e.left, names),
+								token(
+									<>
+										<mo>⇒</mo>
+										<mi className="kuna-lexeme">{binding(e.right)}</mi>
+									</>,
+								),
 							]),
 						),
 						wrap(
@@ -586,7 +630,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 									<mtd>{inner}</mtd>
 								</mtr>
 							),
-							this.go(e.result, newNames),
+							this.go(e.result, names),
 						),
 					]),
 				);
