@@ -476,16 +476,8 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 		const name = names.scope[index];
 		const alphabet = alphabets[name.type];
 		const letter = alphabet[name.id % alphabet.length];
-		if (name.id / alphabet.length === 0) return <mi>{letter}</mi>;
-		const ticks = '′'.repeat(name.id / alphabet.length);
-		// Chrome doesn't like the superscript trick; it renders the ticks too small
-		if ('chrome' in window)
-			return (
-				<mi>
-					{letter}
-					{ticks}
-				</mi>
-			);
+		if (name.id < alphabet.length) return <mi>{letter}</mi>;
+		const ticks = Math.ceil(name.id / alphabet.length);
 		// Putting the ticks in a superscript is what Firefox and the spec expect
 		return (
 			<msup>
@@ -526,6 +518,38 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 				return token(this.name(e.index, names));
 			case 'quantify': {
 				const newNames = addNames(e.param.scope, names);
+				if (
+					e.body.head === 'infix' &&
+					((e.q === 'every' && e.body.op === 'implies') ||
+						(e.q === 'some' && e.body.op === 'and'))
+				) {
+					return wrap(
+						null,
+						inner => (
+							<mtable className="kuna-do kuna-do-quantify">{inner}</mtable>
+						),
+						join(Precedence.Do, 'any', [
+							this.doRow(
+								join(Precedence.Do, 'any', [
+									token(
+										<mo lspace="0" rspace="0">
+											{quantifiers[e.q]}
+										</mo>,
+									),
+									this.go(e.param, newNames),
+									token(
+										<mo lspace="0" rspace="0">
+											&nbsp;
+										</mo>,
+									),
+									this.bracket(this.go(e.body.left, newNames)),
+									token(<mo>{infixes[e.body.op].symbol}</mo>),
+								]),
+							),
+							this.doRow(this.go(e.body.right, newNames)),
+						]),
+					);
+				}
 				return join(Precedence.Quantify, 'any', [
 					token(
 						<mo lspace="0" rspace="0">

@@ -387,6 +387,10 @@ math .kuna-do.kuna-pure > mtr:last-child > mtd {
 	padding-block-start: 0.45em;
 }
 
+math .kuna-do.kuna-do-quantify > mtr:last-child > mtd {
+	padding-inline-start: 1em;
+}
+
 .dark-mode math .kuna-constant,
 .dark-mode math .kuna-quote {
 	color: #ff8888;
@@ -394,6 +398,10 @@ math .kuna-do.kuna-pure > mtr:last-child > mtd {
 
 .dark-mode math .kuna-lexeme {
 	color: #99eeff;
+}
+
+.type-hover {
+	transition: none;
 }
 
 .type-hover:hover {
