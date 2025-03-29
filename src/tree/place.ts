@@ -66,7 +66,6 @@ export type PlacedTree<C extends DrawContext> = SceneNode<
 
 export function boundingRect<C extends DrawContext>(
 	placedTree: PlacedTree<C>,
-	bias = 0,
 ): { left: number; right: number; layers: number } {
 	if (placedTree.children.length) {
 		let left = 0;
@@ -74,9 +73,8 @@ export function boundingRect<C extends DrawContext>(
 		let layers = 0;
 		const n = placedTree.children.length;
 		for (let i = 0; i < n; i++) {
-			const dx =
-				(i - bias - (n - 1) / 2) * placedTree.placement.distanceBetweenChildren;
-			const subRect = boundingRect(placedTree.children[i], bias);
+			const dx = placedTree.placement.childrenDx[i];
+			const subRect = boundingRect(placedTree.children[i]);
 			left = Math.min(left, subRect.left + dx);
 			right = Math.max(right, subRect.right + dx);
 			layers = Math.max(layers, subRect.layers + 1);
@@ -229,7 +227,7 @@ export class TreePlacer<C extends DrawContext, D> {
 
 	private placeSceneNode(
 		node: SceneNode<D, any>,
-		bias = 0,
+		skew = 0,
 	): {
 		tree: PlacedTree<C>;
 		extents: LayerExtent[];
@@ -246,7 +244,7 @@ export class TreePlacer<C extends DrawContext, D> {
 		);
 
 		// First place all the children...
-		const children = node.children.map(c => this.placeSceneNode(c, bias));
+		const children = node.children.map(c => this.placeSceneNode(c, skew));
 
 		// Find the smallest x-distance between this node's children that avoids
 		// making any of the descendants overlap.
@@ -267,9 +265,12 @@ export class TreePlacer<C extends DrawContext, D> {
 
 		// Compute new extents for this subtree
 		const extents = [{ left: -width / 2, right: width / 2 }];
+		const childrenDx = [];
+		const b =
+			children.length && children[0].tree.children.length > 0 ? 0 : skew;
 		for (let i = 0; i < children.length; i++) {
-			const dx =
-				(i - bias - (children.length - 1) / 2) * distanceBetweenChildren;
+			const dx = (i - b - (children.length - 1) / 2) * distanceBetweenChildren;
+			childrenDx.push(dx);
 			const e = children[i].extents;
 			for (let j = 0; j < e.length; j++) {
 				extents[j + 1] ??= {
@@ -283,7 +284,7 @@ export class TreePlacer<C extends DrawContext, D> {
 
 		const tree = {
 			...node,
-			placement: { width, distanceBetweenChildren },
+			placement: { width, childrenDx },
 			children: children.map(x => x.tree),
 			label,
 			text,
@@ -293,14 +294,13 @@ export class TreePlacer<C extends DrawContext, D> {
 		return { tree, extents };
 	}
 
-	public placeScene(scene: Scene<D, Unplaced>, bias = 0): PlacedTree<C> {
-		return this.placeSceneNode(scene.root, bias).tree;
+	public placeScene(scene: Scene<D, Unplaced>, skew = 0): PlacedTree<C> {
+		return this.placeSceneNode(scene.root, skew).tree;
 	}
 }
 
 export function movementPoints<C extends DrawContext>(
 	placed: PlacedTree<C>,
-	bias = 0,
 ): Map<MovementID, { x: number; width: number; layer: number }> {
 	const points = new Map();
 	function walk(tree: PlacedTree<C>, x: number, layer: number): void {
@@ -309,8 +309,7 @@ export function movementPoints<C extends DrawContext>(
 		}
 		const n = tree.children.length;
 		for (let i = 0; i < n; i++) {
-			const dx =
-				(i - bias - (n - 1) / 2) * tree.placement.distanceBetweenChildren;
+			const dx = tree.placement.childrenDx[i];
 			walk(tree.children[i], x + dx, layer + 1);
 		}
 	}

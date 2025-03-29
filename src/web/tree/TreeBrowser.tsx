@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { keyFor } from '../../core/misc';
 import { toJsx, typeToPlainText } from '../../semantics/render';
-import { modeToString, type Expr } from '../../semantics/types';
+import { type Expr, modeToString } from '../../semantics/types';
 import type { MovementID } from '../../tree';
 import {
 	type PlacedTree,
@@ -27,7 +27,7 @@ interface TreeBrowserOptions {
 	layerHeight: number;
 	compactDenotations: boolean;
 	truncateLabels: string[];
-	bias: number;
+	skew: number;
 }
 
 function TreeLabelPiece({
@@ -145,7 +145,7 @@ export function Node(props: {
 				</div>
 				{tree.text && (
 					<div
-						className="tree-word"
+						className="tree-word  -mb-1"
 						style={{
 							color,
 							textDecoration:
@@ -158,7 +158,7 @@ export function Node(props: {
 					</div>
 				)}
 				{tree.text && tree.gloss ? (
-					<div className="tree-gloss">{tree.gloss}</div>
+					<div className="tree-gloss text-xs">{tree.gloss}</div>
 				) : undefined}
 			</div>
 		</div>
@@ -182,7 +182,7 @@ export function Subtree(props: {
 		useContext(InspectContext);
 	const { tree, options, breadcrumbs } = props;
 	const children = tree.children;
-	const dist = tree.placement.distanceBetweenChildren;
+	const childrenDx = tree.placement.childrenDx;
 	const lit = !inspecteePath || props.path.startsWith(inspecteePath);
 
 	return (
@@ -211,7 +211,7 @@ export function Subtree(props: {
 						pointerEvents: 'none',
 						position: 'absolute',
 						left: props.left + tree.placement.width / 2 - 3,
-						top: props.top + 32,
+						top: props.top + 40,
 						opacity: lit ? 1 : 0.4,
 					}}
 				>
@@ -251,11 +251,11 @@ export function Subtree(props: {
 						left={
 							props.left +
 							tree.placement.width / 2 +
-							((1 - children.length) / 2 + i - options.bias) * dist -
+							childrenDx[i] -
 							child.placement.width / 2
 						}
 						top={props.top + props.options.layerHeight}
-						lineDx={((1 - children.length) / 2 + i - options.bias) * dist}
+						lineDx={childrenDx[i]}
 						tree={child}
 						key={keyFor(child)}
 						options={options}
@@ -365,14 +365,14 @@ export function TreeBrowser<D extends Expr | string>(props: {
 	});
 
 	const placer = new TreePlacer<Ctx, D>(ctx, denotationRenderer, { theme });
-	const bias = 0.12;
-	const placed = placer.placeScene(scene, bias);
+	const skew = 0.22;
+	const placed = placer.placeScene(scene, skew);
 	const layerHeight =
 		typeof scene.root.label === 'string' || scene.root.label.lines.length === 1
 			? 60
 			: 70;
-	const rect = boundingRect(placed, bias);
-	const points = movementPoints(placed, bias);
+	const rect = boundingRect(placed);
+	const points = movementPoints(placed);
 	const x0 = -rect.left;
 
 	return (
@@ -394,7 +394,7 @@ export function TreeBrowser<D extends Expr | string>(props: {
 						theme,
 						truncateLabels,
 						layerHeight,
-						bias,
+						skew,
 					}}
 					path="root"
 					breadcrumbs={[]}
