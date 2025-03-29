@@ -182,7 +182,6 @@ export function Treepad(props: { isDarkMode: boolean }) {
 					compactDenotations={false}
 					theme={props.isDarkMode ? themes.dark : themes.light}
 					truncateLabels={[]}
-					inspect={() => {}}
 				/>
 			) : (
 				'No tree'

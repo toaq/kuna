@@ -154,7 +154,6 @@ export function Output(props: OutputProps) {
 						compactDenotations={mode === 'semantics-tree-compact'}
 						theme={themes[themeName]}
 						truncateLabels={roofLabels.trim().split(/[\s,]+/)}
-						inspect={props.inspect}
 					/>
 				);
 			}

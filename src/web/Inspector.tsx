@@ -44,7 +44,7 @@ export function Inspector() {
 
 	return (
 		<div
-			className="inspector sticky overflow-hidden shadow bg-white dark:bg-slate-700 transition-[opacity,width] [.moving_&]:transition-none"
+			className="inspector sticky overflow-x-hidden overflow-y-auto shadow bg-white dark:bg-slate-700 transition-[opacity,width] [.moving_&]:transition-none"
 			style={{
 				width: open && inspectee ? sidebarWidth : 50,
 				minWidth: 50,

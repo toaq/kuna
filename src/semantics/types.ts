@@ -172,3 +172,12 @@ export type CompositionMode =
 	| ['JR', CompositionMode] // Join monads on the right
 	| ['J', CompositionMode] // Join monads
 	| ['Z', CompositionMode]; // Resolve binding relationship
+
+export function modeToString(mode: CompositionMode): string {
+	return typeof mode === 'string'
+		? mode
+		: // @ts-ignore TypeScript can't handle the infinite types here
+			mode
+				.flat(Number.POSITIVE_INFINITY)
+				.join(' ');
+}

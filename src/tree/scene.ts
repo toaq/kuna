@@ -1,5 +1,10 @@
 import { typeToPlainText } from '../semantics/render';
-import type { CompositionMode, DTree, Expr } from '../semantics/types';
+import {
+	modeToString,
+	type CompositionMode,
+	type DTree,
+	type Expr,
+} from '../semantics/types';
 import { treeChildren } from './functions';
 import { type MovementID, type Tree, describeLabel } from './types';
 
@@ -57,6 +62,10 @@ export interface SceneNode<Denotation, Placement> {
 	 * This node's denotation.
 	 */
 	denotation?: Denotation;
+	/**
+	 * This node's composition mode.
+	 */
+	mode?: CompositionMode;
 	/**
 	 * Whether to draw a roof at this node. If true, the node should not have
 	 * any children.
@@ -120,15 +129,6 @@ export interface Placed {
 	distanceBetweenChildren: number;
 }
 
-function modeToString(mode: CompositionMode): string {
-	return typeof mode === 'string'
-		? mode
-		: // @ts-ignore TypeScript can't handle the infinite types here
-			mode
-				.flat(Number.POSITIVE_INFINITY)
-				.join(' ');
-}
-
 /**
  * Turn a label like "𝘷Prel" into a list of pieces like:
  *
@@ -181,23 +181,30 @@ function toSceneLabel(
 ): string | RichSceneLabel {
 	if (!('denotation' in tree && tree.denotation)) return tree.label;
 
-	const typedLabel: RichSceneLabelLine = {
-		pieces: [
-			...makeRichLabel(tree.label),
-			{
-				text: ` : ${typeToPlainText(tree.denotation.type)}`,
-				font: `0.9em ${font}`,
-			},
-		],
-	};
+	const compactType = typeToPlainText(tree.denotation.type)
+		.replaceAll(/(Bind \S+ )+/g, 'B ')
+		.replaceAll(/(Ref \S+ )+/g, 'R ')
+		.replaceAll(/([A-Z])[a-z]+ /g, (_, a) => `${a} `);
 
-	if (!('mode' in tree && tree.mode)) return { lines: [typedLabel] };
+	// if (!('mode' in tree && tree.mode))
+		return {
+			lines: [
+				{
+					pieces: [
+						...makeRichLabel(tree.label),
+						{
+							text: ` : ${compactType}`,
+							font: `0.9em ${font}`,
+						},
+					],
+				},
+			],
+		};
+	// const compactMode = [
+	// 	...new Set([...modeToString(tree.mode).split(' ')]),
+	// ].join('');
+	// const compactMode = modeToString(tree.mode).at(-1) ?? '?';
 
-	const modeLabel: RichSceneLabelLine = {
-		pieces: [{ text: modeToString(tree.mode), font: `0.8em ${font}` }],
-	};
-
-	return { lines: [typedLabel, modeLabel] };
 }
 
 /**
@@ -213,6 +220,7 @@ export function toScene(
 	function walk(tree: Tree | DTree): SceneNode<Expr, Unplaced> {
 		const denotation =
 			'denotation' in tree && tree.denotation ? tree.denotation : undefined;
+		const mode = 'mode' in tree && tree.mode ? tree.mode : undefined;
 		const gloss =
 			'word' in tree && !tree.word.covert ? tree.word.entry?.gloss : undefined;
 		const roof = roofLabels.includes(tree.label);
@@ -251,6 +259,7 @@ export function toScene(
 			},
 			fullCategoryLabel: describeLabel(tree.label),
 			denotation,
+			mode,
 			roof,
 			text,
 			textStyle,

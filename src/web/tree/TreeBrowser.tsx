@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { keyFor } from '../../core/misc';
 import { toJsx, typeToPlainText } from '../../semantics/render';
-import type { Expr } from '../../semantics/types';
+import { modeToString, type Expr } from '../../semantics/types';
 import type { MovementID } from '../../tree';
 import {
 	type PlacedTree,
@@ -77,7 +77,7 @@ export function InspectNode(props: {
 	const { tree, breadcrumbs } = props;
 
 	return (
-		<div className="mt-8">
+		<div className="mt-8 mb-16">
 			<h2 className="text-2xl my-2 font-bold">
 				{tree.fullCategoryLabel ?? <TreeLabel label={tree.categoryLabel} />}
 			</h2>
@@ -102,6 +102,15 @@ export function InspectNode(props: {
 					<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
 						{typeToPlainText(tree.denotation.denotation.type)}
 					</div>
+
+					{'mode' in tree && tree.mode && (
+						<>
+							<h3 className="text-lg mt-4 mb-2 font-bold">Composition mode</h3>
+							<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
+								{modeToString(tree.mode)}
+							</div>
+						</>
+					)}
 
 					<h3 className="text-lg mt-4 mb-2 font-bold">Denotation</h3>
 					<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
@@ -195,6 +204,19 @@ export function Subtree(props: {
 						opacity: lit && props.path !== inspecteePath ? 1 : 0.4,
 					}}
 				/>
+			)}
+			{props.tree.mode && (
+				<div
+					style={{
+						pointerEvents: 'none',
+						position: 'absolute',
+						left: props.left + tree.placement.width / 2 - 3,
+						top: props.top + 32,
+						opacity: lit ? 1 : 0.4,
+					}}
+				>
+					{modeToString(props.tree.mode).at(-1) ?? ' '}
+				</div>
 			)}
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: No keyboard controls */}
 			<div
@@ -343,11 +365,11 @@ export function TreeBrowser<D extends Expr | string>(props: {
 	});
 
 	const placer = new TreePlacer<Ctx, D>(ctx, denotationRenderer, { theme });
-	const bias = 0.22;
+	const bias = 0.12;
 	const placed = placer.placeScene(scene, bias);
 	const layerHeight =
 		typeof scene.root.label === 'string' || scene.root.label.lines.length === 1
-			? 50
+			? 60
 			: 70;
 	const rect = boundingRect(placed, bias);
 	const points = movementPoints(placed, bias);
