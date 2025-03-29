@@ -1,13 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+	--color-mio: hsla(220deg, 90%, 70%);
+	--blue: #2060ff;
+}
+
+label {
+	@apply select-none;
+}
+textarea,
+input,
+select {
+	@apply bg-white dark:bg-slate-900 border border-current/20 px-2 py-1;
+}
+
+* {
+	transition: background-color 0.3s;
+}
+.inspector {
+	transition: background-color, width 0.3s;
+}
+.moving .inspector {
+	transition: background-color 0.3s;
+}
+
+@custom-variant dark (&:where(.dark-mode, .dark-mode *));
+
 @font-face {
 	font-family: "Iosevka Toaq Aile";
 	font-weight: 400;
-	src: url("https://raw.githubusercontent.com/toaq/fonts/refs/heads/main/woff2/IosevkaToaqAile-Regular.woff2") format(woff2);
+	src: url("https://raw.githubusercontent.com/toaq/fonts/refs/heads/main/woff2/IosevkaToaqAile-Regular.woff2")
+		format(woff2);
 }
 
 @font-face {
 	font-family: "Iosevka Toaq Aile";
 	font-weight: 700;
-	src: url("https://raw.githubusercontent.com/toaq/fonts/refs/heads/main/woff2/IosevkaToaqAile-Bold.woff2") format(woff2);
+	src: url("https://raw.githubusercontent.com/toaq/fonts/refs/heads/main/woff2/IosevkaToaqAile-Bold.woff2")
+		format(woff2);
 }
 
 @font-face {
@@ -41,16 +71,20 @@
 html,
 #root {
 	height: 100%;
-	width: 100%;
 }
 
 body {
-	font-family: 'Fira Sans', 'Fira Math', sans-serif;
+	font-family: "Fira Sans", "Fira Math", sans-serif;
 	font-size: 14px;
 	margin: 0px;
 	height: 100%;
 }
 
+.dark-mode {
+	color-scheme: dark;
+}
+
+/*
 h1 {
 	margin: 0;
 }
@@ -61,7 +95,7 @@ h1 {
 
 .settings .buttons {
 	margin-top: 8px;
-	display:flex;
+	display: flex;
 	flex-direction: column;
 	gap: 4px;
 	margin-bottom: 16px;
@@ -85,7 +119,7 @@ h1 {
 }
 
 .kuna-button {
-	background: light-dark(#ddd, #666);
+	background: light-dark(#dde, #666);
 	border: none;
 	padding: 8px 14px 8px 12px;
 	color: light-dark(black, white);
@@ -94,20 +128,19 @@ h1 {
 	gap: 4px;
 	cursor: pointer;
 
-    flex: 1;
-    justify-content: center;
+	flex: 1;
+	justify-content: center;
 }
 
 .kuna-button:hover {
 	background: light-dark(#ccc, #777);
-
 }
 
 .button-group .kuna-button:last-of-type {
 	border-radius: 0 4px 4px 0;
 }
 
-.button-group .kuna-button:nth-of-type(n+2) {
+.button-group .kuna-button:nth-of-type(n + 2) {
 	border-left: 1px solid light-dark(#00000040, #ffffff40);
 }
 
@@ -115,62 +148,16 @@ h1 {
 	border-radius: 4px 0 0 4px;
 }
 
-.kuna {
-	background-color: hsl(220deg, 90%, 95%);
-	color: #333;
+.kuna main {
+	position: relative;
+	min-width: 100%;
+	min-height: 100%;
+}
+
+.settings-and-output {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	height: 100%;
-	width: 100%;
-	overflow-y: auto;
-	transition:
-		background-color 0.1s,
-		color 0.1s;
-	--blue: #2060ff;
-}
-
-.kuna header {
-	display: flex;
-	flex-wrap: wrap;
-	background: hsla(220deg, 90%, 70%);
-	width: 100%;
-	padding: 0px 16px;
-	align-items: center;
-}
-
-.kuna header {
-	line-height: 30px;
-}
-
-.kuna header h1 {
-	font-size: inherit;
-	color: #fff;
-}
-
-.kuna a {
-	color: var(--blue);
-	text-decoration: none;
-}
-
-.kuna header a,
-.kuna header button {
-	display: inline-block;
-	padding: 4px 14px;
-	background: none;
-	cursor: pointer;
-	border: none;
-	font-size: inherit;
-	color: white;
-}
-
-.kuna header a.active {
-	background: hsla(220deg, 80%, 60%);
-}
-
-.kuna a:hover,
-.kuna header button:hover {
-	text-decoration: underline;
+	align-items: start;
 }
 
 .kuna .explanation {
@@ -235,6 +222,10 @@ button {
 	background-color: #222222;
 }
 
+.settings {
+	padding: 1em 2em;
+}
+
 .settings form {
 	min-width: 30vw;
 	display: flex;
@@ -251,7 +242,8 @@ button {
 	justify-content: center;
 }
 
-.output-logical-form-text, .output-logical-form-latex {
+.output-logical-form-text,
+.output-logical-form-latex {
 	max-width: 35em;
 }
 
@@ -272,10 +264,6 @@ button {
 
 .gloss-toaq {
 	font-weight: bold;
-}
-
-math {
-	font-family: 'Fira Math', 'Fira Sans', sans-serif;
 }
 
 .error {
@@ -303,9 +291,6 @@ math {
 		margin-top: 0;
 	}
 }
-
-.help th { text-align: right; padding-right: 12px }
-.help td { padding-right: 12px; }
 
 .toggles {
 	margin-top: 8px;
@@ -355,6 +340,20 @@ math {
 
 .linearization dt {
 	display: inline;
+}
+
+.effects-denotation {
+	margin-inline-start: 1rem;
+	color: var(--blue);
+}
+
+
+.moving {
+	user-select: none;
+} */
+
+math {
+	font-family: "Fira Math", "Fira Sans", sans-serif;
 }
 
 math .kuna-lexeme {
@@ -410,7 +409,10 @@ math .kuna-do.kuna-pure > mtr:last-child > mtd {
 	color: inherit;
 }
 
-.effects-denotation {
-	margin-inline-start: 1rem;
-	color: var(--blue);
+.help th {
+	text-align: right;
+	padding-right: 12px;
+}
+.help td {
+	padding-right: 12px;
 }

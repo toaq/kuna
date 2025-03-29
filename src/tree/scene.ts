@@ -1,7 +1,7 @@
 import { typeToPlainText } from '../semantics/render';
 import type { CompositionMode, DTree, Expr } from '../semantics/types';
 import { treeChildren } from './functions';
-import type { MovementID, Tree } from './types';
+import { type MovementID, type Tree, describeLabel } from './types';
 
 export enum SceneTextStyle {
 	/**
@@ -42,9 +42,17 @@ export function sceneLabelToString(label: string | RichSceneLabel): string {
 
 export interface SceneNode<Denotation, Placement> {
 	/**
-	 * This node's label, e.g. "DP : e".
+	 * This node's display label, e.g. "DP : e".
 	 */
 	label: string | RichSceneLabel;
+	/**
+	 * This node's category label, e.g. "DP".
+	 */
+	categoryLabel: string | RichSceneLabel;
+	/**
+	 * This node's "full" category label, e.g. "Determiner phrase".
+	 */
+	fullCategoryLabel: string;
 	/**
 	 * This node's denotation.
 	 */
@@ -136,6 +144,10 @@ function makeRichLabel(
 		regular: string;
 		italic: string;
 		subscript: string;
+	} = {
+		regular: 'bold 1em Fira Sans',
+		italic: 'italic bold 1em Fira Sans',
+		subscript: 'bold 0.8em/0 Fira Sans',
 	},
 ): RichSceneLabelPiece[] {
 	const pieces = [];
@@ -171,14 +183,10 @@ function toSceneLabel(
 
 	const typedLabel: RichSceneLabelLine = {
 		pieces: [
-			...makeRichLabel(tree.label, {
-				regular: `bold 14px ${font}`,
-				italic: `italic bold 14px ${font}`,
-				subscript: `bold 12px/0 ${font}`,
-			}),
+			...makeRichLabel(tree.label),
 			{
 				text: ` : ${typeToPlainText(tree.denotation.type)}`,
-				font: `14px ${font}`,
+				font: `0.9em ${font}`,
 			},
 		],
 	};
@@ -186,7 +194,7 @@ function toSceneLabel(
 	if (!('mode' in tree && tree.mode)) return { lines: [typedLabel] };
 
 	const modeLabel: RichSceneLabelLine = {
-		pieces: [{ text: modeToString(tree.mode), font: `12px ${font}` }],
+		pieces: [{ text: modeToString(tree.mode), font: `0.8em ${font}` }],
 	};
 
 	return { lines: [typedLabel, modeLabel] };
@@ -234,6 +242,14 @@ export function toScene(
 
 		return {
 			label: toSceneLabel(tree),
+			categoryLabel: {
+				lines: [
+					{
+						pieces: makeRichLabel(tree.label),
+					},
+				],
+			},
+			fullCategoryLabel: describeLabel(tree.label),
 			denotation,
 			roof,
 			text,

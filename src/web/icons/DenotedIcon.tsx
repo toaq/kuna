@@ -10,7 +10,7 @@ const SvgComponent = (props: SVGProps<SVGSVGElement>) => (
 		<title>Denoted tree</title>
 		<g fill="none" stroke="currentColor" strokeWidth={2}>
 			<path d="M1,7 l5,-3 l5,2 m-8,-5 l6,0" />
-			<path d="M6,15 l5,-3 l5,2 m-8,-5 l6,0" />
+			<path d="M5,15 l5,-3 l5,2 m-8,-5 l6,0" />
 		</g>
 	</svg>
 );

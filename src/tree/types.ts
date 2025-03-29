@@ -132,6 +132,60 @@ export type Label =
 	| 'Σ'
 	| 'ΣP';
 
+export function describeLabel(label: Label): string {
+	switch (label) {
+		case '*Serial':
+			return 'Unfixed serial';
+		case '*𝘷P':
+		case '*𝘷Pdet':
+			return 'Unfixed verb phrase';
+		case '&':
+		case '&(naP)':
+			return 'Conjunction';
+		// case '&Q':
+		// case "&Q'":
+		// case '&QP':
+		case '𝘢':
+			return 'Adjective head';
+		case 'Asp':
+			return 'Aspect';
+		case 'C':
+		case 'Crel':
+			return 'Complementizer';
+		case 'CP':
+		case 'CPrel':
+			return 'Complementizer phrase';
+		case 'D':
+			return 'Determiner';
+		case 'DP':
+			return 'Determiner phrase';
+		case 'EvA':
+			return 'Event accessor';
+		case 'FocAdv':
+			return 'Focus adverb';
+		case '𝘯':
+			return 'Noun feature';
+		case 'Q':
+			return 'Quantifier';
+		case 'SA':
+			return 'Speech act';
+		case 'T':
+			return 'Tense';
+		case '𝘷':
+			return 'Light verb';
+		case 'V':
+			return 'Verb';
+		case 'Σ':
+			return 'Polarity';
+		default:
+			if (label.endsWith('P'))
+				return `${describeLabel(label.slice(0, -1) as Label)} phrase`;
+			if (label.endsWith("'"))
+				return `${describeLabel(label.slice(0, -1) as Label)} bar-level`;
+			return label;
+	}
+}
+
 export type MovementID = number;
 
 export interface Movement {

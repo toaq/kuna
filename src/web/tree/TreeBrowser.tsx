@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Tooltip } from 'react-tooltip';
 import { keyFor } from '../../core/misc';
-import { toJsx } from '../../semantics/render';
+import { toJsx, typeToPlainText } from '../../semantics/render';
 import type { Expr } from '../../semantics/types';
 import type { MovementID } from '../../tree';
 import {
@@ -20,19 +19,23 @@ import {
 } from '../../tree/scene';
 import type { Theme } from '../../tree/theme';
 import './TreeBrowser.css';
+import { useContext } from 'react';
+import { InspectContext } from '../inspect';
 
 interface TreeBrowserOptions {
 	theme: Theme;
 	layerHeight: number;
 	compactDenotations: boolean;
 	truncateLabels: string[];
+	bias: number;
 }
 
-function TreeLabelPiece({ piece }: { piece: RichSceneLabelPiece }) {
-	const style = {
-		font: piece.font,
-		whiteSpace: 'pre',
-	};
+function TreeLabelPiece({
+	piece,
+	forceNormalWeight,
+}: { piece: RichSceneLabelPiece; forceNormalWeight?: boolean }) {
+	const font = forceNormalWeight ? piece.font.replace('bold ', '') : piece.font;
+	const style = { font, whiteSpace: 'pre' };
 
 	return piece.subscript ? (
 		<sub style={style}>{piece.text}</sub>
@@ -41,27 +44,79 @@ function TreeLabelPiece({ piece }: { piece: RichSceneLabelPiece }) {
 	);
 }
 
-function TreeLabel(props: { label: string | RichSceneLabel }) {
+function TreeLabel(props: {
+	label: string | RichSceneLabel;
+	forceNormalWeight?: boolean;
+}) {
 	if (typeof props.label === 'string') {
 		return props.label;
 	}
 	return (
-		<div>
+		<div className="flex flex-col items-center">
 			{props.label.lines.map((line, i) => (
 				// biome-ignore lint/suspicious/noArrayIndexKey: Layers of label
-				<div key={i}>
+				<div key={i} className="flex flex-row items-baseline">
 					{line.pieces.map((piece, j) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: Pieces of label
-						<TreeLabelPiece key={j} piece={piece} />
+						<TreeLabelPiece
+							// biome-ignore lint/suspicious/noArrayIndexKey: Pieces of label
+							key={j}
+							piece={piece}
+							forceNormalWeight={props.forceNormalWeight}
+						/>
 					))}
 				</div>
 			))}
 		</div>
 	);
 }
+
+export function InspectNode(props: {
+	tree: PlacedTree<Ctx>;
+	breadcrumbs: (string | RichSceneLabel)[];
+}) {
+	const { tree, breadcrumbs } = props;
+
+	return (
+		<div className="mt-8">
+			<h2 className="text-2xl my-2 font-bold">
+				{tree.fullCategoryLabel ?? <TreeLabel label={tree.categoryLabel} />}
+			</h2>
+			<div style={{ display: 'inline-flex' }}>
+				<div style={{ display: 'inline-flex', opacity: 0.4 }}>
+					{breadcrumbs.flatMap((crumb, i) => [
+						// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+						<span key={i}>
+							<TreeLabel label={crumb} forceNormalWeight={true} />
+						</span>,
+						'\xa0>\xa0',
+					])}
+				</div>
+				<TreeLabel label={tree.categoryLabel} forceNormalWeight={true} />
+			</div>
+			<p className="mt-2 py-2 px-4 text-lg bg-slate-100 dark:bg-slate-800 w-fit rounded">
+				<span className="color-word">{tree.source}</span>
+			</p>
+			{tree.denotation?.denotation && (
+				<>
+					<h3 className="text-lg mt-4 mb-2 font-bold">Type</h3>
+					<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
+						{typeToPlainText(tree.denotation.denotation.type)}
+					</div>
+
+					<h3 className="text-lg mt-4 mb-2 font-bold">Denotation</h3>
+					<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
+						{toJsx(tree.denotation.denotation)}
+					</div>
+				</>
+			)}
+		</div>
+	);
+}
+
 export function Node(props: {
 	tree: PlacedTree<Ctx>;
 	expanded: boolean;
+	breadcrumbs: (string | RichSceneLabel)[];
 	options: TreeBrowserOptions;
 }) {
 	const { tree, options } = props;
@@ -97,26 +152,6 @@ export function Node(props: {
 					<div className="tree-gloss">{tree.gloss}</div>
 				) : undefined}
 			</div>
-			{tree.denotation?.denotation && (
-				<Tooltip
-					anchorSelect={`#node-${key}`}
-					clickable
-					place="top"
-					delayHide={0}
-					delayShow={0}
-					style={{
-						background: options.theme.tipBackgroundColor,
-						color: options.theme.tipTextColor,
-						textAlign: 'center',
-						transition: 'opacity 70ms',
-						fontSize: '14px',
-						zIndex: 5,
-					}}
-					opacity="1"
-				>
-					{toJsx(tree.denotation.denotation)}
-				</Tooltip>
-			)}
 		</div>
 	);
 }
@@ -127,15 +162,19 @@ export function Subtree(props: {
 	top: number;
 	lineDx?: number;
 	options: TreeBrowserOptions;
+	path: string;
+	breadcrumbs: (string | RichSceneLabel)[];
 }) {
 	const shouldTruncate = props.options.truncateLabels.some(x =>
 		sceneLabelToString(props.tree.label).startsWith(`${x} `),
 	);
 	const [expanded, setExpanded] = useState(!shouldTruncate);
-
-	const { tree, options } = props;
+	const { inspecteePath, setInspecteePath, setInspectee } =
+		useContext(InspectContext);
+	const { tree, options, breadcrumbs } = props;
 	const children = tree.children;
 	const dist = tree.placement.distanceBetweenChildren;
+	const lit = !inspecteePath || props.path.startsWith(inspecteePath);
 
 	return (
 		<>
@@ -153,6 +192,7 @@ export function Subtree(props: {
 						height: Math.hypot(30, props.lineDx) + 1,
 						transformOrigin: '0.5px 0.5px',
 						transform: `rotate(${Math.atan2(props.lineDx, -30)}rad)`,
+						opacity: lit && props.path !== inspecteePath ? 1 : 0.4,
 					}}
 				/>
 			)}
@@ -162,10 +202,26 @@ export function Subtree(props: {
 					position: 'absolute',
 					left: props.left,
 					top: props.top,
+					opacity: lit ? 1 : 0.4,
 				}}
-				onClick={() => setExpanded(!expanded)}
+				onClick={e => {
+					e.preventDefault();
+					e.stopPropagation();
+					if (inspecteePath === props.path) {
+						setInspecteePath(undefined);
+						setInspectee(undefined);
+					} else {
+						setInspecteePath(props.path);
+						setInspectee(<InspectNode tree={tree} breadcrumbs={breadcrumbs} />);
+					}
+				}}
 			>
-				<Node tree={tree} expanded={expanded} options={options} />
+				<Node
+					tree={tree}
+					breadcrumbs={breadcrumbs}
+					expanded={expanded}
+					options={options}
+				/>
 			</div>
 			{expanded ? (
 				children.map((child, i) => (
@@ -173,14 +229,16 @@ export function Subtree(props: {
 						left={
 							props.left +
 							tree.placement.width / 2 +
-							((1 - children.length) / 2 + i) * dist -
+							((1 - children.length) / 2 + i - options.bias) * dist -
 							child.placement.width / 2
 						}
 						top={props.top + props.options.layerHeight}
-						lineDx={((1 - children.length) / 2 + i) * dist}
+						lineDx={((1 - children.length) / 2 + i - options.bias) * dist}
 						tree={child}
 						key={keyFor(child)}
 						options={options}
+						path={`${props.path}-${i}`}
+						breadcrumbs={[...breadcrumbs, tree.categoryLabel]}
 					/>
 				))
 			) : children.length ? (
@@ -268,7 +326,9 @@ export function TreeBrowser<D extends Expr | string>(props: {
 	if (!canvasCtx) throw new Error('Could not make canvas context');
 	const ctx: Ctx = {
 		measureText(text: string, font?: string) {
-			canvasCtx.font = font ?? '14px Fira Sans';
+			canvasCtx.font = font
+				? font.replace(/([0-9.]+)em/, (_, u) => `${+u * 14}px`)
+				: '14px Fira Sans';
 			return canvasCtx.measureText(text);
 		},
 	};
@@ -283,17 +343,18 @@ export function TreeBrowser<D extends Expr | string>(props: {
 	});
 
 	const placer = new TreePlacer<Ctx, D>(ctx, denotationRenderer, { theme });
-	const placed = placer.placeScene(scene);
+	const bias = 0.22;
+	const placed = placer.placeScene(scene, bias);
 	const layerHeight =
 		typeof scene.root.label === 'string' || scene.root.label.lines.length === 1
 			? 50
 			: 70;
-	const rect = boundingRect(placed);
-	const points = movementPoints(placed);
+	const rect = boundingRect(placed, bias);
+	const points = movementPoints(placed, bias);
 	const x0 = -rect.left;
 
 	return (
-		<div style={{ background: theme.backgroundColor }}>
+		<div>
 			<div
 				style={{
 					width: rect.right - rect.left,
@@ -306,7 +367,15 @@ export function TreeBrowser<D extends Expr | string>(props: {
 					left={x0 - placed.placement.width / 2}
 					top={0}
 					tree={placed}
-					options={{ compactDenotations, theme, truncateLabels, layerHeight }}
+					options={{
+						compactDenotations,
+						theme,
+						truncateLabels,
+						layerHeight,
+						bias,
+					}}
+					path="root"
+					breadcrumbs={[]}
 				/>
 				<Arrows
 					theme={theme}

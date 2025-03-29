@@ -30,8 +30,11 @@ const shortcuts: Record<string, string> = {
 
 function makeLeaf(node: Node, text: string): Node {
 	const label = sceneLabelToString(node.label);
+	const pretty = label.replace(/\^|\_\d+/g, '') as any;
 	return {
-		label: label.replace(/\^|\_\d+/g, '') as any,
+		label: pretty,
+		categoryLabel: pretty,
+		fullCategoryLabel: pretty,
 		denotation: node.denotation,
 		source: text,
 		text,
@@ -62,6 +65,8 @@ function parseTreepad(
 			stack.push({
 				children: [],
 				label: '[]',
+				categoryLabel: '',
+				fullCategoryLabel: '',
 				source: '',
 				placement: undefined,
 				roof: false,
@@ -177,6 +182,7 @@ export function Treepad(props: { isDarkMode: boolean }) {
 					compactDenotations={false}
 					theme={props.isDarkMode ? themes.dark : themes.light}
 					truncateLabels={[]}
+					inspect={() => {}}
 				/>
 			) : (
 				'No tree'

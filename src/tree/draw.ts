@@ -164,6 +164,7 @@ class TreeDrawer {
 		x: number,
 		y: number,
 		tree: PlacedTree<CanvasRenderingContext2D>,
+		bias = 0,
 	): void {
 		this.drawLabel(x, y, tree);
 		if (tree.denotation) {
@@ -171,7 +172,8 @@ class TreeDrawer {
 		}
 		const n = tree.children.length;
 		for (let i = 0; i < n; i++) {
-			const dx = (i - (n - 1) / 2) * tree.placement.distanceBetweenChildren;
+			const dx =
+				(i - bias - (n - 1) / 2) * tree.placement.distanceBetweenChildren;
 			this.drawTree(x + dx, y + this.options.layerHeight, tree.children[i]);
 			const dy = 35 + (tree.denotation?.height(this.ctx) ?? 0);
 			this.drawLine(x, y + dy, x + dx, y + this.options.layerHeight - 15);

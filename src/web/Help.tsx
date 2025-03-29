@@ -15,7 +15,7 @@ const syntacticCategories: [string, string][] = [
 
 const SyntaxHelp = () => (
 	<>
-		<h2>Syntax</h2>
+		<h2 className="text-2xl font-bold my-4">Syntax</h2>
 		<table>
 			<tbody>
 				{syntacticCategories.map(([label, definition]) => (
@@ -45,7 +45,7 @@ const types: [string, string, string][] = [
 
 const TypesHelp = () => (
 	<>
-		<h2>Types</h2>
+		<h2 className="text-2xl font-bold my-4">Types</h2>
 		<table>
 			<tbody>
 				{types.map(([typeName, definition, variables]) => (
@@ -74,7 +74,7 @@ const effects: [string, string, string][] = [
 
 const EffectsHelp = () => (
 	<>
-		<h2>Effects</h2>
+		<h2 className="text-2xl font-bold my-4">Effects</h2>
 		<table>
 			<tbody>
 				{effects.map(([name, explanation, isomorphism]) => (
@@ -91,15 +91,15 @@ const EffectsHelp = () => (
 
 export function Help(props: { closeSelf: () => void }) {
 	return (
-		<div className="card help">
+		<div className="help relative lg:fixed lg:start-2 lg:bottom-2 bg-white dark:bg-slate-900 z-20 px-8 pb-8 lg:rounded-xl lg:border lg:border-current/10 text-xs">
 			<button
-				style={{ position: 'absolute', top: 8, right: 8, width: 60 }}
+				className="absolute top-4 end-4 cursor-pointer hover:underline"
 				type="button"
 				onClick={() => props.closeSelf()}
 			>
 				Close
 			</button>
-			<div className="help-columns">
+			<div className="flex gap-8">
 				<div className="help-column">
 					<SyntaxHelp />
 				</div>

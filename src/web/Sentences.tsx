@@ -211,6 +211,7 @@ export function Sentences(props: { isDarkMode: boolean }) {
 								mode: outputMode,
 							}}
 							isDarkMode={props.isDarkMode}
+							inspect={() => {}}
 						/>
 					</div>
 				)}

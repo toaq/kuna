@@ -94,20 +94,19 @@ export function Settings(props: SettingsProps) {
 		case 'boxes-split': {
 			modeSettings = (
 				<div>
-					<div>
-						<label>Boxes format: </label>
-						<select
-							value={boxesFormat}
-							onChange={e => {
-								setBoxesFormat(e.target.value as Mode);
-								render(e.target.value as Mode);
-							}}
-						>
-							<option value="boxes-flat">Flat</option>
-							<option value="boxes-nest">Nested</option>
-							<option value="boxes-split">Split</option>
-						</select>
-					</div>
+					<label htmlFor="select-boxes-format">Boxes format: </label>
+					<select
+						id="select-boxes-format"
+						value={boxesFormat}
+						onChange={e => {
+							setBoxesFormat(e.target.value as Mode);
+							render(e.target.value as Mode);
+						}}
+					>
+						<option value="boxes-flat">Flat</option>
+						<option value="boxes-nest">Nested</option>
+						<option value="boxes-split">Split</option>
+					</select>
 				</div>
 			);
 			break;
@@ -117,7 +116,7 @@ export function Settings(props: SettingsProps) {
 		case 'semantics-tree-compact':
 		case 'raw-tree':
 			modeSettings = (
-				<div className="settings-stack">
+				<div className="flex flex-col gap-1">
 					{/* <div>
 						<label>Tree format: </label>
 						<select
@@ -132,8 +131,9 @@ export function Settings(props: SettingsProps) {
 						</select>
 					</div> */}
 					<div>
-						<label>Shrink: </label>
+						<label htmlFor="shrink-input">Shrink: </label>
 						<input
+							id="shrink-input"
 							type="text"
 							value={roofLabels}
 							onChange={e => setRoofLabels(e.target.value)}
@@ -141,8 +141,9 @@ export function Settings(props: SettingsProps) {
 						/>
 					</div>
 					<div>
-						<label>
+						<label className="flex gap-1 align-baseline">
 							<input
+								className="w-4 h-4"
 								type="checkbox"
 								checked={trimNulls}
 								onChange={e => setTrimNulls(e.target.checked)}
@@ -151,8 +152,9 @@ export function Settings(props: SettingsProps) {
 						</label>
 					</div>
 					<div>
-						<label>
+						<label className="flex gap-1 align-baseline">
 							<input
+								className="w-4 h-4"
 								type="checkbox"
 								checked={showMovement}
 								onChange={e => setShowMovement(e.target.checked)}
@@ -174,8 +176,9 @@ export function Settings(props: SettingsProps) {
 		case 'logical-form-latex':
 			modeSettings = (
 				<div>
-					<label>Formula format: </label>
+					<label htmlFor="formula-format">Formula format: </label>
 					<select
+						id="formula-format"
 						value={formulaFormat}
 						onChange={e => {
 							setFormulaFormat(e.target.value as Mode);
@@ -205,18 +208,19 @@ export function Settings(props: SettingsProps) {
 	}
 
 	return (
-		<div className="card settings">
+		<div className="px-4 py-2 flex gap-2">
 			<textarea
 				rows={3}
 				value={text}
 				spellCheck={false}
+				placeholder={'Kuq súq sá kuna doa'}
 				onChange={e => {
 					setText(e.target.value);
 					props.dismissExplanation();
 				}}
 			/>
-			<div className="buttons">
-				<div className="button-group">
+			<div className="flex flex-col gap-1">
+				<div className="flex gap-1">
 					<Button icon={<TreeIcon />} onClick={() => render('syntax-tree')}>
 						Tree
 					</Button>
@@ -233,7 +237,7 @@ export function Settings(props: SettingsProps) {
 						Formula
 					</Button>
 				</div>
-				<div className="button-group">
+				<div className="flex gap-1">
 					<Button icon={<TokensIcon />} onClick={() => render('tokens')}>
 						Tokens
 					</Button>

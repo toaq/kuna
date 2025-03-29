@@ -218,7 +218,7 @@ function denoteLeaf(leaf: Leaf, cCommand: StrictTree | null): DTree {
 			animacies[
 				verb.covert
 					? 'descriptive'
-					: animacyClass(verb.entry as VerbEntry) ?? 'descriptive'
+					: (animacyClass(verb.entry as VerbEntry) ?? 'descriptive')
 			];
 		bindings = covertHoaBindings;
 	} else if (leaf.label === '𝘷') {

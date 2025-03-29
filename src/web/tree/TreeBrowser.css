@@ -1,8 +1,13 @@
 .tree-node {
 	white-space: pre;
-	padding-bottom: 20px;
 	display: inline-block;
 	text-align: center;
+	padding: 0px 8px;
+	margin: 0px -8px;
+}
+
+.tree-node:hover {
+	background: #0001;
 }
 
 .tree-node-contents {
@@ -14,6 +19,6 @@
 	padding: 0.5em;
 }
 
-.tree-node span[style*=italic] + span[style*=bold] {
+.tree-node span[style*="italic"] + span[style*="bold"] {
 	margin-left: 1px;
 }

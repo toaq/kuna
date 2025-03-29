@@ -49,6 +49,7 @@ function errorString(e: any): string {
 export interface OutputProps {
 	configuration: Configuration;
 	isDarkMode: boolean;
+	inspect: (inspectee: ReactNode) => void;
 }
 
 export function Output(props: OutputProps) {
@@ -153,6 +154,7 @@ export function Output(props: OutputProps) {
 						compactDenotations={mode === 'semantics-tree-compact'}
 						theme={themes[themeName]}
 						truncateLabels={roofLabels.trim().split(/[\s,]+/)}
+						inspect={props.inspect}
 					/>
 				);
 			}
@@ -161,12 +163,12 @@ export function Output(props: OutputProps) {
 
 	function getGloss(easy: boolean): ReactElement {
 		return (
-			<div className="gloss-output">
+			<div className="flex flex-wrap gap-2">
 				{new Glosser(easy).glossSentence(text).map((g, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: order is stable
 					<div className="gloss-item" key={i}>
-						<div className="gloss-toaq">{g.toaq}</div>
-						<div className="gloss-english">{g.english}</div>
+						<div className="font-bold">{g.toaq}</div>
+						<div className="text-sm">{g.english}</div>
 					</div>
 				))}
 			</div>
@@ -272,7 +274,7 @@ export function Output(props: OutputProps) {
 			) : (
 				<div
 					className={classNames(
-						'card',
+						'px-4 py-2',
 						'output',
 						`output-${props.configuration.mode}`,
 					)}
