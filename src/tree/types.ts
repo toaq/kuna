@@ -16,27 +16,6 @@ export type CovertValue =
 	| 'BE'
 	| 'CAUSE'
 	| 'PRO'
-	| '∃'
-	| '¬∃'
-	| '∀'
-	| '∀.SING'
-	| '∀.CUML'
-	| 'GEN'
-	| 'EXO'
-	| 'ENDO'
-	| 'DEM'
-	| 'PROX'
-	| 'DIST'
-	| '[focus]'
-	| '[focus+c]'
-	| '[only]'
-	| '[also]'
-	| '[even]'
-	| '[and]'
-	| '[or]'
-	| '[xor]'
-	| '[or?]'
-	| '[but]';
 
 export interface CovertWord {
 	covert: true;
