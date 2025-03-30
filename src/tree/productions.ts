@@ -250,6 +250,90 @@ export function makeEvAPdet([rl, rr]: [Tree, Tree]) {
 	};
 }
 
+function condClass(q: string): 'IF' | 'IF.CNTF' | 'WHEN' {
+	if (q === 'she' || q === 'daı') return 'IF';
+	if (q === 'ao' || q === 'ea') return 'IF.CNTF';
+	return 'WHEN';
+}
+
+function qpComplement(
+	q: Leaf & { word: Word },
+	condition: [Leaf & { word: Word }, Tree, Leaf] | null,
+	consequent: Tree,
+): Tree {
+	const condValue = condClass(q.word.bare);
+	if (condition === null) {
+		return condValue === 'WHEN'
+			? consequent
+			: {
+					label: 'CondP',
+					left: makeNull('Cond'),
+					right: consequent,
+					source: consequent.source,
+				};
+	}
+	const [c, antecedent, na] = condition;
+	const bareC = {
+		...c,
+		word: makeWord([
+			{ type: 'complementizer', value: c.word.bare, index: c.word.index },
+		]),
+		source: c.word.bare,
+	};
+	const cpSource = catSource(bareC, antecedent);
+	const cond1Source = catSource(c, antecedent);
+	const cond2Source = catSource(cond1Source, na);
+	return {
+		label: 'CondP',
+		left: {
+			label: "Cond'",
+			left: {
+				label: "Cond'",
+				left: {
+					label: 'Cond',
+					word: { covert: true, value: condValue },
+					source: '',
+				},
+				right: {
+					label: 'CP',
+					left: bareC,
+					right: antecedent,
+					source: cpSource,
+				},
+				source: cond1Source,
+			},
+			right: na,
+			source: cond2Source,
+		},
+		right: consequent,
+		source: catSource(cond2Source, consequent),
+	};
+}
+
+function qp(
+	q: Leaf & { word: Word },
+	condition: [Leaf & { word: Word }, Tree, Leaf] | null,
+	consequent: Tree,
+): Tree {
+	const complement = qpComplement(q, condition, consequent);
+	return {
+		label: 'QP',
+		left: q,
+		right: complement,
+		source: catSource(q, complement.source),
+	};
+}
+
+export function makeQP([q, c, antecedent, na, consequent]: [
+	Leaf & { word: Word },
+	Leaf & { word: Word },
+	Tree,
+	Leaf,
+	Tree,
+]): Tree {
+	return qp(q, [c, antecedent, na], consequent);
+}
+
 export function makeConn(
 	[left, c, right]: [Tree, Tree, Tree],
 	_location: number,
@@ -322,34 +406,24 @@ export function makeAdjunctPT(
 	};
 }
 
-export function makeT1ModalvP([modal, tp]: [Tree, Tree]) {
-	return {
-		label: '𝘷P',
-		left: {
-			label: 'ModalP',
-			left: modal,
-			right: makeNull('CP'),
-			source: modal.source,
-		},
-		right: {
-			label: "𝘷'",
-			left: {
-				label: '𝘷',
-				word: { covert: true, value: 'BE' },
-				source: '',
-			},
-			right: tp,
-			source: tp.source,
-		},
-		source: catSource(modal, tp),
-	};
+export function makeT1QP([modal, tp]: [Leaf & { word: Word }, Tree]) {
+	return qp(modal, null, {
+		label: 'CP',
+		left: makeNull('C'),
+		right: tp,
+		source: tp.source,
+	});
 }
 
-export function makeSigmaT1ModalvP([sigma, modal, tp]: [Tree, Tree, Tree]) {
+export function makeSigmaT1QP([sigma, modal, tp]: [
+	Tree,
+	Leaf & { word: Word },
+	Tree,
+]) {
 	return {
 		label: 'ΣP',
 		left: sigma,
-		right: makeT1ModalvP([modal, tp]),
+		right: makeT1QP([modal, tp]),
 		source: catSource(sigma, modal, tp),
 	};
 }

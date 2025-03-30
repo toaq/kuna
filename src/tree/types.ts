@@ -16,6 +16,9 @@ export type CovertValue =
 	| 'BE'
 	| 'CAUSE'
 	| 'PRO'
+	| 'IF'
+	| 'IF.CNTF'
+	| 'WHEN';
 
 export interface CovertWord {
 	covert: true;
@@ -51,6 +54,9 @@ export type Label =
 	| 'Crel'
 	| 'CP'
 	| 'CPrel'
+	| 'Cond'
+	| "Cond'"
+	| 'CondP'
 	| 'D'
 	| 'DP'
 	| 'Discourse'
@@ -69,8 +75,6 @@ export type Label =
 	| 'kı'
 	| 'mı'
 	| 'mıP'
-	| 'Modal'
-	| 'ModalP'
 	| 'mo'
 	| 'moP'
 	| 'mu'
@@ -134,6 +138,8 @@ export function describeLabel(label: Label): string {
 		case 'CP':
 		case 'CPrel':
 			return 'Complementizer phrase';
+		case 'Cond':
+			return 'Conditional';
 		case 'D':
 			return 'Determiner';
 		case 'DP':

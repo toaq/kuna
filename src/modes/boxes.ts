@@ -149,11 +149,7 @@ class Boxifier {
 							fronted = node.left;
 							const label = effectiveLabel(fronted);
 							frontedLabel =
-								label === 'ModalP'
-									? 'Condition'
-									: label === 'AdjunctP'
-										? 'Fronted adjunct'
-										: 'Subject';
+								label === 'AdjunctP' ? 'Fronted adjunct' : 'Subject';
 							node = node.right;
 							break;
 						}
@@ -165,7 +161,6 @@ class Boxifier {
 						break;
 					}
 					case 'ΣP':
-					case 'ModalP':
 					case 'TP':
 					case 'AspP':
 					case 'CP':
@@ -176,6 +171,18 @@ class Boxifier {
 							verbalComplexWords.push(w);
 						}
 						node = node.right;
+						break;
+					}
+					case 'QP': {
+						assertBranch(node.right);
+						// Not really a legit CondP...
+						fronted = {
+							label: 'CondP',
+							left: node.left,
+							right: node.right.left,
+							source: catSource(node.left.source, node.right.left.source),
+						};
+						node = node.right.right;
 						break;
 					}
 					case '&P':

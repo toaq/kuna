@@ -133,9 +133,6 @@ export class ClauseTranslator {
 					node = node.right;
 					break;
 				case '𝘷P':
-					if (node.left.label === 'ModalP') {
-						this.modals.push(treeToEnglish(node.left).text);
-					}
 					if (
 						'left' in node.right &&
 						'word' in node.right.left &&
@@ -148,6 +145,10 @@ export class ClauseTranslator {
 				case "𝘷'":
 				case 'CPrel':
 					node = node.right;
+					break;
+				case 'CondP':
+					// TODO: Translate CondP
+					this.modals.push(treeToEnglish(node.left).text);
 					break;
 				case '&P':
 					this.conjunct = treeToEnglish(node.right).text;

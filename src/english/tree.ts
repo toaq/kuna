@@ -1,6 +1,6 @@
 import { Impossible, Unimplemented } from '../core/error';
 import { parse } from '../modes/parse';
-import { bare, clean } from '../morphology/tokenize';
+import { clean } from '../morphology/tokenize';
 import {
 	type Branch,
 	type Leaf,
@@ -120,24 +120,6 @@ function adjunctpToEnglish(tree: Branch<Tree>): Constituent {
 	return { text: `${serialToEnglish(serial)}ly` };
 }
 
-function modalpToEnglish(tree: Branch<Tree>): Constituent {
-	const modal = tree.left;
-	const cp = tree.right as Branch<Tree>;
-	const c = cp.left as Leaf;
-	const translator = new ClauseTranslator();
-	translator.processCP(cp);
-	const eng =
-		{ she: 'necessarily', ao: 'would', daı: 'possibly', ea: 'could' }[
-			bare(leafText(modal))
-		] ?? '?';
-	if (c.word.covert) {
-		return { text: eng };
-	}
-	return {
-		text: `if ${translator.emit().replace(/^that /, '')}, then ${eng}`,
-	};
-}
-
 function focuspToEnglish(tree: Branch<Tree>): Constituent {
 	const left = treeToEnglish(tree.left).text;
 	const { text: right, person } = treeToEnglish(tree.right);
@@ -167,8 +149,6 @@ function branchToEnglish(tree: Branch<Tree>): Constituent {
 			return dpToEnglish(tree);
 		case 'AdjunctP':
 			return adjunctpToEnglish(tree);
-		case 'ModalP':
-			return modalpToEnglish(tree);
 		case '&P':
 		case "&'": {
 			const left = treeToEnglish(tree.left);
