@@ -262,7 +262,11 @@ function coerceInput_(
 
 		// Try running the effect
 		const runner = getRunner(inputInner);
-		if (runner !== null && (runner.eager || force)) {
+		if (
+			runner !== null &&
+			(runner.eager || force) &&
+			subtype(under.wrap('t', input), fn.type.domain)
+		) {
 			const coercedInner = under.wrap(
 				runner.functor.wrap('t', inputInner),
 				input,
