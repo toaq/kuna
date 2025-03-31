@@ -289,6 +289,17 @@ export const conditionals = new Map<CovertValue, Expr>([
 			),
 		),
 	],
+	[
+		'WHEN',
+		λ('t', closed, (antecedent, s) =>
+			λ('t', s, (consequent, s) =>
+				gen(
+					λ('()', s, (_, s) => s.var(antecedent)),
+					λ('()', s, (_, s) => s.var(consequent)),
+				),
+			),
+		),
+	],
 ]);
 
 export const quantifiers = new Map<string, (domain: ExprType) => Expr>([

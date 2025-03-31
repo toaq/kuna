@@ -90,7 +90,7 @@ CPrelna<S> -> Clause<S> {% makeBranchCovertLeft('CPrel', 'Crel') %}
 # (sá) ꝡë hao
 CPdet -> CPdet CPrelcon {% makeBranch('CPrel') %}
 # (sá) ∅ hao
-CPdet -> MSPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
+CPdet -> QSPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
 
 # jí
 DP -> %pronoun Free:* {% makeLeaf('DP') %}
@@ -104,27 +104,27 @@ nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 # ní bï pu hao
 Clause<S> -> Argument Bi Clause<S> {% make3L('TopicP', "Topic'") %}
 # pu hao
-Clause<S> -> MSP<S> {% id %}
+Clause<S> -> QSP<S> {% id %}
 # jí nä pu hao hóa
 Clause<S> -> Argument Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
 # râo fíachaq nä pu hao hóa
 Clause<S> -> AdjunctPcon Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
-Clause<S> -> ModalT4 Csub Clause<sub> Na CPna<S> {% makeQP %}
+Clause<S> -> QT4 Csub Clause<sub> Na CPna<S> {% makeQP %}
 # hao jí gö hao jí
-Clause<S> -> MSP<main> Go Clause<S> {% makeRetroactiveCleft %}
+Clause<S> -> QSP<main> Go Clause<S> {% makeRetroactiveCleft %}
 
-# "MSP" is a SigmaP that can have a t1 modal in front.
+# "QSP" is a SigmaP that can have a t1 quantifier in front.
 
 # ao jeo pu chum hao jí
-MSP<S> -> SigmaPcon<S> {% id %}
-MSP<S> -> Modal SigmaPcon<S> {% makeT1QP %}
-MSP<S> -> Sigma Modal SigmaPcon<S> {% makeSigmaT1QP %}
+QSP<S> -> SigmaPcon<S> {% id %}
+QSP<S> -> Q SigmaPcon<S> {% makeT1QP %}
+QSP<S> -> Sigma Q SigmaPcon<S> {% makeSigmaT1QP %}
 
 # (sá) ao hao
-MSPdet -> SigmaPdet {% id %}
-MSPdet -> Modal SigmaPdet {% makeT1QP %}
-MSPdet -> Sigma Modal SigmaPdet {% makeSigmaT1QP %}
+QSPdet -> SigmaPdet {% id %}
+QSPdet -> Q SigmaPdet {% makeT1QP %}
+QSPdet -> Sigma Q SigmaPdet {% makeSigmaT1QP %}
 
 # jeo pu chum hao jí
 SigmaPcon<S> -> SigmaP<S> {% id %}
@@ -255,8 +255,8 @@ Interjection -> %interjection {% makeLeaf('Interjection') %}
 Ki -> %adjective_marker Free:* {% makeLeaf('𝘢') %}
 Mi -> %name_verb Free:* {% makeLeaf('mı') %}
 Mo -> %text_quote Free:* {% makeLeaf('mo') %}
-Modal -> %modality Free:* {% makeLeaf('Q') %}
-ModalT4 -> %modality_with_complement Free:* {% makeLeaf('Q') %}
+Q -> %quantifier Free:* {% makeLeaf('Q') %}
+QT4 -> %quantifier_with_complement Free:* {% makeLeaf('Q') %}
 Na -> %cleft_verb Free:* {% makeLeaf('𝘷') %}
 Prefix -> %prefix {% makePrefixLeaf %}
 Prefix -> %focus_particle_prefix_form {% makePrefixLeaf %}

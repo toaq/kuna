@@ -388,12 +388,13 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		const gen = findGen(cCommand.denotation.type);
 		if (gen === null)
 			throw new Impossible(
-				`D complement: ${typeToPlainText(cCommand.denotation.type)}`,
+				`Q complement: ${typeToPlainText(cCommand.denotation.type)}`,
 			);
 
-		const data = quantifiers.get(leaf.word.bare);
-		if (data === undefined) throw new Unrecognized(`Q: ${leaf.word.bare}`);
-		return data(gen.domain);
+		return (
+			quantifiers.get(leaf.word.bare)?.(gen.domain) ??
+			lex(leaf.word.bare, Fn(Gen(gen.domain, 't'), 't'), closed)
+		);
 	}
 
 	if (leaf.label === '&') {

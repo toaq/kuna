@@ -31,8 +31,6 @@ export const nonVerbTypes = [
 	'incorporated pronoun',
 	'incorporated word determiner', // lô, hû-
 	'interjection',
-	'modality',
-	'modality with complement',
 	'plural coordinator',
 	'polarity',
 	'prefix', // verb-to-verb
@@ -43,6 +41,8 @@ export const nonVerbTypes = [
 	'prefix tense',
 	'preposition',
 	'pronoun',
+	'quantifier',
+	'quantifier with complement',
 	'retroactive cleft',
 	'relative clause complementizer',
 	'sentence connector',
@@ -56,6 +56,23 @@ export const nonVerbTypes = [
 
 export const wordTypes = [...verbTypes, ...nonVerbTypes];
 export const underscoredWordTypes = wordTypes.map(s => s.replace(/ /g, '_'));
+
+const quantifiers = new Set([
+	'she',
+	'daı',
+	'ao',
+	'ea',
+	'he',
+	'faı',
+	'leı',
+	'guotu',
+	'guosa',
+	'guosıa',
+	'koamchıo',
+	'shıchıo',
+	'guchıo',
+	'saqchıo',
+]);
 
 export type NonVerbType = (typeof nonVerbTypes)[number];
 
@@ -170,6 +187,21 @@ export class Dictionary {
 			if (e.toaq === 'kı-') {
 				e.type = 'adjective marker';
 			}
+
+			// Override the types of some words to be quantifiers
+			// TODO: Upstream these changes to dictionary.json
+			if (quantifiers.has(e.toaq)) {
+				this.inner.set(e.toaq, { ...e, type: 'quantifier' });
+				const t4 = inTone(e.toaq, Tone.T4);
+				this.inner.set(t4, {
+					toaq: t4,
+					english: e.english,
+					gloss: e.gloss,
+					type: 'quantifier with complement',
+				});
+				continue;
+			}
+
 			this.inner.set(e.toaq.toLowerCase(), e);
 
 			if (e.type === 'determiner') {
@@ -206,16 +238,6 @@ export class Dictionary {
 					english: e.english,
 					gloss: e.gloss,
 					type: 'conjunction in t4',
-				});
-			}
-
-			if (e.type === 'modality') {
-				const t4 = inTone(e.toaq, Tone.T4);
-				this.inner.set(t4, {
-					toaq: t4,
-					english: e.english,
-					gloss: e.gloss,
-					type: 'modality with complement',
 				});
 			}
 
