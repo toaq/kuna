@@ -2,7 +2,6 @@ import { Impossible } from '../core/error';
 import type { CovertValue } from '../tree/types';
 import {
 	Act,
-	Cont,
 	Dx,
 	Fn,
 	Gen,
@@ -151,7 +150,27 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 				),
 			),
 	],
-	['sía', domain => lex('sía', Fn(Fn(domain, 't'), Cont(domain)), closed)],
+	[
+		'sía',
+		domain =>
+			λ(Fn(domain, 't'), closed, (predicate, s) =>
+				cont(
+					λ(Fn(domain, 't'), s, (c, s) =>
+						app(
+							not(s),
+							some(
+								λ(domain, s, (x, s) =>
+									app(
+										app(and(s), app(s.var(predicate), s.var(x))),
+										app(s.var(c), s.var(x)),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
+	],
 	[
 		'báq',
 		domain =>
