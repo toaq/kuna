@@ -16,10 +16,10 @@ import {
 	causeLittleV,
 	complementizers,
 	conditionals,
+	covertCp,
 	covertCrel,
 	covertResumptive,
 	covertV,
-	declarativeComplementizer,
 	determiners,
 	polarities,
 	pronominalTenses,
@@ -349,11 +349,15 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		else if (leaf.word.entry === undefined)
 			throw new Unrecognized(`C: ${leaf.word.text}`);
 		else toaq = leaf.word.entry.toaq;
-		if (toaq === 'ꝡa') return declarativeComplementizer;
 
 		const data = complementizers.get(toaq);
 		if (data === undefined) throw new Unrecognized(`C: ${toaq}`);
 		return data;
+	}
+
+	if (leaf.label === 'CP') {
+		if (!leaf.word.covert) throw new Impossible('Overt CP');
+		return covertCp;
 	}
 
 	if (leaf.label === 'SA') {

@@ -798,6 +798,15 @@ export function andThen(first: Expr, continuation: Expr): Expr {
 	);
 }
 
+export function salient(inner: ExprType, scope: Scope): Expr {
+	return {
+		head: 'constant',
+		type: Dx(inner),
+		scope: scope.types,
+		name: 'salient',
+	};
+}
+
 export function not(scope: Scope): Expr {
 	return {
 		head: 'constant',

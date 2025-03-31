@@ -27,6 +27,7 @@ import {
 	posb,
 	qn,
 	ref,
+	salient,
 	some,
 	ungen,
 	unint,
@@ -192,7 +193,7 @@ export const covertCrel = λ(
 );
 
 export const complementizers = new Map<string, Expr>([
-	['ꝡa', lex('ꝡa', Fn(Int('t'), Int('t')), closed)],
+	['ꝡa', λ(Int('t'), closed, (t, s) => s.var(t))],
 	[
 		'ma',
 		λ(Int('t'), closed, (p, s) =>
@@ -235,9 +236,7 @@ export const complementizers = new Map<string, Expr>([
 	],
 ]);
 
-export const declarativeComplementizer = λ(Int('t'), closed, (t, s) =>
-	s.var(t),
-);
+export const covertCp = salient(Int('t'), closed);
 
 function qnDomain(type: ExprType): ExprType {
 	if (typeof type !== 'string' && type.head === 'qn') return type.domain;

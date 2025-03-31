@@ -267,7 +267,16 @@ function qpComplement(
 			? consequent
 			: {
 					label: 'CondP',
-					left: makeNull('Cond'),
+					left: {
+						label: "Cond'",
+						left: {
+							label: 'Cond',
+							word: { covert: true, value: condValue },
+							source: '',
+						},
+						right: makeNull('CP'),
+						source: '',
+					},
 					right: consequent,
 					source: consequent.source,
 				};
