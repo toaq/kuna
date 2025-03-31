@@ -15,6 +15,7 @@ import { compose } from './compose';
 import {
 	causeLittleV,
 	complementizers,
+	conditionals,
 	covertCrel,
 	covertResumptive,
 	covertV,
@@ -23,6 +24,7 @@ import {
 	polarities,
 	pronominalTenses,
 	pronouns,
+	quantifiers,
 	speechActParticles,
 } from './data';
 import {
@@ -150,7 +152,11 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			}
 			throw new Unrecognized(`𝘷: ${value}`);
 		}
-		throw new Unimplemented('Overt 𝘷');
+		if (cCommand?.label === "Cond'")
+			return λ(unwrapEffects(cCommand.denotation.type), closed, (pred, s) =>
+				s.var(pred),
+			);
+		throw new Unimplemented(`Overt 𝘷: ${leaf.word.text}`);
 	}
 
 	if (leaf.label === 'DP') {
@@ -366,6 +372,28 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		const type = speechActParticles.get(toaq);
 		if (type === undefined) throw new Unrecognized(`SA: ${toaq}`);
 		return lex(toaq, type(cCommand.denotation.type), closed);
+	}
+
+	if (leaf.label === 'Cond') {
+		if (!leaf.word.covert) throw new Impossible('Overt Cond');
+		const data = conditionals.get(leaf.word.value);
+		if (data === undefined) throw new Unrecognized(`Cond: ${leaf.word.value}`);
+		return data;
+	}
+
+	if (leaf.label === 'Q') {
+		if (cCommand === null)
+			throw new Impossible('Cannot denote a Q in isolation');
+		if (leaf.word.covert) throw new Impossible('Covert Q');
+		const gen = findGen(cCommand.denotation.type);
+		if (gen === null)
+			throw new Impossible(
+				`D complement: ${typeToPlainText(cCommand.denotation.type)}`,
+			);
+
+		const data = quantifiers.get(leaf.word.bare);
+		if (data === undefined) throw new Unrecognized(`Q: ${leaf.word.bare}`);
+		return data(gen.domain);
 	}
 
 	if (leaf.label === '&') {

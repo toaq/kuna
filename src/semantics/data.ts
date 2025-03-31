@@ -1,9 +1,11 @@
 import { Impossible } from '../core/error';
+import type { CovertValue } from '../tree/types';
 import {
 	Act,
 	Cont,
 	Dx,
 	Fn,
+	Gen,
 	Int,
 	Pl,
 	Qn,
@@ -22,9 +24,11 @@ import {
 	lex,
 	not,
 	or,
+	posb,
 	qn,
 	ref,
 	some,
+	ungen,
 	unint,
 	unref,
 	λ,
@@ -262,4 +266,72 @@ export const speechActParticles = new Map<
 	['nha', () => Fn(Int('t'), Act('()'))],
 	['doa', () => Fn(Int('t'), Act('()'))],
 	['ꝡo', () => Fn(Int('t'), Act('()'))],
+]);
+
+export const conditionals = new Map<CovertValue, Expr>([
+	[
+		'IF',
+		λ(Int('t'), closed, (antecedent, s) =>
+			λ(Int('t'), s, (consequent, s) =>
+				int(
+					λ('s', s, (w, s) =>
+						gen(
+							λ('s', s, (w_, s) =>
+								app(
+									app(and(s), app(app(posb(s), s.var(w)), s.var(w_))),
+									app(unint(s.var(antecedent)), s.var(w_)),
+								),
+							),
+							λ('s', s, (w_, s) => app(unint(s.var(consequent)), s.var(w_))),
+						),
+					),
+				),
+			),
+		),
+	],
+]);
+
+export const quantifiers = new Map<string, (domain: ExprType) => Expr>([
+	[
+		'she',
+		domain =>
+			λ(Gen(domain, 't'), closed, (p, s) =>
+				ungen(
+					s.var(p),
+					λ(Fn(domain, 't'), s, (r, s) =>
+						λ(Fn(domain, 't'), s, (b, s) =>
+							every(
+								λ(domain, s, (x, s) =>
+									app(
+										app(implies(s), app(s.var(r), s.var(x))),
+										app(s.var(b), s.var(x)),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
+	],
+	[
+		'daı',
+		domain =>
+			λ(Gen(domain, 't'), closed, (p, s) =>
+				ungen(
+					s.var(p),
+					λ(Fn(domain, 't'), s, (r, s) =>
+						λ(Fn(domain, 't'), s, (b, s) =>
+							some(
+								λ(domain, s, (x, s) =>
+									app(
+										app(and(s), app(s.var(r), s.var(x))),
+										app(s.var(b), s.var(x)),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
+	],
 ]);

@@ -107,7 +107,6 @@ interface Constant extends ExprBase {
 		| 'uncont'
 		| 'map'
 		| 'flat_map'
-		| 'among'
 		| 'gen'
 		| 'ungen'
 		| 'qn'
@@ -127,7 +126,9 @@ interface Constant extends ExprBase {
 		| 'or'
 		| 'implies'
 		| 'equals'
-		| 'agent';
+		| 'among'
+		| 'agent'
+		| 'posb';
 }
 
 /**

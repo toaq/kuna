@@ -481,25 +481,6 @@ export function flatMap(pl: Expr, project: Expr): Expr {
 }
 
 /**
- * Determines whether something is among a given plurality.
- */
-export function among(el: Expr, pl: Expr): Expr {
-	assertPl(pl.type);
-	return app(
-		app(
-			{
-				head: 'constant',
-				type: Fn(pl.type.inner, Fn(pl.type, 't')),
-				scope: el.scope,
-				name: 'among',
-			},
-			el,
-		),
-		pl,
-	);
-}
-
-/**
  * Constructs a generic reference.
  */
 export function gen(restriction: Expr, body: Expr): Expr {
@@ -871,11 +852,43 @@ export function equals(left: Expr, right: Expr): Expr {
 	);
 }
 
+/**
+ * Determines whether something is among a given plurality.
+ */
+export function among(el: Expr, pl: Expr): Expr {
+	assertPl(pl.type);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(pl.type.inner, Fn(pl.type, 't')),
+				scope: el.scope,
+				name: 'among',
+			},
+			el,
+		),
+		pl,
+	);
+}
+
 export function agent(scope: Scope): Expr {
 	return {
 		head: 'constant',
 		type: Fn('v', Fn('s', 'e')),
 		scope: scope.types,
 		name: 'agent',
+	};
+}
+
+/**
+ * Determines whether a world is considered a possible world that can be
+ * accessed from the first world.
+ */
+export function posb(scope: Scope): Expr {
+	return {
+		head: 'constant',
+		type: Fn('s', Fn('s', 't')),
+		scope: scope.types,
+		name: 'posb',
 	};
 }
