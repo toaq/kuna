@@ -389,6 +389,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (cCommand === null)
 			throw new Impossible('Cannot denote a Q in isolation');
 		if (leaf.word.covert) throw new Impossible('Covert Q');
+		const toaq = leaf.word.bare;
 		const gen = findGen(cCommand.denotation.type);
 		if (gen === null)
 			throw new Impossible(
@@ -396,8 +397,13 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			);
 
 		return (
-			quantifiers.get(leaf.word.bare)?.(gen.domain) ??
-			lex(leaf.word.bare, Fn(Gen(gen.domain, 't'), 't'), closed)
+			quantifiers.get(toaq)?.(gen.domain) ??
+			λ(Gen(gen.domain, 't'), closed, (g, s) =>
+				ungen(
+					s.var(g),
+					lex(toaq, Fn(Fn(gen.domain, 't'), Fn(Fn(gen.domain, 't'), 't')), s),
+				),
+			)
 		);
 	}
 
