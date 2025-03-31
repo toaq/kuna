@@ -1,7 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
-import { parse } from '../modes/parse';
-import './Sentences.css';
+import { useCallback, useEffect, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
+import { parse } from '../modes/parse';
 
 // @ts-ignore
 import aSentencesTxt from '../../sentences/a.txt?raw';
@@ -77,7 +76,7 @@ function ShowParseStatus({ status }: { status: ParseStatus }) {
 	return (
 		<>
 			<span style={{ color: RED }}>{errorText}</span>
-			<span className="bullets">
+			<span className="text-xl leading-none">
 				{bullets.map((color, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: order is stable
 					<span key={i} style={{ color }}>
@@ -98,27 +97,30 @@ function SentenceRow(props: {
 }) {
 	const [ref, inView] = useInView({ triggerOnce: true });
 	const [parseStatus, setParseStatus] = useState<ParseStatus>();
-	useMemo(() => {
+
+	useEffect(() => {
 		if (inView) {
 			setParseStatus(checkParse(props.sentence));
 		}
 	}, [inView, props.sentence]);
-
-	if (
-		parseStatus &&
-		!props.showScores.includes(parseStatusScore(parseStatus).toString())
-	)
-		return <></>;
 
 	const select = useCallback(() => {
 		navigator.clipboard.writeText(props.sentence);
 		props.setSelected(props.sentence);
 	}, [props.sentence, props.setSelected]);
 
+	if (
+		parseStatus &&
+		!props.showScores.includes(parseStatusScore(parseStatus).toString())
+	)
+		return null;
+
 	return (
 		<tr
 			ref={ref}
-			className={props.sentence === props.selected ? ' selected' : ''}
+			className={`cursor-pointer ${
+				props.sentence === props.selected ? 'outline-2 outline-[#0088ff88]' : ''
+			}`}
 			tabIndex={0}
 			onClick={select}
 			onKeyUp={e => {
@@ -128,11 +130,11 @@ function SentenceRow(props: {
 				}
 			}}
 		>
-			<td className="sentence-number">{props.id}</td>
-			<td className="parse-status">
+			<td className="w-10 text-center">{props.id}</td>
+			<td className="text-center">
 				{parseStatus && <ShowParseStatus status={parseStatus} />}
 			</td>
-			<td className="sentence-text">{props.sentence}</td>
+			<td className="max-w-60">{props.sentence}</td>
 		</tr>
 	);
 }
@@ -143,8 +145,8 @@ export function Sentences(props: { isDarkMode: boolean }) {
 	const [outputMode, setOutputMode] = useState<Mode>('boxes-nest');
 
 	return (
-		<div className="sentences">
-			<div className="sentences-settings">
+		<div className="">
+			<div className="my-2 mx-4">
 				<select
 					defaultValue={'boxes-nest'}
 					onChange={e => setOutputMode(e.target.value as Mode)}
@@ -174,9 +176,9 @@ export function Sentences(props: { isDarkMode: boolean }) {
 					<option value="4">Show successful parses</option>
 				</select>
 			</div>
-			<main>
-				<div className="card sentence-table-container">
-					<table className="sentence-table">
+			<main className="flex h-full ml-4">
+				<div className="flex-shrink-0 overflow-y-auto max-h-full">
+					<table className="border-collapse">
 						<thead>
 							<tr>
 								<th>No.</th>
@@ -184,7 +186,7 @@ export function Sentences(props: { isDarkMode: boolean }) {
 								<th>Sentence</th>
 							</tr>
 						</thead>
-						<tbody>
+						<tbody className="[&>tr:nth-child(even)]:bg-[#0000000a]">
 							{allSentences.map(s => (
 								<SentenceRow
 									key={s.id}
@@ -199,21 +201,19 @@ export function Sentences(props: { isDarkMode: boolean }) {
 					</table>
 				</div>
 				{selected && (
-					<div className="sentences-output">
-						<Output
-							configuration={{
-								text: selected,
-								treeFormat: 'png-latex',
-								roofLabels: '',
-								trimNulls: false,
-								showMovement: true,
-								meaningCompact: true,
-								mode: outputMode,
-							}}
-							isDarkMode={props.isDarkMode}
-							inspect={() => {}}
-						/>
-					</div>
+					<Output
+						configuration={{
+							text: selected,
+							treeFormat: 'png-latex',
+							roofLabels: '',
+							trimNulls: false,
+							showMovement: true,
+							meaningCompact: true,
+							mode: outputMode,
+						}}
+						isDarkMode={props.isDarkMode}
+						inspect={() => {}}
+					/>
 				)}
 			</main>
 		</div>

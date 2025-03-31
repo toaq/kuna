@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import './Sentences.css';
 import { Impossible } from '../core/error';
 import { moveNodeUp } from '../tree/movement';
 import {
@@ -130,7 +129,12 @@ function parseTreepad(
 }
 
 export function Treepad(props: { isDarkMode: boolean }) {
-	const [source, setSource] = useState('');
+	const [source, setSource] = useState(`[TP
+  [^DP This tool]
+  [T' [T 0]
+    [VP [V is]
+      [A useful]]]
+]`);
 	const [pos, setPos] = useState(0);
 	const [error, setError] = useState('');
 	const [currentScene, setCurrentScene] = useState<Scene<string, Unplaced>>();
@@ -148,17 +152,17 @@ export function Treepad(props: { isDarkMode: boolean }) {
 		}
 	}, [source, pos]);
 	return (
-		<div
-			style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-		>
+		<div className="flex flex-col ml-4">
 			<div className="card">
-				<h1 style={{ textAlign: 'center' }}>Treepad</h1>
-				<p>You can use this tool to create syntax trees from bracketed text.</p>
-				<pre style={{ margin: '-4px 0' }}>
-					[TP [^DP This tool] [T' [T 0] [VP [V is] [A useful]]]]
-				</pre>
-				<p>When you're done, take a screenshot of the tree.</p>
+				<h1 className="text-xl my-2">Treepad</h1>
+				<p className="my-2">
+					You can use this tool to create syntax trees from bracketed text.
+				</p>
+				<p className="my-2">When you're done, take a screenshot of the tree.</p>
 				<textarea
+					className="font-mono"
+					cols={60}
+					rows={6}
 					value={source}
 					placeholder={''}
 					spellCheck={false}
