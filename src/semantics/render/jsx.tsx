@@ -523,6 +523,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 					((e.q === 'every' && e.body.op === 'implies') ||
 						(e.q === 'some' && e.body.op === 'and'))
 				) {
+					const infix = infixes[e.body.op];
 					return wrap(
 						null,
 						inner => (
@@ -530,7 +531,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 						),
 						join(Precedence.Do, 'any', [
 							this.doRow(
-								join(Precedence.Do, 'any', [
+								join(Precedence.Quantify, 'any', [
 									token(
 										<mo lspace="0" rspace="0">
 											{quantifiers[e.q]}
@@ -542,8 +543,10 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 											&nbsp;
 										</mo>,
 									),
-									this.bracket(this.go(e.body.left, newNames)),
-									token(<mo>{infixes[e.body.op].symbol}</mo>),
+									join(infix.precedence, infix.associativity, [
+										this.go(e.body.left, newNames),
+										token(<mo>{infix.symbol}</mo>),
+									]),
 								]),
 							),
 							this.doRow(this.go(e.body.right, newNames)),
