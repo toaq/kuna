@@ -219,8 +219,8 @@ export const complementizers = new Map<string, Expr>([
 			),
 		),
 	],
-	['ꝡä', lex('ꝡä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't'))), closed)],
-	['mä', lex('mä', Fn(Int('t'), Int(Fn(Int(Pl('e')), 't'))), closed)],
+	['ꝡä', lex('ꝡä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))), closed)],
+	['mä', lex('mä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))), closed)],
 	[
 		'ꝡë',
 		λ(Ref({ type: 'resumptive' }, Int('t')), closed, (p, s) =>
