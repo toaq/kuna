@@ -200,7 +200,7 @@ export class EarleyParser<T, N> {
 					for (const e of E[h]) {
 						const erule = this.grammar.rules[e.ruleNumber];
 						const peek = erule.body[e.passed];
-						if ('nonterminal' in peek && peek.nonterminal === D) {
+						if (peek && 'nonterminal' in peek && peek.nonterminal === D) {
 							const r = e.ruleNumber;
 							const k = e.originPosition;
 							const z = e.sppfNode;
