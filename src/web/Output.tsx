@@ -65,9 +65,11 @@ export function Output(props: OutputProps) {
 	} = props.configuration;
 	const treeImg = useRef<HTMLImageElement>(null);
 	let trees: Tree[];
+	let error = 'No parse';
 	try {
 		trees = parse(text);
-	} catch (_e) {
+	} catch (e) {
+		error = `${e}`.replace(/A (\w+) token based on:(\n .+)+/g, (_, x) => x);
 		trees = [];
 	}
 	const parseCount = trees.length;
@@ -78,9 +80,7 @@ export function Output(props: OutputProps) {
 	const needsParse =
 		mode !== 'tokens' && mode !== 'gloss' && mode !== 'technical-gloss';
 	if (needsParse && parseCount === 0) {
-		return (
-			<div className={classNames('card', 'output', 'error')}>No parse</div>
-		);
+		return <div className="mx-4 my-2">{error}</div>;
 	}
 
 	function getBoxes(strategy: 'flat' | 'nest' | 'split'): ReactElement {
