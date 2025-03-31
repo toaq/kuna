@@ -320,47 +320,73 @@ export const conditionals = new Map<CovertValue, Expr>([
 	],
 ]);
 
+const always = (domain: ExprType) =>
+	λ(Gen(domain, 't'), closed, (p, s) =>
+		ungen(
+			s.var(p),
+			λ(Fn(domain, 't'), s, (r, s) =>
+				λ(Fn(domain, 't'), s, (b, s) =>
+					every(
+						λ(domain, s, (x, s) =>
+							app(
+								app(implies(s), app(s.var(r), s.var(x))),
+								app(s.var(b), s.var(x)),
+							),
+						),
+					),
+				),
+			),
+		),
+	);
+
+const sometimes = (domain: ExprType) =>
+	λ(Gen(domain, 't'), closed, (p, s) =>
+		ungen(
+			s.var(p),
+			λ(Fn(domain, 't'), s, (r, s) =>
+				λ(Fn(domain, 't'), s, (b, s) =>
+					some(
+						λ(domain, s, (x, s) =>
+							app(
+								app(and(s), app(s.var(r), s.var(x))),
+								app(s.var(b), s.var(x)),
+							),
+						),
+					),
+				),
+			),
+		),
+	);
+
+const never = (domain: ExprType) =>
+	λ(Gen(domain, 't'), closed, (p, s) =>
+		ungen(
+			s.var(p),
+			λ(Fn(domain, 't'), s, (r, s) =>
+				λ(Fn(domain, 't'), s, (b, s) =>
+					app(
+						not(s),
+						some(
+							λ(domain, s, (x, s) =>
+								app(
+									app(and(s), app(s.var(r), s.var(x))),
+									app(s.var(b), s.var(x)),
+								),
+							),
+						),
+					),
+				),
+			),
+		),
+	);
+
 export const quantifiers = new Map<string, (domain: ExprType) => Expr>([
-	[
-		'she',
-		domain =>
-			λ(Gen(domain, 't'), closed, (p, s) =>
-				ungen(
-					s.var(p),
-					λ(Fn(domain, 't'), s, (r, s) =>
-						λ(Fn(domain, 't'), s, (b, s) =>
-							every(
-								λ(domain, s, (x, s) =>
-									app(
-										app(implies(s), app(s.var(r), s.var(x))),
-										app(s.var(b), s.var(x)),
-									),
-								),
-							),
-						),
-					),
-				),
-			),
-	],
-	[
-		'daı',
-		domain =>
-			λ(Gen(domain, 't'), closed, (p, s) =>
-				ungen(
-					s.var(p),
-					λ(Fn(domain, 't'), s, (r, s) =>
-						λ(Fn(domain, 't'), s, (b, s) =>
-							some(
-								λ(domain, s, (x, s) =>
-									app(
-										app(and(s), app(s.var(r), s.var(x))),
-										app(s.var(b), s.var(x)),
-									),
-								),
-							),
-						),
-					),
-				),
-			),
-	],
+	['she', always],
+	['daı', sometimes],
+	['ao', always],
+	['ea', sometimes],
+	['guotu', always],
+	['guosa', sometimes],
+	['guosıa', never],
+	['koamchıo', never],
 ]);
