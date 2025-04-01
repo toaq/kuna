@@ -129,6 +129,7 @@ interface Constant extends ExprBase {
 		| 'implies'
 		| 'equals'
 		| 'among'
+		| 'animate'
 		| 'agent'
 		| 'posb';
 }

@@ -889,6 +889,18 @@ export function among(el: Expr, pl: Expr): Expr {
 	);
 }
 
+/**
+ * Determines whether an individual is animate.
+ */
+export function animate(scope: Scope): Expr {
+	return {
+		head: 'constant',
+		type: Int(Fn('e', 't')),
+		scope: scope.types,
+		name: 'animate',
+	};
+}
+
 export function agent(scope: Scope): Expr {
 	return {
 		head: 'constant',

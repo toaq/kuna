@@ -10,8 +10,10 @@ import {
 	Qn,
 	Ref,
 	agent,
+	among,
 	and,
 	andMap,
+	animate,
 	app,
 	bg,
 	bind,
@@ -87,6 +89,49 @@ export const pronouns = new Map<string, Expr>([
 	...personalPronouns.map(
 		toaq => [toaq, lex(toaq, Dx(Int(Pl('e'))), closed)] as const,
 	),
+	[
+		'há',
+		andMap(
+			salient(Int(Fn(Pl('e'), 't')), closed),
+			λ(Int(Fn(Pl('e'), 't')), closed, (r, s) =>
+				int(
+					λ('s', s, (w, s) =>
+						gen(
+							λ(Int(Pl('e')), s, (xx, s) =>
+								app(
+									app(
+										and(s),
+										app(
+											app(unint(s.var(r)), s.var(w)),
+											app(unint(s.var(xx)), s.var(w)),
+										),
+									),
+									every(
+										λ('e', s, (x, s) =>
+											app(
+												app(
+													implies(s),
+													among(s.var(x), app(unint(s.var(xx)), s.var(w))),
+												),
+												app(app(unint(animate(s)), s.var(w)), s.var(x)),
+											),
+										),
+									),
+								),
+							),
+							λ(Int(Pl('e')), s, (xx, s) =>
+								bind(
+									{ type: 'animacy', class: 'animate' },
+									s.var(xx),
+									s.var(xx),
+								),
+							),
+						),
+					),
+				),
+			),
+		),
+	],
 	...anaphoricPronouns.map(
 		([toaq, animacy]) =>
 			[
