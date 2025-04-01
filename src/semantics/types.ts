@@ -122,6 +122,7 @@ interface Constant extends ExprBase {
 		| 'and_map'
 		| 'and_then'
 		| 'salient'
+		| 'bg'
 		| 'not'
 		| 'and'
 		| 'or'

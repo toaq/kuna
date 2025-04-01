@@ -807,6 +807,15 @@ export function salient(inner: ExprType, scope: Scope): Expr {
 	};
 }
 
+export function bg(scope: Scope): Expr {
+	return {
+		head: 'constant',
+		type: Fn(Act('()'), Act('()')),
+		scope: scope.types,
+		name: 'bg',
+	};
+}
+
 export function not(scope: Scope): Expr {
 	return {
 		head: 'constant',
