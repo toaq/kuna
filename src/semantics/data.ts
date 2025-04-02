@@ -151,6 +151,13 @@ export const pronouns = new Map<string, Expr>([
 			λ(Int(Pl('e')), closed, (x, s) => s.var(x)),
 		),
 	],
+	[
+		'já',
+		ref(
+			{ type: 'gap' },
+			λ(Int(Pl('e')), closed, (x, s) => s.var(x)),
+		),
+	],
 ]);
 
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
@@ -288,6 +295,28 @@ export const complementizers = new Map<string, Expr>([
 	],
 	['ꝡä', lex('ꝡä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))), closed)],
 	['mä', lex('mä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))), closed)],
+	[
+		'lä',
+		int(
+			λ('s', closed, (w, s) =>
+				λ(Ref({ type: 'gap' }, Int('t')), s, (p, s) =>
+					app(
+						app(
+							unint(
+								lex(
+									'lä',
+									Int(Fn(Fn(Int(Pl('e')), Int('t')), Fn(Int(Pl('e')), 't'))),
+									s,
+								),
+							),
+							s.var(w),
+						),
+						unref(s.var(p)),
+					),
+				),
+			),
+		),
+	],
 	[
 		'ꝡë',
 		λ(Ref({ type: 'resumptive' }, Int('t')), closed, (p, s) =>

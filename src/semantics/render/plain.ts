@@ -41,6 +41,8 @@ function binding(b: Binding): string {
 			return 'hóa';
 		case 'covert resumptive':
 			return 'PRO';
+		case 'gap':
+			return 'já';
 		case 'name':
 			return inTone(b.verb, Tone.T2);
 		case 'animacy':

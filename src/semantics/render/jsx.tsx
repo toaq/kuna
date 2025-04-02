@@ -293,6 +293,8 @@ function binding(b: Binding): ReactNode {
 			return <mi>hóa</mi>;
 		case 'covert resumptive':
 			return <mi>PRO</mi>;
+		case 'gap':
+			return <mi>já</mi>;
 		case 'name':
 			return <mi>{inTone(b.verb, Tone.T2)}</mi>;
 		case 'animacy':

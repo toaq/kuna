@@ -5,6 +5,7 @@ export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 export type Binding =
 	| { type: 'resumptive' }
 	| { type: 'covert resumptive' }
+	| { type: 'gap' }
 	| { type: 'name'; verb: string }
 	| { type: 'animacy'; class: AnimacyClass }
 	| { type: 'head'; head: string };
