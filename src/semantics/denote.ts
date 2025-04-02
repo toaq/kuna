@@ -86,6 +86,13 @@ function getVerbWord(vp: StrictTree): Word | CovertWord {
 			if (verb.left.left.word.covert)
 				throw new Impossible(`Covert ${verb.left.left.label}`);
 			return verb.left.left.word;
+		case 'buP':
+		case 'muP':
+		case 'geP':
+		case 'buqP':
+		case 'TelicityP':
+			if ('word' in verb) throw new Unrecognized(`${verb.label} shape`);
+			return getVerbWord(verb.right);
 		default:
 			throw new Unrecognized('VP shape');
 	}
@@ -443,6 +450,22 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	if (leaf.label === 'word') {
 		if (leaf.word.covert) throw new Impossible('Covert word');
 		return quote(leaf.word.text, closed);
+	}
+
+	if (
+		leaf.label === 'bu' ||
+		leaf.label === 'mu' ||
+		leaf.label === 'ge' ||
+		leaf.label === 'buq' ||
+		leaf.label === 'Telicity'
+	) {
+		if (cCommand === null)
+			throw new Impossible(`Cannot denote a ${leaf.label} in isolation`);
+		if (leaf.word.covert) throw new Impossible(`Covert ${leaf.label}`);
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`${leaf.label}: ${leaf.word.text}`);
+		const type = unwrapEffects(cCommand.denotation.type);
+		return lex(leaf.word.entry.toaq, Fn(type, type), closed);
 	}
 
 	throw new Unimplemented(`TODO: ${leaf.label}`);
