@@ -1,10 +1,5 @@
 import { assertBind, assertFn, assertRef, pair } from '../model';
-import {
-	VariableDeletedError,
-	rewriteScope,
-	substitute,
-	varOccurrences,
-} from '../reduce';
+import { VariableDeletedError, rewriteScope, substitute } from '../reduce';
 import type { Binding, Expr, ExprType } from '../types';
 
 interface ExprBase {
@@ -123,6 +118,22 @@ export type RichExpr =
 	| Quote
 	| Constant;
 
+/**
+ * Determines whether a variable is used in an expression.
+ */
+function varUsed(e: Expr, index: number): boolean {
+	switch (e.head) {
+		case 'apply':
+			return varUsed(e.fn, index) || varUsed(e.arg, index);
+		case 'lambda':
+			return varUsed(e.body, index + 1);
+		case 'variable':
+			return e.index === index;
+		default:
+			return false;
+	}
+}
+
 function enrichLambda_(param: Expr, body: Expr): { param: Expr; body: Expr } {
 	// Pair destructuring
 	if (
@@ -131,7 +142,7 @@ function enrichLambda_(param: Expr, body: Expr): { param: Expr; body: Expr } {
 		body.fn.fn.head === 'constant' &&
 		body.fn.fn.name === 'unpair' &&
 		body.fn.arg.head === 'variable' &&
-		varOccurrences(param, body.fn.arg.index) > 0 &&
+		varUsed(param, body.fn.arg.index) &&
 		body.arg.head === 'lambda' &&
 		body.arg.body.head === 'lambda'
 	) {

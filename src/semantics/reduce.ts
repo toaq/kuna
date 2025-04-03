@@ -17,7 +17,6 @@ import {
 	unqn,
 	λ,
 } from './model';
-import { getFunctor } from './structures';
 import type { Expr, ExprType } from './types';
 
 function mapVariables(
@@ -113,55 +112,6 @@ export function substitute(index: number, target: Expr, e: Expr): Expr {
 	);
 }
 
-/**
- * Determine whether an Expr is small enough to always β-reduce it.
- */
-function isSmallExpr(e: Expr): boolean {
-	switch (e.head) {
-		case 'variable':
-		case 'constant':
-		case 'quote':
-			return true;
-		default:
-			return false;
-	}
-}
-
-/**
- * Count occurrences of a variable in an expression.
- */
-export function varOccurrences(expr: Expr, index: number): number {
-	let count = 0;
-	function walk(e: Expr, index: number) {
-		switch (e.head) {
-			case 'apply':
-				walk(e.fn, index);
-				walk(e.arg, index);
-				break;
-			case 'lambda':
-				walk(e.body, index + 1);
-				break;
-			case 'variable':
-				if (e.index === index) {
-					++count;
-				}
-				break;
-			default:
-				break;
-		}
-	}
-	walk(expr, index);
-	return count;
-}
-
-function isGenOrQn(t: ExprType): boolean {
-	if (typeof t === 'string') return false;
-	if (t.head === 'fn') return isGenOrQn(t.range);
-	if (t.head === 'gen' || t.head === 'qn') return true;
-	const functor = getFunctor(t);
-	return functor !== null && isGenOrQn(functor.unwrap(t));
-}
-
 function pairlikeDeconstructor(
 	name: (Expr & object & { head: 'constant' })['name'],
 ): ((e: Expr, project: Expr) => Expr) | null {
@@ -196,16 +146,7 @@ function reducePass(expr: Expr): Expr {
 		case 'apply': {
 			if (expr.fn.head === 'lambda') {
 				// (λx body) arg
-				if (
-					isSmallExpr(expr.arg) ||
-					varOccurrences(expr.fn.body, 0) < 2 ||
-					// Allow Gen or Qn expressions to be substituted multiple times, because
-					// the Monad instances for these types have no choice but to reference the
-					// inner Gen/Qn twice
-					isGenOrQn(expr.arg.type)
-				) {
-					return reducePass(substitute(0, expr.arg, expr.fn.body));
-				}
+				return reducePass(substitute(0, expr.arg, expr.fn.body));
 			}
 			if (expr.fn.head === 'constant') {
 				const outer = expr.fn.name;
