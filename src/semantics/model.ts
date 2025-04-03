@@ -913,14 +913,13 @@ export function agent(scope: Scope): Expr {
 }
 
 /**
- * Determines whether a world is considered a possible world that can be
- * accessed from the first world.
+ * Picks out a salient accessibility relation on worlds.
  */
-export function posb(scope: Scope): Expr {
+export function accessibility(scope: Scope): Expr {
 	return {
 		head: 'constant',
-		type: Fn('s', Fn('s', 't')),
+		type: Dx(Fn('s', Fn('s', 't'))),
 		scope: scope.types,
-		name: 'posb',
+		name: 'accessibility',
 	};
 }

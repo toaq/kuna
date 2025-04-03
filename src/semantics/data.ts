@@ -9,6 +9,7 @@ import {
 	Pl,
 	Qn,
 	Ref,
+	accessibility,
 	agent,
 	among,
 	and,
@@ -27,7 +28,6 @@ import {
 	lex,
 	not,
 	or,
-	posb,
 	qn,
 	ref,
 	salient,
@@ -367,16 +367,26 @@ export const conditionals = new Map<CovertValue, Expr>([
 		'IF',
 		λ(Int('t'), closed, (antecedent, s) =>
 			λ(Int('t'), s, (consequent, s) =>
-				int(
-					λ('s', s, (w, s) =>
-						gen(
-							λ('s', s, (w_, s) =>
-								app(
-									app(and(s), app(app(posb(s), s.var(w)), s.var(w_))),
-									app(unint(s.var(antecedent)), s.var(w_)),
+				andMap(
+					accessibility(s),
+					λ(Fn('s', Fn('s', 't')), s, (accessible, s) =>
+						int(
+							λ('s', s, (w, s) =>
+								gen(
+									λ('s', s, (w_, s) =>
+										app(
+											app(
+												and(s),
+												app(app(s.var(accessible), s.var(w)), s.var(w_)),
+											),
+											app(unint(s.var(antecedent)), s.var(w_)),
+										),
+									),
+									λ('s', s, (w_, s) =>
+										app(unint(s.var(consequent)), s.var(w_)),
+									),
 								),
 							),
-							λ('s', s, (w_, s) => app(unint(s.var(consequent)), s.var(w_))),
 						),
 					),
 				),
@@ -388,29 +398,37 @@ export const conditionals = new Map<CovertValue, Expr>([
 		λ(Int('t'), closed, (antecedent, s) =>
 			λ(Int('t'), s, (consequent, s) =>
 				andMap(
-					app(
-						bg(s),
-						app(
-							lex('da', Fn(Int('t'), Act('()')), s),
-							int(
-								λ('s', s, (w, s) =>
-									app(not(s), app(unint(s.var(antecedent)), s.var(w))),
-								),
-							),
-						),
-					),
-					λ('()', s, (_, s) =>
-						int(
-							λ('s', s, (w, s) =>
-								gen(
-									λ('s', s, (w_, s) =>
-										app(
-											app(and(s), app(app(posb(s), s.var(w)), s.var(w_))),
-											app(unint(s.var(antecedent)), s.var(w_)),
+					accessibility(s),
+					λ(Fn('s', Fn('s', 't')), s, (accessible, s) =>
+						andMap(
+							app(
+								bg(s),
+								app(
+									lex('da', Fn(Int('t'), Act('()')), s),
+									int(
+										λ('s', s, (w, s) =>
+											app(not(s), app(unint(s.var(antecedent)), s.var(w))),
 										),
 									),
-									λ('s', s, (w_, s) =>
-										app(unint(s.var(consequent)), s.var(w_)),
+								),
+							),
+							λ('()', s, (_, s) =>
+								int(
+									λ('s', s, (w, s) =>
+										gen(
+											λ('s', s, (w_, s) =>
+												app(
+													app(
+														and(s),
+														app(app(s.var(accessible), s.var(w)), s.var(w_)),
+													),
+													app(unint(s.var(antecedent)), s.var(w_)),
+												),
+											),
+											λ('s', s, (w_, s) =>
+												app(unint(s.var(consequent)), s.var(w_)),
+											),
+										),
 									),
 								),
 							),

@@ -132,7 +132,7 @@ interface Constant extends ExprBase {
 		| 'among'
 		| 'animate'
 		| 'agent'
-		| 'posb';
+		| 'accessibility';
 }
 
 /**
