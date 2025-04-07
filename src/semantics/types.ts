@@ -1,3 +1,5 @@
+import { bare } from '../morphology/tokenize';
+import { Tone, inTone } from '../morphology/tone';
 import type { Branch, Leaf } from '../tree';
 
 export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
@@ -9,6 +11,36 @@ export type Binding =
 	| { type: 'name'; verb: string }
 	| { type: 'animacy'; class: AnimacyClass }
 	| { type: 'head'; head: string };
+
+export function animacyToString(a: AnimacyClass): string {
+	switch (a) {
+		case 'animate':
+			return 'hó';
+		case 'inanimate':
+			return 'máq';
+		case 'abstract':
+			return 'hóq';
+		case 'descriptive':
+			return 'tá';
+	}
+}
+
+export function bindingToString(b: Binding): string {
+	switch (b.type) {
+		case 'resumptive':
+			return 'hóa';
+		case 'covert resumptive':
+			return 'PRO';
+		case 'gap':
+			return 'já';
+		case 'name':
+			return inTone(b.verb, Tone.T2);
+		case 'animacy':
+			return animacyToString(b.class);
+		case 'head':
+			return `hụ́${bare(b.head)}`;
+	}
+}
 
 /**
  * A type of a semantic expression.
@@ -81,6 +113,7 @@ interface Variable extends ExprBase {
 interface Lambda extends ExprBase {
 	head: 'lambda';
 	body: Expr;
+	nameHint?: string;
 }
 
 interface Apply extends ExprBase {

@@ -1,3 +1,4 @@
+import { bare } from '../../morphology/tokenize';
 import type { ExprType } from '../types';
 
 export type Associativity = 'left' | 'right' | 'any' | 'none';
@@ -121,7 +122,9 @@ export const alphabets: Record<NameType, string[]> = {
 	v: ['𝑒'],
 	i: ['𝑡'],
 	s: ['𝑤'],
-	exotic: ['𝑃', '𝑄', '𝑅', '𝑆', '𝑇', '𝑈', '𝑉', '𝑊', '𝑋', '𝑌', '𝑍'],
+	exotic: Array.from({ length: 26 }, (_, i) =>
+		String.fromCodePoint(0x1d434 + i),
+	),
 };
 
 /**
@@ -147,7 +150,7 @@ export const noNames: Names = {
 		v: 0,
 		i: 0,
 		s: 0,
-		exotic: 0,
+		exotic: 15, // Start at P
 	},
 };
 
@@ -157,12 +160,24 @@ export function getNameType(type: ExprType): NameType {
 		: 'exotic';
 }
 
+function bindingLetterIndex(word: string): number | undefined {
+	if (word) {
+		const i = bare(word.toLowerCase())
+			.replace('ı', 'i')
+			.replace('ꝡ', 'v')
+			.codePointAt(0);
+		if (i && i >= 0x61 && i <= 0x7a) return i - 0x61;
+	}
+	return undefined;
+}
+
 /**
  * Adds names for all variables in scope to the given naming context.
  */
 export function addNames(
 	scope: ExprType[],
 	{ scope: prevScope, nextIds: prevNextIds }: Names,
+	word?: string,
 ): Names {
 	const newScope = [...prevScope];
 	const newNextIds = { ...prevNextIds };
@@ -172,13 +187,16 @@ export function addNames(
 		const nameType = getNameType(type);
 		const alphabetSize = alphabets[nameType].length;
 
-		let id = newNextIds[nameType];
+		// Try to pick a nice letter for the binding; default to P, Q, R...
+		let id: number | undefined;
+		if (word && nameType === 'exotic') id ??= bindingLetterIndex(word);
+		id ??= newNextIds[nameType]++;
+
 		// If this name is already taken, try the same name one alphabetSize later
-		while (newScope.some(n => n.type === type && n.id === id))
+		while (newScope.some(n => n.type === nameType && n.id === id))
 			id += alphabetSize;
 
 		newScope.unshift({ id, type: nameType });
-		newNextIds[nameType]++;
 	}
 
 	return { scope: newScope, nextIds: newNextIds };

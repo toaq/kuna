@@ -1,7 +1,5 @@
 import { Impossible, Unimplemented } from '../../core/error';
-import { bare } from '../../morphology/tokenize';
-import { Tone, inTone } from '../../morphology/tone';
-import type { AnimacyClass, Binding, Expr, ExprType } from '../types';
+import { type Expr, type ExprType, bindingToString } from '../types';
 import {
 	type Associativity,
 	type Names,
@@ -20,36 +18,6 @@ enum TypePrecedence {
 	Function = 1,
 	Apply = 2,
 	Bracket = 3,
-}
-
-function animacy(a: AnimacyClass): string {
-	switch (a) {
-		case 'animate':
-			return 'hó';
-		case 'inanimate':
-			return 'máq';
-		case 'abstract':
-			return 'hóq';
-		case 'descriptive':
-			return 'tá';
-	}
-}
-
-function binding(b: Binding): string {
-	switch (b.type) {
-		case 'resumptive':
-			return 'hóa';
-		case 'covert resumptive':
-			return 'PRO';
-		case 'gap':
-			return 'já';
-		case 'name':
-			return inTone(b.verb, Tone.T2);
-		case 'animacy':
-			return animacy(b.class);
-		case 'head':
-			return `hụ́${bare(b.head)}`;
-	}
 }
 
 export class PlainTextType extends Renderer<ExprType, string> {
@@ -87,12 +55,12 @@ export class PlainTextType extends Renderer<ExprType, string> {
 				]);
 			case 'bind':
 				return this.app(
-					this.app(token('Bind'), token(binding(t.binding))),
+					this.app(token('Bind'), token(bindingToString(t.binding))),
 					this.sub(t.inner),
 				);
 			case 'ref':
 				return this.app(
-					this.app(token('Ref'), token(binding(t.binding))),
+					this.app(token('Ref'), token(bindingToString(t.binding))),
 					this.sub(t.inner),
 				);
 			case 'dx':
@@ -224,7 +192,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 								token(' ⇐ '),
 								'scope' in e.right
 									? this.go(e.right, names)
-									: token(binding(e.right)),
+									: token(bindingToString(e.right)),
 							]),
 							token(e.pure ? '; ' : ', '),
 							this.go(e.result, newNames),
@@ -234,7 +202,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 						return join(Precedence.Do, 'right', [
 							join(Precedence.Assign, 'none', [
 								this.go(e.left, names),
-								token(` ⇒ ${binding(e.right)}`),
+								token(` ⇒ ${bindingToString(e.right)}`),
 							]),
 							token(e.pure ? '; ' : ', '),
 							this.go(e.result, names),

@@ -9,7 +9,12 @@ import { Tooltip } from 'react-tooltip';
 import { Impossible } from '../../core/error';
 import { bare } from '../../morphology/tokenize';
 import { Tone, inTone } from '../../morphology/tone';
-import type { AnimacyClass, Binding, ExprType } from '../types';
+import {
+	type AnimacyClass,
+	type Binding,
+	type ExprType,
+	bindingToString,
+} from '../types';
 import {
 	type Associativity,
 	type Names,
@@ -304,6 +309,22 @@ function binding(b: Binding): ReactNode {
 	}
 }
 
+function richExprToNameHint(e: RichExpr): string | undefined {
+	console.log(e);
+	switch (e.head) {
+		case 'subscript':
+			return richExprToNameHint(e.base);
+		case 'lexeme':
+			return e.name;
+		case 'quote':
+			return e.text;
+		case 'constant':
+			return e.name;
+		default:
+			return undefined;
+	}
+}
+
 enum TypePrecedence {
 	Pair = 0,
 	Function = 1,
@@ -519,7 +540,8 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 			case 'variable':
 				return token(this.name(e.index, names));
 			case 'quantify': {
-				const newNames = addNames(e.param.scope, names);
+				const word = richExprToNameHint(e);
+				const newNames = addNames(e.param.scope, names, word);
 				if (
 					e.body.head === 'infix' &&
 					((e.q === 'every' && e.body.op === 'implies') ||
@@ -614,7 +636,11 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 			case 'do':
 				switch (e.op) {
 					case 'get': {
-						const newNames = addNames(e.left.scope, names);
+						const word =
+							'scope' in e.right
+								? richExprToNameHint(e.right)
+								: bindingToString(e.right);
+						const newNames = addNames(e.left.scope, names, word);
 						return this.do(
 							e.pure,
 							join(Precedence.Do, 'right', [
