@@ -7,6 +7,7 @@ import { Inspector } from './Inspector';
 import { Output } from './Output';
 import { type Configuration, Settings } from './Settings';
 import { InspectContext } from './inspect';
+import { Button } from './Button';
 
 export function Interactive(props: { isDarkMode: boolean }) {
 	const [dismissed, setDismissed] = useLocalStorage(
@@ -31,23 +32,21 @@ export function Interactive(props: { isDarkMode: boolean }) {
 				<div className="h-full flex-1 overflow-auto">
 					<div className="flex flex-col items-start overflow-auto">
 						{!dismissed && (
-							<div className="card explanation">
+							<div className="mx-4 my-2 border rounded max-w-prose py-2 px-4 flex flex-col gap-2 items-start">
 								<p>
 									This is a parser for the constructed language{' '}
 									<a href="https://toaq.net/">Toaq</a>. It can interpret Toaq
 									sentences and convert them to a variety of output formats.
 								</p>
 								<p>
-									Write some Toaq in the textbox below, then click one of the
+									Write some Toaq in the textbox below — like <strong>Cho jí ní zu da!</strong> — then click one of the
 									buttons to see the output.
 								</p>
-								<button
-									className="dismiss"
-									type="button"
+								<Button
 									onClick={() => setDismissed(true)}
 								>
 									Dismiss
-								</button>
+								</Button>
 							</div>
 						)}
 						<div className="sticky left-0">
