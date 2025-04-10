@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
 import type { ReactNode } from 'react';
+import { Button } from './Button';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Inspector } from './Inspector';
 import { Output } from './Output';
 import { type Configuration, Settings } from './Settings';
 import { InspectContext } from './inspect';
-import { Button } from './Button';
 
 export function Interactive(props: { isDarkMode: boolean }) {
 	const [dismissed, setDismissed] = useLocalStorage(
@@ -39,14 +39,11 @@ export function Interactive(props: { isDarkMode: boolean }) {
 									sentences and convert them to a variety of output formats.
 								</p>
 								<p>
-									Write some Toaq in the textbox below — like <strong>Cho jí ní zu da!</strong> — then click one of the
+									Write some Toaq in the textbox below — like{' '}
+									<strong>Cho jí ní zu da!</strong> — then click one of the
 									buttons to see the output.
 								</p>
-								<Button
-									onClick={() => setDismissed(true)}
-								>
-									Dismiss
-								</Button>
+								<Button onClick={() => setDismissed(true)}>Dismiss</Button>
 							</div>
 						)}
 						<div className="sticky left-0">
