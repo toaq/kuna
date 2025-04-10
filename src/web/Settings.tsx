@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { Button } from './Button';
 import BoxesIcon from './icons/BoxesIcon';
@@ -71,6 +71,30 @@ export function Settings(props: SettingsProps) {
 		'formula-format',
 		'logical-form-math',
 	);
+
+	const [raw, setRaw] = useState(false);
+
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Control') {
+				setRaw(true);
+			}
+		};
+
+		const handleKeyUp = (e: KeyboardEvent) => {
+			if (e.key === 'Control') {
+				setRaw(false);
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		window.addEventListener('keyup', handleKeyUp);
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+			window.removeEventListener('keyup', handleKeyUp);
+		};
+	}, []);
 
 	function render(mode: Mode) {
 		setLastMode(mode);
@@ -221,8 +245,11 @@ export function Settings(props: SettingsProps) {
 			/>
 			<div className="flex flex-col gap-1">
 				<div className="flex gap-1">
-					<Button icon={<TreeIcon />} onClick={() => render('syntax-tree')}>
-						Tree
+					<Button
+						icon={<TreeIcon />}
+						onClick={() => render(raw ? 'raw-tree' : 'syntax-tree')}
+					>
+						{raw ? '*Tree' : 'Tree'}
 					</Button>
 					<Button
 						icon={<DenotedIcon />}
