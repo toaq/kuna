@@ -28,6 +28,7 @@ import { denotationRenderLatex, denotationRenderText } from '../tree/place';
 import { toScene } from '../tree/scene';
 import { themes } from '../tree/theme';
 import { Boxes } from './Boxes';
+import { Button } from './Button';
 import GfResult from './GfResult';
 import type { Configuration } from './Settings';
 import { Tokens } from './Tokens';
@@ -245,22 +246,24 @@ export function Output(props: OutputProps) {
 	return (
 		<>
 			{parseCount > 1 ? (
-				<div className="card center">
-					<div className="error">
-						Kuna found multiple parses for this sentence.
+				<div className="card center ml-4 my-2">
+					<div className="mb-2 px-4 py-2">
+						❗ Kuna found multiple parses for this sentence.{' '}
+						<a
+							className="text-blue-500 underline"
+							href="https://github.com/toaq/kuna/issues/new"
+						>
+							Report issue
+						</a>
+						<div className="flex mt-2 gap-1">
+							{_.range(parseCount).map(i => (
+								<Button key={i} onClick={() => setParseIndex(i)}>
+									{i + 1}
+								</Button>
+							))}
+						</div>
 					</div>
-					<div className="parses">
-						{_.range(parseCount).map(i => (
-							<button
-								key={i}
-								className={parseIndex === i ? 'current' : ''}
-								type="button"
-								onClick={() => setParseIndex(i)}
-							>
-								{i + 1}
-							</button>
-						))}
-					</div>
+
 					<div
 						className={classNames(
 							'output',
