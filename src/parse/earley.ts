@@ -239,14 +239,15 @@ export class EarleyParser<T, N> {
 				const w = Λ.sppfNode;
 				const j = Λ.passed + 1;
 				const y = this.makeNode(Λ.ruleNumber, j, h, i + 1, w, v, V);
-				if (rule.body.length === j || 'nonterminal' in rule.body[j]) {
+				const sym = rule.body[j];
+				if (rule.body.length === j || 'nonterminal' in sym) {
 					E[i + 1].push({
 						ruleNumber: Λ.ruleNumber,
 						passed: j,
 						originPosition: h,
 						sppfNode: y,
 					});
-				} else if (rule.body[j].terminal === input[i + 1]) {
+				} else if (sym.terminal === input[i + 1]) {
 					Qprime.push({
 						ruleNumber: Λ.ruleNumber,
 						passed: j,
