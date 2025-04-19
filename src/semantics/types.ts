@@ -6,7 +6,6 @@ export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 
 export type Binding =
 	| { type: 'resumptive' }
-	| { type: 'covert resumptive' }
 	| { type: 'gap' }
 	| { type: 'name'; verb: string }
 	| { type: 'animacy'; class: AnimacyClass }
@@ -29,8 +28,6 @@ export function bindingToString(b: Binding): string {
 	switch (b.type) {
 		case 'resumptive':
 			return 'hóa';
-		case 'covert resumptive':
-			return 'PRO';
 		case 'gap':
 			return 'já';
 		case 'name':
@@ -84,6 +81,9 @@ export type ExprType =
 	// An expression which references a variable and behaves in local syntax like
 	// {inner}; isomorphic to {binding} × (Int Pl e → {inner}).
 	| { head: 'ref'; binding: Binding; inner: ExprType }
+	// A non-finite expression which behaves in local syntax like {inner} and
+	// contains a gap of type {domain}; isomorphic to {domain} → {inner}.
+	| { head: 'nf'; domain: ExprType; inner: ExprType }
 	// An expression which references an element of the discourse context through
 	// deixis; isomorphic to context → {inner}.
 	| { head: 'dx'; inner: ExprType }
@@ -153,6 +153,8 @@ interface Constant extends ExprBase {
 		| 'unbind'
 		| 'ref'
 		| 'unref'
+		| 'nf'
+		| 'unnf'
 		| 'and_map'
 		| 'and_then'
 		| 'salient'

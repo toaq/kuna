@@ -296,8 +296,6 @@ function binding(b: Binding): ReactNode {
 	switch (b.type) {
 		case 'resumptive':
 			return <mi>hóa</mi>;
-		case 'covert resumptive':
-			return <mi>PRO</mi>;
 		case 'gap':
 			return <mi>já</mi>;
 		case 'name':
@@ -376,6 +374,11 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 			case 'ref':
 				return this.app(
 					this.app(token(<mi>Ref</mi>), token(binding(t.binding))),
+					this.sub(t.inner),
+				);
+			case 'nf':
+				return this.app(
+					this.app(token('Nf'), this.sub(t.domain)),
 					this.sub(t.inner),
 				);
 			case 'dx':

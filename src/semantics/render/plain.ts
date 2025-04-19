@@ -63,6 +63,11 @@ export class PlainTextType extends Renderer<ExprType, string> {
 					this.app(token('Ref'), token(bindingToString(t.binding))),
 					this.sub(t.inner),
 				);
+			case 'nf':
+				return this.app(
+					this.app(token('Nf'), this.sub(t.domain)),
+					this.sub(t.inner),
+				);
 			case 'dx':
 				return this.app(token('Dx'), this.sub(t.inner));
 			case 'act':

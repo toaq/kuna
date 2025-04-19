@@ -6,6 +6,7 @@ import {
 	Fn,
 	Gen,
 	Int,
+	Nf,
 	Pl,
 	Qn,
 	Ref,
@@ -26,6 +27,7 @@ import {
 	implies,
 	int,
 	lex,
+	nf,
 	not,
 	or,
 	qn,
@@ -34,6 +36,7 @@ import {
 	some,
 	ungen,
 	unint,
+	unnf,
 	unref,
 	λ,
 } from './model';
@@ -61,10 +64,7 @@ export const causeLittleV = int(
 	),
 );
 
-export const covertResumptive = ref(
-	{ type: 'covert resumptive' },
-	λ(Int(Pl('e')), closed, (x, s) => s.var(x)),
-);
+export const covertResumptive = nf(λ(Int(Pl('e')), closed, (x, s) => s.var(x)));
 
 const personalPronouns = [
 	'jí',
@@ -258,11 +258,8 @@ export const littleN = λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
 	),
 );
 
-export const covertCrel = λ(
-	Ref({ type: 'covert resumptive' }, 't'),
-	closed,
-	(predicate, s) =>
-		λ(Int(Pl('e')), s, (arg, s) => app(unref(s.var(predicate)), s.var(arg))),
+export const covertCrel = λ(Nf(Int(Pl('e')), 't'), closed, (predicate, s) =>
+	λ(Int(Pl('e')), s, (arg, s) => app(unnf(s.var(predicate)), s.var(arg))),
 );
 
 export const complementizers = new Map<string, Expr>([

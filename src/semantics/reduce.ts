@@ -152,24 +152,17 @@ function reducePass(expr: Expr): Expr {
 				const outer = expr.fn.name;
 				if (expr.arg.head === 'apply' && expr.arg.fn.head === 'constant') {
 					const inner = expr.arg.fn.name;
-					if (outer === 'unint' && inner === 'int') {
+					if (
+						(outer === 'unint' && inner === 'int') ||
+						(outer === 'int' && inner === 'unint') ||
+						(outer === 'unref' && inner === 'ref') ||
+						(outer === 'ref' && inner === 'unref') ||
+						(outer === 'unnf' && inner === 'nf') ||
+						(outer === 'nf' && inner === 'unnf') ||
+						(outer === 'uncont' && inner === 'cont') ||
+						(outer === 'cont' && inner === 'uncont')
+					)
 						return reducePass(expr.arg.arg);
-					}
-					if (outer === 'int' && inner === 'unint') {
-						return reducePass(expr.arg.arg);
-					}
-					if (outer === 'unref' && inner === 'ref') {
-						return reducePass(expr.arg.arg);
-					}
-					if (outer === 'ref' && inner === 'unref') {
-						return reducePass(expr.arg.arg);
-					}
-					if (outer === 'uncont' && inner === 'cont') {
-						return reducePass(expr.arg.arg);
-					}
-					if (outer === 'cont' && inner === 'uncont') {
-						return reducePass(expr.arg.arg);
-					}
 				}
 			}
 

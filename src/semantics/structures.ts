@@ -6,6 +6,7 @@ import {
 	Dx,
 	Fn,
 	Int,
+	Nf,
 	Pair,
 	Pl,
 	Ref,
@@ -21,6 +22,7 @@ import {
 	assertFn,
 	assertGen,
 	assertInt,
+	assertNf,
 	assertPair,
 	assertPl,
 	assertRef,
@@ -34,6 +36,7 @@ import {
 	implies,
 	int,
 	map,
+	nf,
 	pair,
 	qn,
 	ref,
@@ -45,6 +48,7 @@ import {
 	uncont,
 	ungen,
 	unint,
+	unnf,
 	unpair,
 	unqn,
 	unref,
@@ -724,6 +728,87 @@ const refDistributive: Distributive = {
 	},
 };
 
+const nfFunctor: Functor = {
+	wrap: (type, like) => {
+		assertNf(like);
+		return Nf(like.domain, type);
+	},
+	unwrap: type => {
+		assertNf(type);
+		return type.inner;
+	},
+	map: (fn, arg, s) => {
+		assertNf(arg.type);
+		const domain = arg.type.domain;
+		return app(
+			app(
+				λ(fn.type, s, (fn, s) =>
+					λ(arg.type, s, (arg, s) =>
+						nf(
+							λ(domain, s, (val, s) =>
+								app(s.var(fn), app(unnf(s.var(arg)), s.var(val))),
+							),
+						),
+					),
+				),
+				fn,
+			),
+			arg,
+		);
+	},
+};
+
+const nfApplicative: Applicative = {
+	functor: nfFunctor,
+	apply: (fn, arg, s) => {
+		assertNf(arg.type);
+		const domain = arg.type.domain;
+		return app(
+			app(
+				λ(fn.type, s, (fn, s) =>
+					λ(arg.type, s, (arg, s) =>
+						nf(
+							λ(domain, s, (val, s) =>
+								app(
+									app(unnf(s.var(fn)), s.var(val)),
+									app(unnf(s.var(arg)), s.var(val)),
+								),
+							),
+						),
+					),
+				),
+				fn,
+			),
+			arg,
+		);
+	},
+};
+
+const nfDistributive: Distributive = {
+	functor: nfFunctor,
+	distribute: (e, functor, s) => {
+		const type = functor.unwrap(e.type);
+		assertNf(type);
+		const inner = type.inner;
+		return app(
+			λ(e.type, s, (e, s) =>
+				nf(
+					λ(type.domain, s, (val, s) =>
+						functor.map(
+							λ(Nf(type.domain, inner), s, (x, s) =>
+								app(unnf(s.var(x)), s.var(val)),
+							),
+							s.var(e),
+							s,
+						),
+					),
+				),
+			),
+			e,
+		);
+	},
+};
+
 const opMonad = <T extends ExprType>(
 	wrap: (inner: ExprType) => ExprType,
 	assertHead: (t: ExprType) => asserts t is T & { inner: ExprType },
@@ -907,6 +992,7 @@ export function getFunctor(t: ExprType): Functor | null {
 	if (t.head === 'pair') return pairFunctor;
 	if (t.head === 'bind') return bindFunctor;
 	if (t.head === 'ref') return refFunctor;
+	if (t.head === 'nf') return nfFunctor;
 	if (t.head === 'dx') return dxFunctor;
 	if (t.head === 'act') return actFunctor;
 	return null;
@@ -1003,6 +1089,11 @@ export function getMatchingFunctor(t1: ExprType, t2: ExprType): Functor | null {
 		)
 	)
 		return refFunctor;
+	if (
+		t1.head === 'nf' &&
+		typesEqual(t1.domain, (t2 as ExprType & object & { head: 'nf' }).domain)
+	)
+		return nfFunctor;
 	if (t1.head === 'dx') return dxFunctor;
 	if (t1.head === 'act') return actFunctor;
 	return null;
@@ -1037,6 +1128,7 @@ export function getApplicative(t: ExprType): Applicative | null {
 	if (t.head === 'gen') return genApplicative;
 	if (t.head === 'qn') return qnApplicative;
 	if (t.head === 'ref') return refApplicative;
+	if (t.head === 'nf') return nfApplicative;
 	if (t.head === 'dx') return dxApplicative;
 	if (t.head === 'act') return actApplicative;
 	return null;
@@ -1052,6 +1144,7 @@ export function getMatchingApplicative(
 export function getDistributive(t: ExprType): Distributive | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'ref') return refDistributive;
+	if (t.head === 'nf') return nfDistributive;
 	if (t.head === 'int') return intDistributive;
 	return null;
 }
@@ -1155,6 +1248,11 @@ export function findInner(inType: ExprType, like: ExprType): ExprType | null {
 				bindingsEqual(
 					inType.binding,
 					(like as ExprType & object & { head: 'ref' }).binding,
+				)) ||
+			(inType.head === 'nf' &&
+				typesEqual(
+					inType.domain,
+					(like as ExprType & object & { head: 'nf' }).domain,
 				)) ||
 			inType.head === 'dx' ||
 			inType.head === 'act')
