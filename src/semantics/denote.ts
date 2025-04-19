@@ -1,4 +1,9 @@
-import { Impossible, Unimplemented, Unrecognized } from '../core/error';
+import {
+	Impossible,
+	Ungrammatical,
+	Unimplemented,
+	Unrecognized,
+} from '../core/error';
 import { splitNonEmpty } from '../core/misc';
 import type { VerbEntry } from '../morphology/dictionary';
 import { Tone, inTone } from '../morphology/tone';
@@ -13,12 +18,13 @@ import {
 } from '../tree';
 import { compose } from './compose';
 import {
+	adjuncts,
 	causeLittleV,
 	complementizers,
 	conditionals,
 	covertCp,
 	covertCrel,
-	covertResumptive,
+	covertDps,
 	covertV,
 	determiners,
 	polarities,
@@ -167,7 +173,11 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === 'DP') {
-		if (leaf.word.covert) return covertResumptive;
+		if (leaf.word.covert) {
+			const data = covertDps[leaf.word.value];
+			if (data === undefined) throw new Unrecognized(`DP: ${leaf.word.value}`);
+			return data;
+		}
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`DP: ${leaf.word.text}`);
 
@@ -412,6 +422,31 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				),
 			)
 		);
+	}
+
+	if (leaf.label === 'Adjunct') {
+		if (cCommand === null)
+			throw new Impossible('Cannot denote an Adjunct in isolation');
+		if (leaf.word.covert) throw new Impossible('Covert Adjunct');
+		if (leaf.word.entry === undefined || leaf.word.entry.toaq !== '◌̂')
+			throw new Unrecognized(`Adjunct: ${leaf.word.text}`);
+		const vp = findVp(cCommand);
+		if (vp === null) throw new Impossible("Can't find the VP for this Adjunct");
+		const word = getVerbWord(vp);
+		if (word.covert) throw new Impossible('Covert Adjunct verb');
+		if (word.entry === undefined || word.entry.type !== 'predicate')
+			throw new Unrecognized(`V in AdjunctP: ${word.text}`);
+
+		const data = adjuncts[word.entry.subject];
+		if (data === 'unimplemented')
+			throw new Unimplemented(
+				`Adjunct for subject type '${word.entry.subject}'`,
+			);
+		if (data === undefined)
+			throw new Ungrammatical(
+				`${word.entry.toaq} may not be used as an adverbial adjunct`,
+			);
+		return data;
 	}
 
 	if (leaf.label === '&') {

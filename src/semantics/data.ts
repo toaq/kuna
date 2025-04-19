@@ -1,4 +1,5 @@
 import { Impossible } from '../core/error';
+import type { SubjectType } from '../morphology/dictionary';
 import type { CovertValue } from '../tree/types';
 import {
 	Act,
@@ -64,7 +65,10 @@ export const causeLittleV = int(
 	),
 );
 
-export const covertResumptive = nf(λ(Int(Pl('e')), closed, (x, s) => s.var(x)));
+export const covertDps: Partial<Record<CovertValue, Expr>> = {
+	PRO: nf(λ(Int(Pl('e')), closed, (x, s) => s.var(x))),
+	'PRO.EV': nf(λ('e', closed, (x, s) => s.var(x))),
+};
 
 const personalPronouns = [
 	'jí',
@@ -518,3 +522,21 @@ export const quantifiers = new Map<string, (domain: ExprType) => Expr>([
 	['guosıa', never],
 	['koamchıo', never],
 ]);
+
+const eventiveAdverbial = λ(Nf('e', Fn('v', 't')), closed, (p, s) =>
+	λ('v', s, (outerEvent, s) =>
+		some(
+			λ('v', s, (innerEvent, s) =>
+				app(app(unnf(s.var(p)), s.var(outerEvent)), s.var(innerEvent)),
+			),
+		),
+	),
+);
+
+export const adjuncts: Partial<Record<SubjectType, Expr | 'unimplemented'>> = {
+	free: eventiveAdverbial,
+	event: eventiveAdverbial,
+	shape: eventiveAdverbial,
+	agent: 'unimplemented',
+	individual: 'unimplemented',
+};
