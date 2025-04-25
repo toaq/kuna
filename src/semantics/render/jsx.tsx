@@ -544,7 +544,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 				return token(this.name(e.index, names));
 			case 'quantify': {
 				const word = richExprToNameHint(e);
-				const newNames = addNames(e.param.scope, names, word);
+				const newNames = addNames(e.param.scope as ExprType[], names, word);
 				if (
 					e.body.head === 'infix' &&
 					((e.q === 'every' && e.body.op === 'implies') ||
@@ -643,7 +643,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 							'scope' in e.right
 								? richExprToNameHint(e.right)
 								: bindingToString(e.right);
-						const newNames = addNames(e.left.scope, names, word);
+						const newNames = addNames(e.left.scope as ExprType[], names, word);
 						return this.do(
 							e.pure,
 							join(Precedence.Do, 'right', [

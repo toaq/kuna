@@ -322,11 +322,37 @@ export function assertScopesEqual(s1: ExprType[], s2: ExprType[]): void {
 		);
 }
 
+export function unifyScopes(
+	s1: (ExprType | undefined)[],
+	s2: (ExprType | undefined)[],
+): (ExprType | undefined)[] {
+	if (s1.length === 0) return s2;
+	if (s2.length === 0) return s1;
+
+	const length = Math.max(s1.length, s2.length);
+	const result = new Array<ExprType | undefined>(length);
+
+	for (let i = 0; i < length; i++) {
+		const t1 = s1[i];
+		const t2 = s2[i];
+		if (t1 === undefined) {
+			if (t2 !== undefined) result[i] = t2;
+		} else if (t2 === undefined) result[i] = t1;
+		else if (subtype(t1, t2)) result[i] = t2;
+		else if (subtype(t2, t1)) result[i] = t1;
+		else
+			throw new Impossible(
+				`Scopes ${typesToPlainText(s1)} and ${typesToPlainText(s2)} are not compatible`,
+			);
+	}
+
+	return result;
+}
+
 /**
  * An empty scope; the scope of closed expressions.
  */
 export const closed: Scope = {
-	types: [],
 	var: () => {
 		throw new Impossible('Variable not in scope');
 	},
@@ -341,28 +367,32 @@ export function λ(
 	body: (inputName: symbol, scope: Scope) => Expr,
 ): Expr {
 	const inputName = Symbol();
-	const innerScopeTypes = [inputType, ...scope.types];
 	const innerScope: Scope = {
-		types: innerScopeTypes,
 		var: name => {
 			if (name === inputName)
 				return {
 					head: 'variable',
 					type: inputType,
-					scope: innerScopeTypes,
+					scope: [inputType],
 					index: 0,
 				};
 			const outer = scope.var(name);
-			return { ...outer, scope: innerScopeTypes, index: outer.index + 1 };
+			const s = new Array<ExprType | undefined>(outer.scope.length + 1);
+			outer.scope.forEach((t, i) => {
+				s[i + 1] = t;
+			});
+			return { ...outer, scope: s, index: outer.index + 1 };
 		},
 	};
 	const bodyResult = body(inputName, innerScope);
-	assertScopesEqual(bodyResult.scope, innerScope.types);
+	if (bodyResult.scope[0] !== undefined)
+		assertSubtype(inputType, bodyResult.scope[0]);
 
 	return {
 		head: 'lambda',
 		type: Fn(inputType, bodyResult.type),
-		scope: scope.types,
+		scope: bodyResult.scope.slice(1),
+		param: inputType,
 		body: bodyResult,
 	};
 }
@@ -374,23 +404,23 @@ export function app(fn: Expr, arg: Expr): Expr {
 	assertFn(fn.type);
 	const { domain, range } = fn.type;
 	assertSubtype(arg.type, domain);
-	assertScopesEqual(fn.scope, arg.scope);
+	const scope = unifyScopes(fn.scope, arg.scope);
 
-	return { head: 'apply', type: range, scope: fn.scope, fn, arg };
+	return { head: 'apply', type: range, scope, fn, arg };
 }
 
 /**
  * Constructor for lexeme expressions.
  */
-export function lex(entry: string, type: ExprType, scope: Scope): Expr {
-	return { head: 'lexeme', type, scope: scope.types, name: entry };
+export function lex(entry: string, type: ExprType): Expr {
+	return { head: 'lexeme', type, scope: [], name: entry };
 }
 
 /**
  * Constructor for quote expressions.
  */
-export function quote(text: string, scope: Scope): Expr {
-	return { head: 'quote', type: 'e', scope: scope.types, text };
+export function quote(text: string): Expr {
+	return { head: 'quote', type: 'e', scope: [], text };
 }
 
 /**
@@ -403,7 +433,7 @@ export function int(body: Expr): Expr {
 		{
 			head: 'constant',
 			type: Fn(Fn('s', inner), Int(inner)),
-			scope: body.scope,
+			scope: [],
 			name: 'int',
 		},
 		body,
@@ -419,7 +449,7 @@ export function unint(int: Expr): Expr {
 		{
 			head: 'constant',
 			type: Fn(int.type, Fn('s', int.type.inner)),
-			scope: int.scope,
+			scope: [],
 			name: 'unint',
 		},
 		int,
@@ -437,7 +467,7 @@ export function cont(body: Expr): Expr {
 		{
 			head: 'constant',
 			type: Fn(Fn(Fn(inner, 't'), 't'), Cont(inner)),
-			scope: body.scope,
+			scope: [],
 			name: 'cont',
 		},
 		body,
@@ -453,7 +483,7 @@ export function uncont(cont: Expr): Expr {
 		{
 			head: 'constant',
 			type: Fn(cont.type, Fn(Fn(cont.type.inner, 't'), 't')),
-			scope: cont.scope,
+			scope: [],
 			name: 'uncont',
 		},
 		cont,
@@ -472,7 +502,7 @@ export function map(pl: Expr, project: Expr): Expr {
 			{
 				head: 'constant',
 				type: Fn(pl.type, Fn(Fn(pl.type.inner, range), Pl(range))),
-				scope: pl.scope,
+				scope: [],
 				name: 'map',
 			},
 			pl,
@@ -494,7 +524,7 @@ export function flatMap(pl: Expr, project: Expr): Expr {
 			{
 				head: 'constant',
 				type: Fn(Pl(domain), Fn(project.type, range)),
-				scope: pl.scope,
+				scope: [],
 				name: 'flat_map',
 			},
 			pl,
@@ -520,7 +550,7 @@ export function gen(restriction: Expr, body: Expr): Expr {
 						Gen(restriction.type.domain, body.type.range),
 					),
 				),
-				scope: restriction.scope,
+				scope: [],
 				name: 'gen',
 			},
 			restriction,
@@ -551,7 +581,7 @@ export function ungen(gen: Expr, project: Expr): Expr {
 						out,
 					),
 				),
-				scope: gen.scope,
+				scope: [],
 				name: 'ungen',
 			},
 			gen,
@@ -577,7 +607,7 @@ export function qn(restriction: Expr, body: Expr): Expr {
 						Qn(restriction.type.domain, body.type.range),
 					),
 				),
-				scope: restriction.scope,
+				scope: [],
 				name: 'qn',
 			},
 			restriction,
@@ -608,7 +638,7 @@ export function unqn(qn: Expr, project: Expr): Expr {
 						out,
 					),
 				),
-				scope: qn.scope,
+				scope: [],
 				name: 'unqn',
 			},
 			qn,
@@ -626,7 +656,7 @@ export function some(predicate: Expr): Expr {
 		{
 			head: 'constant',
 			type: Fn(Fn(predicate.type.domain, 't'), 't'),
-			scope: predicate.scope,
+			scope: [],
 			name: 'some',
 		},
 		predicate,
@@ -642,7 +672,7 @@ export function every(predicate: Expr): Expr {
 		{
 			head: 'constant',
 			type: Fn(Fn(predicate.type.domain, 't'), 't'),
-			scope: predicate.scope,
+			scope: [],
 			name: 'every',
 		},
 		predicate,
@@ -661,7 +691,7 @@ export function pair(body: Expr, supplement: Expr): Expr {
 					body.type,
 					Fn(supplement.type, Pair(body.type, supplement.type)),
 				),
-				scope: body.scope,
+				scope: [],
 				name: 'pair',
 			},
 			body,
@@ -686,7 +716,7 @@ export function unpair(pair: Expr, project: Expr): Expr {
 					pair.type,
 					Fn(Fn(pair.type.inner, Fn(pair.type.supplement, out)), out),
 				),
-				scope: pair.scope,
+				scope: [],
 				name: 'unpair',
 			},
 			pair,
@@ -705,7 +735,7 @@ export function bind(binding: Binding, value: Expr, body: Expr): Expr {
 			{
 				head: 'constant',
 				type: Fn(Int(Pl('e')), Fn(inner, Bind(binding, inner))),
-				scope: body.scope,
+				scope: [],
 				name: 'bind',
 			},
 			value,
@@ -730,7 +760,7 @@ export function unbind(bind: Expr, project: Expr): Expr {
 					bind.type,
 					Fn(Fn(Int(Pl('e')), Fn(bind.type.inner, out)), out),
 				),
-				scope: bind.scope,
+				scope: [],
 				name: 'unbind',
 			},
 			bind,
@@ -749,7 +779,7 @@ export function ref(binding: Binding, body: Expr): Expr {
 		{
 			head: 'constant',
 			type: Fn(Fn(Int(Pl('e')), inner), Ref(binding, inner)),
-			scope: body.scope,
+			scope: [],
 			name: 'ref',
 		},
 		body,
@@ -765,7 +795,7 @@ export function unref(ref: Expr): Expr {
 		{
 			head: 'constant',
 			type: Fn(ref.type, Fn(Int(Pl('e')), ref.type.inner)),
-			scope: ref.scope,
+			scope: [],
 			name: 'unref',
 		},
 		ref,
@@ -782,7 +812,7 @@ export function nf(body: Expr): Expr {
 		{
 			head: 'constant',
 			type: Fn(body.type, Nf(domain, inner)),
-			scope: body.scope,
+			scope: [],
 			name: 'nf',
 		},
 		body,
@@ -798,7 +828,7 @@ export function unnf(nf: Expr): Expr {
 		{
 			head: 'constant',
 			type: Fn(nf.type, Fn(nf.type.domain, nf.type.inner)),
-			scope: nf.scope,
+			scope: [],
 			name: 'unnf',
 		},
 		nf,
@@ -820,7 +850,7 @@ export function andMap(op: Expr, project: Expr): Expr {
 					op.type,
 					Fn(Fn(op.type.inner, range), { head: op.type.head, inner: range }),
 				),
-				scope: op.scope,
+				scope: [],
 				name: 'and_map',
 			},
 			op,
@@ -845,7 +875,7 @@ export function andThen(first: Expr, continuation: Expr): Expr {
 					{ head: range.head, inner: domain },
 					Fn(continuation.type, range),
 				),
-				scope: first.scope,
+				scope: [],
 				name: 'and_then',
 			},
 			first,
@@ -854,70 +884,58 @@ export function andThen(first: Expr, continuation: Expr): Expr {
 	);
 }
 
-export function salient(inner: ExprType, scope: Scope): Expr {
+export function salient(inner: ExprType): Expr {
 	return {
 		head: 'constant',
 		type: Dx(inner),
-		scope: scope.types,
+		scope: [],
 		name: 'salient',
 	};
 }
 
-export function bg(scope: Scope): Expr {
-	return {
-		head: 'constant',
-		type: Fn(Act('()'), Act('()')),
-		scope: scope.types,
-		name: 'bg',
-	};
-}
+export const bg: Expr = {
+	head: 'constant',
+	type: Fn(Act('()'), Act('()')),
+	scope: [],
+	name: 'bg',
+};
 
-export function not(scope: Scope): Expr {
-	return {
-		head: 'constant',
-		type: Fn('t', 't'),
-		scope: scope.types,
-		name: 'not',
-	};
-}
+export const not: Expr = {
+	head: 'constant',
+	type: Fn('t', 't'),
+	scope: [],
+	name: 'not',
+};
 
-export function and(scope: Scope): Expr {
-	return {
-		head: 'constant',
-		type: Fn('t', Fn('t', 't')),
-		scope: scope.types,
-		name: 'and',
-	};
-}
+export const and: Expr = {
+	head: 'constant',
+	type: Fn('t', Fn('t', 't')),
+	scope: [],
+	name: 'and',
+};
 
-export function or(scope: Scope): Expr {
-	return {
-		head: 'constant',
-		type: Fn('t', Fn('t', 't')),
-		scope: scope.types,
-		name: 'or',
-	};
-}
+export const or: Expr = {
+	head: 'constant',
+	type: Fn('t', Fn('t', 't')),
+	scope: [],
+	name: 'or',
+};
 
-export function implies(scope: Scope): Expr {
-	return {
-		head: 'constant',
-		type: Fn('t', Fn('t', 't')),
-		scope: scope.types,
-		name: 'implies',
-	};
-}
+export const implies: Expr = {
+	head: 'constant',
+	type: Fn('t', Fn('t', 't')),
+	scope: [],
+	name: 'implies',
+};
 
 export function equals(left: Expr, right: Expr): Expr {
 	assertTypesCompatible(left.type, right.type);
-	assertScopesEqual(left.scope, right.scope);
-
 	return app(
 		app(
 			{
 				head: 'constant',
 				type: Fn(left.type, Fn(right.type, 't')),
-				scope: left.scope,
+				scope: [],
 				name: 'equals',
 			},
 			left,
@@ -936,7 +954,7 @@ export function among(el: Expr, pl: Expr): Expr {
 			{
 				head: 'constant',
 				type: Fn(pl.type.inner, Fn(pl.type, 't')),
-				scope: el.scope,
+				scope: [],
 				name: 'among',
 			},
 			el,
@@ -948,32 +966,26 @@ export function among(el: Expr, pl: Expr): Expr {
 /**
  * Determines whether an individual is animate.
  */
-export function animate(scope: Scope): Expr {
-	return {
-		head: 'constant',
-		type: Int(Fn('e', 't')),
-		scope: scope.types,
-		name: 'animate',
-	};
-}
+export const animate: Expr = {
+	head: 'constant',
+	type: Int(Fn('e', 't')),
+	scope: [],
+	name: 'animate',
+};
 
-export function agent(scope: Scope): Expr {
-	return {
-		head: 'constant',
-		type: Fn('v', Fn('s', 'e')),
-		scope: scope.types,
-		name: 'agent',
-	};
-}
+export const agent: Expr = {
+	head: 'constant',
+	type: Fn('v', Fn('s', 'e')),
+	scope: [],
+	name: 'agent',
+};
 
 /**
  * Picks out a salient accessibility relation on worlds.
  */
-export function accessibility(scope: Scope): Expr {
-	return {
-		head: 'constant',
-		type: Dx(Fn('s', Fn('s', 't'))),
-		scope: scope.types,
-		name: 'accessibility',
-	};
-}
+export const accessibility: Expr = {
+	head: 'constant',
+	type: Dx(Fn('s', Fn('s', 't'))),
+	scope: [],
+	name: 'accessibility',
+};

@@ -1,5 +1,6 @@
+import { Impossible } from '../../core/error';
 import { assertBind, assertFn, assertRef, pair } from '../model';
-import { VariableDeletedError, rewriteScope, substitute } from '../reduce';
+import { rewriteScope, substitute } from '../reduce';
 import type { Binding, Expr, ExprType } from '../types';
 
 interface ExprBase {
@@ -8,9 +9,10 @@ interface ExprBase {
 	 */
 	type: ExprType;
 	/**
-	 * The types of all variables in scope, ordered by De Bruijn indexing.
+	 * A sparse array containing the types of all variables used in this
+	 * subexpression, ordered by De Bruijn indexing.
 	 */
-	scope: ExprType[];
+	scope: (ExprType | undefined)[];
 }
 
 interface Variable extends ExprBase {
@@ -118,67 +120,58 @@ export type RichExpr =
 	| Quote
 	| Constant;
 
-/**
- * Determines whether a variable is used in an expression.
- */
-function varUsed(e: Expr, index: number): boolean {
-	switch (e.head) {
-		case 'apply':
-			return varUsed(e.fn, index) || varUsed(e.arg, index);
-		case 'lambda':
-			return varUsed(e.body, index + 1);
-		case 'variable':
-			return e.index === index;
-		default:
-			return false;
-	}
-}
-
 function enrichLambda_(param: Expr, body: Expr): { param: Expr; body: Expr } {
 	// Pair destructuring
+	// body: unpair x (λy λz f)
 	if (
 		body.head === 'apply' &&
 		body.fn.head === 'apply' &&
 		body.fn.fn.head === 'constant' &&
 		body.fn.fn.name === 'unpair' &&
 		body.fn.arg.head === 'variable' &&
-		varUsed(param, body.fn.arg.index) &&
+		param.scope[body.fn.arg.index] !== undefined &&
 		body.arg.head === 'lambda' &&
 		body.arg.body.head === 'lambda'
 	) {
+		const f = body.arg.body.body;
 		const index = body.fn.arg.index + 2;
-		const prevScope = body.arg.body.body.scope;
-		const newScope = [
-			...prevScope.slice(0, index),
-			...prevScope.slice(index + 1),
-		];
-		try {
+		if (f.scope[index] === undefined)
 			return enrichLambda_(
 				substitute(
 					index,
 					pair(
-						{ type: newScope[1], scope: newScope, head: 'variable', index: 1 },
-						{ type: newScope[0], scope: newScope, head: 'variable', index: 0 },
+						{
+							type: body.arg.param,
+							scope: [, body.arg.param],
+							head: 'variable',
+							index: 1,
+						},
+						{
+							type: body.arg.body.param,
+							scope: [body.arg.body.param],
+							head: 'variable',
+							index: 0,
+						},
 					),
-					rewriteScope(param, prevScope, i => i + 2),
+					rewriteScope(param, i => i + 2),
 				),
-				rewriteScope(body.arg.body.body, newScope, i => {
-					if (i === index) throw new VariableDeletedError();
+				rewriteScope(body.arg.body.body, i => {
+					if (i === index) throw new Impossible('Variable deleted');
 					return i > index ? i - 1 : i;
 				}),
 			);
-		} catch (e) {
-			if (!(e instanceof VariableDeletedError)) throw e;
-		}
 	}
 
 	return { param, body };
 }
 
-function enrichLambda(body: Expr): { param: Expr; body: Expr } {
+function enrichLambda(e: Expr & { head: 'lambda' }): {
+	param: Expr;
+	body: Expr;
+} {
 	return enrichLambda_(
-		{ type: body.scope[0], scope: body.scope, head: 'variable', index: 0 },
-		body,
+		{ type: e.param, scope: [e.param], head: 'variable', index: 0 },
+		e.body,
 	);
 }
 
@@ -190,7 +183,7 @@ export function enrich(e: Expr): RichExpr {
 		case 'constant':
 			return e;
 		case 'lambda': {
-			const { param, body } = enrichLambda(e.body);
+			const { param, body } = enrichLambda(e);
 			return {
 				...e,
 				head: 'quantify',
@@ -213,7 +206,7 @@ export function enrich(e: Expr): RichExpr {
 				(e.fn.name === 'some' || e.fn.name === 'every') &&
 				e.arg.head === 'lambda'
 			) {
-				const { param, body } = enrichLambda(e.arg.body);
+				const { param, body } = enrichLambda(e.arg);
 				return {
 					type: e.type,
 					scope: e.scope,
@@ -288,28 +281,23 @@ export function enrich(e: Expr): RichExpr {
 				(e.fn.fn.name === 'and_map' || e.fn.fn.name === 'and_then') &&
 				e.arg.head === 'lambda'
 			) {
-				if (e.arg.body.scope[0] === '()') {
-					// Assume that unit type values will be unused
-					try {
-						return {
-							type: e.type,
-							scope: e.scope,
-							head: 'do',
-							op: 'run',
-							right: enrich(e.fn.arg),
-							result: enrich(
-								rewriteScope(e.arg.body, e.arg.body.scope.slice(1), i => {
-									if (i === 0) throw new VariableDeletedError();
-									return i - 1;
-								}),
-							),
-							pure: e.fn.fn.name === 'and_map',
-						};
-					} catch (e) {
-						if (!(e instanceof VariableDeletedError)) throw e;
-					}
-				}
-				const { param, body } = enrichLambda(e.arg.body);
+				if (e.arg.body.scope[0] === undefined)
+					return {
+						type: e.type,
+						scope: e.scope,
+						head: 'do',
+						op: 'run',
+						right: enrich(e.fn.arg),
+						result: enrich(
+							rewriteScope(e.arg.body, i => {
+								if (i === 0) throw new Impossible('Variable deleted');
+								return i - 1;
+							}),
+						),
+						pure: e.fn.fn.name === 'and_map',
+					};
+
+				const { param, body } = enrichLambda(e.arg);
 				return {
 					type: e.type,
 					scope: e.scope,
@@ -330,7 +318,7 @@ export function enrich(e: Expr): RichExpr {
 			) {
 				assertFn(e.fn.type);
 				assertRef(e.fn.type.range);
-				const { param, body } = enrichLambda(e.arg.body);
+				const { param, body } = enrichLambda(e.arg);
 				return {
 					type: e.type,
 					scope: e.scope,

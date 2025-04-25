@@ -45,7 +45,7 @@ import { typeToPlainText } from './render';
 import { getFunctor } from './structures';
 import type { AnimacyClass, Expr, ExprType } from './types';
 
-export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))), closed);
+export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))));
 
 export const causeLittleV = int(
 	λ('s', closed, (w, s) =>
@@ -53,10 +53,7 @@ export const causeLittleV = int(
 			λ('e', s, (arg, s) =>
 				λ('v', s, (e, s) =>
 					app(
-						app(
-							and(s),
-							equals(app(app(agent(s), s.var(e)), s.var(w)), s.var(arg)),
-						),
+						app(and, equals(app(app(agent, s.var(e)), s.var(w)), s.var(arg))),
 						app(s.var(pred), s.var(e)),
 					),
 				),
@@ -90,13 +87,11 @@ const anaphoricPronouns: [string, AnimacyClass][] = [
 ];
 
 export const pronouns = new Map<string, Expr>([
-	...personalPronouns.map(
-		toaq => [toaq, lex(toaq, Dx(Int(Pl('e'))), closed)] as const,
-	),
+	...personalPronouns.map(toaq => [toaq, lex(toaq, Dx(Int(Pl('e'))))] as const),
 	[
 		'há',
 		andMap(
-			salient(Int(Fn(Pl('e'), 't')), closed),
+			salient(Int(Fn(Pl('e'), 't'))),
 			λ(Int(Fn(Pl('e'), 't')), closed, (r, s) =>
 				int(
 					λ('s', s, (w, s) =>
@@ -104,7 +99,7 @@ export const pronouns = new Map<string, Expr>([
 							λ(Int(Pl('e')), s, (xx, s) =>
 								app(
 									app(
-										and(s),
+										and,
 										app(
 											app(unint(s.var(r)), s.var(w)),
 											app(unint(s.var(xx)), s.var(w)),
@@ -114,10 +109,10 @@ export const pronouns = new Map<string, Expr>([
 										λ('e', s, (x, s) =>
 											app(
 												app(
-													implies(s),
+													implies,
 													among(s.var(x), app(unint(s.var(xx)), s.var(w))),
 												),
-												app(app(unint(animate(s)), s.var(w)), s.var(x)),
+												app(app(unint(animate), s.var(w)), s.var(x)),
 											),
 										),
 									),
@@ -168,7 +163,7 @@ export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
 
 export const polarities = new Map<string, Expr>([
 	['jeo', λ('t', closed, (t, s) => s.var(t))],
-	['bu', not(closed)],
+	['bu', not],
 ]);
 
 export const determiners = new Map<string, (domain: ExprType) => Expr>([
@@ -181,7 +176,7 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 						some(
 							λ(domain, s, (x, s) =>
 								app(
-									app(and(s), app(s.var(predicate), s.var(x))),
+									app(and, app(s.var(predicate), s.var(x))),
 									app(s.var(c), s.var(x)),
 								),
 							),
@@ -199,7 +194,7 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 						every(
 							λ(domain, s, (x, s) =>
 								app(
-									app(implies(s), app(s.var(predicate), s.var(x))),
+									app(implies, app(s.var(predicate), s.var(x))),
 									app(s.var(c), s.var(x)),
 								),
 							),
@@ -215,11 +210,11 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 				cont(
 					λ(Fn(domain, 't'), s, (c, s) =>
 						app(
-							not(s),
+							not,
 							some(
 								λ(domain, s, (x, s) =>
 									app(
-										app(and(s), app(s.var(predicate), s.var(x))),
+										app(and, app(s.var(predicate), s.var(x))),
 										app(s.var(c), s.var(x)),
 									),
 								),
@@ -249,10 +244,10 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 				),
 			),
 	],
-	['ké', domain => lex('ké', Fn(Fn(domain, 't'), Dx(domain)), closed)],
-	['hú', domain => lex('hú', Fn(Fn(domain, 't'), Dx(domain)), closed)],
-	['ní', domain => lex('ní', Fn(Fn(domain, 't'), Dx(domain)), closed)],
-	['nánı', domain => lex('nánı', Fn(Fn(domain, 't'), Dx(domain)), closed)],
+	['ké', domain => lex('ké', Fn(Fn(domain, 't'), Dx(domain)))],
+	['hú', domain => lex('hú', Fn(Fn(domain, 't'), Dx(domain)))],
+	['ní', domain => lex('ní', Fn(Fn(domain, 't'), Dx(domain)))],
+	['nánı', domain => lex('nánı', Fn(Fn(domain, 't'), Dx(domain)))],
 ]);
 
 export const littleN = λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
@@ -277,13 +272,13 @@ export const complementizers = new Map<string, Expr>([
 						λ(Fn('t', 't'), s, (polarity, s) =>
 							app(
 								app(
-									or(s),
+									or,
 									equals(
 										s.var(polarity),
 										λ('t', s, (t, s) => s.var(t)),
 									),
 								),
-								equals(s.var(polarity), not(s)),
+								equals(s.var(polarity), not),
 							),
 						),
 						λ(Fn('t', 't'), s, (polarity, s) =>
@@ -294,8 +289,8 @@ export const complementizers = new Map<string, Expr>([
 			),
 		),
 	],
-	['ꝡä', lex('ꝡä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))), closed)],
-	['mä', lex('mä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))), closed)],
+	['ꝡä', lex('ꝡä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))))],
+	['mä', lex('mä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))))],
 	[
 		'lä',
 		int(
@@ -307,7 +302,6 @@ export const complementizers = new Map<string, Expr>([
 								lex(
 									'lä',
 									Int(Fn(Fn(Int(Pl('e')), Int('t')), Fn(Int(Pl('e')), 't'))),
-									s,
 								),
 							),
 							s.var(w),
@@ -332,7 +326,7 @@ export const complementizers = new Map<string, Expr>([
 	],
 ]);
 
-export const covertCp = salient(Int('t'), closed);
+export const covertCp = salient(Int('t'));
 
 function qnDomain(type: ExprType): ExprType {
 	if (typeof type !== 'string' && type.head === 'qn') return type.domain;
@@ -369,7 +363,7 @@ export const conditionals = new Map<CovertValue, Expr>([
 		λ(Int('t'), closed, (antecedent, s) =>
 			λ(Int('t'), s, (consequent, s) =>
 				andMap(
-					accessibility(s),
+					accessibility,
 					λ(Fn('s', Fn('s', 't')), s, (accessible, s) =>
 						int(
 							λ('s', s, (w, s) =>
@@ -377,7 +371,7 @@ export const conditionals = new Map<CovertValue, Expr>([
 									λ('s', s, (w_, s) =>
 										app(
 											app(
-												and(s),
+												and,
 												app(app(s.var(accessible), s.var(w)), s.var(w_)),
 											),
 											app(unint(s.var(antecedent)), s.var(w_)),
@@ -399,16 +393,16 @@ export const conditionals = new Map<CovertValue, Expr>([
 		λ(Int('t'), closed, (antecedent, s) =>
 			λ(Int('t'), s, (consequent, s) =>
 				andMap(
-					accessibility(s),
+					accessibility,
 					λ(Fn('s', Fn('s', 't')), s, (accessible, s) =>
 						andMap(
 							app(
-								bg(s),
+								bg,
 								app(
-									lex('da', Fn(Int('t'), Act('()')), s),
+									lex('da', Fn(Int('t'), Act('()'))),
 									int(
 										λ('s', s, (w, s) =>
-											app(not(s), app(unint(s.var(antecedent)), s.var(w))),
+											app(not, app(unint(s.var(antecedent)), s.var(w))),
 										),
 									),
 								),
@@ -420,7 +414,7 @@ export const conditionals = new Map<CovertValue, Expr>([
 											λ('s', s, (w_, s) =>
 												app(
 													app(
-														and(s),
+														and,
 														app(app(s.var(accessible), s.var(w)), s.var(w_)),
 													),
 													app(unint(s.var(antecedent)), s.var(w_)),
@@ -461,7 +455,7 @@ const always = (domain: ExprType) =>
 					every(
 						λ(domain, s, (x, s) =>
 							app(
-								app(implies(s), app(s.var(r), s.var(x))),
+								app(implies, app(s.var(r), s.var(x))),
 								app(s.var(b), s.var(x)),
 							),
 						),
@@ -479,10 +473,7 @@ const sometimes = (domain: ExprType) =>
 				λ(Fn(domain, 't'), s, (b, s) =>
 					some(
 						λ(domain, s, (x, s) =>
-							app(
-								app(and(s), app(s.var(r), s.var(x))),
-								app(s.var(b), s.var(x)),
-							),
+							app(app(and, app(s.var(r), s.var(x))), app(s.var(b), s.var(x))),
 						),
 					),
 				),
@@ -497,13 +488,10 @@ const never = (domain: ExprType) =>
 			λ(Fn(domain, 't'), s, (r, s) =>
 				λ(Fn(domain, 't'), s, (b, s) =>
 					app(
-						not(s),
+						not,
 						some(
 							λ(domain, s, (x, s) =>
-								app(
-									app(and(s), app(s.var(r), s.var(x))),
-									app(s.var(b), s.var(x)),
-								),
+								app(app(and, app(s.var(r), s.var(x))), app(s.var(b), s.var(x))),
 							),
 						),
 					),

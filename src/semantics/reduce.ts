@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { Impossible } from '../core/error';
 import {
 	among,
 	andMap,
@@ -19,66 +20,50 @@ import {
 } from './model';
 import type { Expr, ExprType } from './types';
 
-function mapVariables(
-	e: Expr,
-	newScope: ExprType[],
-	mapVariable: (index: number) => Expr,
-	mapQuantifierBody: (body: Expr, newScope: ExprType[]) => Expr,
-): Expr {
-	switch (e.head) {
-		case 'variable': {
-			return mapVariable(e.index);
-		}
-		case 'lambda': {
-			return {
-				head: 'lambda',
-				type: e.type,
-				scope: newScope,
-				body: mapQuantifierBody(e.body, [e.body.scope[0], ...newScope]),
-			};
-		}
-		case 'apply': {
-			return app(
-				mapVariables(e.fn, newScope, mapVariable, mapQuantifierBody),
-				mapVariables(e.arg, newScope, mapVariable, mapQuantifierBody),
-			);
-		}
-		default:
-			return { ...e, scope: newScope };
-	}
-}
-
 /**
  * Rewrites an expression to use a different scope, given a function mapping
  * indices in the original scope to indices in the new scope.
  */
 export function rewriteScope(
 	e: Expr,
-	newScope: ExprType[],
 	mapping: (index: number) => number,
 ): Expr {
-	return mapVariables(
-		e,
-		newScope,
-		i => ({
-			head: 'variable',
-			type: newScope[mapping(i)],
-			scope: newScope,
-			index: mapping(i),
-		}),
-		(body, s) =>
-			rewriteScope(body, s, (index: number) =>
-				index === 0 ? 0 : mapping(index - 1) + 1,
-			),
-	);
-}
+	if (e.scope.every((_t, i) => mapping(i) === i)) return e;
+	const scope: (ExprType | undefined)[] = [];
+	e.scope.forEach((t, i) => {
+		scope[mapping(i)] = t;
+	});
 
-/**
- * Error which you can throw inside a rewriteScope callback to indicate that a
- * rewrite is not possible, as the expression uses a variable which would no
- * longer exist.
- */
-export class VariableDeletedError extends Error {}
+	switch (e.head) {
+		case 'variable':
+			return {
+				head: 'variable',
+				type: e.type,
+				scope,
+				index: mapping(e.index),
+			};
+		case 'lambda':
+			return {
+				head: 'lambda',
+				type: e.type,
+				scope,
+				param: e.param,
+				body: rewriteScope(e.body, i => (i === 0 ? 0 : mapping(i - 1) + 1)),
+			};
+		case 'apply':
+			return {
+				head: 'apply',
+				type: e.type,
+				scope,
+				fn: rewriteScope(e.fn, mapping),
+				arg: rewriteScope(e.arg, mapping),
+			};
+		case 'lexeme':
+		case 'quote':
+		case 'constant':
+			throw new Impossible('Atomic expression references a variable');
+	}
+}
 
 /**
  * Substitutes all references to the variable at the given index with a target
@@ -86,30 +71,45 @@ export class VariableDeletedError extends Error {}
  * [...e.scope.slice(0, index), ...e.scope.slice(index + 1)].
  */
 export function substitute(index: number, target: Expr, e: Expr): Expr {
-	const newScope = [...e.scope];
-	newScope.splice(index, 1);
+	if (e.scope.length <= index) return e;
 
-	return mapVariables(
-		e,
-		newScope,
-		i => {
-			if (i === index) {
-				return rewriteScope(
-					target,
-					newScope,
-					i => i + newScope.length - target.scope.length,
-				);
-			}
-			const shifted = i < index ? i : i - 1;
+	switch (e.head) {
+		case 'variable': {
+			if (e.index === index) return target;
+			const scope = new Array<ExprType | undefined>(e.index);
+			scope[e.index - 1] = e.type;
+			return { head: 'variable', type: e.type, scope, index: e.index - 1 };
+		}
+		case 'lambda': {
+			const body =
+				e.scope[index] === undefined
+					? rewriteScope(e.body, i => {
+							if (i === index + 1) throw new Impossible('Variable deleted');
+							return i < index + 1 ? i : i - 1;
+						})
+					: substitute(
+							index + 1,
+							rewriteScope(target, i => i + 1),
+							e.body,
+						);
 			return {
-				head: 'variable',
-				type: newScope[shifted],
-				scope: newScope,
-				index: shifted,
+				head: 'lambda',
+				type: e.type,
+				scope: body.scope.slice(1),
+				param: e.param,
+				body,
 			};
-		},
-		body => substitute(index + 1, target, body),
-	);
+		}
+		case 'apply':
+			return app(
+				substitute(index, target, e.fn),
+				substitute(index, target, e.arg),
+			);
+		case 'lexeme':
+		case 'quote':
+		case 'constant':
+			throw new Impossible('Atomic expression references a variable');
+	}
 }
 
 function pairlikeDeconstructor(
@@ -136,11 +136,13 @@ function pairlikeDeconstructor(
 function reducePass(expr: Expr): Expr {
 	switch (expr.head) {
 		case 'lambda': {
+			const body = reducePass(expr.body);
 			return {
 				head: 'lambda',
 				type: expr.type,
-				scope: expr.scope,
-				body: reducePass(expr.body),
+				scope: body.scope.slice(1),
+				param: expr.param,
+				body,
 			};
 		}
 		case 'apply': {
@@ -195,13 +197,11 @@ function reducePass(expr: Expr): Expr {
 					expr.fn.arg.fn.fn.name === 'and_map'
 				) {
 					assertDxOrAct(x.type);
-					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					const ff = rewriteScope(f, i => i + 1);
+					const gg = rewriteScope(g, i => i + 1);
 					return andMap(
 						x,
-						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-							app(gg, app(ff, s.var(z))),
-						),
+						λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
 					);
 				}
 
@@ -211,13 +211,11 @@ function reducePass(expr: Expr): Expr {
 					expr.fn.arg.fn.fn.name === 'and_map'
 				) {
 					assertDxOrAct(x.type);
-					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					const ff = rewriteScope(f, i => i + 1);
+					const gg = rewriteScope(g, i => i + 1);
 					return andThen(
 						x,
-						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-							app(gg, app(ff, s.var(z))),
-						),
+						λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
 					);
 				}
 
@@ -227,13 +225,11 @@ function reducePass(expr: Expr): Expr {
 					expr.fn.arg.fn.fn.name === 'and_then'
 				) {
 					assertDxOrAct(x.type);
-					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					const ff = rewriteScope(f, i => i + 1);
+					const gg = rewriteScope(g, i => i + 1);
 					return andThen(
 						x,
-						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-							andMap(app(ff, s.var(z)), gg),
-						),
+						λ(x.type.inner, closed, (z, s) => andMap(app(ff, s.var(z)), gg)),
 					);
 				}
 
@@ -243,26 +239,22 @@ function reducePass(expr: Expr): Expr {
 					expr.fn.arg.fn.fn.name === 'and_then'
 				) {
 					assertDxOrAct(x.type);
-					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					const ff = rewriteScope(f, i => i + 1);
+					const gg = rewriteScope(g, i => i + 1);
 					return andThen(
 						x,
-						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-							andThen(app(ff, s.var(z)), gg),
-						),
+						λ(x.type.inner, closed, (z, s) => andThen(app(ff, s.var(z)), gg)),
 					);
 				}
 
 				// map (map x f) g = map x (λz g (f z))
 				if (expr.fn.fn.name === 'map' && expr.fn.arg.fn.fn.name === 'map') {
 					assertPl(x.type);
-					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					const ff = rewriteScope(f, i => i + 1);
+					const gg = rewriteScope(g, i => i + 1);
 					return map(
 						x,
-						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-							app(gg, app(ff, s.var(z))),
-						),
+						λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
 					);
 				}
 
@@ -272,13 +264,11 @@ function reducePass(expr: Expr): Expr {
 					expr.fn.arg.fn.fn.name === 'map'
 				) {
 					assertPl(x.type);
-					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					const ff = rewriteScope(f, i => i + 1);
+					const gg = rewriteScope(g, i => i + 1);
 					return flatMap(
 						x,
-						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-							app(gg, app(ff, s.var(z))),
-						),
+						λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
 					);
 				}
 
@@ -288,13 +278,11 @@ function reducePass(expr: Expr): Expr {
 					expr.fn.arg.fn.fn.name === 'flat_map'
 				) {
 					assertPl(x.type);
-					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					const ff = rewriteScope(f, i => i + 1);
+					const gg = rewriteScope(g, i => i + 1);
 					return flatMap(
 						x,
-						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-							map(app(ff, s.var(z)), gg),
-						),
+						λ(x.type.inner, closed, (z, s) => map(app(ff, s.var(z)), gg)),
 					);
 				}
 
@@ -304,13 +292,11 @@ function reducePass(expr: Expr): Expr {
 					expr.fn.arg.fn.fn.name === 'flat_map'
 				) {
 					assertPl(x.type);
-					const ff = rewriteScope(f, [x.type.inner, ...f.scope], i => i + 1);
-					const gg = rewriteScope(g, [x.type.inner, ...g.scope], i => i + 1);
+					const ff = rewriteScope(f, i => i + 1);
+					const gg = rewriteScope(g, i => i + 1);
 					return flatMap(
 						x,
-						λ(x.type.inner, { ...closed, types: x.scope }, (z, s) =>
-							flatMap(app(ff, s.var(z)), gg),
-						),
+						λ(x.type.inner, closed, (z, s) => flatMap(app(ff, s.var(z)), gg)),
 					);
 				}
 			}
@@ -341,13 +327,12 @@ function reducePass(expr: Expr): Expr {
 					const f = expr.fn;
 					const x = expr.arg.fn.arg;
 					const g = expr.arg.arg.body.body;
-					const [z, y] = g.scope;
-					const ff = rewriteScope(f, g.scope, i => i + 2);
+					const y = expr.arg.arg.param;
+					const z = expr.arg.arg.body.param;
+					const ff = rewriteScope(f, i => i + 2);
 					return deconstruct(
 						x,
-						λ(y, { ...closed, types: f.scope }, (_, s) =>
-							λ(z, s, () => app(ff, g)),
-						),
+						λ(y, closed, (_, s) => λ(z, s, () => app(ff, g))),
 					);
 				}
 			}
@@ -366,13 +351,12 @@ function reducePass(expr: Expr): Expr {
 					const f = expr.arg;
 					const x = expr.fn.fn.arg;
 					const g = expr.fn.arg.body.body;
-					const [z, y] = g.scope;
-					const ff = rewriteScope(f, g.scope, i => i + 2);
+					const y = expr.fn.arg.param;
+					const z = expr.fn.arg.body.param;
+					const ff = rewriteScope(f, i => i + 2);
 					return deconstruct(
 						x,
-						λ(y, { ...closed, types: f.scope }, (_, s) =>
-							λ(z, s, () => app(g, ff)),
-						),
+						λ(y, closed, (_, s) => λ(z, s, () => app(g, ff))),
 					);
 				}
 			}
@@ -397,10 +381,11 @@ function reducePass(expr: Expr): Expr {
 				expr.arg.body.body.fn.arg.index === expr.fn.arg.index + 2
 			) {
 				const f = expr.arg.body.body.arg;
-				const [z, y] = f.scope;
+				const y = expr.arg.param;
+				const z = expr.arg.body.param;
 				return app(
 					expr.fn,
-					λ(y, { ...closed, types: expr.scope }, (y, s) =>
+					λ(y, closed, (y, s) =>
 						λ(z, s, (z, s) => app(app(f, s.var(y)), s.var(z))),
 					),
 				);
@@ -428,99 +413,53 @@ function reducePass(expr: Expr): Expr {
 				const x = expr.arg.body.fn.arg.arg.fn.arg;
 				const f = expr.arg.body.fn.arg.arg.arg;
 				const g = expr.arg.body.arg;
-				const originalDomain = g.scope[0];
+				const originalDomain = expr.arg.param;
 
 				// every (λy implies (among y (map x f)) g) = every (λz implies (among z x) ((λy g) (f z)))
-				if (expr.arg.body.fn.arg.arg.fn.fn.name === 'map') {
+				if (
+					expr.arg.body.fn.arg.arg.fn.fn.name === 'map' &&
+					x.scope[0] === undefined &&
+					f.scope[0] === undefined
+				) {
 					assertPl(x.type);
-					let varError = false;
-					let xx: Expr;
-					let ff: Expr;
-					try {
-						xx = rewriteScope(x, [x.type.inner, ...x.scope.slice(1)], i => {
-							if (i === 0) throw new VariableDeletedError();
-							return i;
-						});
-						ff = rewriteScope(f, [x.type.inner, ...f.scope.slice(1)], i => {
-							if (i === 0) throw new VariableDeletedError();
-							return i;
-						});
-					} catch (e) {
-						if (e instanceof VariableDeletedError) varError = true;
-						else throw e;
-					}
-					if (!varError) {
-						const gg = rewriteScope(
-							g,
-							[originalDomain, x.type.inner, ...g.scope.slice(1)],
-							i => (i === 0 ? 0 : i + 1),
-						);
-						return every(
-							λ(x.type.inner, { ...closed, types: expr.scope }, (z, s) =>
+					const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
+					return every(
+						λ(x.type.inner, closed, (z, s) =>
+							app(
+								app(implies, among(s.var(z), x)),
 								app(
-									app(implies(s), among(s.var(z), xx)),
-									app(
-										λ(originalDomain, s, () => gg),
-										app(ff, s.var(z)),
-									),
+									λ(originalDomain, s, () => gg),
+									app(f, s.var(z)),
 								),
 							),
-						);
-					}
+						),
+					);
 				}
 
 				// every (λy implies (among y (flat_map x f)) g) = every (λz implies (among z x) (every (λy implies (among y (f z)) g)))
-				if (expr.arg.body.fn.arg.arg.fn.fn.name === 'flat_map') {
+				if (
+					expr.arg.body.fn.arg.arg.fn.fn.name === 'flat_map' &&
+					x.scope[0] === undefined
+				) {
 					assertPl(x.type);
-					let varError = false;
-					let xx: Expr;
-					let ff: Expr;
-					try {
-						xx = rewriteScope(x, [x.type.inner, ...x.scope.slice(1)], i => {
-							if (i === 0) throw new VariableDeletedError();
-							return i;
-						});
-						ff = rewriteScope(
-							f,
-							[originalDomain, x.type.inner, ...f.scope.slice(1)],
-							i => (i === 0 ? 0 : i + 1),
-						);
-					} catch (e) {
-						if (e instanceof VariableDeletedError) varError = true;
-						else throw e;
-					}
-					if (!varError) {
-						const gg = rewriteScope(
-							g,
-							[originalDomain, x.type.inner, ...g.scope.slice(1)],
-							i => (i === 0 ? 0 : i + 1),
-						);
-						return every(
-							λ(x.type.inner, { ...closed, types: expr.scope }, (z, s) =>
-								app(
-									app(implies(s), among(s.var(z), xx)),
-									every(
-										λ(originalDomain, s, (y, s) =>
-											app(
-												app(implies(s), among(s.var(y), app(ff, s.var(z)))),
-												gg,
-											),
-										),
+					const ff = rewriteScope(f, i => (i === 0 ? 0 : i + 1));
+					const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
+					return every(
+						λ(x.type.inner, closed, (z, s) =>
+							app(
+								app(implies, among(s.var(z), x)),
+								every(
+									λ(originalDomain, s, (y, s) =>
+										app(app(implies, among(s.var(y), app(ff, s.var(z)))), gg),
 									),
 								),
 							),
-						);
-					}
+						),
+					);
 				}
 			}
 
-			return {
-				head: 'apply',
-				type: expr.type,
-				scope: expr.scope,
-				fn: reducePass(expr.fn),
-				arg: reducePass(expr.arg),
-			};
+			return app(reducePass(expr.fn), reducePass(expr.arg));
 		}
 		case 'variable':
 		case 'lexeme':

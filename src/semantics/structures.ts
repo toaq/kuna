@@ -144,7 +144,7 @@ export interface Runner {
 }
 
 const tSemigroup: Semigroup = {
-	plus: and(closed),
+	plus: and,
 };
 
 const unitSemigroup: Semigroup = {
@@ -251,7 +251,7 @@ const contApplicative: Applicative = {
 		const { domain, range } = fn.type.inner;
 		return app(
 			app(
-				λ(fn.type, s, (fn, s) =>
+				λ(fn.type, s, fn =>
 					λ(arg.type, s, (arg, s) =>
 						cont(
 							λ(Fn(range, 't'), s, (pred, s) =>
@@ -337,7 +337,7 @@ const plRunner: Runner = {
 			app(
 				λ(e.type, s, (e, s) =>
 					λ('t', s, (t, s) =>
-						app(app(implies(s), among(s.var(t), s.var(e))), s.var(t)),
+						app(app(implies, among(s.var(t), s.var(e))), s.var(t)),
 					),
 				),
 				e,
@@ -428,7 +428,7 @@ const genOrQnMonad = (
 														λ(domain1, s, (d1, s) =>
 															λ(domain2, s, (d2, s) =>
 																app(
-																	app(and(s), app(s.var(r1), s.var(d1))),
+																	app(and, app(s.var(r1), s.var(d1))),
 																	app(s.var(r2), s.var(d2)),
 																),
 															),
@@ -487,7 +487,7 @@ const genOrQnMonad = (
 								λ(domain1, s, (d1, s) =>
 									λ(domain2, s, (d2, s) =>
 										app(
-											app(and(s), app(s.var(r1), s.var(d1))),
+											app(and, app(s.var(r1), s.var(d1))),
 											deconstruct(
 												app(s.var(b1), s.var(d1)),
 												λ(restriction2, s, (r2, s) =>
@@ -537,10 +537,7 @@ const genRunner: Runner = {
 				λ(Fn(domain, 't'), s, (b, s) =>
 					some(
 						λ(domain, s, (d, s) =>
-							app(
-								app(and(s), app(s.var(r), s.var(d))),
-								app(s.var(b), s.var(d)),
-							),
+							app(app(and, app(s.var(r), s.var(d))), app(s.var(b), s.var(d))),
 						),
 					),
 				),

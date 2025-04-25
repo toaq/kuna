@@ -182,7 +182,7 @@ export function addNames(
 	const newScope = [...prevScope];
 	const newNextIds = { ...prevNextIds };
 
-	for (let i = scope.length - prevScope.length - 1; i >= 0; i--) {
+	for (let i = scope.length - 1; i >= 0; i--) {
 		const type = scope[i];
 		const nameType = getNameType(type);
 		const alphabetSize = alphabets[nameType].length;

@@ -145,7 +145,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 			case 'variable':
 				return token(this.name(e.index, names));
 			case 'quantify': {
-				const newNames = addNames(e.param.scope, names);
+				const newNames = addNames(e.param.scope as ExprType[], names);
 				return join(Precedence.Quantify, 'any', [
 					token(quantifiers[e.q]),
 					this.go(e.param, newNames),
@@ -190,7 +190,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 			case 'do':
 				switch (e.op) {
 					case 'get': {
-						const newNames = addNames(e.left.scope, names);
+						const newNames = addNames(e.left.scope as ExprType[], names);
 						return join(Precedence.Do, 'right', [
 							join(Precedence.Assign, 'none', [
 								this.go(e.left, newNames),
@@ -251,6 +251,6 @@ export function typeToPlainText(t: ExprType): string {
 	return new PlainTextType().render(t);
 }
 
-export function typesToPlainText(ts: ExprType[]): string {
-	return ts.map(typeToPlainText).join(', ');
+export function typesToPlainText(ts: (ExprType | undefined)[]): string {
+	return ts.map(t => (t === undefined ? '-' : typeToPlainText(t))).join(', ');
 }

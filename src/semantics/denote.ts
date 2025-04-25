@@ -149,7 +149,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				type,
 			);
 		type = Int(type);
-		return lex(entry.toaq, type, closed);
+		return lex(entry.toaq, type);
 	}
 
 	if (leaf.label === '𝘷') {
@@ -196,7 +196,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		else toaq = leaf.word.entry.toaq.replace(/-$/, '');
 
 		// TODO: chum will need a different type
-		return lex(toaq, Int(Fn(Fn('v', 't'), Fn('i', 't'))), closed);
+		return lex(toaq, Int(Fn(Fn('v', 't'), Fn('i', 't'))));
 	}
 
 	if (leaf.label === 'T') {
@@ -211,7 +211,6 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			toaq === 'sula'
 				? Fn(Fn('i', 't'), 't')
 				: Dx(pronominalTenses.has(toaq) ? 'i' : Fn(Fn('i', 't'), 't')),
-			closed,
 		);
 	}
 
@@ -392,7 +391,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 		const type = speechActParticles.get(toaq);
 		if (type === undefined) throw new Unrecognized(`SA: ${toaq}`);
-		return lex(toaq, type(cCommand.denotation.type), closed);
+		return lex(toaq, type(cCommand.denotation.type));
 	}
 
 	if (leaf.label === 'Cond') {
@@ -418,7 +417,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			λ(Gen(gen.domain, 't'), closed, (g, s) =>
 				ungen(
 					s.var(g),
-					lex(toaq, Fn(Fn(gen.domain, 't'), Fn(Fn(gen.domain, 't'), 't')), s),
+					lex(toaq, Fn(Fn(gen.domain, 't'), Fn(Fn(gen.domain, 't'), 't'))),
 				),
 			)
 		);
@@ -462,7 +461,6 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			toaq === 'róı'
 				? Fn(Int(Pl('e')), Fn(Int(Pl('e')), out))
 				: Fn(Int(Pl('e')), Fn(Int(Pl('e')), Cont(out))),
-			closed,
 		);
 	}
 
@@ -478,13 +476,12 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				Int(Pl('e')),
 				Cont(Bind({ type: 'head', head: leaf.word.bare }, Int(Pl('e')))),
 			),
-			closed,
 		);
 	}
 
 	if (leaf.label === 'word') {
 		if (leaf.word.covert) throw new Impossible('Covert word');
-		return quote(leaf.word.text, closed);
+		return quote(leaf.word.text);
 	}
 
 	if (
@@ -500,7 +497,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`${leaf.label}: ${leaf.word.text}`);
 		const type = unwrapEffects(cCommand.denotation.type);
-		return lex(leaf.word.entry.toaq, Fn(type, type), closed);
+		return lex(leaf.word.entry.toaq, Fn(type, type));
 	}
 
 	throw new Unimplemented(`TODO: ${leaf.label}`);

@@ -30,7 +30,7 @@
 				"noUnusedFunctionParameters": "error"
 			},
 			"style": { "noNonNullAssertion": "off" },
-			"suspicious": { "noExplicitAny": "off" }
+			"suspicious": { "noExplicitAny": "off", "noSparseArray": "off" }
 		}
 	},
 	"javascript": {

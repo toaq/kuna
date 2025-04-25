@@ -97,9 +97,10 @@ interface ExprBase {
 	 */
 	type: ExprType;
 	/**
-	 * The types of all variables in scope, ordered by De Bruijn indexing.
+	 * A sparse array containing the types of all variables used in this
+	 * subexpression, ordered by De Bruijn indexing.
 	 */
-	scope: ExprType[];
+	scope: (ExprType | undefined)[];
 }
 
 interface Variable extends ExprBase {
@@ -112,6 +113,7 @@ interface Variable extends ExprBase {
 
 interface Lambda extends ExprBase {
 	head: 'lambda';
+	param: ExprType;
 	body: Expr;
 	nameHint?: string;
 }
@@ -183,11 +185,9 @@ export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode })) & {
 };
 
 /**
- * A user-friendly scope type combining an indexical typing context with a
- * naming context.
+ * A user-friendly scope type mapping names to indexical variables.
  */
 export interface Scope {
-	types: ExprType[];
 	var: (name: symbol) => Variable;
 }
 
