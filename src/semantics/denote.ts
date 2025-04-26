@@ -298,7 +298,6 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 								functor.map(
 									λ(gen.domain, s, (x, s) => app(s.var(body), s.var(x))),
 									app(s.var(data), s.var(restriction)),
-									s,
 								),
 							),
 						),
