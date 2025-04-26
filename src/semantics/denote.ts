@@ -45,12 +45,12 @@ import {
 	app,
 	assertFn,
 	bind,
-	closed,
 	gen,
 	lex,
 	quote,
 	ref,
 	ungen,
+	v,
 	λ,
 } from './model';
 import { reduce } from './reduce';
@@ -159,16 +159,12 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			if (value === 'BE') {
 				if (cCommand === null)
 					throw new Impossible("Can't denote BE in isolation");
-				return λ(unwrapEffects(cCommand.denotation.type), closed, (pred, s) =>
-					s.var(pred),
-				);
+				return λ(unwrapEffects(cCommand.denotation.type), pred => v(pred));
 			}
 			throw new Unrecognized(`𝘷: ${value}`);
 		}
 		if (cCommand?.label === "Cond'")
-			return λ(unwrapEffects(cCommand.denotation.type), closed, (pred, s) =>
-				s.var(pred),
-			);
+			return λ(unwrapEffects(cCommand.denotation.type), pred => v(pred));
 		throw new Unimplemented(`Overt 𝘷: ${leaf.word.text}`);
 	}
 
@@ -240,18 +236,14 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				throw new Unrecognized(`name: ${cCommand.word.text}`);
 			const animacy = animacyClass(cCommand.word.entry as VerbEntry);
 			const word = cCommand.word.entry.toaq;
-			return λ('e', closed, (_, s) =>
+			return λ('e', () =>
 				ref(
 					{ type: 'name', verb: word },
-					λ(Int(Pl('e')), s, (x, s) => {
-						let result: Expr = s.var(x);
+					λ(Int(Pl('e')), x => {
+						let result: Expr = v(x);
 						if (animacy !== null)
-							result = bind(
-								{ type: 'animacy', class: animacy },
-								s.var(x),
-								result,
-							);
-						result = bind({ type: 'name', verb: word }, s.var(x), result);
+							result = bind({ type: 'animacy', class: animacy }, v(x), result);
+						result = bind({ type: 'name', verb: word }, v(x), result);
 						return result;
 					}),
 				),
@@ -264,12 +256,10 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			if (cCommand.word.entry === undefined)
 				throw new Unrecognized(`head: ${cCommand.word.text}`);
 			const word = cCommand.word.bare;
-			return λ('e', closed, (_, s) =>
+			return λ('e', () =>
 				ref(
 					{ type: 'head', head: word },
-					λ(Int(Pl('e')), s, (x, s) =>
-						bind({ type: 'head', head: word }, s.var(x), s.var(x)),
-					),
+					λ(Int(Pl('e')), x => bind({ type: 'head', head: word }, v(x), v(x))),
 				),
 			);
 		}
@@ -289,15 +279,15 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Impossible(`${toaq} doesn't return a functor`);
 
 		return app(
-			λ(data.type, closed, (data, s) =>
-				λ(Gen(gen.domain, gen.inner), s, (np, s) =>
+			λ(data.type, data =>
+				λ(Gen(gen.domain, gen.inner), np =>
 					ungen(
-						s.var(np),
-						λ(Fn(gen.domain, 't'), s, (restriction, s) =>
-							λ(Fn(gen.domain, gen.inner), s, (body, s) =>
+						v(np),
+						λ(Fn(gen.domain, 't'), restriction =>
+							λ(Fn(gen.domain, gen.inner), body =>
 								functor.map(
-									λ(gen.domain, s, (x, s) => app(s.var(body), s.var(x))),
-									app(s.var(data), s.var(restriction)),
+									λ(gen.domain, x => app(v(body), v(x))),
+									app(v(data), v(restriction)),
 								),
 							),
 						),
@@ -322,23 +312,19 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				? animacyClass(verb.entry)
 				: null;
 
-		return λ(Fn(Int(Pl('e')), 't'), closed, (predicate, s) =>
+		return λ(Fn(Int(Pl('e')), 't'), predicate =>
 			gen(
-				s.var(predicate),
-				λ(Int(Pl('e')), s, (x, s) => {
-					let result: Expr = s.var(x);
+				v(predicate),
+				λ(Int(Pl('e')), x => {
+					let result: Expr = v(x);
 					if (animacy !== null)
-						result = bind(
-							{ type: 'animacy', class: animacy },
-							s.var(x),
-							result,
-						);
+						result = bind({ type: 'animacy', class: animacy }, v(x), result);
 					if (!verb.covert && verb.entry !== undefined)
 						result = bind(
 							'pronominal_class' in verb.entry
 								? { type: 'name', verb: verb.entry.toaq }
 								: { type: 'head', head: verb.bare },
-							s.var(x),
+							v(x),
 							result,
 						);
 					return result;
@@ -413,9 +399,9 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 		return (
 			quantifiers.get(toaq)?.(gen.domain) ??
-			λ(Gen(gen.domain, 't'), closed, (g, s) =>
+			λ(Gen(gen.domain, 't'), g =>
 				ungen(
-					s.var(g),
+					v(g),
 					lex(toaq, Fn(Fn(gen.domain, 't'), Fn(Fn(gen.domain, 't'), 't'))),
 				),
 			)

@@ -28,7 +28,6 @@ import {
 	assertRef,
 	bind,
 	bindingsEqual,
-	closed,
 	cont,
 	every,
 	flatMap,
@@ -52,6 +51,7 @@ import {
 	unpair,
 	unqn,
 	unref,
+	v,
 	λ,
 } from './model';
 import { typeToPlainText } from './render';
@@ -148,9 +148,7 @@ const tSemigroup: Semigroup = {
 };
 
 const unitSemigroup: Semigroup = {
-	plus: λ('()', closed, (_first, s) =>
-		λ('()', s, (second, s) => s.var(second)),
-	),
+	plus: λ('()', () => λ('()', second => v(second))),
 };
 
 export const idFunctor: Functor = {
@@ -169,13 +167,9 @@ const intFunctor: Functor = {
 		assertFn(fn.type);
 		return app(
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
-						int(
-							λ('s', s, (w, s) =>
-								app(s.var(fn), app(unint(s.var(arg)), s.var(w))),
-							),
-						),
+				λ(fn.type, fn =>
+					λ(arg.type, arg =>
+						int(λ('s', w => app(v(fn), app(unint(v(arg)), v(w))))),
 					),
 				),
 				fn,
@@ -192,14 +186,11 @@ const intApplicative: Applicative = {
 		assertFn(fn.type.inner);
 		return app(
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
+				λ(fn.type, fn =>
+					λ(arg.type, arg =>
 						int(
-							λ('s', s, (w, s) =>
-								app(
-									app(unint(s.var(fn)), s.var(w)),
-									app(unint(s.var(arg)), s.var(w)),
-								),
+							λ('s', w =>
+								app(app(unint(v(fn)), v(w)), app(unint(v(arg)), v(w))),
 							),
 						),
 					),
@@ -222,15 +213,13 @@ const contFunctor: Functor = {
 		const { domain, range } = fn.type;
 		return app(
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
+				λ(fn.type, fn =>
+					λ(arg.type, arg =>
 						cont(
-							λ(Fn(range, 't'), s, (pred, s) =>
+							λ(Fn(range, 't'), pred =>
 								app(
-									uncont(s.var(arg)),
-									λ(domain, s, (arg_, s) =>
-										app(s.var(pred), app(s.var(fn), s.var(arg_))),
-									),
+									uncont(v(arg)),
+									λ(domain, arg_ => app(v(pred), app(v(fn), v(arg_)))),
 								),
 							),
 						),
@@ -251,18 +240,16 @@ const contApplicative: Applicative = {
 		const { domain, range } = fn.type.inner;
 		return app(
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
+				λ(fn.type, fn =>
+					λ(arg.type, arg =>
 						cont(
-							λ(Fn(range, 't'), s, (pred, s) =>
+							λ(Fn(range, 't'), pred =>
 								app(
-									uncont(s.var(fn)),
-									λ(Fn(domain, range), s, (project, s) =>
+									uncont(v(fn)),
+									λ(Fn(domain, range), project =>
 										app(
-											uncont(s.var(arg)),
-											λ(domain, s, (arg_, s) =>
-												app(s.var(pred), app(s.var(project), s.var(arg_))),
-											),
+											uncont(v(arg)),
+											λ(domain, arg_ => app(v(pred), app(v(project), v(arg_)))),
 										),
 									),
 								),
@@ -283,7 +270,7 @@ const contRunner: Runner = {
 	run: e =>
 		app(
 			uncont(e),
-			λ('t', closed, (t, s) => s.var(t)),
+			λ('t', t => v(t)),
 		),
 };
 
@@ -297,9 +284,7 @@ const plFunctor: Functor = {
 		assertPl(arg.type);
 		return app(
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(arg.type, s, (arg, s) => map(s.var(arg), s.var(fn))),
-				),
+				λ(fn.type, fn => λ(arg.type, arg => map(v(arg), v(fn)))),
 				fn,
 			),
 			arg,
@@ -314,11 +299,11 @@ const plApplicative: Applicative = {
 		const fnType = fn.type.inner;
 		return app(
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
+				λ(fn.type, fn =>
+					λ(arg.type, arg =>
 						flatMap(
-							s.var(fn),
-							λ(fnType, s, (project, s) => map(s.var(arg), s.var(project))),
+							v(fn),
+							λ(fnType, project => map(v(arg), v(project))),
 						),
 					),
 				),
@@ -335,11 +320,7 @@ const plRunner: Runner = {
 	run: e =>
 		every(
 			app(
-				λ(e.type, closed, (e, s) =>
-					λ('t', s, (t, s) =>
-						app(app(implies, among(s.var(t), s.var(e))), s.var(t)),
-					),
-				),
+				λ(e.type, e => λ('t', t => app(app(implies, among(v(t), v(e))), v(t)))),
 				e,
 			),
 		),
@@ -377,14 +358,12 @@ const genOrQnMonad = (
 				return deconstruct(
 					arg,
 					app(
-						λ(fn.type, closed, (fn, s) =>
-							λ(restriction, s, (r, s) =>
-								λ(body, s, (b, s) =>
+						λ(fn.type, fn =>
+							λ(restriction, r =>
+								λ(body, b =>
 									construct(
-										s.var(r),
-										λ(domain, s, (val, s) =>
-											app(s.var(fn), app(s.var(b), s.var(val))),
-										),
+										v(r),
+										λ(domain, val => app(v(fn), app(v(b), v(val)))),
 									),
 								),
 							),
@@ -414,36 +393,33 @@ const genOrQnMonad = (
 			return deconstruct(
 				fn,
 				app(
-					λ(arg.type, closed, (arg, s) =>
-						λ(restriction1, s, (r1, s) =>
-							λ(body1, s, (b1, s) =>
+					λ(arg.type, arg =>
+						λ(restriction1, r1 =>
+							λ(body1, b1 =>
 								deconstruct(
-									s.var(arg),
-									λ(restriction2, s, (r2, s) =>
-										λ(body2, s, (b2, s) =>
+									v(arg),
+									λ(restriction2, r2 =>
+										λ(body2, b2 =>
 											construct(
-												λ(domain, s, (d, s) =>
+												λ(domain, d =>
 													unpair(
-														s.var(d),
-														λ(domain1, s, (d1, s) =>
-															λ(domain2, s, (d2, s) =>
+														v(d),
+														λ(domain1, d1 =>
+															λ(domain2, d2 =>
 																app(
-																	app(and, app(s.var(r1), s.var(d1))),
-																	app(s.var(r2), s.var(d2)),
+																	app(and, app(v(r1), v(d1))),
+																	app(v(r2), v(d2)),
 																),
 															),
 														),
 													),
 												),
-												λ(domain, s, (d, s) =>
+												λ(domain, d =>
 													unpair(
-														s.var(d),
-														λ(domain1, s, (d1, s) =>
-															λ(domain2, s, (d2, s) =>
-																app(
-																	app(s.var(b1), s.var(d1)),
-																	app(s.var(b2), s.var(d2)),
-																),
+														v(d),
+														λ(domain1, d1 =>
+															λ(domain2, d2 =>
+																app(app(v(b1), v(d1)), app(v(b2), v(d2))),
 															),
 														),
 													),
@@ -478,20 +454,20 @@ const genOrQnMonad = (
 		const body2 = Fn(domain2, inner);
 		return deconstruct(
 			e,
-			λ(restriction1, closed, (r1, s) =>
-				λ(body1, s, (b1, s) =>
+			λ(restriction1, r1 =>
+				λ(body1, b1 =>
 					construct(
-						λ(domain, s, (d, s) =>
+						λ(domain, d =>
 							unpair(
-								s.var(d),
-								λ(domain1, s, (d1, s) =>
-									λ(domain2, s, (d2, s) =>
+								v(d),
+								λ(domain1, d1 =>
+									λ(domain2, d2 =>
 										app(
-											app(and, app(s.var(r1), s.var(d1))),
+											app(and, app(v(r1), v(d1))),
 											deconstruct(
-												app(s.var(b1), s.var(d1)),
-												λ(restriction2, s, (r2, s) =>
-													λ(body2, s, (_, s) => app(s.var(r2), s.var(d2))),
+												app(v(b1), v(d1)),
+												λ(restriction2, r2 =>
+													λ(body2, () => app(v(r2), v(d2))),
 												),
 											),
 										),
@@ -499,16 +475,14 @@ const genOrQnMonad = (
 								),
 							),
 						),
-						λ(domain, s, (d, s) =>
+						λ(domain, d =>
 							unpair(
-								s.var(d),
-								λ(domain1, s, (d1, s) =>
-									λ(domain2, s, (d2, s) =>
+								v(d),
+								λ(domain1, d1 =>
+									λ(domain2, d2 =>
 										deconstruct(
-											app(s.var(b1), s.var(d1)),
-											λ(restriction2, s, (_, s) =>
-												λ(body2, s, (b2, s) => app(s.var(b2), s.var(d2))),
-											),
+											app(v(b1), v(d1)),
+											λ(restriction2, () => λ(body2, b2 => app(v(b2), v(d2)))),
 										),
 									),
 								),
@@ -533,13 +507,9 @@ const genRunner: Runner = {
 		const { domain } = e.type;
 		return ungen(
 			e,
-			λ(Fn(domain, 't'), closed, (r, s) =>
-				λ(Fn(domain, 't'), s, (b, s) =>
-					some(
-						λ(domain, s, (d, s) =>
-							app(app(and, app(s.var(r), s.var(d))), app(s.var(b), s.var(d))),
-						),
-					),
+			λ(Fn(domain, 't'), r =>
+				λ(Fn(domain, 't'), b =>
+					some(λ(domain, d => app(app(and, app(v(r), v(d))), app(v(b), v(d))))),
 				),
 			),
 		);
@@ -565,11 +535,9 @@ const pairFunctor: Functor = {
 		return unpair(
 			arg,
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(inner, s, (val, s) =>
-						λ(supplement, s, (sup, s) =>
-							pair(app(s.var(fn), s.var(val)), s.var(sup)),
-						),
+				λ(fn.type, fn =>
+					λ(inner, val =>
+						λ(supplement, sup => pair(app(v(fn), v(val)), v(sup))),
 					),
 				),
 				fn,
@@ -593,11 +561,9 @@ const bindFunctor: Functor = {
 		return unbind(
 			arg,
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(Int(Pl('e')), s, (boundVal, s) =>
-						λ(inner, s, (val, s) =>
-							bind(binding, s.var(boundVal), app(s.var(fn), s.var(val))),
-						),
+				λ(fn.type, fn =>
+					λ(Int(Pl('e')), boundVal =>
+						λ(inner, val => bind(binding, v(boundVal), app(v(fn), v(val)))),
 					),
 				),
 				fn,
@@ -614,13 +580,11 @@ const bindTraversable: Traversable = {
 		const innerInner = applicative.functor.unwrap(inner);
 		return unbind(
 			e,
-			λ(Int(Pl('e')), closed, (boundVal, s) =>
-				λ(inner, s, (val, s) =>
+			λ(Int(Pl('e')), boundVal =>
+				λ(inner, val =>
 					applicative.functor.map(
-						λ(innerInner, s, (innerVal, s) =>
-							bind(binding, s.var(boundVal), s.var(innerVal)),
-						),
-						s.var(val),
+						λ(innerInner, innerVal => bind(binding, v(boundVal), v(innerVal))),
+						v(val),
 					),
 				),
 			),
@@ -635,7 +599,7 @@ const bindComonad: Comonad = {
 		const { inner } = e.type;
 		return unbind(
 			e,
-			λ(Int(Pl('e')), closed, (_, s) => λ(inner, s, (val, s) => s.var(val))),
+			λ(Int(Pl('e')), () => λ(inner, val => v(val))),
 		);
 	},
 };
@@ -654,13 +618,11 @@ const refFunctor: Functor = {
 		const binding = arg.type.binding;
 		return app(
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
+				λ(fn.type, fn =>
+					λ(arg.type, arg =>
 						ref(
 							binding,
-							λ(Int(Pl('e')), s, (val, s) =>
-								app(s.var(fn), app(unref(s.var(arg)), s.var(val))),
-							),
+							λ(Int(Pl('e')), val => app(v(fn), app(unref(v(arg)), v(val)))),
 						),
 					),
 				),
@@ -678,15 +640,12 @@ const refApplicative: Applicative = {
 		const binding = arg.type.binding;
 		return app(
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
+				λ(fn.type, fn =>
+					λ(arg.type, arg =>
 						ref(
 							binding,
-							λ(Int(Pl('e')), s, (val, s) =>
-								app(
-									app(unref(s.var(fn)), s.var(val)),
-									app(unref(s.var(arg)), s.var(val)),
-								),
+							λ(Int(Pl('e')), val =>
+								app(app(unref(v(fn)), v(val)), app(unref(v(arg)), v(val))),
 							),
 						),
 					),
@@ -705,15 +664,13 @@ const refDistributive: Distributive = {
 		assertRef(type);
 		const inner = type.inner;
 		return app(
-			λ(e.type, closed, (e, s) =>
+			λ(e.type, e =>
 				ref(
 					type.binding,
-					λ(Int(Pl('e')), s, (val, s) =>
+					λ(Int(Pl('e')), val =>
 						functor.map(
-							λ(Ref(type.binding, inner), s, (x, s) =>
-								app(unref(s.var(x)), s.var(val)),
-							),
-							s.var(e),
+							λ(Ref(type.binding, inner), x => app(unref(v(x)), v(val))),
+							v(e),
 						),
 					),
 				),
@@ -737,13 +694,9 @@ const nfFunctor: Functor = {
 		const domain = arg.type.domain;
 		return app(
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
-						nf(
-							λ(domain, s, (val, s) =>
-								app(s.var(fn), app(unnf(s.var(arg)), s.var(val))),
-							),
-						),
+				λ(fn.type, fn =>
+					λ(arg.type, arg =>
+						nf(λ(domain, val => app(v(fn), app(unnf(v(arg)), v(val))))),
 					),
 				),
 				fn,
@@ -760,14 +713,11 @@ const nfApplicative: Applicative = {
 		const domain = arg.type.domain;
 		return app(
 			app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(arg.type, s, (arg, s) =>
+				λ(fn.type, fn =>
+					λ(arg.type, arg =>
 						nf(
-							λ(domain, s, (val, s) =>
-								app(
-									app(unnf(s.var(fn)), s.var(val)),
-									app(unnf(s.var(arg)), s.var(val)),
-								),
+							λ(domain, val =>
+								app(app(unnf(v(fn)), v(val)), app(unnf(v(arg)), v(val))),
 							),
 						),
 					),
@@ -786,14 +736,12 @@ const nfDistributive: Distributive = {
 		assertNf(type);
 		const inner = type.inner;
 		return app(
-			λ(e.type, closed, (e, s) =>
+			λ(e.type, e =>
 				nf(
-					λ(type.domain, s, (val, s) =>
+					λ(type.domain, val =>
 						functor.map(
-							λ(Nf(type.domain, inner), s, (x, s) =>
-								app(unnf(s.var(x)), s.var(val)),
-							),
-							s.var(e),
+							λ(Nf(type.domain, inner), x => app(unnf(v(x)), v(val))),
+							v(e),
 						),
 					),
 				),
@@ -817,9 +765,7 @@ const opMonad = <T extends ExprType>(
 			map: (fn, arg) =>
 				app(
 					app(
-						λ(fn.type, closed, (fn, s) =>
-							λ(arg.type, s, (arg, s) => andMap(s.var(arg), s.var(fn))),
-						),
+						λ(fn.type, fn => λ(arg.type, arg => andMap(v(arg), v(fn)))),
 						fn,
 					),
 					arg,
@@ -830,13 +776,11 @@ const opMonad = <T extends ExprType>(
 			const fnType = fn.type.inner;
 			return app(
 				app(
-					λ(fn.type, closed, (fn, s) =>
-						λ(arg.type, s, (arg, s) =>
+					λ(fn.type, fn =>
+						λ(arg.type, arg =>
 							andThen(
-								s.var(fn),
-								λ(fnType, s, (project, s) =>
-									andMap(s.var(arg), s.var(project)),
-								),
+								v(fn),
+								λ(fnType, project => andMap(v(arg), v(project))),
 							),
 						),
 					),
@@ -850,7 +794,7 @@ const opMonad = <T extends ExprType>(
 		assertHead(e.type);
 		return andThen(
 			e,
-			λ(e.type.inner, closed, (inner, s) => s.var(inner)),
+			λ(e.type.inner, inner => v(inner)),
 		);
 	},
 });
@@ -870,12 +814,12 @@ const intDistributive: Distributive = {
 		assertInt(type);
 		const inner = type.inner;
 		return app(
-			λ(e.type, closed, (e, s) =>
+			λ(e.type, e =>
 				int(
-					λ('s', s, (w, s) =>
+					λ('s', w =>
 						functor.map(
-							λ(Int(inner), s, (x, s) => app(unint(s.var(x)), s.var(w))),
-							s.var(e),
+							λ(Int(inner), x => app(unint(v(x)), v(w))),
+							v(e),
 						),
 					),
 				),
@@ -891,12 +835,8 @@ const intMonad: Monad = {
 		assertInt(e.type);
 		assertInt(e.type.inner);
 		return app(
-			λ(e.type, closed, (e, s) =>
-				int(
-					λ('s', s, (w, s) =>
-						app(unint(app(unint(s.var(e)), s.var(w))), s.var(w)),
-					),
-				),
+			λ(e.type, e =>
+				int(λ('s', w => app(unint(app(unint(v(e)), v(w))), v(w)))),
 			),
 			e,
 		);
@@ -927,14 +867,11 @@ export function getMatchingSemigroup(
 				: right.domain;
 			return {
 				plus: app(
-					λ(plus.type, closed, (plus, s) =>
-						λ(left, s, (l, s) =>
-							λ(right, s, (r, s) =>
-								λ(domain, s, (x, s) =>
-									app(
-										app(s.var(plus), app(s.var(l), s.var(x))),
-										app(s.var(r), s.var(x)),
-									),
+					λ(plus.type, plus =>
+						λ(left, l =>
+							λ(right, r =>
+								λ(domain, x =>
+									app(app(v(plus), app(v(l), v(x))), app(v(r), v(x))),
 								),
 							),
 						),
@@ -1100,10 +1037,8 @@ export function composeFunctors(outer: Functor, inner: Functor): Functor {
 		map: (fn, arg) =>
 			outer.map(
 				app(
-					λ(fn.type, closed, (fn, s) =>
-						λ(outer.unwrap(arg.type), s, (x, s) =>
-							inner.map(s.var(fn), s.var(x)),
-						),
+					λ(fn.type, fn =>
+						λ(outer.unwrap(arg.type), x => inner.map(v(fn), v(x))),
 					),
 					fn,
 				),
@@ -1156,8 +1091,8 @@ function composeTraversables(
 		sequence: (e, applicative) => {
 			return outer.sequence(
 				outer.functor.map(
-					λ(outer.functor.unwrap(e.type), closed, (x, s) =>
-						inner.sequence(s.var(x), applicative),
+					λ(outer.functor.unwrap(e.type), x =>
+						inner.sequence(v(x), applicative),
 					),
 					e,
 				),

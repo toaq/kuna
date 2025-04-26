@@ -1,6 +1,6 @@
 import { Impossible } from '../core/error';
 import { typeToPlainText, typesToPlainText } from './render';
-import type { Binding, Expr, ExprType, Scope } from './types';
+import type { Binding, Expr, ExprType } from './types';
 
 /**
  * Determines whether two bindings are equal.
@@ -349,42 +349,19 @@ export function unifyScopes(
 	return result;
 }
 
-/**
- * An empty scope; the scope of closed expressions.
- */
-export const closed: Scope = {
-	var: () => {
-		throw new Impossible('Variable not in scope');
-	},
-};
+const scope: ExprType[] = [];
 
 /**
  * Constructor for lambda expressions.
  */
 export function λ(
 	inputType: ExprType,
-	scope: Scope,
-	body: (inputName: symbol, scope: Scope) => Expr,
+	body: (inputName: number) => Expr,
 ): Expr {
-	const inputName = Symbol();
-	const innerScope: Scope = {
-		var: name => {
-			if (name === inputName)
-				return {
-					head: 'variable',
-					type: inputType,
-					scope: [inputType],
-					index: 0,
-				};
-			const outer = scope.var(name);
-			const s = new Array<ExprType | undefined>(outer.scope.length + 1);
-			outer.scope.forEach((t, i) => {
-				s[i + 1] = t;
-			});
-			return { ...outer, scope: s, index: outer.index + 1 };
-		},
-	};
-	const bodyResult = body(inputName, innerScope);
+	const inputName = scope.length;
+	scope.push(inputType);
+	const bodyResult = body(inputName);
+	scope.pop();
 	if (bodyResult.scope[0] !== undefined)
 		assertSubtype(inputType, bodyResult.scope[0]);
 
@@ -394,6 +371,21 @@ export function λ(
 		scope: bodyResult.scope.slice(1),
 		param: inputType,
 		body: bodyResult,
+	};
+}
+
+/**
+ * Constructor for variable references. The input name must be a name generated
+ * by an enclosing call to λ.
+ */
+export function v(inputName: number): Expr {
+	const s = new Array<ExprType | undefined>(scope.length - inputName);
+	s[s.length - 1] = scope[inputName];
+	return {
+		head: 'variable',
+		type: scope[inputName],
+		scope: s,
+		index: s.length - 1,
 	};
 }
 

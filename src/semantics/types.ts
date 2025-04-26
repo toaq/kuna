@@ -184,13 +184,6 @@ export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode })) & {
 	denotation: Expr;
 };
 
-/**
- * A user-friendly scope type mapping names to indexical variables.
- */
-export interface Scope {
-	var: (name: symbol) => Variable;
-}
-
 export type CompositionMode =
 	| '>' // Functional application
 	| '<' // Reverse functional application

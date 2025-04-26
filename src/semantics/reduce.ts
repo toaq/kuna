@@ -6,7 +6,6 @@ import {
 	app,
 	assertDxOrAct,
 	assertPl,
-	closed,
 	every,
 	flatMap,
 	implies,
@@ -15,6 +14,7 @@ import {
 	ungen,
 	unpair,
 	unqn,
+	v,
 	λ,
 } from './model';
 import type { Expr, ExprType } from './types';
@@ -201,7 +201,7 @@ function reduce_(expr: Expr): Expr {
 					return reduce(
 						andMap(
 							x,
-							λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+							λ(x.type.inner, z => app(gg, app(ff, v(z)))),
 						),
 					);
 				}
@@ -217,7 +217,7 @@ function reduce_(expr: Expr): Expr {
 					return reduce(
 						andThen(
 							x,
-							λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+							λ(x.type.inner, z => app(gg, app(ff, v(z)))),
 						),
 					);
 				}
@@ -233,7 +233,7 @@ function reduce_(expr: Expr): Expr {
 					return reduce(
 						andThen(
 							x,
-							λ(x.type.inner, closed, (z, s) => andMap(app(ff, s.var(z)), gg)),
+							λ(x.type.inner, z => andMap(app(ff, v(z)), gg)),
 						),
 					);
 				}
@@ -249,7 +249,7 @@ function reduce_(expr: Expr): Expr {
 					return reduce(
 						andThen(
 							x,
-							λ(x.type.inner, closed, (z, s) => andThen(app(ff, s.var(z)), gg)),
+							λ(x.type.inner, z => andThen(app(ff, v(z)), gg)),
 						),
 					);
 				}
@@ -262,7 +262,7 @@ function reduce_(expr: Expr): Expr {
 					return reduce(
 						map(
 							x,
-							λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+							λ(x.type.inner, z => app(gg, app(ff, v(z)))),
 						),
 					);
 				}
@@ -278,7 +278,7 @@ function reduce_(expr: Expr): Expr {
 					return reduce(
 						flatMap(
 							x,
-							λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+							λ(x.type.inner, z => app(gg, app(ff, v(z)))),
 						),
 					);
 				}
@@ -294,7 +294,7 @@ function reduce_(expr: Expr): Expr {
 					return reduce(
 						flatMap(
 							x,
-							λ(x.type.inner, closed, (z, s) => map(app(ff, s.var(z)), gg)),
+							λ(x.type.inner, z => map(app(ff, v(z)), gg)),
 						),
 					);
 				}
@@ -310,7 +310,7 @@ function reduce_(expr: Expr): Expr {
 					return reduce(
 						flatMap(
 							x,
-							λ(x.type.inner, closed, (z, s) => flatMap(app(ff, s.var(z)), gg)),
+							λ(x.type.inner, z => flatMap(app(ff, v(z)), gg)),
 						),
 					);
 				}
@@ -348,7 +348,7 @@ function reduce_(expr: Expr): Expr {
 					return reduce(
 						deconstruct(
 							x,
-							λ(y, closed, (_, s) => λ(z, s, () => app(ff, g))),
+							λ(y, () => λ(z, () => app(ff, g))),
 						),
 					);
 				}
@@ -374,7 +374,7 @@ function reduce_(expr: Expr): Expr {
 					return reduce(
 						deconstruct(
 							x,
-							λ(y, closed, (_, s) => λ(z, s, () => app(g, ff))),
+							λ(y, () => λ(z, () => app(g, ff))),
 						),
 					);
 				}
@@ -405,9 +405,7 @@ function reduce_(expr: Expr): Expr {
 				return reduce(
 					app(
 						expr.fn,
-						λ(y, closed, (y, s) =>
-							λ(z, s, (z, s) => app(app(f, s.var(y)), s.var(z))),
-						),
+						λ(y, y => λ(z, z => app(app(f, v(y)), v(z)))),
 					),
 				);
 			}
@@ -446,12 +444,12 @@ function reduce_(expr: Expr): Expr {
 					const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
 					return reduce(
 						every(
-							λ(x.type.inner, closed, (z, s) =>
+							λ(x.type.inner, z =>
 								app(
-									app(implies, among(s.var(z), x)),
+									app(implies, among(v(z), x)),
 									app(
-										λ(originalDomain, s, () => gg),
-										app(f, s.var(z)),
+										λ(originalDomain, () => gg),
+										app(f, v(z)),
 									),
 								),
 							),
@@ -469,12 +467,12 @@ function reduce_(expr: Expr): Expr {
 					const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
 					return reduce(
 						every(
-							λ(x.type.inner, closed, (z, s) =>
+							λ(x.type.inner, z =>
 								app(
-									app(implies, among(s.var(z), x)),
+									app(implies, among(v(z), x)),
 									every(
-										λ(originalDomain, s, (y, s) =>
-											app(app(implies, among(s.var(y), app(ff, s.var(z)))), gg),
+										λ(originalDomain, y =>
+											app(app(implies, among(v(y), app(ff, v(z)))), gg),
 										),
 									),
 								),
