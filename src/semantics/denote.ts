@@ -53,7 +53,7 @@ import {
 	ungen,
 	λ,
 } from './model';
-import { reduceExpr } from './reduce';
+import { reduce } from './reduce';
 import { typeToPlainText } from './render';
 import { findInner, getFunctor, unwrapEffects } from './structures';
 import type { AnimacyClass, DTree, Expr, ExprType } from './types';
@@ -520,7 +520,7 @@ export function denote_(tree: StrictTree, cCommand: DTree | null): DTree {
 	}
 
 	const [expr, mode] = compose(left.denotation, right.denotation);
-	const denotation = reduceExpr(expr);
+	const denotation = reduce(expr);
 	return { ...tree, left, right, denotation, mode };
 }
 

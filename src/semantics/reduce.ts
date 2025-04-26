@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { Impossible } from '../core/error';
 import {
 	among,
@@ -129,26 +128,24 @@ function pairlikeDeconstructor(
 	}
 }
 
-/**
- * Simplify an expression by walking through the tree looking for patterns like
- * β-reduction and `unint (int x)`.
- */
-function reducePass(expr: Expr): Expr {
+function reduce_(expr: Expr): Expr {
 	switch (expr.head) {
 		case 'lambda': {
-			const body = reducePass(expr.body);
-			return {
-				head: 'lambda',
-				type: expr.type,
-				scope: body.scope.slice(1),
-				param: expr.param,
-				body,
-			};
+			const body = reduce(expr.body);
+			return body === expr.body
+				? expr
+				: {
+						head: 'lambda',
+						type: expr.type,
+						scope: body.scope.slice(1),
+						param: expr.param,
+						body,
+					};
 		}
 		case 'apply': {
 			if (expr.fn.head === 'lambda') {
 				// (λx body) arg
-				return reducePass(substitute(0, expr.arg, expr.fn.body));
+				return reduce(substitute(0, expr.arg, expr.fn.body));
 			}
 			if (expr.fn.head === 'constant') {
 				const outer = expr.fn.name;
@@ -164,7 +161,7 @@ function reducePass(expr: Expr): Expr {
 						(outer === 'uncont' && inner === 'cont') ||
 						(outer === 'cont' && inner === 'uncont')
 					)
-						return reducePass(expr.arg.arg);
+						return reduce(expr.arg.arg);
 				}
 			}
 
@@ -188,7 +185,9 @@ function reducePass(expr: Expr): Expr {
 					(expr.fn.fn.name === 'unpair' && expr.fn.arg.fn.fn.name === 'pair') ||
 					(expr.fn.fn.name === 'unbind' && expr.fn.arg.fn.fn.name === 'bind')
 				) {
-					return app(app(expr.arg, expr.fn.arg.fn.arg), expr.fn.arg.arg);
+					return reduce(
+						app(app(expr.arg, expr.fn.arg.fn.arg), expr.fn.arg.arg),
+					);
 				}
 
 				// and_map (and_map x f) g = and_map x (λz g (f z))
@@ -199,9 +198,11 @@ function reducePass(expr: Expr): Expr {
 					assertDxOrAct(x.type);
 					const ff = rewriteScope(f, i => i + 1);
 					const gg = rewriteScope(g, i => i + 1);
-					return andMap(
-						x,
-						λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+					return reduce(
+						andMap(
+							x,
+							λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+						),
 					);
 				}
 
@@ -213,9 +214,11 @@ function reducePass(expr: Expr): Expr {
 					assertDxOrAct(x.type);
 					const ff = rewriteScope(f, i => i + 1);
 					const gg = rewriteScope(g, i => i + 1);
-					return andThen(
-						x,
-						λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+					return reduce(
+						andThen(
+							x,
+							λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+						),
 					);
 				}
 
@@ -227,9 +230,11 @@ function reducePass(expr: Expr): Expr {
 					assertDxOrAct(x.type);
 					const ff = rewriteScope(f, i => i + 1);
 					const gg = rewriteScope(g, i => i + 1);
-					return andThen(
-						x,
-						λ(x.type.inner, closed, (z, s) => andMap(app(ff, s.var(z)), gg)),
+					return reduce(
+						andThen(
+							x,
+							λ(x.type.inner, closed, (z, s) => andMap(app(ff, s.var(z)), gg)),
+						),
 					);
 				}
 
@@ -241,9 +246,11 @@ function reducePass(expr: Expr): Expr {
 					assertDxOrAct(x.type);
 					const ff = rewriteScope(f, i => i + 1);
 					const gg = rewriteScope(g, i => i + 1);
-					return andThen(
-						x,
-						λ(x.type.inner, closed, (z, s) => andThen(app(ff, s.var(z)), gg)),
+					return reduce(
+						andThen(
+							x,
+							λ(x.type.inner, closed, (z, s) => andThen(app(ff, s.var(z)), gg)),
+						),
 					);
 				}
 
@@ -252,9 +259,11 @@ function reducePass(expr: Expr): Expr {
 					assertPl(x.type);
 					const ff = rewriteScope(f, i => i + 1);
 					const gg = rewriteScope(g, i => i + 1);
-					return map(
-						x,
-						λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+					return reduce(
+						map(
+							x,
+							λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+						),
 					);
 				}
 
@@ -266,9 +275,11 @@ function reducePass(expr: Expr): Expr {
 					assertPl(x.type);
 					const ff = rewriteScope(f, i => i + 1);
 					const gg = rewriteScope(g, i => i + 1);
-					return flatMap(
-						x,
-						λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+					return reduce(
+						flatMap(
+							x,
+							λ(x.type.inner, closed, (z, s) => app(gg, app(ff, s.var(z)))),
+						),
 					);
 				}
 
@@ -280,9 +291,11 @@ function reducePass(expr: Expr): Expr {
 					assertPl(x.type);
 					const ff = rewriteScope(f, i => i + 1);
 					const gg = rewriteScope(g, i => i + 1);
-					return flatMap(
-						x,
-						λ(x.type.inner, closed, (z, s) => map(app(ff, s.var(z)), gg)),
+					return reduce(
+						flatMap(
+							x,
+							λ(x.type.inner, closed, (z, s) => map(app(ff, s.var(z)), gg)),
+						),
 					);
 				}
 
@@ -294,9 +307,11 @@ function reducePass(expr: Expr): Expr {
 					assertPl(x.type);
 					const ff = rewriteScope(f, i => i + 1);
 					const gg = rewriteScope(g, i => i + 1);
-					return flatMap(
-						x,
-						λ(x.type.inner, closed, (z, s) => flatMap(app(ff, s.var(z)), gg)),
+					return reduce(
+						flatMap(
+							x,
+							λ(x.type.inner, closed, (z, s) => flatMap(app(ff, s.var(z)), gg)),
+						),
 					);
 				}
 			}
@@ -310,7 +325,7 @@ function reducePass(expr: Expr): Expr {
 				expr.arg.body.head === 'variable' &&
 				expr.arg.body.index === 0
 			) {
-				return expr.fn.arg;
+				return reduce(expr.fn.arg);
 			}
 
 			// f (unpair x (λy λz g)) = unpair x (λy λz f g)
@@ -330,9 +345,11 @@ function reducePass(expr: Expr): Expr {
 					const y = expr.arg.arg.param;
 					const z = expr.arg.arg.body.param;
 					const ff = rewriteScope(f, i => i + 2);
-					return deconstruct(
-						x,
-						λ(y, closed, (_, s) => λ(z, s, () => app(ff, g))),
+					return reduce(
+						deconstruct(
+							x,
+							λ(y, closed, (_, s) => λ(z, s, () => app(ff, g))),
+						),
 					);
 				}
 			}
@@ -354,9 +371,11 @@ function reducePass(expr: Expr): Expr {
 					const y = expr.fn.arg.param;
 					const z = expr.fn.arg.body.param;
 					const ff = rewriteScope(f, i => i + 2);
-					return deconstruct(
-						x,
-						λ(y, closed, (_, s) => λ(z, s, () => app(g, ff))),
+					return reduce(
+						deconstruct(
+							x,
+							λ(y, closed, (_, s) => λ(z, s, () => app(g, ff))),
+						),
 					);
 				}
 			}
@@ -383,10 +402,12 @@ function reducePass(expr: Expr): Expr {
 				const f = expr.arg.body.body.arg;
 				const y = expr.arg.param;
 				const z = expr.arg.body.param;
-				return app(
-					expr.fn,
-					λ(y, closed, (y, s) =>
-						λ(z, s, (z, s) => app(app(f, s.var(y)), s.var(z))),
+				return reduce(
+					app(
+						expr.fn,
+						λ(y, closed, (y, s) =>
+							λ(z, s, (z, s) => app(app(f, s.var(y)), s.var(z))),
+						),
 					),
 				);
 			}
@@ -423,13 +444,15 @@ function reducePass(expr: Expr): Expr {
 				) {
 					assertPl(x.type);
 					const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
-					return every(
-						λ(x.type.inner, closed, (z, s) =>
-							app(
-								app(implies, among(s.var(z), x)),
+					return reduce(
+						every(
+							λ(x.type.inner, closed, (z, s) =>
 								app(
-									λ(originalDomain, s, () => gg),
-									app(f, s.var(z)),
+									app(implies, among(s.var(z), x)),
+									app(
+										λ(originalDomain, s, () => gg),
+										app(f, s.var(z)),
+									),
 								),
 							),
 						),
@@ -444,13 +467,15 @@ function reducePass(expr: Expr): Expr {
 					assertPl(x.type);
 					const ff = rewriteScope(f, i => (i === 0 ? 0 : i + 1));
 					const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
-					return every(
-						λ(x.type.inner, closed, (z, s) =>
-							app(
-								app(implies, among(s.var(z), x)),
-								every(
-									λ(originalDomain, s, (y, s) =>
-										app(app(implies, among(s.var(y), app(ff, s.var(z)))), gg),
+					return reduce(
+						every(
+							λ(x.type.inner, closed, (z, s) =>
+								app(
+									app(implies, among(s.var(z), x)),
+									every(
+										λ(originalDomain, s, (y, s) =>
+											app(app(implies, among(s.var(y), app(ff, s.var(z)))), gg),
+										),
 									),
 								),
 							),
@@ -459,7 +484,9 @@ function reducePass(expr: Expr): Expr {
 				}
 			}
 
-			return app(reducePass(expr.fn), reducePass(expr.arg));
+			const fn = reduce(expr.fn);
+			const arg = reduce(expr.arg);
+			return fn === expr.fn && arg === expr.arg ? expr : reduce(app(fn, arg));
 		}
 		case 'variable':
 		case 'lexeme':
@@ -470,14 +497,18 @@ function reducePass(expr: Expr): Expr {
 	}
 }
 
+// We use the following key on expressions to memoize reduce
+const reduced = Symbol('reduced');
+type ReducedExpr = Expr & { [reduced]?: Expr };
+
 /**
- * Simplify an expression by calling `reducePass` on it until it stops changing.
+ * Simplify an expression by walking through the tree looking for patterns like
+ * β-reduction and `unint (int x)`.
  */
-export function reduceExpr(expr: Expr): Expr {
-	let current = expr;
-	while (true) {
-		const next = reducePass(current);
-		if (_.isEqual(current, next)) return next;
-		current = next;
-	}
+export function reduce(expr: Expr): Expr {
+	if (reduced in expr) return (expr as ReducedExpr)[reduced]!;
+	const result = reduce_(expr);
+	(expr as ReducedExpr)[reduced] = result;
+	(result as ReducedExpr)[reduced] = result;
+	return result;
 }

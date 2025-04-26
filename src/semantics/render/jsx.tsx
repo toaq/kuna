@@ -308,7 +308,6 @@ function binding(b: Binding): ReactNode {
 }
 
 function richExprToNameHint(e: RichExpr): string | undefined {
-	console.log(e);
 	switch (e.head) {
 		case 'subscript':
 			return richExprToNameHint(e.base);
