@@ -156,7 +156,7 @@ const unitSemigroup: Semigroup = {
 export const idFunctor: Functor = {
 	wrap: type => type,
 	unwrap: type => type,
-	map: (fn, arg) => app(fn, arg),
+	map: app,
 };
 
 const intFunctor: Functor = {

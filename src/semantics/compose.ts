@@ -140,56 +140,44 @@ function coerceInput_(
 				const [cont, mode] = result;
 				let joined = false;
 				return [
-					app(
-						λ(cont.type, closed, (cont, s) =>
-							λ(input, s, (input, s) => {
-								// We're going to have to do something with the effect that floats to
-								// the top after distributing. The most "efficient" thing to do is join
-								// it with the effect just under it.
-								const distributed = distributive.distribute(
-									s.var(input),
-									under,
-									s,
-								);
-								const monad = getMatchingMonad(
-									distributed.type,
-									distributive.functor.unwrap(distributed.type),
-								);
-								if (monad !== null) {
-									joined = true;
-									return app(s.var(cont), monad.join(distributed, s));
-								}
+					λ(input, closed, (input, s) => {
+						// We're going to have to do something with the effect that floats to
+						// the top after distributing. The most "efficient" thing to do is join
+						// it with the effect just under it.
+						const distributed = distributive.distribute(s.var(input), under, s);
+						const monad = getMatchingMonad(
+							distributed.type,
+							distributive.functor.unwrap(distributed.type),
+						);
+						if (monad !== null) {
+							joined = true;
+							return app(cont, monad.join(distributed, s));
+						}
 
-								// Unable to join the effect; map over it instead.
+						// Unable to join the effect; map over it instead.
 
-								// If the input came from the left or right then the function is a
-								// binary function, and we need to take special care to lift it into the
-								// functor in the right way (f a → b → f c rather than f a → f (b → c))
-								if (inputSide !== 'out') {
-									assertFn(range);
-									return λ(range.domain, s, (otherInput, s) =>
-										distributive.functor.map(
-											λ(coercedInner, s, (inputInner, s) =>
-												app(
-													app(s.var(cont), s.var(inputInner)),
-													s.var(otherInput),
-												),
-											),
-											distributive.distribute(s.var(input), under, s),
-											s,
-										),
-									);
-								}
-								// This is a unary function; just 'map' it
-								return distributive.functor.map(
-									s.var(cont),
+						// If the input came from the left or right then the function is a
+						// binary function, and we need to take special care to lift it into the
+						// functor in the right way (f a → b → f c rather than f a → f (b → c))
+						if (inputSide !== 'out') {
+							assertFn(range);
+							return λ(range.domain, s, (otherInput, s) =>
+								distributive.functor.map(
+									λ(coercedInner, s, (inputInner, s) =>
+										app(app(cont, s.var(inputInner)), s.var(otherInput)),
+									),
 									distributive.distribute(s.var(input), under, s),
 									s,
-								);
-							}),
-						),
-						cont,
-					),
+								),
+							);
+						}
+						// This is a unary function; just 'map' it
+						return distributive.functor.map(
+							cont,
+							distributive.distribute(s.var(input), under, s),
+							s,
+						);
+					}),
 					inputSide === 'out'
 						? ['←', joined ? ['J', mode] : mode]
 						: [
@@ -234,22 +222,17 @@ function coerceInput_(
 				if (result !== null) {
 					const [cont, mode] = result;
 					return [
-						app(
-							λ(cont.type, closed, (cont, s) =>
-								λ(input, s, (input, s) =>
-									app(
-										s.var(cont),
-										under.map(
-											λ(inputInner, s, (inputInner, s) =>
-												traversable.sequence(s.var(inputInner), applicative, s),
-											),
-											s.var(input),
-											s,
-										),
+						λ(input, closed, (input, s) =>
+							app(
+								cont,
+								under.map(
+									λ(inputInner, s, (inputInner, s) =>
+										traversable.sequence(s.var(inputInner), applicative, s),
 									),
+									s.var(input),
+									s,
 								),
 							),
-							cont,
 						),
 						[
 							inputSide === 'out' ? '→' : inputSide === 'left' ? '→L' : '→R',
@@ -272,22 +255,17 @@ function coerceInput_(
 				input,
 			);
 			const result = coerceInput_(
-				app(
-					λ(fn.type, closed, (fn, s) =>
-						λ(coercedInner, s, (input, s) =>
-							app(
-								s.var(fn),
-								under.map(
-									λ(runner.functor.wrap('t', inputInner), s, (inner, s) =>
-										runner.run(s.var(inner), s),
-									),
-									s.var(input),
-									s,
-								),
+				λ(coercedInner, closed, (input, s) =>
+					app(
+						fn,
+						under.map(
+							λ(runner.functor.wrap('t', inputInner), s, (inner, s) =>
+								runner.run(s.var(inner), s),
 							),
+							s.var(input),
+							s,
 						),
 					),
-					fn,
 				),
 				input,
 				inputSide,
@@ -325,22 +303,17 @@ function coerceInput_(
 			if (result !== null) {
 				const [cont, mode] = result;
 				return [
-					app(
-						λ(cont.type, closed, (cont, s) =>
-							λ(input, s, (input, s) =>
-								app(
-									s.var(cont),
-									under.map(
-										λ(inputInner, s, (inputInner, s) =>
-											comonad.extract(s.var(inputInner), s),
-										),
-										s.var(input),
-										s,
-									),
+					λ(input, closed, (input, s) =>
+						app(
+							cont,
+							under.map(
+								λ(inputInner, s, (inputInner, s) =>
+									comonad.extract(s.var(inputInner), s),
 								),
+								s.var(input),
+								s,
 							),
 						),
-						cont,
 					),
 					[
 						inputSide === 'out' ? '↓' : inputSide === 'left' ? '↓L' : '↓R',
@@ -514,20 +487,8 @@ function simplifyOutput(
 		if (coerced !== null) {
 			const [run, coercedMode] = coerced;
 			return [
-				app(
-					app(
-						λ(run.type, closed, (run, s) =>
-							λ(fn.type, s, (fn, s) =>
-								λ(left, s, (l, s) =>
-									λ(right, s, (r, s) =>
-										app(s.var(run), app(app(s.var(fn), s.var(l)), s.var(r))),
-									),
-								),
-							),
-						),
-						run,
-					),
-					fn,
+				λ(left, closed, (l, s) =>
+					λ(right, s, (r, s) => app(run, app(app(fn, s.var(l)), s.var(r)))),
 				),
 				['↓', coercedMode],
 			];
@@ -562,20 +523,8 @@ function simplifyOutput(
 		if (coerced !== null) {
 			const [join, coercedMode] = coerced;
 			return [
-				app(
-					app(
-						λ(join.type, closed, (join, s) =>
-							λ(fn.type, s, (fn, s) =>
-								λ(left, s, (l, s) =>
-									λ(right, s, (r, s) =>
-										app(s.var(join), app(app(s.var(fn), s.var(l)), s.var(r))),
-									),
-								),
-							),
-						),
-						join,
-					),
-					fn,
+				λ(left, closed, (l, s) =>
+					λ(right, s, (r, s) => app(join, app(app(fn, s.var(l)), s.var(r)))),
 				),
 				['J', coercedMode],
 			];
@@ -601,15 +550,10 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 		precedences: leftPrecedences,
 		mode: innerModePartiallyCoerced,
 	} = unwrapAndCoerce(left.type, innerFn, 'left', innerMode);
-	const innerFnPartiallyCoercedFlipped = app(
-		λ(innerFnPartiallyCoerced.type, closed, (fn, s) =>
-			λ(rightInner, s, (r, s) =>
-				λ(leftInnerCoerced, s, (l, s) =>
-					app(app(s.var(fn), s.var(l)), s.var(r)),
-				),
-			),
+	const innerFnPartiallyCoercedFlipped = λ(rightInner, closed, (r, s) =>
+		λ(leftInnerCoerced, s, (l, s) =>
+			app(app(innerFnPartiallyCoerced, s.var(l)), s.var(r)),
 		),
-		innerFnPartiallyCoerced,
 	);
 	const {
 		input: rightInnerCoerced,
@@ -623,15 +567,10 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 		'right',
 		innerModePartiallyCoerced,
 	);
-	const innerFnCoerced = app(
-		λ(innerFnCoercedFlipped.type, closed, (fn, s) =>
-			λ(leftInnerCoerced, s, (l, s) =>
-				λ(rightInnerCoerced, s, (r, s) =>
-					app(app(s.var(fn), s.var(r)), s.var(l)),
-				),
-			),
+	const innerFnCoerced = λ(leftInnerCoerced, closed, (l, s) =>
+		λ(rightInnerCoerced, s, (r, s) =>
+			app(app(innerFnCoercedFlipped, s.var(r)), s.var(l)),
 		),
-		innerFnCoercedFlipped,
 	);
 
 	let leftType = leftInnerCoerced;
@@ -661,15 +600,8 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 			rightEffects.pop();
 			leftPrecedences.pop();
 			rightPrecedences.pop();
-			fn = app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(leftType, s, (l, s) =>
-						λ(rightType, s, (r, s) =>
-							apply(map(s.var(fn), s.var(l), s), s.var(r), s),
-						),
-					),
-				),
-				fn,
+			fn = λ(leftType, closed, (l, s) =>
+				λ(rightType, s, (r, s) => apply(map(fn, s.var(l), s), s.var(r), s)),
 			);
 			mode = ['A', mode];
 		} else if (
@@ -691,15 +623,8 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 			leftType = wrap(leftType, leftEffect);
 			leftEffects.pop();
 			leftPrecedences.pop();
-			fn = app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(leftType, s, (l, s) =>
-						λ(rightType, s, (r, s) =>
-							app(app(s.var(fn), extract(s.var(l), s)), s.var(r)),
-						),
-					),
-				),
-				fn,
+			fn = λ(leftType, closed, (l, s) =>
+				λ(rightType, s, (r, s) => app(app(fn, extract(s.var(l), s)), s.var(r))),
 			);
 			mode = ['↓L', mode];
 		} else if (
@@ -716,25 +641,20 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 			rightEffects.pop();
 			leftPrecedences.pop();
 			rightPrecedences.pop();
-			fn = app(
-				λ(fn.type, closed, (fn, s) =>
-					λ(leftType, s, (l, s) =>
-						λ(rightType, s, (r, s) =>
-							unbind(
-								s.var(l),
-								λ(Int(Pl('e')), s, (boundVal, s) =>
-									λ(leftUnwrapped, s, (lVal, s) =>
-										app(
-											app(s.var(fn), s.var(lVal)),
-											app(unref(s.var(r)), s.var(boundVal)),
-										),
-									),
+			fn = λ(leftType, closed, (l, s) =>
+				λ(rightType, s, (r, s) =>
+					unbind(
+						s.var(l),
+						λ(Int(Pl('e')), s, (boundVal, s) =>
+							λ(leftUnwrapped, s, (lVal, s) =>
+								app(
+									app(fn, s.var(lVal)),
+									app(unref(s.var(r)), s.var(boundVal)),
 								),
 							),
 						),
 					),
 				),
-				fn,
 			);
 			mode = ['Z', mode];
 		} else {
@@ -773,36 +693,22 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 				leftType = wrap(leftType, leftEffect);
 				leftEffects.pop();
 				leftPrecedences.pop();
-				fn = app(
-					λ(fn.type, closed, (fn, s) =>
-						λ(leftType, s, (l, s) =>
-							λ(rightType, s, (r, s) =>
-								map(
-									λ(leftUnwrapped, s, (l_, s) =>
-										app(app(s.var(fn), s.var(l_)), s.var(r)),
-									),
-									s.var(l),
-									s,
-								),
-							),
+				fn = λ(leftType, closed, (l, s) =>
+					λ(rightType, s, (r, s) =>
+						map(
+							λ(leftUnwrapped, s, (l_, s) => app(app(fn, s.var(l_)), s.var(r))),
+							s.var(l),
+							s,
 						),
 					),
-					fn,
 				);
 				mode = ['R', mode];
 			} else {
 				rightType = wrap(rightType, rightEffect);
 				rightEffects.pop();
 				rightPrecedences.pop();
-				fn = app(
-					λ(fn.type, closed, (fn, s) =>
-						λ(leftType, s, (l, s) =>
-							λ(rightType, s, (r, s) =>
-								map(app(s.var(fn), s.var(l)), s.var(r), s),
-							),
-						),
-					),
-					fn,
+				fn = λ(leftType, closed, (l, s) =>
+					λ(rightType, s, (r, s) => map(app(fn, s.var(l)), s.var(r), s)),
 				);
 				mode = ['L', mode];
 			}
