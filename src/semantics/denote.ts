@@ -274,27 +274,25 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		const data = determiners.get(toaq)?.(gen.domain);
 		if (data === undefined) throw new Unrecognized(`D: ${toaq}`);
 		assertFn(data.type);
-		const functor = getFunctor(data.type.range);
+		const { range } = data.type;
+		const functor = getFunctor(range);
 		if (functor === null)
 			throw new Impossible(`${toaq} doesn't return a functor`);
 
-		return app(
-			λ(data.type, data =>
-				λ(Gen(gen.domain, gen.inner), np =>
-					ungen(
-						v(np),
-						λ(Fn(gen.domain, 't'), restriction =>
-							λ(Fn(gen.domain, gen.inner), body =>
-								functor.map(
-									λ(gen.domain, x => app(v(body), v(x))),
-									app(v(data), v(restriction)),
-								),
-							),
+		return λ(Gen(gen.domain, gen.inner), np =>
+			ungen(
+				v(np),
+				λ(Fn(gen.domain, 't'), restriction =>
+					λ(Fn(gen.domain, gen.inner), body =>
+						functor.map(
+							() => λ(gen.domain, x => app(v(body), v(x))),
+							() => app(data, v(restriction)),
+							range,
+							functor.wrap(gen.inner, range),
 						),
 					),
 				),
 			),
-			data,
 		);
 	}
 

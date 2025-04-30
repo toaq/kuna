@@ -140,14 +140,19 @@ function coerceInput_(
 				const [cont, mode] = result;
 				let joined = false;
 				return [
-					λ(input, input => {
+					λ(input, inputVal => {
 						// We're going to have to do something with the effect that floats to
 						// the top after distributing. The most "efficient" thing to do is join
 						// it with the effect just under it.
-						const distributed = distributive.distribute(v(input), under);
+						const distributed = () =>
+							distributive.distribute(() => v(inputVal), under, input);
+						const distributedType = distributive.functor.wrap(
+							coercedInner,
+							inputInner,
+						);
 						const monad = getMatchingMonad(
-							distributed.type,
-							distributive.functor.unwrap(distributed.type),
+							distributedType,
+							distributive.functor.unwrap(distributedType),
 						);
 						if (monad !== null) {
 							joined = true;
@@ -161,19 +166,31 @@ function coerceInput_(
 						// functor in the right way (f a → b → f c rather than f a → f (b → c))
 						if (inputSide !== 'out') {
 							assertFn(range);
+							assertFn(cont.type);
+							assertFn(cont.type.range);
+							const out = distributive.functor.wrap(
+								cont.type.range.range,
+								inputInner,
+							);
 							return λ(range.domain, otherInput =>
 								distributive.functor.map(
-									λ(coercedInner, inputInner =>
-										app(app(cont, v(inputInner)), v(otherInput)),
-									),
-									distributive.distribute(v(input), under),
+									() =>
+										λ(coercedInner, inputInner =>
+											app(app(cont, v(inputInner)), v(otherInput)),
+										),
+									distributed,
+									distributedType,
+									out,
 								),
 							);
 						}
 						// This is a unary function; just 'map' it
+						assertFn(cont.type);
 						return distributive.functor.map(
-							cont,
-							distributive.distribute(v(input), under),
+							() => cont,
+							distributed,
+							distributedType,
+							distributive.functor.wrap(cont.type.range, inputInner),
 						);
 					}),
 					inputSide === 'out'
@@ -220,14 +237,21 @@ function coerceInput_(
 				if (result !== null) {
 					const [cont, mode] = result;
 					return [
-						λ(input, input =>
+						λ(input, inputVal =>
 							app(
 								cont,
 								under.map(
-									λ(inputInner, inputInner =>
-										traversable.sequence(v(inputInner), applicative),
-									),
-									v(input),
+									() =>
+										λ(inputInner, inputInnerVal =>
+											traversable.sequence(
+												() => v(inputInnerVal),
+												applicative,
+												inputInner,
+											),
+										),
+									() => v(inputVal),
+									input,
+									coercedInner,
 								),
 							),
 						),
@@ -252,14 +276,17 @@ function coerceInput_(
 				input,
 			);
 			const result = coerceInput_(
-				λ(coercedInner, input =>
+				λ(coercedInner, inputVal =>
 					app(
 						fn,
 						under.map(
-							λ(runner.functor.wrap('t', inputInner), inner =>
-								runner.run(v(inner)),
-							),
-							v(input),
+							() =>
+								λ(runner.functor.wrap('t', inputInner), inner =>
+									runner.run(() => v(inner)),
+								),
+							() => v(inputVal),
+							coercedInner,
+							under.wrap('t', input),
 						),
 					),
 				),
@@ -299,12 +326,17 @@ function coerceInput_(
 			if (result !== null) {
 				const [cont, mode] = result;
 				return [
-					λ(input, input =>
+					λ(input, inputVal =>
 						app(
 							cont,
 							under.map(
-								λ(inputInner, inputInner => comonad.extract(v(inputInner))),
-								v(input),
+								() =>
+									λ(inputInner, inputInnerVal =>
+										comonad.extract(() => v(inputInnerVal)),
+									),
+								() => v(inputVal),
+								input,
+								coercedInner,
 							),
 						),
 					),
@@ -467,7 +499,7 @@ function simplifyOutput(
 	const runner = getRunner(out);
 	if (runner?.eager) {
 		const coerced = coerceInput(
-			λ(runner.functor.wrap('t', out), x => runner.run(v(x))),
+			λ(runner.functor.wrap('t', out), x => runner.run(() => v(x))),
 			out,
 			'out',
 			mode,
@@ -497,13 +529,13 @@ function simplifyOutput(
 			coerced =
 				inner &&
 				coerceInput(
-					λ(wrap(inner, out), e => join(v(e))),
+					λ(wrap(inner, out), e => join(() => v(e))),
 					out,
 					'out',
 					mode,
 				);
 		} else if (getMatchingMonad(out, unwrap(out))) {
-			coerced = [λ(out, e => join(v(e))), mode];
+			coerced = [λ(out, e => join(() => v(e))), mode];
 		} else {
 			coerced = null;
 		}
@@ -581,7 +613,25 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 			rightEffects.pop();
 			leftPrecedences.pop();
 			rightPrecedences.pop();
-			fn = λ(leftType, l => λ(rightType, r => apply(map(fn, v(l)), v(r))));
+			assertFn(fn.type);
+			const partiallyApplied = fn.type.range;
+			assertFn(partiallyApplied);
+			const out = partiallyApplied.range;
+			fn = λ(leftType, l =>
+				λ(rightType, r =>
+					apply(
+						() =>
+							map(
+								() => fn,
+								() => v(l),
+								leftType,
+								wrap(partiallyApplied, leftEffect),
+							),
+						() => v(r),
+						out,
+					),
+				),
+			);
 			mode = ['A', mode];
 		} else if (
 			typeof leftEffect !== 'string' &&
@@ -603,7 +653,15 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 			leftEffects.pop();
 			leftPrecedences.pop();
 			fn = λ(leftType, l =>
-				λ(rightType, r => app(app(fn, extract(v(l))), v(r))),
+				λ(rightType, r =>
+					app(
+						app(
+							fn,
+							extract(() => v(l)),
+						),
+						v(r),
+					),
+				),
 			);
 			mode = ['↓L', mode];
 		} else if (
@@ -663,6 +721,9 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 			const functor = getFunctor(choice === 'left' ? leftEffect : rightEffect);
 			if (functor === null) throw new UnimplementedComposition();
 			const { wrap, map } = functor;
+			assertFn(fn.type);
+			assertFn(fn.type.range);
+			const out = fn.type.range.range;
 
 			if (choice === 'left') {
 				const leftUnwrapped = leftType;
@@ -672,8 +733,10 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 				fn = λ(leftType, l =>
 					λ(rightType, r =>
 						map(
-							λ(leftUnwrapped, l_ => app(app(fn, v(l_)), v(r))),
-							v(l),
+							() => λ(leftUnwrapped, l_ => app(app(fn, v(l_)), v(r))),
+							() => v(l),
+							leftType,
+							wrap(out, leftType),
 						),
 					),
 				);
@@ -682,7 +745,16 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 				rightType = wrap(rightType, rightEffect);
 				rightEffects.pop();
 				rightPrecedences.pop();
-				fn = λ(leftType, l => λ(rightType, r => map(app(fn, v(l)), v(r))));
+				fn = λ(leftType, l =>
+					λ(rightType, r =>
+						map(
+							() => app(fn, v(l)),
+							() => v(r),
+							rightType,
+							wrap(out, rightType),
+						),
+					),
+				);
 				mode = ['L', mode];
 			}
 		}

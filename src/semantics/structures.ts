@@ -77,8 +77,15 @@ export interface Functor {
 	 * Lifts a function into the functor.
 	 * @param fn The function to be lifted.
 	 * @param arg The argument in the functor.
+	 * @param domain The domain of the lifted function.
+	 * @param range The range of the lifted function.
 	 */
-	map: (fn: Expr, arg: Expr) => Expr;
+	map: (
+		fn: () => Expr,
+		arg: () => Expr,
+		domain: ExprType,
+		range: ExprType,
+	) => Expr;
 }
 
 export interface Applicative {
@@ -88,8 +95,9 @@ export interface Applicative {
 	 * Applies a function to an argument, sequencing their actions.
 	 * @param fn The function in the applicative functor.
 	 * @param arg The argument in the applicative functor.
+	 * @param range The range of the function.
 	 */
-	apply: (fn: Expr, arg: Expr) => Expr;
+	apply: (fn: () => Expr, arg: () => Expr, range: ExprType) => Expr;
 }
 
 export interface Distributive {
@@ -98,8 +106,9 @@ export interface Distributive {
 	 * Pulls the distributive functor out of another functor.
 	 * @param e The expression.
 	 * @param functor The functor for the outer layer of the expression.
+	 * @param type The type of the expression.
 	 */
-	distribute: (e: Expr, functor: Functor) => Expr;
+	distribute: (e: () => Expr, functor: Functor, type: ExprType) => Expr;
 }
 
 export interface Traversable {
@@ -109,8 +118,9 @@ export interface Traversable {
 	 * @param e The expression.
 	 * @param applicative The applicative functor for the inner layer of the
 	 *   expression.
+	 * @param type The type of the expression.
 	 */
-	sequence: (e: Expr, applicative: Applicative) => Expr;
+	sequence: (e: () => Expr, applicative: Applicative, type: ExprType) => Expr;
 }
 
 export interface Monad {
@@ -118,7 +128,7 @@ export interface Monad {
 	/**
 	 * Collapse two layers of the monad into one.
 	 */
-	join: (e: Expr) => Expr;
+	join: (e: () => Expr) => Expr;
 }
 
 export interface Comonad {
@@ -127,7 +137,7 @@ export interface Comonad {
 	/**
 	 * Extracts an inner value from the comonad.
 	 */
-	extract: (e: Expr) => Expr;
+	extract: (e: () => Expr) => Expr;
 }
 
 export interface Runner {
@@ -140,7 +150,7 @@ export interface Runner {
 	/**
 	 * Performs some sort of closure over the effect.
 	 */
-	run: (e: Expr) => Expr;
+	run: (e: () => Expr) => Expr;
 }
 
 const tSemigroup: Semigroup = {
@@ -154,7 +164,7 @@ const unitSemigroup: Semigroup = {
 export const idFunctor: Functor = {
 	wrap: type => type,
 	unwrap: type => type,
-	map: app,
+	map: (fn, arg) => app(fn(), arg()),
 };
 
 const intFunctor: Functor = {
@@ -163,43 +173,13 @@ const intFunctor: Functor = {
 		assertInt(type);
 		return type.inner;
 	},
-	map: (fn, arg) => {
-		assertFn(fn.type);
-		return app(
-			app(
-				λ(fn.type, fn =>
-					λ(arg.type, arg =>
-						int(λ('s', w => app(v(fn), app(unint(v(arg)), v(w))))),
-					),
-				),
-				fn,
-			),
-			arg,
-		);
-	},
+	map: (fn, arg) => int(λ('s', w => app(fn(), app(unint(arg()), v(w))))),
 };
 
 const intApplicative: Applicative = {
 	functor: intFunctor,
-	apply: (fn, arg) => {
-		assertInt(fn.type);
-		assertFn(fn.type.inner);
-		return app(
-			app(
-				λ(fn.type, fn =>
-					λ(arg.type, arg =>
-						int(
-							λ('s', w =>
-								app(app(unint(v(fn)), v(w)), app(unint(v(arg)), v(w))),
-							),
-						),
-					),
-				),
-				fn,
-			),
-			arg,
-		);
-	},
+	apply: (fn, arg) =>
+		int(λ('s', w => app(app(unint(fn()), v(w)), app(unint(arg()), v(w))))),
 };
 
 const contFunctor: Functor = {
@@ -208,60 +188,41 @@ const contFunctor: Functor = {
 		assertCont(type);
 		return type.inner;
 	},
-	map: (fn, arg) => {
-		assertFn(fn.type);
-		const { domain, range } = fn.type;
-		return app(
-			app(
-				λ(fn.type, fn =>
-					λ(arg.type, arg =>
-						cont(
-							λ(Fn(range, 't'), pred =>
-								app(
-									uncont(v(arg)),
-									λ(domain, arg_ => app(v(pred), app(v(fn), v(arg_)))),
-								),
-							),
-						),
-					),
-				),
-				fn,
-			),
-			arg,
+	map: (fn, arg, _domain, range) => {
+		assertCont(range);
+		return cont(
+			λ(Fn(range.inner, 't'), pred => {
+				const arg_ = arg();
+				assertCont(arg_.type);
+				return app(
+					uncont(arg_),
+					λ(arg_.type.inner, arg_ => app(v(pred), app(fn(), v(arg_)))),
+				);
+			}),
 		);
 	},
 };
 
 const contApplicative: Applicative = {
 	functor: contFunctor,
-	apply: (fn, arg) => {
-		assertCont(fn.type);
-		assertFn(fn.type.inner);
-		const { domain, range } = fn.type.inner;
-		return app(
-			app(
-				λ(fn.type, fn =>
-					λ(arg.type, arg =>
-						cont(
-							λ(Fn(range, 't'), pred =>
-								app(
-									uncont(v(fn)),
-									λ(Fn(domain, range), project =>
-										app(
-											uncont(v(arg)),
-											λ(domain, arg_ => app(v(pred), app(v(project), v(arg_)))),
-										),
-									),
-								),
-							),
+	apply: (fn, arg, range) =>
+		cont(
+			λ(Fn(range, 't'), pred => {
+				const fn_ = fn();
+				assertCont(fn_.type);
+				assertFn(fn_.type.inner);
+				const { domain } = fn_.type.inner;
+				return app(
+					uncont(fn_),
+					λ(fn_.type, project =>
+						app(
+							uncont(arg()),
+							λ(domain, arg_ => app(v(pred), app(v(project), v(arg_)))),
 						),
 					),
-				),
-				fn,
-			),
-			arg,
-		);
-	},
+				);
+			}),
+		),
 };
 
 const contRunner: Runner = {
@@ -269,7 +230,7 @@ const contRunner: Runner = {
 	eager: true,
 	run: e =>
 		app(
-			uncont(e),
+			uncont(e()),
 			λ('t', t => v(t)),
 		),
 };
@@ -280,36 +241,18 @@ const plFunctor: Functor = {
 		assertPl(type);
 		return type.inner;
 	},
-	map: (fn, arg) => {
-		assertPl(arg.type);
-		return app(
-			app(
-				λ(fn.type, fn => λ(arg.type, arg => map(v(arg), v(fn)))),
-				fn,
-			),
-			arg,
-		);
-	},
+	map: (fn, arg) => map(arg(), fn()),
 };
 
 const plApplicative: Applicative = {
 	functor: plFunctor,
 	apply: (fn, arg) => {
-		assertPl(fn.type);
-		const fnType = fn.type.inner;
-		return app(
-			app(
-				λ(fn.type, fn =>
-					λ(arg.type, arg =>
-						flatMap(
-							v(fn),
-							λ(fnType, project => map(v(arg), v(project))),
-						),
-					),
-				),
-				fn,
-			),
-			arg,
+		const fn_ = fn();
+		assertPl(fn_.type);
+		const fnType = fn_.type.inner;
+		return flatMap(
+			fn_,
+			λ(fnType, project => map(arg(), v(project))),
 		);
 	},
 };
@@ -317,13 +260,7 @@ const plApplicative: Applicative = {
 const plRunner: Runner = {
 	functor: plFunctor,
 	eager: true,
-	run: e =>
-		every(
-			app(
-				λ(e.type, e => λ('t', t => app(app(implies, among(v(t), v(e))), v(t)))),
-				e,
-			),
-		),
+	run: e => every(λ('t', t => app(app(implies, among(v(t), e())), v(t)))),
 };
 
 const genOrQnMonad = (
@@ -348,80 +285,72 @@ const genOrQnMonad = (
 				return type.inner;
 			},
 			map: (fn, arg) => {
-				if (typeof arg.type === 'string' || arg.type.head !== head)
+				const arg_ = arg();
+				if (typeof arg_.type === 'string' || arg_.type.head !== head)
 					throw new Impossible(
-						`${typeToPlainText(arg.type)} is not a ${head} type`,
+						`${typeToPlainText(arg_.type)} is not a ${head} type`,
 					);
-				const { inner, domain } = arg.type;
+				const { inner, domain } = arg_.type;
 				const restriction = Fn(domain, 't');
 				const body = Fn(domain, inner);
 				return deconstruct(
-					arg,
-					app(
-						λ(fn.type, fn =>
-							λ(restriction, r =>
-								λ(body, b =>
-									construct(
-										v(r),
-										λ(domain, val => app(v(fn), app(v(b), v(val)))),
-									),
-								),
+					arg(),
+					λ(restriction, r =>
+						λ(body, b =>
+							construct(
+								v(r),
+								λ(domain, val => app(fn(), app(v(b), v(val)))),
 							),
 						),
-						fn,
 					),
 				);
 			},
 		},
 		apply: (fn, arg) => {
-			if (typeof fn.type === 'string' || fn.type.head !== head)
+			const fn_ = fn();
+			if (typeof fn_.type === 'string' || fn_.type.head !== head)
 				throw new Impossible(
-					`${typeToPlainText(fn.type)} is not a ${head} type`,
+					`${typeToPlainText(fn_.type)} is not a ${head} type`,
 				);
-			if (typeof arg.type === 'string' || arg.type.head !== head)
-				throw new Impossible(
-					`${typeToPlainText(arg.type)} is not a ${head} type`,
-				);
-			const { inner: inner1, domain: domain1 } = fn.type;
-			const { inner: inner2, domain: domain2 } = arg.type;
-			const domain = Pair(domain1, domain2);
+			const { inner: inner1, domain: domain1 } = fn_.type;
 			const restriction1 = Fn(domain1, 't');
 			const body1 = Fn(domain1, inner1);
-			const restriction2 = Fn(domain2, 't');
-			const body2 = Fn(domain2, inner2);
 
 			return deconstruct(
-				fn,
-				app(
-					λ(arg.type, arg =>
-						λ(restriction1, r1 =>
-							λ(body1, b1 =>
-								deconstruct(
-									v(arg),
-									λ(restriction2, r2 =>
-										λ(body2, b2 =>
-											construct(
-												λ(domain, d =>
-													unpair(
-														v(d),
-														λ(domain1, d1 =>
-															λ(domain2, d2 =>
-																app(
-																	app(and, app(v(r1), v(d1))),
-																	app(v(r2), v(d2)),
-																),
-															),
-														),
+				fn_,
+				λ(restriction1, r1 =>
+					λ(body1, b1 => {
+						const arg_ = arg();
+						if (typeof arg_.type === 'string' || arg_.type.head !== head)
+							throw new Impossible(
+								`${typeToPlainText(arg_.type)} is not a ${head} type`,
+							);
+						const { inner: inner2, domain: domain2 } = arg_.type;
+						const domain = Pair(domain1, domain2);
+						const restriction2 = Fn(domain2, 't');
+						const body2 = Fn(domain2, inner2);
+
+						return deconstruct(
+							arg_,
+							λ(restriction2, r2 =>
+								λ(body2, b2 =>
+									construct(
+										λ(domain, d =>
+											unpair(
+												v(d),
+												λ(domain1, d1 =>
+													λ(domain2, d2 =>
+														app(app(and, app(v(r1), v(d1))), app(v(r2), v(d2))),
 													),
 												),
-												λ(domain, d =>
-													unpair(
-														v(d),
-														λ(domain1, d1 =>
-															λ(domain2, d2 =>
-																app(app(v(b1), v(d1)), app(v(b2), v(d2))),
-															),
-														),
+											),
+										),
+										λ(domain, d =>
+											unpair(
+												v(d),
+												λ(domain1, d1 =>
+													λ(domain2, d2 =>
+														app(app(v(b1), v(d1)), app(v(b2), v(d2))),
 													),
 												),
 											),
@@ -429,31 +358,32 @@ const genOrQnMonad = (
 									),
 								),
 							),
-						),
-					),
-					arg,
+						);
+					}),
 				),
 			);
 		},
 	},
 	join: e => {
-		if (typeof e.type === 'string' || e.type.head !== head)
-			throw new Impossible(`${typeToPlainText(e.type)} is not a ${head} type`);
-		if (typeof e.type.inner === 'string' || e.type.inner.head !== head)
+		const e_ = e();
+		if (typeof e_.type === 'string' || e_.type.head !== head)
+			throw new Impossible(`${typeToPlainText(e_.type)} is not a ${head} type`);
+		if (typeof e_.type.inner === 'string' || e_.type.inner.head !== head)
 			throw new Impossible(
-				`${typeToPlainText(e.type.inner)} is not a ${head} type`,
+				`${typeToPlainText(e_.type.inner)} is not a ${head} type`,
 			);
 		const {
 			domain: domain1,
 			inner: { domain: domain2, inner },
-		} = e.type;
+		} = e_.type;
 		const domain = Pair(domain1, domain2);
 		const restriction1 = Fn(domain1, 't');
-		const body1 = Fn(domain1, e.type.inner);
+		const body1 = Fn(domain1, e_.type.inner);
 		const restriction2 = Fn(domain2, 't');
 		const body2 = Fn(domain2, inner);
+
 		return deconstruct(
-			e,
+			e_,
 			λ(restriction1, r1 =>
 				λ(body1, b1 =>
 					construct(
@@ -503,10 +433,11 @@ const genRunner: Runner = {
 	functor: genFunctor,
 	eager: false,
 	run: e => {
-		assertGen(e.type);
-		const { domain } = e.type;
+		const e_ = e();
+		assertGen(e_.type);
+		const { domain } = e_.type;
 		return ungen(
-			e,
+			e_,
 			λ(Fn(domain, 't'), r =>
 				λ(Fn(domain, 't'), b =>
 					some(λ(domain, d => app(app(and, app(v(r), v(d))), app(v(b), v(d))))),
@@ -530,18 +461,12 @@ const pairFunctor: Functor = {
 		return type.inner;
 	},
 	map: (fn, arg) => {
-		assertPair(arg.type);
-		const { inner, supplement } = arg.type;
+		const arg_ = arg();
+		assertPair(arg_.type);
+		const { inner, supplement } = arg_.type;
 		return unpair(
-			arg,
-			app(
-				λ(fn.type, fn =>
-					λ(inner, val =>
-						λ(supplement, sup => pair(app(v(fn), v(val)), v(sup))),
-					),
-				),
-				fn,
-			),
+			arg_,
+			λ(inner, val => λ(supplement, sup => pair(app(fn(), v(val)), v(sup)))),
 		);
 	},
 };
@@ -556,17 +481,13 @@ const bindFunctor: Functor = {
 		return type.inner;
 	},
 	map: (fn, arg) => {
-		assertBind(arg.type);
-		const { binding, inner } = arg.type;
+		const arg_ = arg();
+		assertBind(arg_.type);
+		const { binding, inner } = arg_.type;
 		return unbind(
-			arg,
-			app(
-				λ(fn.type, fn =>
-					λ(Int(Pl('e')), boundVal =>
-						λ(inner, val => bind(binding, v(boundVal), app(v(fn), v(val)))),
-					),
-				),
-				fn,
+			arg_,
+			λ(Int(Pl('e')), boundVal =>
+				λ(inner, val => bind(binding, v(boundVal), app(fn(), v(val)))),
 			),
 		);
 	},
@@ -575,16 +496,22 @@ const bindFunctor: Functor = {
 const bindTraversable: Traversable = {
 	functor: bindFunctor,
 	sequence: (e, applicative) => {
-		assertBind(e.type);
-		const { binding, inner } = e.type;
+		const e_ = e();
+		assertBind(e_.type);
+		const { binding, inner } = e_.type;
 		const innerInner = applicative.functor.unwrap(inner);
 		return unbind(
-			e,
+			e_,
 			λ(Int(Pl('e')), boundVal =>
 				λ(inner, val =>
 					applicative.functor.map(
-						λ(innerInner, innerVal => bind(binding, v(boundVal), v(innerVal))),
-						v(val),
+						() =>
+							λ(innerInner, innerVal =>
+								bind(binding, v(boundVal), v(innerVal)),
+							),
+						() => v(val),
+						inner,
+						applicative.functor.wrap(Bind(binding, innerInner), inner),
 					),
 				),
 			),
@@ -595,10 +522,11 @@ const bindTraversable: Traversable = {
 const bindComonad: Comonad = {
 	functor: bindFunctor,
 	extract: e => {
-		assertBind(e.type);
-		const { inner } = e.type;
+		const e_ = e();
+		assertBind(e_.type);
+		const { inner } = e_.type;
 		return unbind(
-			e,
+			e_,
 			λ(Int(Pl('e')), () => λ(inner, val => v(val))),
 		);
 	},
@@ -613,22 +541,11 @@ const refFunctor: Functor = {
 		assertRef(type);
 		return type.inner;
 	},
-	map: (fn, arg) => {
-		assertRef(arg.type);
-		const binding = arg.type.binding;
-		return app(
-			app(
-				λ(fn.type, fn =>
-					λ(arg.type, arg =>
-						ref(
-							binding,
-							λ(Int(Pl('e')), val => app(v(fn), app(unref(v(arg)), v(val)))),
-						),
-					),
-				),
-				fn,
-			),
-			arg,
+	map: (fn, arg, domain) => {
+		assertRef(domain);
+		return ref(
+			domain.binding,
+			λ(Int(Pl('e')), val => app(fn(), app(unref(arg()), v(val)))),
 		);
 	},
 };
@@ -636,46 +553,35 @@ const refFunctor: Functor = {
 const refApplicative: Applicative = {
 	functor: refFunctor,
 	apply: (fn, arg) => {
-		assertRef(arg.type);
-		const binding = arg.type.binding;
-		return app(
-			app(
-				λ(fn.type, fn =>
-					λ(arg.type, arg =>
-						ref(
-							binding,
-							λ(Int(Pl('e')), val =>
-								app(app(unref(v(fn)), v(val)), app(unref(v(arg)), v(val))),
-							),
-						),
-					),
-				),
-				fn,
+		const arg_ = arg();
+		assertRef(arg_.type);
+		const binding = arg_.type.binding;
+		return ref(
+			binding,
+			λ(Int(Pl('e')), val =>
+				app(app(unref(fn()), v(val)), app(unref(arg_), v(val))),
 			),
-			arg,
 		);
 	},
 };
 
 const refDistributive: Distributive = {
 	functor: refFunctor,
-	distribute: (e, functor) => {
-		const type = functor.unwrap(e.type);
-		assertRef(type);
-		const inner = type.inner;
-		return app(
-			λ(e.type, e =>
-				ref(
-					type.binding,
-					λ(Int(Pl('e')), val =>
-						functor.map(
-							λ(Ref(type.binding, inner), x => app(unref(v(x)), v(val))),
-							v(e),
-						),
-					),
+	distribute: (e, functor, type) => {
+		const type_ = functor.unwrap(type);
+		assertRef(type_);
+		assertFn(type_.inner);
+		return ref(
+			type_!.binding,
+			λ(Int(Pl('e')), val =>
+				functor.map(
+					() =>
+						λ(Ref(type_.binding, type_.inner), x => app(unref(v(x)), v(val))),
+					e,
+					type,
+					functor.wrap(type_.inner, type),
 				),
 			),
-			e,
 		);
 	},
 };
@@ -689,64 +595,39 @@ const nfFunctor: Functor = {
 		assertNf(type);
 		return type.inner;
 	},
-	map: (fn, arg) => {
-		assertNf(arg.type);
-		const domain = arg.type.domain;
-		return app(
-			app(
-				λ(fn.type, fn =>
-					λ(arg.type, arg =>
-						nf(λ(domain, val => app(v(fn), app(unnf(v(arg)), v(val))))),
-					),
-				),
-				fn,
-			),
-			arg,
-		);
+	map: (fn, arg, domain) => {
+		assertNf(domain);
+		return nf(λ(domain.domain, val => app(fn(), app(unnf(arg()), v(val)))));
 	},
 };
 
 const nfApplicative: Applicative = {
 	functor: nfFunctor,
 	apply: (fn, arg) => {
-		assertNf(arg.type);
-		const domain = arg.type.domain;
-		return app(
-			app(
-				λ(fn.type, fn =>
-					λ(arg.type, arg =>
-						nf(
-							λ(domain, val =>
-								app(app(unnf(v(fn)), v(val)), app(unnf(v(arg)), v(val))),
-							),
-						),
-					),
-				),
-				fn,
-			),
-			arg,
+		const arg_ = arg();
+		assertNf(arg_.type);
+		const domain = arg_.type.domain;
+		return nf(
+			λ(domain, val => app(app(unnf(fn()), v(val)), app(unnf(arg_), v(val)))),
 		);
 	},
 };
 
 const nfDistributive: Distributive = {
 	functor: nfFunctor,
-	distribute: (e, functor) => {
-		const type = functor.unwrap(e.type);
-		assertNf(type);
-		const inner = type.inner;
-		return app(
-			λ(e.type, e =>
-				nf(
-					λ(type.domain, val =>
-						functor.map(
-							λ(Nf(type.domain, inner), x => app(unnf(v(x)), v(val))),
-							v(e),
-						),
-					),
+	distribute: (e, functor, type) => {
+		const type_ = functor.unwrap(type);
+		assertNf(type_);
+		assertFn(type_.inner);
+		return nf(
+			λ(type_.domain, val =>
+				functor.map(
+					() => λ(Nf(type_.domain, type_.inner), x => app(unnf(v(x)), v(val))),
+					e,
+					type,
+					functor.wrap(type_.inner, type),
 				),
 			),
-			e,
 		);
 	},
 };
@@ -762,39 +643,24 @@ const opMonad = <T extends ExprType>(
 				assertHead(type);
 				return type.inner;
 			},
-			map: (fn, arg) =>
-				app(
-					app(
-						λ(fn.type, fn => λ(arg.type, arg => andMap(v(arg), v(fn)))),
-						fn,
-					),
-					arg,
-				),
+			map: (fn, arg) => andMap(arg(), fn()),
 		},
 		apply: (fn, arg) => {
-			assertHead(fn.type);
-			const fnType = fn.type.inner;
-			return app(
-				app(
-					λ(fn.type, fn =>
-						λ(arg.type, arg =>
-							andThen(
-								v(fn),
-								λ(fnType, project => andMap(v(arg), v(project))),
-							),
-						),
-					),
-					fn,
-				),
-				arg,
+			const fn_ = fn();
+			assertHead(fn_.type);
+			const fnType = fn_.type.inner;
+			return andThen(
+				fn_,
+				λ(fnType, project => andMap(arg(), v(project))),
 			);
 		},
 	},
 	join: e => {
-		assertHead(e.type);
+		const e_ = e();
+		assertHead(e_.type);
 		return andThen(
-			e,
-			λ(e.type.inner, inner => v(inner)),
+			e_,
+			λ(e_.type.inner, inner => v(inner)),
 		);
 	},
 });
@@ -809,38 +675,25 @@ const actFunctor = actApplicative.functor;
 
 const intDistributive: Distributive = {
 	functor: intFunctor,
-	distribute: (e, functor) => {
-		const type = functor.unwrap(e.type);
-		assertInt(type);
-		const inner = type.inner;
-		return app(
-			λ(e.type, e =>
-				int(
-					λ('s', w =>
-						functor.map(
-							λ(Int(inner), x => app(unint(v(x)), v(w))),
-							v(e),
-						),
-					),
+	distribute: (e, functor, type) => {
+		const type_ = functor.unwrap(type);
+		assertInt(type_);
+		return int(
+			λ('s', w =>
+				functor.map(
+					() => λ(Int(type_.inner), x => app(unint(v(x)), v(w))),
+					e,
+					type,
+					functor.wrap(type_.inner, type),
 				),
 			),
-			e,
 		);
 	},
 };
 
 const intMonad: Monad = {
 	applicative: intApplicative,
-	join: e => {
-		assertInt(e.type);
-		assertInt(e.type.inner);
-		return app(
-			λ(e.type, e =>
-				int(λ('s', w => app(unint(app(unint(v(e)), v(w))), v(w)))),
-			),
-			e,
-		);
-	},
+	join: e => int(λ('s', w => app(unint(app(unint(e()), v(w))), v(w)))),
 };
 
 export function getMatchingSemigroup(
@@ -1034,16 +887,18 @@ export function composeFunctors(outer: Functor, inner: Functor): Functor {
 		wrap: (type, like) =>
 			outer.wrap(inner.wrap(type, outer.unwrap(like)), like),
 		unwrap: type => inner.unwrap(outer.unwrap(type)),
-		map: (fn, arg) =>
-			outer.map(
-				app(
-					λ(fn.type, fn =>
-						λ(outer.unwrap(arg.type), x => inner.map(v(fn), v(x))),
+		map: (fn, arg, domain, range) => {
+			const domainInner = outer.unwrap(domain);
+			return outer.map(
+				() =>
+					λ(domainInner, x =>
+						inner.map(fn, () => v(x), domainInner, outer.unwrap(range)),
 					),
-					fn,
-				),
 				arg,
-			),
+				domain,
+				range,
+			);
+		},
 	};
 }
 
@@ -1086,17 +941,33 @@ function composeTraversables(
 	outer: Traversable,
 	inner: Traversable,
 ): Traversable {
+	const functor = composeFunctors(outer.functor, inner.functor);
 	return {
-		functor: composeFunctors(outer.functor, inner.functor),
-		sequence: (e, applicative) => {
-			return outer.sequence(
-				outer.functor.map(
-					λ(outer.functor.unwrap(e.type), x =>
-						inner.sequence(v(x), applicative),
-					),
-					e,
+		functor,
+		sequence: (e, applicative, type) => {
+			const likeInner = outer.functor.unwrap(type);
+			const likeApplicative = inner.functor.unwrap(likeInner);
+			const typeInner = applicative.functor.unwrap(likeApplicative);
+			const partiallySequenced = outer.functor.wrap(
+				applicative.functor.wrap(
+					inner.functor.wrap(typeInner, likeInner),
+					likeApplicative,
 				),
+				type,
+			);
+			return outer.sequence(
+				() =>
+					outer.functor.map(
+						() =>
+							λ(likeInner, x =>
+								inner.sequence(() => v(x), applicative, likeInner),
+							),
+						e,
+						type,
+						partiallySequenced,
+					),
 				applicative,
+				partiallySequenced,
 			);
 		},
 	};
