@@ -46,10 +46,7 @@ import type { AnimacyClass, Expr, ExprType } from './types';
 
 export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))));
 
-export const covertDps: Partial<Record<CovertValue, Expr>> = {
-	PRO: nf(λ(Int(Pl('e')), x => v(x))),
-	'PRO.EV': nf(λ('e', x => v(x))),
-};
+export const pro = nf(λ(Int(Pl('e')), x => v(x)));
 
 const personalPronouns = [
 	'jí',
@@ -449,11 +446,9 @@ export const quantifiers = new Map<string, (domain: ExprType) => Expr>([
 	['koamchıo', never],
 ]);
 
-const eventiveAdverbial = λ(Nf('e', Fn('v', 't')), p =>
+const eventiveAdverbial = λ(Fn('e', Fn('v', 't')), p =>
 	λ('v', outerEvent =>
-		some(
-			λ('v', innerEvent => app(app(unnf(v(p)), v(outerEvent)), v(innerEvent))),
-		),
+		some(λ('v', innerEvent => app(app(v(p), v(outerEvent)), v(innerEvent)))),
 	),
 );
 

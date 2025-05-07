@@ -42,11 +42,18 @@ class Recoverer {
 				const vP = this.fixSerial(serial, tree.children.slice(1));
 				return this.recover(vP);
 			}
+			if (tree.label === '*Serial') {
+				// Tiny hack to extract a VP from fixSerial
+				const vP = this.fixSerial(tree, [pro()]);
+				assertBranch(vP);
+				assertBranch(vP.right);
+				return this.recover(vP.right.right);
+			}
 			throw new Impossible(`unexpected non-binary tree: ${tree.label}`);
 		}
 		if ('left' in tree) {
 			if (tree.label === 'VP' && tree.left.label === '*Serial') {
-				// Tiny hack to extract a VP from fixSerial:
+				// Tiny hack to extract a VP from fixSerial
 				const vP = this.fixSerial(tree.left, [pro(), tree.right]);
 				assertBranch(vP);
 				assertBranch(vP.right);

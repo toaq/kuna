@@ -23,10 +23,10 @@ import {
 	conditionals,
 	covertCp,
 	covertCrel,
-	covertDps,
 	covertV,
 	determiners,
 	polarities,
+	pro,
 	pronominalTenses,
 	pronouns,
 	quantifiers,
@@ -161,11 +161,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === 'DP') {
-		if (leaf.word.covert) {
-			const data = covertDps[leaf.word.value];
-			if (data === undefined) throw new Unrecognized(`DP: ${leaf.word.value}`);
-			return data;
-		}
+		if (leaf.word.covert) return pro;
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`DP: ${leaf.word.text}`);
 

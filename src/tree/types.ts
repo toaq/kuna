@@ -11,13 +11,7 @@ export interface Word {
 	entry: Entry | undefined;
 }
 
-export type CovertValue =
-	| '∅'
-	| 'PRO'
-	| 'PRO.EV'
-	| 'IF'
-	| 'IF.CNTF'
-	| 'WHEN';
+export type CovertValue = '∅' | 'PRO' | 'IF' | 'IF.CNTF' | 'WHEN';
 
 export interface CovertWord {
 	covert: true;

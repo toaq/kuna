@@ -152,12 +152,6 @@ export function makeSerial([verbs, vlast]: [Tree[], Tree]) {
 	return {
 		label: '*Serial',
 		arity: describeSerial(children)?.slots?.length,
-		subject:
-			'word' in children[0] &&
-			!children[0].word.covert &&
-			children[0].word.entry?.type === 'predicate'
-				? children[0].word.entry.subject
-				: 'free',
 		children,
 		source: catSource(...verbs, vlast),
 	};
@@ -383,24 +377,7 @@ export function makeAdjunctPI(
 	return {
 		label: 'AdjunctP',
 		left: adjunct,
-		right: {
-			label: '*𝘷P',
-			children: [
-				serial,
-				{
-					label: 'DP',
-					word: {
-						covert: true,
-						value:
-							subject === 'agent' || subject === 'individual'
-								? 'PRO'
-								: 'PRO.EV',
-					},
-					source: '',
-				},
-			],
-			source: catSource(serial),
-		},
+		right: serial,
 		source: catSource(adjunct, serial),
 	};
 }
@@ -410,7 +387,7 @@ export function makeAdjunctPT(
 	_location: number,
 	reject: unknown,
 ) {
-	const { arity, subject } = serial as any;
+	const { arity } = serial as any;
 	if (arity !== undefined && arity !== 2) {
 		return reject;
 	}
@@ -419,22 +396,9 @@ export function makeAdjunctPT(
 		label: 'AdjunctP',
 		left: adjunct,
 		right: {
-			label: '*𝘷P',
-			children: [
-				serial,
-				{
-					label: 'DP',
-					word: {
-						covert: true,
-						value:
-							subject === 'agent' || subject === 'individual'
-								? 'PRO'
-								: 'PRO.EV',
-					},
-					source: '',
-				},
-				obj,
-			],
+			label: 'VP',
+			left: serial,
+			right: obj,
 			source: catSource(serial, obj),
 		},
 		source: catSource(adjunct, serial, obj),
