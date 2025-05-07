@@ -171,6 +171,7 @@ interface Constant extends ExprBase {
 		| 'equals'
 		| 'among'
 		| 'animate'
+		| 'overlap'
 		| 'accessibility';
 }
 

@@ -1,4 +1,4 @@
-import { Impossible } from '../core/error';
+import { Impossible, Ungrammatical } from '../core/error';
 import type { SubjectType } from '../morphology/dictionary';
 import type { CovertValue } from '../tree/types';
 import {
@@ -30,6 +30,7 @@ import {
 	nf,
 	not,
 	or,
+	overlap,
 	qn,
 	ref,
 	salient,
@@ -493,16 +494,90 @@ export const quantifiers = new Map<string, (domain: ExprType) => Expr>([
 	['koamchıo', never],
 ]);
 
-const eventiveAdverbial = λ(Fn('e', Fn('v', 't')), p =>
+const distributiveEventiveAdverbial = λ(Fn('e', Fn('v', 't')), p =>
 	λ('v', outerEvent =>
 		some(λ('v', innerEvent => app(app(v(p), v(outerEvent)), v(innerEvent)))),
 	),
 );
 
-export const adjuncts: Partial<Record<SubjectType, Expr | 'unimplemented'>> = {
+const eventiveAdverbial = (distributive: boolean) => {
+	if (!distributive)
+		throw new Ungrammatical('Non-distributive eventive adverbial');
+	return distributiveEventiveAdverbial;
+};
+
+const distributiveSubjectSharingAdverbial = ref(
+	{ type: 'reflexive' },
+	λ(Int(Pl('e')), subject =>
+		int(
+			λ('s', w =>
+				map(
+					app(unint(v(subject)), v(w)),
+					λ('e', subject_ =>
+						λ(Fn('e', Fn('v', 't')), p =>
+							λ('v', outerEvent =>
+								some(
+									λ('v', innerEvent =>
+										app(
+											app(
+												and,
+												app(
+													app(app(unint(overlap), v(w)), v(innerEvent)),
+													v(outerEvent),
+												),
+											),
+											app(app(v(p), v(subject_)), v(innerEvent)),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
+		),
+	),
+);
+
+const nondistributiveSubjectSharingAdverbial = ref(
+	{ type: 'reflexive' },
+	λ(Int(Pl('e')), subject =>
+		int(
+			λ('s', w =>
+				λ(Fn(Pl('e'), Fn('v', 't')), p =>
+					λ('v', outerEvent =>
+						some(
+							λ('v', innerEvent =>
+								app(
+									app(
+										and,
+										app(
+											app(app(unint(overlap), v(w)), v(innerEvent)),
+											v(outerEvent),
+										),
+									),
+									app(app(v(p), app(unint(v(subject)), v(w))), v(innerEvent)),
+								),
+							),
+						),
+					),
+				),
+			),
+		),
+	),
+);
+
+const subjectSharingAdverbial = (distributive: boolean) =>
+	distributive
+		? distributiveSubjectSharingAdverbial
+		: nondistributiveSubjectSharingAdverbial;
+
+export const adjuncts: Partial<
+	Record<SubjectType, (distributive: boolean) => Expr>
+> = {
 	free: eventiveAdverbial,
 	event: eventiveAdverbial,
 	shape: eventiveAdverbial,
-	agent: 'unimplemented',
-	individual: 'unimplemented',
+	agent: subjectSharingAdverbial,
+	individual: subjectSharingAdverbial,
 };

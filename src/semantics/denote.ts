@@ -421,15 +421,13 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Unrecognized(`V in AdjunctP: ${word.text}`);
 
 		const data = adjuncts[word.entry.subject];
-		if (data === 'unimplemented')
-			throw new Unimplemented(
-				`Adjunct for subject type '${word.entry.subject}'`,
-			);
 		if (data === undefined)
 			throw new Ungrammatical(
 				`${word.entry.toaq} may not be used as an adverbial adjunct`,
 			);
-		return data;
+		const predicate = unwrapEffects(cCommand.denotation.type);
+		assertFn(predicate);
+		return data(predicate.domain === 'e');
 	}
 
 	if (leaf.label === '&') {

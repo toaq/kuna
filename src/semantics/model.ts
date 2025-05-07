@@ -968,6 +968,17 @@ export const animate: Expr = {
 };
 
 /**
+ * Determines whether two events overlap each other (that is, whether their
+ * temporal traces overlap and they share a common sub-event).
+ */
+export const overlap: Expr = {
+	head: 'constant',
+	type: Int(Fn('v', Fn('v', 't'))),
+	scope: [],
+	name: 'overlap',
+};
+
+/**
  * Picks out a salient accessibility relation on worlds.
  */
 export const accessibility: Expr = {
