@@ -146,7 +146,7 @@ function makeRichLabel(
 	},
 ): RichSceneLabelPiece[] {
 	const pieces = [];
-	const patches: Record<string, string> = { 𝘢: 'a', 𝘯: 'n', 𝘷: 'v' };
+	const patches: Record<string, string> = { 𝘯: 'n', 𝘷: 'v' };
 	for (const character of label) {
 		if (character in patches) {
 			pieces.push({ text: patches[character], font: fonts.italic });

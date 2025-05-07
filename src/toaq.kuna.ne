@@ -252,7 +252,7 @@ Go -> %retroactive_cleft Free:* {% makeLeaf('𝘷') %}
 WordD -> %word_determiner Free:* {% makeLeaf('D') %}
 WordDincorp -> %incorporated_word_determiner Free:* {% makeLeaf('D') %}
 Interjection -> %interjection {% makeLeaf('Interjection') %}
-Ki -> %adjective_marker Free:* {% makeLeaf('𝘢') %}
+Ki -> %adjective_marker Free:* {% makeLeaf('Adjunct') %}
 Mi -> %name_verb Free:* {% makeLeaf('mı') %}
 Mo -> %text_quote Free:* {% makeLeaf('mo') %}
 Q -> %quantifier Free:* {% makeLeaf('Q') %}

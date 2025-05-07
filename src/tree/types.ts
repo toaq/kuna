@@ -29,8 +29,6 @@ export type Label =
 	| '&Q'
 	| "&Q'"
 	| '&QP'
-	| '𝘢'
-	| '𝘢P'
 	| 'Adjunct'
 	| 'AdjunctP'
 	| 'Asp'
@@ -118,11 +116,6 @@ export function describeLabel(label: Label): string {
 		case '&':
 		case '&(naP)':
 			return 'Conjunction';
-		// case '&Q':
-		// case "&Q'":
-		// case '&QP':
-		case '𝘢':
-			return 'Adjective head';
 		case 'Asp':
 			return 'Aspect';
 		case 'C':

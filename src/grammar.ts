@@ -330,7 +330,7 @@ const grammar: Grammar = {
     {"name": "Interjection", "symbols": [(lexer.has("interjection") ? {type: "interjection"} : interjection)], "postprocess": makeLeaf('Interjection')},
     {"name": "Ki$ebnf$1", "symbols": []},
     {"name": "Ki$ebnf$1", "symbols": ["Ki$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "Ki", "symbols": [(lexer.has("adjective_marker") ? {type: "adjective_marker"} : adjective_marker), "Ki$ebnf$1"], "postprocess": makeLeaf('𝘢')},
+    {"name": "Ki", "symbols": [(lexer.has("adjective_marker") ? {type: "adjective_marker"} : adjective_marker), "Ki$ebnf$1"], "postprocess": makeLeaf('Adjunct')},
     {"name": "Mi$ebnf$1", "symbols": []},
     {"name": "Mi$ebnf$1", "symbols": ["Mi$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "Mi", "symbols": [(lexer.has("name_verb") ? {type: "name_verb"} : name_verb), "Mi$ebnf$1"], "postprocess": makeLeaf('mı')},

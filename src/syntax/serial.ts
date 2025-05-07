@@ -234,7 +234,8 @@ function serialTovP(
 }
 
 /**
- * This is a "proper" 𝘷P, with an optional kı node to fill the 𝘢 in an 𝘢P.
+ * This is a "proper" 𝘷P, with an optional kı node to fill the Adjunct in an
+ * AdjunctP.
  */
 interface KivP {
 	ki?: Tree;
@@ -250,7 +251,7 @@ function segmentToKivP(
 	args: Tree[],
 	newCoindex: () => string,
 ): KivP {
-	if (segment[0].label === '𝘢') {
+	if (segment[0].label === 'Adjunct') {
 		return {
 			ki: segment[0],
 			vP: serialTovP(segment.slice(1), args, newCoindex),
@@ -260,37 +261,24 @@ function segmentToKivP(
 }
 
 /**
- * Attach `kivP`, as an 𝘢P (created by pulling out the kı to make 𝘢), to `VP`.
+ * Attach `kivP`, as an AdjunctP (created by pulling out the kı and VP to make
+ * Adjunct), to `𝘷P`.
  */
-function attachAdjective(VP: Tree, kivP: KivP): Tree {
-	const { ki, vP } = kivP;
+function attachAdjective(vP: Tree, kivP: KivP): Tree {
+	const { ki, vP: vPAdjective } = kivP;
+	// Extract the VP from the adjective 𝘷P
+	assertBranch(vPAdjective);
+	assertBranch(vPAdjective.right);
 	return {
-		label: 'VP',
-		left: VP,
+		label: '𝘷P',
+		left: vP,
 		right: {
-			label: '𝘢P',
-			left: ki ?? makeNull('𝘢'),
-			right: {
-				// TODO: oh god, adjectives can have T and Asp?
-				// needs rework in nearley grammar
-				label: 'CPrel',
-				left: makeNull('C'),
-				right: {
-					label: 'TP',
-					left: makeNull('T'),
-					right: {
-						label: 'AspP',
-						left: makeNull('Asp'),
-						right: vP,
-						source: vP.source,
-					},
-					source: vP.source,
-				},
-				source: vP.source,
-			},
-			source: catSource(ki, vP),
+			label: 'AdjunctP',
+			left: ki ?? makeNull('Adjunct'),
+			right: vPAdjective.right.right,
+			source: catSource(ki, vPAdjective),
 		},
-		source: catSource(VP, ki, vP),
+		source: catSource(vP, ki, vPAdjective),
 	};
 }
 
@@ -364,15 +352,8 @@ export function fixSerial(
 	}
 
 	// Attach adjectives to VP
-	let ptr = vP as Branch<Tree>;
-	while (ptr.right.label !== 'VP') {
-		ptr = ptr.right as Branch<Tree>;
-	}
 	for (let i = 1; i < segments.length; i++) {
-		ptr.right = attachAdjective(
-			ptr.right,
-			segmentToKivP(segments[i], [pro()], newCoindex),
-		);
+		vP = attachAdjective(vP, segmentToKivP(segments[i], [pro()], newCoindex));
 	}
 
 	// Attach AdjunctPs to 𝘷P
