@@ -19,7 +19,6 @@ import {
 import { compose } from './compose';
 import {
 	adjuncts,
-	causeLittleV,
 	complementizers,
 	conditionals,
 	covertCp,
@@ -135,8 +134,6 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Impossible('non-predicate V');
 
 		let arity = splitNonEmpty(getFrame(leaf), ' ').length;
-		// Agents are external to the verb, so not counted in the arity
-		if (entry.subject === 'agent') arity--;
 		// In case we don't have lexical data on this word, make sure we're at least
 		// providing the minimum number of arguments
 		if (leaf.label === 'V') arity = Math.max(1, arity);
@@ -154,14 +151,9 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 	if (leaf.label === '𝘷') {
 		if (leaf.word.covert) {
-			const value = leaf.word.value;
-			if (value === 'CAUSE') return causeLittleV;
-			if (value === 'BE') {
-				if (cCommand === null)
-					throw new Impossible("Can't denote BE in isolation");
-				return λ(unwrapEffects(cCommand.denotation.type), pred => v(pred));
-			}
-			throw new Unrecognized(`𝘷: ${value}`);
+			if (cCommand === null)
+				throw new Impossible("Can't denote covert 𝘷 in isolation");
+			return λ(unwrapEffects(cCommand.denotation.type), pred => v(pred));
 		}
 		if (cCommand?.label === "Cond'")
 			return λ(unwrapEffects(cCommand.denotation.type), pred => v(pred));

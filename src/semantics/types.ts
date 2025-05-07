@@ -168,7 +168,6 @@ interface Constant extends ExprBase {
 		| 'equals'
 		| 'among'
 		| 'animate'
-		| 'agent'
 		| 'accessibility';
 }
 

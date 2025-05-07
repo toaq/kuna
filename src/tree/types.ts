@@ -13,8 +13,6 @@ export interface Word {
 
 export type CovertValue =
 	| '∅'
-	| 'BE'
-	| 'CAUSE'
 	| 'PRO'
 	| 'PRO.EV'
 	| 'IF'

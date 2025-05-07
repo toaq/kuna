@@ -965,13 +965,6 @@ export const animate: Expr = {
 	name: 'animate',
 };
 
-export const agent: Expr = {
-	head: 'constant',
-	type: Fn('v', Fn('s', 'e')),
-	scope: [],
-	name: 'agent',
-};
-
 /**
  * Picks out a salient accessibility relation on worlds.
  */

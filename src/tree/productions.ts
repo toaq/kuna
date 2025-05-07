@@ -375,7 +375,7 @@ export function makeAdjunctPI(
 	_location: number,
 	reject: unknown,
 ) {
-	const { arity, subject } = serial as any;
+	const { arity } = serial as any;
 	if (arity !== undefined && arity !== 1) {
 		return reject;
 	}

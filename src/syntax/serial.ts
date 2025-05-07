@@ -1,9 +1,4 @@
-import {
-	Impossible,
-	Ungrammatical,
-	Unimplemented,
-	Unrecognized,
-} from '../core/error';
+import { Impossible, Ungrammatical, Unimplemented } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
 import {
 	type Branch,
@@ -81,33 +76,8 @@ export function getDistribution(verb: Tree): string {
 	throw new Unimplemented(`Can't get distribution of ${verb.label}`);
 }
 
-function agentive(verb: Tree): boolean {
-	if ('word' in verb)
-		return (
-			!verb.word.covert &&
-			verb.word.entry?.type === 'predicate' &&
-			verb.word.entry.subject === 'agent'
-		);
-	if (
-		'right' in verb &&
-		(verb.label === 'buP' ||
-			verb.label === 'muP' ||
-			verb.label === 'geP' ||
-			verb.label === 'buqP' ||
-			verb.label === 'TelicityP')
-	)
-		return agentive(verb.right);
-	throw new Unrecognized('verb shape');
-}
-
 function makevP(verb: Tree, args: Tree[]): Tree {
-	const agent = agentive(verb);
-	const v: Leaf = {
-		label: '𝘷',
-		word: { covert: true, value: agent ? 'CAUSE' : 'BE' },
-		source: '',
-	};
-
+	const v = makeNull('𝘷');
 	if ('word' in verb) {
 		moveUp(verb, v);
 	} else {
@@ -126,26 +96,16 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 		}
 		case 1: {
 			const [subject] = args;
-			if (agent) {
-				if (!('word' in verb))
-					throw new Impossible("Serial tails can't be agents");
-				return {
-					label: '𝘷P',
-					left: subject,
-					right: {
-						label: "𝘷'",
-						left: v,
-						right: { ...verb, label: 'VP' },
-						source: verb.source,
-					},
-					source: `${verb.source} ${subject.source}`,
-				};
-			}
 			const source = `${verb.source} ${subject.source}`;
 			return {
 				label: '𝘷P',
-				left: v,
-				right: { label: 'VP', left: verb, right: subject, source },
+				left: subject,
+				right: {
+					label: "𝘷'",
+					left: v,
+					right: { ...verb, label: 'VP' },
+					source: verb.source,
+				},
 				source,
 			};
 		}

@@ -12,7 +12,6 @@ import {
 	Qn,
 	Ref,
 	accessibility,
-	agent,
 	among,
 	and,
 	andMap,
@@ -46,21 +45,6 @@ import { getFunctor } from './structures';
 import type { AnimacyClass, Expr, ExprType } from './types';
 
 export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))));
-
-export const causeLittleV = int(
-	λ('s', w =>
-		λ(Fn('v', 't'), pred =>
-			λ('e', arg =>
-				λ('v', e =>
-					app(
-						app(and, equals(app(app(agent, v(e)), v(w)), v(arg))),
-						app(v(pred), v(e)),
-					),
-				),
-			),
-		),
-	),
-);
 
 export const covertDps: Partial<Record<CovertValue, Expr>> = {
 	PRO: nf(λ(Int(Pl('e')), x => v(x))),
