@@ -34,6 +34,7 @@ import {
 	pronouns,
 	quantifiers,
 	speechActParticles,
+	subjectSharingAdverbial,
 } from './data';
 import {
 	Bind,
@@ -410,21 +411,26 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	if (leaf.label === 'Adjunct') {
 		if (cCommand === null)
 			throw new Impossible('Cannot denote an Adjunct in isolation');
-		if (leaf.word.covert) throw new Impossible('Covert Adjunct');
-		if (leaf.word.entry === undefined || leaf.word.entry.toaq !== '◌̂')
-			throw new Unrecognized(`Adjunct: ${leaf.word.text}`);
-		const vp = findVp(cCommand);
-		if (vp === null) throw new Impossible("Can't find the VP for this Adjunct");
-		const word = getVerbWord(vp);
-		if (word.covert) throw new Impossible('Covert Adjunct verb');
-		if (word.entry === undefined || word.entry.type !== 'predicate')
-			throw new Unrecognized(`V in AdjunctP: ${word.text}`);
 
-		const data = adjuncts[word.entry.subject];
-		if (data === undefined)
-			throw new Ungrammatical(
-				`${word.entry.toaq} may not be used as an adverbial adjunct`,
-			);
+		let data: (distributive: boolean) => Expr;
+		if (leaf.word.covert || leaf.word.entry?.toaq === '◌̂') {
+			const vp = findVp(cCommand);
+			if (vp === null)
+				throw new Impossible("Can't find the VP for this Adjunct");
+			const word = getVerbWord(vp);
+			if (word.covert) throw new Impossible('Covert Adjunct verb');
+			if (word.entry === undefined || word.entry.type !== 'predicate')
+				throw new Unrecognized(`V in AdjunctP: ${word.text}`);
+
+			const data_ = adjuncts[word.entry.subject];
+			if (data_ === undefined)
+				throw new Ungrammatical(
+					`${word.entry.toaq} may not be used as an adverbial adjunct`,
+				);
+			data = data_;
+		} else if (leaf.word.entry?.toaq === 'kı-') data = subjectSharingAdverbial;
+		else throw new Unrecognized(`Adjunct: ${leaf.word.text}`);
+
 		const predicate = unwrapEffects(cCommand.denotation.type);
 		assertFn(predicate);
 		return data(predicate.domain === 'e');

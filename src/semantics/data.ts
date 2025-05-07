@@ -567,7 +567,7 @@ const nondistributiveSubjectSharingAdverbial = ref(
 	),
 );
 
-const subjectSharingAdverbial = (distributive: boolean) =>
+export const subjectSharingAdverbial = (distributive: boolean) =>
 	distributive
 		? distributiveSubjectSharingAdverbial
 		: nondistributiveSubjectSharingAdverbial;
