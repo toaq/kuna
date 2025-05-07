@@ -7,6 +7,7 @@ export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 export type Binding =
 	| { type: 'resumptive' }
 	| { type: 'gap' }
+	| { type: 'reflexive' }
 	| { type: 'name'; verb: string }
 	| { type: 'animacy'; class: AnimacyClass }
 	| { type: 'head'; head: string };
@@ -30,6 +31,8 @@ export function bindingToString(b: Binding): string {
 			return 'hóa';
 		case 'gap':
 			return 'já';
+		case 'reflexive':
+			return 'áq';
 		case 'name':
 			return inTone(b.verb, Tone.T2);
 		case 'animacy':
@@ -187,6 +190,7 @@ export type CompositionMode =
 	| '>' // Functional application
 	| '<' // Reverse functional application
 	| '+' // Semigroup combination
+	| 'S' // Subject setting
 	| ['L', CompositionMode] // Lift left into functor
 	| ['R', CompositionMode] // Lift right into functor
 	| ['A', CompositionMode] // Sequence effects via applicative functor

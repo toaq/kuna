@@ -298,6 +298,8 @@ function binding(b: Binding): ReactNode {
 			return <mi>hóa</mi>;
 		case 'gap':
 			return <mi>já</mi>;
+		case 'reflexive':
+			return <mi>áq</mi>;
 		case 'name':
 			return <mi>{inTone(b.verb, Tone.T2)}</mi>;
 		case 'animacy':

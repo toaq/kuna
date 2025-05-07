@@ -26,6 +26,7 @@ import {
 	implies,
 	int,
 	lex,
+	map,
 	nf,
 	not,
 	or,
@@ -45,6 +46,45 @@ import { getFunctor } from './structures';
 import type { AnimacyClass, Expr, ExprType } from './types';
 
 export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))));
+
+export const nullaryLittleV = λ(Fn('v', 't'), pred => v(pred));
+
+export const distributiveLittleV = ref(
+	{ type: 'reflexive' },
+	λ(Int(Pl('e')), subject =>
+		bind(
+			{ type: 'reflexive' },
+			v(subject),
+			int(
+				λ('s', w =>
+					map(
+						app(unint(v(subject)), v(w)),
+						λ('e', subject_ =>
+							λ(Fn('e', Fn('v', 't')), pred => app(v(pred), v(subject_))),
+						),
+					),
+				),
+			),
+		),
+	),
+);
+
+export const nondistributiveLittleV = ref(
+	{ type: 'reflexive' },
+	λ(Int(Pl('e')), subject =>
+		bind(
+			{ type: 'reflexive' },
+			v(subject),
+			int(
+				λ('s', w =>
+					λ(Fn(Pl('e'), Fn('v', 't')), pred =>
+						app(v(pred), app(unint(v(subject)), v(w))),
+					),
+				),
+			),
+		),
+	),
+);
 
 export const pro = nf(λ(Int(Pl('e')), x => v(x)));
 
@@ -126,6 +166,13 @@ export const pronouns = new Map<string, Expr>([
 		ref(
 			{ type: 'gap' },
 			λ(Int(Pl('e')), x => v(x)),
+		),
+	],
+	[
+		'áq',
+		ref(
+			{ type: 'reflexive' },
+			λ(Int(Pl('e')), x => bind({ type: 'reflexive' }, v(x), v(x))),
 		),
 	],
 ]);

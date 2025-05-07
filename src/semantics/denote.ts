@@ -25,6 +25,9 @@ import {
 	covertCrel,
 	covertV,
 	determiners,
+	distributiveLittleV,
+	nondistributiveLittleV,
+	nullaryLittleV,
 	polarities,
 	pro,
 	pronominalTenses,
@@ -153,7 +156,17 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (leaf.word.covert) {
 			if (cCommand === null)
 				throw new Impossible("Can't denote covert 𝘷 in isolation");
-			return λ(unwrapEffects(cCommand.denotation.type), pred => v(pred));
+			const type = unwrapEffects(cCommand.denotation.type);
+			assertFn(type);
+			if (
+				typeof type.domain === 'object' &&
+				type.domain.head === 'pl' &&
+				type.domain.inner === 'e'
+			)
+				return nondistributiveLittleV;
+			if (type.domain === 'e') return distributiveLittleV;
+			if (type.domain === 'v') return nullaryLittleV;
+			throw new Unrecognized(`𝘷 for type ${typeToPlainText(type)}`);
 		}
 		if (cCommand?.label === "Cond'")
 			return λ(unwrapEffects(cCommand.denotation.type), pred => v(pred));

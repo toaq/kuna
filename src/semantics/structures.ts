@@ -532,6 +532,22 @@ const bindComonad: Comonad = {
 	},
 };
 
+// This is an eager Runner instance that applies only to Bind áq _, to prevent
+// áq bindings from scoping too far out of their 𝘷P
+const bindReflexiveRunner: Runner = {
+	functor: bindFunctor,
+	eager: true,
+	run: e => {
+		const e_ = e();
+		assertBind(e_.type);
+		const { inner } = e_.type;
+		return unbind(
+			e_,
+			λ(Int(Pl('e')), () => λ(inner, val => v(val))),
+		);
+	},
+};
+
 const refFunctor: Functor = {
 	wrap: (type, like) => {
 		assertRef(like);
@@ -754,9 +770,16 @@ const functorPrecedence = new Map(
 );
 
 const bindingTypePrecedence = new Map(
-	(['head', 'animacy', 'name', 'resumptive'] as Binding['type'][]).map(
-		(type, i) => [type, i],
-	),
+	(
+		[
+			'head',
+			'animacy',
+			'name',
+			'reflexive',
+			'gap',
+			'resumptive',
+		] as Binding['type'][]
+	).map((type, i) => [type, i]),
 );
 
 const animacyPrecedence = new Map(
@@ -791,6 +814,8 @@ function chooseEffect_(left: ExprType, right: ExprType): ExprType {
 			if (left.binding.type === rightCasted.binding.type) {
 				switch (left.binding.type) {
 					case 'resumptive':
+					case 'gap':
+					case 'reflexive':
 						return right;
 					case 'name':
 						return (rightCasted.binding as Binding & { type: 'name' }).verb <=
@@ -933,7 +958,8 @@ export function getDistributive(t: ExprType): Distributive | null {
 
 export function getTraversable(t: ExprType): Traversable | null {
 	if (typeof t === 'string') return null;
-	if (t.head === 'bind') return bindTraversable;
+	if (t.head === 'bind' && t.binding.type !== 'reflexive')
+		return bindTraversable;
 	return null;
 }
 
@@ -1013,6 +1039,8 @@ export function getRunner(t: ExprType): Runner | null {
 	if (t.head === 'cont') return contRunner;
 	if (t.head === 'pl') return plRunner;
 	if (t.head === 'gen') return genRunner;
+	if (t.head === 'bind' && t.binding.type === 'reflexive')
+		return bindReflexiveRunner;
 	return null;
 }
 

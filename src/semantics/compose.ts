@@ -19,6 +19,7 @@ import {
 	type Functor,
 	chooseEffect,
 	composeFunctors,
+	findInner,
 	getApplicative,
 	getBigTraversable,
 	getComonad,
@@ -399,6 +400,22 @@ function composeInner(
 
 	const semigroup = getMatchingSemigroup(leftInner, rightInner);
 	if (semigroup !== null) return [semigroup.plus, '+'];
+
+	if (leftInner === 'e') {
+		const rightExpectingSubject = findInner(
+			right,
+			Ref({ type: 'reflexive' }, '()'),
+		);
+		if (rightExpectingSubject !== null)
+			return [
+				λ(Int(Pl('e')), l =>
+					λ(Ref({ type: 'reflexive' }, rightExpectingSubject), r =>
+						app(unref(v(r)), v(l)),
+					),
+				),
+				'S',
+			];
+	}
 
 	throw new Unimplemented(
 		`Composition of ${typeToPlainText(leftInner)} and ${typeToPlainText(rightInner)}`,

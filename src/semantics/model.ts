@@ -11,6 +11,8 @@ export function bindingsEqual(b1: Binding, b2: Binding): boolean {
 			return b2.type === 'resumptive';
 		case 'gap':
 			return b2.type === 'gap';
+		case 'reflexive':
+			return b2.type === 'reflexive';
 		case 'name':
 			return b2.type === 'name' && b1.verb === b2.verb;
 		case 'animacy':
