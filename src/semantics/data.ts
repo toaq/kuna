@@ -509,24 +509,28 @@ const eventiveAdverbial = (distributive: boolean) => {
 const distributiveSubjectSharingAdverbial = ref(
 	{ type: 'reflexive' },
 	λ(Int(Pl('e')), subject =>
-		int(
-			λ('s', w =>
-				map(
-					app(unint(v(subject)), v(w)),
-					λ('e', subject_ =>
-						λ(Fn('e', Fn('v', 't')), p =>
-							λ('v', outerEvent =>
-								some(
-									λ('v', innerEvent =>
-										app(
+		bind(
+			{ type: 'reflexive' },
+			v(subject),
+			int(
+				λ('s', w =>
+					map(
+						app(unint(v(subject)), v(w)),
+						λ('e', subject_ =>
+							λ(Fn('e', Fn('v', 't')), p =>
+								λ('v', outerEvent =>
+									some(
+										λ('v', innerEvent =>
 											app(
-												and,
 												app(
-													app(app(unint(overlap), v(w)), v(innerEvent)),
-													v(outerEvent),
+													and,
+													app(
+														app(app(unint(overlap), v(w)), v(innerEvent)),
+														v(outerEvent),
+													),
 												),
+												app(app(v(p), v(subject_)), v(innerEvent)),
 											),
-											app(app(v(p), v(subject_)), v(innerEvent)),
 										),
 									),
 								),
@@ -542,21 +546,25 @@ const distributiveSubjectSharingAdverbial = ref(
 const nondistributiveSubjectSharingAdverbial = ref(
 	{ type: 'reflexive' },
 	λ(Int(Pl('e')), subject =>
-		int(
-			λ('s', w =>
-				λ(Fn(Pl('e'), Fn('v', 't')), p =>
-					λ('v', outerEvent =>
-						some(
-							λ('v', innerEvent =>
-								app(
+		bind(
+			{ type: 'reflexive' },
+			v(subject),
+			int(
+				λ('s', w =>
+					λ(Fn(Pl('e'), Fn('v', 't')), p =>
+						λ('v', outerEvent =>
+							some(
+								λ('v', innerEvent =>
 									app(
-										and,
 										app(
-											app(app(unint(overlap), v(w)), v(innerEvent)),
-											v(outerEvent),
+											and,
+											app(
+												app(app(unint(overlap), v(w)), v(innerEvent)),
+												v(outerEvent),
+											),
 										),
+										app(app(v(p), app(unint(v(subject)), v(w))), v(innerEvent)),
 									),
-									app(app(v(p), app(unint(v(subject)), v(w))), v(innerEvent)),
 								),
 							),
 						),
