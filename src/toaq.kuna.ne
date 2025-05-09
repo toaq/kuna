@@ -37,7 +37,7 @@ const {
 	makeConn,
 	makeCovertLeaf,
 	makeDiscourse,
-    makeEmptySerial,
+    makeEmptySerialdet,
 	makeEvAP,
 	makeEvAPdet,
 	makeLeaf,
@@ -164,13 +164,13 @@ AdjunctP -> Adjunct Serial Argument {% makeAdjunctPT %}
 AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
 
 # tua hao
-Serial -> V1orKi:* Vlast {% makeSerial %}
+Serial -> V1orKi:* Vlast {% makeSerial('*Serial') %}
 V1orKi -> V1 {% id %}
 V1orKi -> Ki {% id %}
 # (sá) tua hao
-Serialdet -> Serial {% id %}
+Serialdet -> V1:* Vlast {% makeSerial('*Serialdet') %}
 # (sá) ∅
-Serialdet -> null {% makeEmptySerial() %}
+Serialdet -> null {% makeEmptySerialdet %}
 
 # jî
 DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}

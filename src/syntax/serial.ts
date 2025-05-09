@@ -21,19 +21,19 @@ import { getFrame } from './frame';
  * by "terms" (adjuncts or arguments). This is a "PEG parser style" view of the
  * verbal complex and the post-field.
  *
- * A *Serial consists of a serial verb, followed by 0 or more serial adjectives.
- * For example, the refgram gives the example
+ * A *Serialdet is like a *Serial that can be followed by 0 or more serial
+ * adjectives. For example, the refgram gives the example
  *
  *     du rua jaq de
  *     "very beautiful thing which seems to be a flower"
  *
  * which is the serial verb "du rua" followed by a serial adjective "jaq de".
  *
- * We call "du rua" and "jaq de" the "segments" of this *Serial.
+ * We call "du rua" and "jaq de" the "segments" of this *Serialdet.
  *
  * We know (c)-frame words like rua mark the end of segments, and kı- marks the
- * beginning of a segment. We use these rules to split the *Serial and interpret
- * each sub-serial.
+ * beginning of a segment. We use these rules to split the *Serialdet and
+ * interpret each sub-serial.
  */
 
 export function pro(): Leaf {
@@ -283,7 +283,7 @@ function attachAdjective(vP: Tree, kivP: KivP): Tree {
 }
 
 /**
- * Turn the children of a *Serial into a list of segments.
+ * Turn the children of a *Serial(det) into a list of segments.
  */
 export function segmentSerial(children: Tree[]): Tree[][] {
 	const frames = children.map(getFrame);
@@ -308,9 +308,9 @@ export function segmentSerial(children: Tree[]): Tree[][] {
 }
 
 /**
- * Turn the given *Serial and terms into a proper 𝘷P, by:
+ * Turn the given *Serial(det) and terms into a proper 𝘷P, by:
  *
- * - splitting the *Serial into segments,
+ * - splitting the *Serial(det) into segments,
  * - separating adjuncts from arguments,
  * - expanding the serial verb using the arguments,
  * - expanding the serial adjectives with a PRO argument,
@@ -322,7 +322,7 @@ export function fixSerial(
 	terms: Tree[],
 	newCoindex: () => string,
 ): Tree {
-	if (tree.label !== '*Serial') {
+	if (!(tree.label === '*Serial' || tree.label === '*Serialdet')) {
 		throw new Impossible('not a serial');
 	}
 	if (!('children' in tree)) {
@@ -334,6 +334,8 @@ export function fixSerial(
 	}
 
 	const segments = segmentSerial(children);
+	if (tree.label === '*Serial' && segments.length !== 1)
+		throw new Ungrammatical('*Serial with adjectives');
 
 	const earlyAdjuncts: Tree[] = [];
 	const args: Tree[] = [];

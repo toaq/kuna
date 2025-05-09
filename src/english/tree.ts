@@ -40,7 +40,8 @@ function verbToEnglish(tree: Tree): string {
  */
 export function serialToEnglish(serial: Tree): string {
 	if ('word' in serial && serial.word.covert) return '';
-	if (serial.label !== '*Serial') throw new Impossible('non-*Serial serial');
+	if (!(serial.label === '*Serial' || serial.label === '*Serialdet'))
+		throw new Impossible('non-*Serial serial');
 	if (!('children' in serial)) throw new Impossible('non-Rose serial');
 	return serial.children.map(x => verbToEnglish(x)).join('-');
 }

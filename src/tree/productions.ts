@@ -55,12 +55,14 @@ export function makeCovertLeaf(label: Label) {
 	return () => makeNull(label);
 }
 
-export function makeEmptySerial() {
-	return () => ({
-		label: '*Serial',
-		children: [makeNull('V')],
-		source: '',
-	});
+const emptySerialdet: Tree = {
+	label: '*Serialdet',
+	children: [makeNull('V')],
+	source: '',
+};
+
+export function makeEmptySerialdet() {
+	return emptySerialdet;
 }
 
 export function makeBranch(label: Label) {
@@ -147,13 +149,15 @@ export function makeOptLeaf(label: Label) {
 	};
 }
 
-export function makeSerial([verbs, vlast]: [Tree[], Tree]) {
-	const children = verbs.concat([vlast]);
-	return {
-		label: '*Serial',
-		arity: describeSerial(children)?.slots?.length,
-		children,
-		source: catSource(...verbs, vlast),
+export function makeSerial(label: Label) {
+	return ([verbs, vlast]: [Tree[], Tree]) => {
+		const children = verbs.concat([vlast]);
+		return {
+			label,
+			arity: describeSerial(children)?.slots?.length,
+			children,
+			source: catSource(...verbs, vlast),
+		};
 	};
 }
 

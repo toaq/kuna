@@ -34,7 +34,7 @@ class Recoverer {
 			if (tree.label === '*𝘷P') {
 				const serial = tree.children[0];
 				if (!serial) throw new Impossible('*𝘷P without children');
-				if (serial.label !== '*Serial') {
+				if (!(serial.label === '*Serial' || serial.label === '*Serialdet')) {
 					throw new Impossible(`*𝘷P without *Serial, instead: ${serial.label}`);
 				}
 				if (!('children' in serial)) throw new Impossible('strange *Serial');

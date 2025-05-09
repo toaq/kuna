@@ -5,8 +5,8 @@ import { describeSerial } from './frame';
 import { segmentSerial } from './serial';
 
 function parseAndSegmentSerial(text: string): string[][] {
-	const tree = parse(text)[0];
-	const serial = findSubtree(tree, '*Serial')!;
+	const tree = parse(`báq ${text}`)[0];
+	const serial = findSubtree(tree, '*Serialdet')!;
 	assertRose(serial);
 	const segments = segmentSerial(serial.children);
 	return segments.map(s => s.map(w => w.source));
@@ -35,8 +35,8 @@ test('it segments serials', () => {
 });
 
 function describe(text: string): [boolean, string] {
-	const tree = parse(text)[0];
-	const serial = findSubtree(tree, '*Serial')!;
+	const tree = parse(`báq ${text}`)[0];
+	const serial = findSubtree(tree, '*Serialdet')!;
 	assertRose(serial);
 	const children = serial.children;
 	const description = describeSerial(children);

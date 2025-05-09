@@ -20,6 +20,7 @@ export interface CovertWord {
 
 export type Label =
 	| '*Serial'
+	| '*Serialdet'
 	| '*𝘷P'
 	| '*𝘷Pdet'
 	| '&'
@@ -109,6 +110,7 @@ export type Label =
 export function describeLabel(label: Label): string {
 	switch (label) {
 		case '*Serial':
+		case '*Serialdet':
 			return 'Unfixed serial';
 		case '*𝘷P':
 		case '*𝘷Pdet':
