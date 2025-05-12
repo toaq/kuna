@@ -586,7 +586,6 @@ const refDistributive: Distributive = {
 	distribute: (e, functor, type) => {
 		const type_ = functor.unwrap(type);
 		assertRef(type_);
-		assertFn(type_.inner);
 		return ref(
 			type_!.binding,
 			λ(Int(Pl('e')), val =>
@@ -634,7 +633,6 @@ const nfDistributive: Distributive = {
 	distribute: (e, functor, type) => {
 		const type_ = functor.unwrap(type);
 		assertNf(type_);
-		assertFn(type_.inner);
 		return nf(
 			λ(type_.domain, val =>
 				functor.map(
