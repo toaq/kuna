@@ -754,9 +754,9 @@ const functorPrecedence = new Map(
 		[
 			// Starting with lowest precedence
 			'dx',
+			'bind',
 			'act',
 			'pair',
-			'bind',
 			'qn',
 			'gen',
 			'cont',
@@ -851,9 +851,21 @@ export function chooseEffect(
 	left: ExprType,
 	right: ExprType,
 ): { choice: ExprType; strong: boolean } {
-	if (typeof left === 'string' || left.head === 'fn')
+	if (
+		typeof left === 'string' ||
+		left.head === 'fn' ||
+		(typeof right === 'object' &&
+			(right.head === 'bind' || right.head === 'ref') &&
+			right.binding.type === 'reflexive')
+	)
 		return { choice: right, strong: false };
-	if (typeof right === 'string' || right.head === 'fn')
+	if (
+		typeof right === 'string' ||
+		right.head === 'fn' ||
+		(typeof left === 'object' &&
+			(left.head === 'bind' || left.head === 'ref') &&
+			left.binding.type === 'reflexive')
+	)
 		return { choice: left, strong: false };
 	if (!functorPrecedence.has(left.head)) return { choice: left, strong: false };
 	if (!functorPrecedence.has(right.head))
