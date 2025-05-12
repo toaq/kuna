@@ -230,6 +230,28 @@ export class ToaqTokenizer {
 
 				if (entry) {
 					if (!toneInPrefix) {
+						if (
+							entry.type === 'complementizer' ||
+							entry.type === 'subordinating complementizer'
+						) {
+							if (wordTone !== Tone.T3) {
+								wordTokens.unshift(
+									wordTone === Tone.T2
+										? { type: 'tonal_determiner', value: '◌́', index: m.index }
+										: {
+												type: 'tonal_incorporated_determiner',
+												value: '◌̂',
+												index: m.index,
+											},
+								);
+							}
+							wordTokens.push({
+								type: 'subordinating_complementizer',
+								value: inTone(tokenText, Tone.T3),
+								index: m.index,
+							});
+							continue;
+						}
 						if (wordTone === Tone.T2) {
 							wordTokens.unshift({
 								type: 'word_determiner',

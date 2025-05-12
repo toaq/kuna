@@ -29,15 +29,13 @@ import * as TreeModule from "./tree";
 
 const {
 	make3L,
-	make3LCovertLeft,
 	makeAdjunctPI,
 	makeAdjunctPT,
 	makeBranch,
 	makeBranchCovertLeft,
 	makeConn,
-	makeCovertLeaf,
 	makeDiscourse,
-    makeEmptySerialdet,
+	makeEmptynP,
 	makeEvAP,
 	makeEvAPdet,
 	makeLeaf,
@@ -50,7 +48,7 @@ const {
 	makeRose2,
 	makeSerial,
 	makeSigmaT1QP,
-    makeSingleChild,
+	makeSingleChild,
 	makeT1QP,
 	makeWord,
 	makevP_main,
@@ -79,18 +77,8 @@ SAP -> CP SAopt {% makeBranch('SAP') %}
 CP -> Copt Clause<main> {% makeBranch('CP') %}
 # ꝡä hao
 CPsub -> Csub Clause<sub> {% makeBranch('CP') %}
-# ꝡâ hao
-CPincorp -> Cincorp Clause<sub> {% make3LCovertLeft('DP', 'D', 'CP') %}
 # (shê ꝡä hao nä) hao
-CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C') %}
-# ꝡë hao
-CPrel -> Crel Clause<sub> {% makeBranch('CPrel') %}
-# (ráı nä) hao
-CPrelna<S> -> Clause<S> {% makeBranchCovertLeft('CPrel', 'Crel') %}
-# (sá) ꝡë hao
-CPdet -> CPdet CPrelcon {% makeBranch('CPrel') %}
-# (sá) ∅ hao
-CPdet -> QSPdet {% makeBranchCovertLeft('CPrel', 'Crel') %}
+CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C', 'REL') %}
 
 # jí
 DP -> %pronoun Free:* {% makeLeaf('DP') %}
@@ -98,17 +86,40 @@ DP -> %pronoun Free:* {% makeLeaf('DP') %}
 DP -> WordD Word {% makeBranch('DP') %}
 # sá ...
 DP -> D nP {% makeBranch('DP') %}
+
+# jî
+DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
+# hụ̂ꝡa
+DPincorp -> WordDincorp Word {% makeBranch('DP') %}
+# sâ ...
+DPincorp -> Dincorp nP {% makeBranch('DP') %}
+
+# ꝡá hao
+DPsub -> D nPsub {% makeBranch('DP') %}
+DPsub -> Dtonal nPsub {% makeBranch('DP') %}
+# ꝡâ hao
+DPsubincorp -> Dincorp nPsub {% makeBranch('DP') %}
+DPsubincorp -> Dtonalincorp nPsub {% makeBranch('DP') %}
+
 # (sá) ∅ hao
 nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
+# (sá) ∅
+nP -> null {% makeEmptynP %}
+# (sá) ꝡä hao
+nPsub -> CPsub {% makeBranchCovertLeft('𝘯P', '𝘯') %}
+# (sá) raı ꝡë hao
+CPdet -> CPdet CPsubcon {% makeBranch('CP') %}
+# (sá) ∅ hao
+CPdet -> QSPdet {% makeBranchCovertLeft('CP', 'C', 'REL') %}
 
 # ní bï pu hao
 Clause<S> -> Argument Bi Clause<S> {% make3L('TopicP', "Topic'") %}
 # pu hao
 Clause<S> -> QSP<S> {% id %}
 # jí nä pu hao hóa
-Clause<S> -> Argument Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
+Clause<S> -> Argument Na Clause<S> {% make3L('𝘷P', "𝘷'") %}
 # râo fíachaq nä pu hao hóa
-Clause<S> -> AdjunctPcon Na CPrelna<S> {% make3L('𝘷P', "𝘷'") %}
+Clause<S> -> AdjunctPcon Na Clause<S> {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
 Clause<S> -> QT4 Csub Clause<sub> Na CPna<S> {% makeQP %}
 # hao jí gö hao jí
@@ -164,40 +175,34 @@ AdjunctP -> Adjunct Serial Argument {% makeAdjunctPT %}
 AdjunctP -> Adjunct Serial {% makeAdjunctPI %}
 
 # tua hao
-Serial -> V1orKi:* Vlast {% makeSerial('*Serial') %}
+Serial -> V1:* Vlast {% makeSerial('*Serial') %}
+# (sá) tua hao
+Serialdet -> V1orKi:* Vlast {% makeSerial('*Serialdet') %}
 V1orKi -> V1 {% id %}
 V1orKi -> Ki {% id %}
-# (sá) tua hao
-Serialdet -> V1:* Vlast {% makeSerial('*Serialdet') %}
-# (sá) ∅
-Serialdet -> null {% makeEmptySerialdet %}
-
-# jî
-DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
-# hụ̂ꝡa
-DPincorp -> WordDincorp Word {% makeBranch('DP') %}
-# sâ ...
-DPincorp -> Dincorp nP {% makeBranch('DP') %}
 
 Argument -> DPcon {% id %}
-Argument -> CPargcon {% id %}
+Argument -> DPsubcon {% id %}
 Argincorp -> DPincorp {% id %}
-Argincorp -> CPincorp {% id %}
+Argincorp -> DPsubincorp {% id %}
 
 DPcon -> DProi {% id %}
 DPcon -> DProi Conjunction DPcon {% makeConn %}
-DPcon -> DProi ConjunctionT1 CPargcon {% makeConn %}
+DPcon -> DProi ConjunctionT1 DPsubcon {% makeConn %}
 DProi -> DPfoc {% id %}
 DProi -> DPfoc Roi DProi {% makeConn %}
 DPfoc -> DP {% id %}
 DPfoc -> Focus DP {% makeBranch('FocusP') %}
-CPargcon -> CPargfoc {% id %}
-CPargcon -> CPargfoc Conjunction CPargcon {% makeConn %}
-CPargfoc -> CParg {% id %}
-CPargfoc -> Focus CParg {% makeBranch('FocusP') %}
-CParg -> CPsub {% makeBranchCovertLeft('𝘯P', '𝘯') %}
-CPrelcon -> CPrel {% id %}
-CPrelcon -> CPrel Conjunction CPrelcon {% makeConn %}
+DPsubcon -> DPsubfoc {% id %}
+DPsubcon -> DPsubfoc Conjunction DPsubcon {% makeConn %}
+DPsubfoc -> DPsub {% id %}
+DPsubfoc -> Focus DPsub {% makeBranch('FocusP') %}
+DPsubincorpcon -> DPsubincorpfoc {% id %}
+DPsubincorpcon -> DPsubincorpfoc Conjunction DPsubcon {% makeConn %}
+DPsubincorpfoc -> DPsubincorp {% id %}
+DPsubincorpfoc -> Focus DPsubincorp {% makeBranch('FocusP') %}
+CPsubcon -> CPsub {% id %}
+CPsubcon -> CPsub Conjunction CPsubcon {% makeConn %}
 Sigmacon -> Sigma {% id %}
 Sigmacon -> Sigma Conjunction Sigmacon {% makeConn %}
 Tconopt -> Tcon:? {% makeOptLeaf('T') %}
@@ -241,11 +246,10 @@ Bi -> %topic_marker Free:* {% makeLeaf('Topic') %}
 C -> %complementizer Free:* {% makeLeaf('C') %}
 Copt -> C:? {% makeOptLeaf('C') %}
 Csub -> %subordinating_complementizer Free:* {% makeLeaf('C') %}
-Cincorp -> %incorporated_complementizer Free:* {% makeLeaf('C') %}
-Crel -> %relative_clause_complementizer Free:* {% makeLeaf('Crel') %}
-Crelopt -> Crel:? {% makeOptLeaf('C') %}
 D -> %determiner Free:* {% makeLeaf('D') %}
 Dincorp -> %incorporated_determiner Free:* {% makeLeaf('D') %}
+Dtonal -> %tonal_determiner Free:* {% makeLeaf('D') %}
+Dtonalincorp -> %tonal_incorporated_determiner Free:* {% makeLeaf('D') %}
 EvA -> %event_accessor Free:* {% makeLeaf('EvA') %}
 Focus -> %focus_particle Free:* {% makeLeaf('Focus') %}
 Go -> %retroactive_cleft Free:* {% makeLeaf('𝘷') %}

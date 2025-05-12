@@ -143,7 +143,7 @@ export class ClauseTranslator {
 					node = node.right;
 					break;
 				case "𝘷'":
-				case 'CPrel':
+				case 'CP':
 					node = node.right;
 					break;
 				case 'CondP':

@@ -267,11 +267,12 @@ export const littleN = λ(Fn(Int(Pl('e')), 't'), predicate =>
 	),
 );
 
-export const covertCrel = λ(Nf(Int(Pl('e')), 't'), predicate =>
-	λ(Int(Pl('e')), arg => app(unnf(v(predicate)), v(arg))),
-);
+export const covertComplementizers = new Map<CovertValue, Expr>([
+	['∅', λ(Int('t'), t => v(t))],
+	['REL', λ(Nf(Int(Pl('e')), 't'), predicate => unnf(v(predicate)))],
+]);
 
-export const complementizers = new Map<string, Expr>([
+export const overtComplementizers = new Map<string, Expr>([
 	['ꝡa', λ(Int('t'), t => v(t))],
 	[
 		'ma',

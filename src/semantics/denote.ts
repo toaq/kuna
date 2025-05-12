@@ -19,15 +19,15 @@ import {
 import { compose } from './compose';
 import {
 	adjuncts,
-	complementizers,
 	conditionals,
+	covertComplementizers,
 	covertCp,
-	covertCrel,
 	covertV,
 	determiners,
 	distributiveLittleV,
 	nondistributiveLittleV,
 	nullaryLittleV,
+	overtComplementizers,
 	polarities,
 	pro,
 	pronominalTenses,
@@ -62,17 +62,21 @@ import { findInner, getFunctor, unwrapEffects } from './structures';
 import type { AnimacyClass, DTree, Expr, ExprType } from './types';
 
 function findVp(tree: StrictTree): StrictTree | null {
-	if (tree.label === 'VP' || tree.label === 'CP' || tree.label === "EvA'")
+	if (
+		tree.label === 'VP' ||
+		(tree.label === 'CP' &&
+			'left' in tree &&
+			'word' in tree.left &&
+			!tree.left.word.covert) ||
+		tree.label === "EvA'"
+	)
 		return tree;
 	if ('word' in tree) return null;
 	return findVp(tree.left) ?? findVp(tree.right);
 }
 
 function getVerbWord(vp: StrictTree): Word | CovertWord {
-	if ('word' in vp) {
-		if (vp.word.covert) throw new Impossible('Covert VP');
-		return vp.word;
-	}
+	if ('word' in vp) return vp.word;
 	const verb = vp.left;
 	switch (verb.label) {
 		case 'V':
@@ -232,24 +236,33 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Unrecognized(`D: ${leaf.word.text}`);
 
 		if (leaf.word.text === '◌́') {
-			assertLeaf(cCommand);
-			if (cCommand.word.covert) throw new Impossible('Covert name');
-			if (cCommand.word.entry === undefined)
-				throw new Unrecognized(`name: ${cCommand.word.text}`);
-			const animacy = animacyClass(cCommand.word.entry as VerbEntry);
-			const word = cCommand.word.entry.toaq;
-			return λ('e', () =>
-				ref(
-					{ type: 'name', verb: word },
-					λ(Int(Pl('e')), x => {
-						let result: Expr = v(x);
-						if (animacy !== null)
-							result = bind({ type: 'animacy', class: animacy }, v(x), result);
-						result = bind({ type: 'name', verb: word }, v(x), result);
-						return result;
-					}),
-				),
-			);
+			if (cCommand.label === 'word') {
+				assertLeaf(cCommand);
+				if (cCommand.word.covert) throw new Impossible('Covert name');
+				if (cCommand.word.entry === undefined)
+					throw new Unrecognized(`name: ${cCommand.word.text}`);
+				const animacy = animacyClass(cCommand.word.entry as VerbEntry);
+				const word = cCommand.word.entry.toaq;
+				return λ('e', () =>
+					ref(
+						{ type: 'name', verb: word },
+						λ(Int(Pl('e')), x => {
+							let result: Expr = v(x);
+							if (animacy !== null)
+								result = bind(
+									{ type: 'animacy', class: animacy },
+									v(x),
+									result,
+								);
+							result = bind({ type: 'name', verb: word }, v(x), result);
+							return result;
+						}),
+					),
+				);
+			}
+
+			// This is the (trivial) tonal determiner found on "ꝡé hao hóa", "ꝡá ruqshua"
+			return λ(Int(Pl('e')), x => v(x));
 		}
 
 		if (leaf.word.text === 'hú-') {
@@ -333,25 +346,17 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		);
 	}
 
-	if (leaf.label === 'Crel') {
-		if (leaf.word.covert) return covertCrel;
-		if (leaf.word.entry === undefined)
-			throw new Unrecognized(`Crel: ${leaf.word.text}`);
-		const toaq = leaf.word.entry.toaq;
-
-		const data = complementizers.get(toaq);
-		if (data === undefined) throw new Unrecognized(`C: ${toaq}`);
-		return data;
-	}
-
 	if (leaf.label === 'C') {
-		let toaq: string;
-		if (leaf.word.covert) toaq = 'ꝡa';
-		else if (leaf.word.entry === undefined)
+		if (leaf.word.covert) {
+			const data = covertComplementizers.get(leaf.word.value);
+			if (data === undefined) throw new Unrecognized(`C: ${leaf.word.value}`);
+			return data;
+		}
+		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`C: ${leaf.word.text}`);
-		else toaq = leaf.word.entry.toaq;
 
-		const data = complementizers.get(toaq);
+		const toaq = leaf.word.entry.toaq;
+		const data = overtComplementizers.get(toaq);
 		if (data === undefined) throw new Unrecognized(`C: ${toaq}`);
 		return data;
 	}

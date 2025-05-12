@@ -9,6 +9,7 @@ import {
 	catSource,
 	effectiveLabel,
 	makeNull,
+	pro,
 } from '../tree';
 import { moveUp } from '../tree/movement';
 import { getFrame } from './frame';
@@ -35,10 +36,6 @@ import { getFrame } from './frame';
  * beginning of a segment. We use these rules to split the *Serialdet and
  * interpret each sub-serial.
  */
-
-export function pro(): Leaf {
-	return { label: 'DP', word: { covert: true, value: 'PRO' }, source: '' };
-}
 
 export function getDistribution(verb: Tree): string {
 	if ('word' in verb) {

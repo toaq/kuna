@@ -8,8 +8,7 @@ export function isBoringNull(tree: Tree): boolean {
 		'word' in tree &&
 		tree.word.covert &&
 		(tree.word.value === '∅' ||
-			tree.word.value === 'BE' ||
-			tree.word.value === 'CAUSE' ||
+			tree.word.value === 'REL' ||
 			tree.word.value === 'PRO')
 	);
 }
@@ -50,7 +49,7 @@ export function findSubtree(tree: Tree, label: Label): Tree | undefined {
 }
 
 export function nodeType(label: Label): 'phrase' | 'bar' | 'head' {
-	if (label.endsWith('P') || label === 'CPrel' || label === '*𝘷Pdet') {
+	if (label.endsWith('P') || label === '*𝘷Pdet') {
 		return 'phrase';
 	}
 	if (label.endsWith("'")) {
@@ -148,9 +147,7 @@ function findAtRightBoundary(
 export function endsInClauseBoundary(tree: Tree): Tree | undefined {
 	return findAtRightBoundary(
 		tree,
-		t =>
-			t.label === 'CP' ||
-			(t.label === 'CPrel' && 'left' in t && treeText(t.left) !== ''),
+		t => t.label === 'CP' && 'left' in t && treeText(t.left) !== '',
 	);
 }
 

@@ -548,7 +548,7 @@ export class GfTranslator {
 	 */
 	private relativeCpToGf(tree: StrictTree): G_RS {
 		assertBranch(tree);
-		assertLabel(tree, 'CPrel');
+		assertLabel(tree, 'CP');
 		// TODO: Could actually be a bare TP
 		return this.relativeΣpToGf(tree.right);
 	}

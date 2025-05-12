@@ -5,9 +5,10 @@ import {
 	assertBranch,
 	assertLeaf,
 	findHead,
+	pro,
 } from '../tree';
 import { moveUp } from '../tree/movement';
-import { fixSerial, pro } from './serial';
+import { fixSerial } from './serial';
 
 /**
  * Recurses down a parsed syntax tree to recover the deep structure.

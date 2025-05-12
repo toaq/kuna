@@ -68,11 +68,10 @@ class Boxifier {
 
 	private isOvertCp(tree: Tree) {
 		return (
-			(tree.label === 'CP' && 'left' in tree) ||
-			(tree.label === 'CPrel' &&
-				'left' in tree &&
-				'word' in tree.left &&
-				!tree.left.word.covert)
+			tree.label === 'CP' &&
+			'left' in tree &&
+			'word' in tree.left &&
+			(!tree.left.word.covert || tree.left.word.value === '∅')
 		);
 	}
 
@@ -164,7 +163,6 @@ class Boxifier {
 					case 'TP':
 					case 'AspP':
 					case 'CP':
-					case 'CPrel':
 					case "𝘷'": {
 						const w = node.left;
 						if (this.words(w)) {

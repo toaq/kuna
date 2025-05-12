@@ -10,13 +10,13 @@ import {
 	labelForPrefix,
 	skipFree,
 } from './functions';
-import type { Label, Leaf, Tree, Word } from './types';
+import type { CovertValue, Label, Leaf, Tree, Word } from './types';
 
 /**
  * Make a null leaf with the given label.
  */
-export function makeNull(label: Label): Leaf {
-	return { label, word: { covert: true, value: '∅' }, source: '' };
+export function makeNull(label: Label, value: CovertValue = '∅'): Leaf {
+	return { label, word: { covert: true, value }, source: '' };
 }
 
 export function makeWord([token]: [ToaqToken]): Word {
@@ -51,18 +51,45 @@ export function makeLeaf(label: Label) {
 	});
 }
 
-export function makeCovertLeaf(label: Label) {
-	return () => makeNull(label);
+export function pro(): Leaf {
+	return { label: 'DP', word: { covert: true, value: 'PRO' }, source: '' };
 }
 
-const emptySerialdet: Tree = {
-	label: '*Serialdet',
-	children: [makeNull('V')],
+const emptynP: Tree = {
+	label: '𝘯P',
+	left: makeNull('𝘯'),
+	right: {
+		label: 'CP',
+		left: makeNull('C', 'REL'),
+		right: {
+			label: 'TP',
+			left: makeNull('T'),
+			right: {
+				label: 'AspP',
+				left: makeNull('Asp'),
+				right: {
+					label: '*𝘷P',
+					children: [
+						{
+							label: '*Serialdet',
+							children: [makeNull('V')],
+							source: '',
+						},
+						pro(),
+					],
+					source: '',
+				},
+				source: '',
+			},
+			source: '',
+		},
+		source: '',
+	},
 	source: '',
 };
 
-export function makeEmptySerialdet() {
-	return emptySerialdet;
+export function makeEmptynP() {
+	return emptynP;
 }
 
 export function makeBranch(label: Label) {
@@ -76,11 +103,15 @@ export function makeBranch(label: Label) {
 	};
 }
 
-export function makeBranchCovertLeft(label: Label, covertLabel: Label) {
+export function makeBranchCovertLeft(
+	label: Label,
+	covertLabel: Label,
+	covertValue?: CovertValue,
+) {
 	return ([right]: [Tree, Tree]) => {
 		return {
 			label,
-			left: makeNull(covertLabel),
+			left: makeNull(covertLabel, covertValue),
 			right,
 			source: right.source,
 		};
@@ -94,21 +125,6 @@ export function make3L(label: Label, labelR: Label) {
 			left,
 			right: { label: labelR, left: rl, right: rr, source: catSource(rl, rr) },
 			source: catSource(left, rl, rr),
-		};
-	};
-}
-
-export function make3LCovertLeft(
-	label: Label,
-	covertLabel: Label,
-	labelR: Label,
-) {
-	return ([rl, rr]: [Tree, Tree]) => {
-		return {
-			label,
-			left: makeNull(covertLabel),
-			right: { label: labelR, left: rl, right: rr },
-			source: catSource(rl, rr),
 		};
 	};
 }
@@ -143,9 +159,9 @@ export function makeSingleChild(label: Label) {
 	};
 }
 
-export function makeOptLeaf(label: Label) {
+export function makeOptLeaf(label: Label, value?: CovertValue) {
 	return ([leaf]: [Leaf | undefined]) => {
-		return leaf ?? makeNull(label);
+		return leaf ?? makeNull(label, value);
 	};
 }
 
@@ -462,8 +478,8 @@ export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 			label: "𝘷'",
 			left: vgo,
 			right: {
-				label: 'CPrel',
-				left: makeNull('C'),
+				label: 'CP',
+				left: makeNull('C', 'REL'),
 				right: clause,
 				source: clause.source,
 			},

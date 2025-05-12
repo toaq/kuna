@@ -26,7 +26,6 @@ export const nonVerbTypes = [
 	'focus particle', // kú
 	'focus particle prefix form', // ku-
 	'illocution',
-	'incorporated complementizer',
 	'incorporated determiner',
 	'incorporated pronoun',
 	'incorporated word determiner', // lô, hû-
@@ -44,11 +43,12 @@ export const nonVerbTypes = [
 	'quantifier',
 	'quantifier with complement',
 	'retroactive cleft',
-	'relative clause complementizer',
 	'sentence connector',
 	'start parenthetical',
 	'subordinating complementizer',
 	'tense',
+	'tonal determiner',
+	'tonal incorporated determiner',
 	'topic marker',
 	'vocative',
 	'word determiner', // ló, hú-
@@ -162,17 +162,8 @@ export class Dictionary {
 
 		for (const e of entries) {
 			if (e.type === 'complementizer') {
-				if (e.english.includes('relative')) {
-					e.type = 'relative clause complementizer';
-				} else if (/subordinate|property/.test(e.english)) {
+				if (/subordinate|relative|property/.test(e.english)) {
 					e.type = 'subordinating complementizer';
-					const ic = inTone(e.toaq, Tone.T4);
-					this.inner.set(ic, {
-						toaq: ic,
-						english: e.english,
-						gloss: `of.${e.gloss}`,
-						type: 'incorporated complementizer',
-					});
 				}
 			}
 

@@ -11,7 +11,7 @@ export interface Word {
 	entry: Entry | undefined;
 }
 
-export type CovertValue = '∅' | 'PRO' | 'IF' | 'IF.CNTF' | 'WHEN';
+export type CovertValue = '∅' | 'PRO' | 'REL' | 'IF' | 'IF.CNTF' | 'WHEN';
 
 export interface CovertWord {
 	covert: true;
@@ -43,9 +43,7 @@ export type Label =
 	| 'buq'
 	| 'buqP'
 	| 'C'
-	| 'Crel'
 	| 'CP'
-	| 'CPrel'
 	| 'Cond'
 	| "Cond'"
 	| 'CondP'
@@ -121,10 +119,8 @@ export function describeLabel(label: Label): string {
 		case 'Asp':
 			return 'Aspect';
 		case 'C':
-		case 'Crel':
 			return 'Complementizer';
 		case 'CP':
-		case 'CPrel':
 			return 'Complementizer phrase';
 		case 'Cond':
 			return 'Conditional';
