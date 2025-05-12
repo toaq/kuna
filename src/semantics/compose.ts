@@ -631,9 +631,7 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 			leftPrecedences.pop();
 			rightPrecedences.pop();
 			assertFn(fn.type);
-			const partiallyApplied = fn.type.range;
-			assertFn(partiallyApplied);
-			const out = partiallyApplied.range;
+			const partiallyApplied = wrap(fn.type.range, leftEffect);
 			fn = λ(leftType, l =>
 				λ(rightType, r =>
 					apply(
@@ -642,10 +640,10 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 								() => fn,
 								() => v(l),
 								leftType,
-								wrap(partiallyApplied, leftEffect),
+								partiallyApplied,
 							),
 						() => v(r),
-						out,
+						partiallyApplied,
 					),
 				),
 			);

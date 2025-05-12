@@ -95,9 +95,9 @@ export interface Applicative {
 	 * Applies a function to an argument, sequencing their actions.
 	 * @param fn The function in the applicative functor.
 	 * @param arg The argument in the applicative functor.
-	 * @param range The range of the function.
+	 * @param fnType The type of the function in the applicative functor.
 	 */
-	apply: (fn: () => Expr, arg: () => Expr, range: ExprType) => Expr;
+	apply: (fn: () => Expr, arg: () => Expr, fnType: ExprType) => Expr;
 }
 
 export interface Distributive {
@@ -205,24 +205,24 @@ const contFunctor: Functor = {
 
 const contApplicative: Applicative = {
 	functor: contFunctor,
-	apply: (fn, arg, range) =>
-		cont(
-			λ(Fn(range, 't'), pred => {
-				const fn_ = fn();
-				assertCont(fn_.type);
-				assertFn(fn_.type.inner);
-				const { domain } = fn_.type.inner;
-				return app(
-					uncont(fn_),
-					λ(fn_.type, project =>
+	apply: (fn, arg, fnType) => {
+		assertCont(fnType);
+		assertFn(fnType.inner);
+		const { domain, range } = fnType.inner;
+		return cont(
+			λ(Fn(range, 't'), pred =>
+				app(
+					uncont(fn()),
+					λ(fnType.inner, project =>
 						app(
 							uncont(arg()),
 							λ(domain, arg_ => app(v(pred), app(v(project), v(arg_)))),
 						),
 					),
-				);
-			}),
-		),
+				),
+			),
+		);
+	},
 };
 
 const contRunner: Runner = {
@@ -568,14 +568,12 @@ const refFunctor: Functor = {
 
 const refApplicative: Applicative = {
 	functor: refFunctor,
-	apply: (fn, arg) => {
-		const arg_ = arg();
-		assertRef(arg_.type);
-		const binding = arg_.type.binding;
+	apply: (fn, arg, fnType) => {
+		assertRef(fnType);
 		return ref(
-			binding,
+			fnType.binding,
 			λ(Int(Pl('e')), val =>
-				app(app(unref(fn()), v(val)), app(unref(arg_), v(val))),
+				app(app(unref(fn()), v(val)), app(unref(arg()), v(val))),
 			),
 		);
 	},
@@ -618,12 +616,12 @@ const nfFunctor: Functor = {
 
 const nfApplicative: Applicative = {
 	functor: nfFunctor,
-	apply: (fn, arg) => {
-		const arg_ = arg();
-		assertNf(arg_.type);
-		const domain = arg_.type.domain;
+	apply: (fn, arg, fnType) => {
+		assertNf(fnType);
 		return nf(
-			λ(domain, val => app(app(unnf(fn()), v(val)), app(unnf(arg_), v(val)))),
+			λ(fnType.domain, val =>
+				app(app(unnf(fn()), v(val)), app(unnf(arg()), v(val))),
+			),
 		);
 	},
 };
