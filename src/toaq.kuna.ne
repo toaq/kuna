@@ -85,14 +85,16 @@ DP -> %pronoun Free:* {% makeLeaf('DP') %}
 # háo/hụ́ꝡa
 DP -> WordD Word {% makeBranch('DP') %}
 # sá ...
-DP -> D nP {% makeBranch('DP') %}
+DP -> D nPopt {% makeBranch('DP') %}
+DP -> Dtonal nP {% makeBranch('DP') %}
 
 # jî
 DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
 # hụ̂ꝡa
 DPincorp -> WordDincorp Word {% makeBranch('DP') %}
 # sâ ...
-DPincorp -> Dincorp nP {% makeBranch('DP') %}
+DPincorp -> Dincorp nPopt {% makeBranch('DP') %}
+DPincorp -> Dtonalincorp nP {% makeBranch('DP') %}
 
 # ꝡá hao
 DPsub -> D nPsub {% makeBranch('DP') %}
@@ -104,7 +106,8 @@ DPsubincorp -> Dtonalincorp nPsub {% makeBranch('DP') %}
 # (sá) ∅ hao
 nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 # (sá) ∅
-nP -> null {% makeEmptynP %}
+nPopt -> null {% makeEmptynP %}
+nPopt -> nP {% id %}
 # (sá) ꝡä hao
 nPsub -> CPsub {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 # (sá) raı ꝡë hao

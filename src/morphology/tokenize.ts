@@ -254,19 +254,34 @@ export class ToaqTokenizer {
 							continue;
 						}
 						if (wordTone === Tone.T2) {
+							if (entry.type === 'predicate') {
+								wordTokens.unshift({
+									type: 'word_determiner',
+									value: '◌́',
+									index: m.index,
+								});
+								wordTokens.push({ type: 'word', value: base, index: m.index });
+								continue;
+							}
+							if (
+								entry.type === 'predicatizer' ||
+								entry.type === 'name quote' ||
+								entry.type === 'name verb'
+							) {
+								wordTokens.unshift({
+									type: 'tonal_determiner',
+									value: '◌́',
+									index: m.index,
+								});
+								// Fall through to push the word's base form
+							} else throw new Ungrammatical(`${entry.type} in rising tone`);
+						} else if (wordTone === Tone.T4) {
 							wordTokens.unshift({
-								type: 'word_determiner',
-								value: '◌́',
+								type: 'preposition',
+								value: '◌̂',
 								index: m.index,
 							});
-							wordTokens.push({ type: 'word', value: base, index: m.index });
-							continue;
-						}
-						wordTokens.unshift({
-							type: 'preposition',
-							value: '◌̂',
-							index: m.index,
-						});
+						} else throw new Ungrammatical(`${entry.type} in tone ${wordTone}`);
 					}
 					wordTokens.push({
 						type: entry.type.replace(/ /g, '_'),
