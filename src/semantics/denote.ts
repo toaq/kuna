@@ -334,7 +334,11 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 					let result: Expr = v(x);
 					if (animacy !== null)
 						result = bind({ type: 'animacy', class: animacy }, v(x), result);
-					if (!verb.covert && verb.entry !== undefined)
+					if (
+						!verb.covert &&
+						verb.entry !== undefined &&
+						verb.entry.type !== 'predicatizer'
+					)
 						result = bind(
 							'pronominal_class' in verb.entry
 								? { type: 'name', verb: verb.entry.toaq }
