@@ -75,9 +75,7 @@ function findVp(tree: StrictTree): StrictTree | null {
 	return findVp(tree.left) ?? findVp(tree.right);
 }
 
-function getVerbWord(vp: StrictTree): Word | CovertWord {
-	if ('word' in vp) return vp.word;
-	const verb = vp.left;
+function getVerbWord_(verb: StrictTree): Word | CovertWord {
 	switch (verb.label) {
 		case 'V':
 		case 'C':
@@ -105,10 +103,14 @@ function getVerbWord(vp: StrictTree): Word | CovertWord {
 		case 'buqP':
 		case 'TelicityP':
 			if ('word' in verb) throw new Unrecognized(`${verb.label} shape`);
-			return getVerbWord(verb.right);
+			return getVerbWord_(verb.right);
 		default:
 			throw new Unrecognized('VP shape');
 	}
+}
+
+function getVerbWord(vp: StrictTree): Word | CovertWord {
+	return 'word' in vp ? vp.word : getVerbWord_(vp.left);
 }
 
 function animacyClass(verb: VerbEntry): AnimacyClass | null {
