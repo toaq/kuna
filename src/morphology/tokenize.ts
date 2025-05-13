@@ -233,7 +233,9 @@ export class ToaqTokenizer {
 					if (!toneInPrefix) {
 						if (
 							entry.type === 'complementizer' ||
-							entry.type === 'subordinating complementizer'
+							entry.type === 'subordinating complementizer' ||
+							entry.type === 'word quote' ||
+							entry.type === 'text quote'
 						) {
 							if (wordTone !== Tone.T3) {
 								wordTokens.unshift(
@@ -246,11 +248,19 @@ export class ToaqTokenizer {
 											},
 								);
 							}
-							wordTokens.push({
-								type: 'subordinating_complementizer',
-								value: inTone(tokenText, Tone.T3),
-								index: m.index,
-							});
+							wordTokens.push(
+								entry.type === 'complementizer'
+									? {
+											type: 'subordinating_complementizer',
+											value: inTone(tokenText, Tone.T3),
+											index: m.index,
+										}
+									: {
+											type: entry.type.replace(/ /g, '_'),
+											value: base,
+											index: m.index,
+										},
+							);
 							continue;
 						}
 						if (wordTone === Tone.T2) {
