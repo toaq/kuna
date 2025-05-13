@@ -100,7 +100,7 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 				right: {
 					label: "𝘷'",
 					left: v,
-					right: { ...verb, label: 'VP' },
+					right: { ...verb, label: verb.label === 'V' ? 'VP' : verb.label },
 					source: verb.source,
 				},
 				source,

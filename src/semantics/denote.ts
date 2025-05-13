@@ -68,7 +68,8 @@ function findVp(tree: StrictTree): StrictTree | null {
 			'left' in tree &&
 			'word' in tree.left &&
 			!tree.left.word.covert) ||
-		tree.label === "EvA'"
+		tree.label === "EvA'" ||
+		tree.label === 'mıP'
 	)
 		return tree;
 	if ('word' in tree) return null;
@@ -85,7 +86,6 @@ function getVerbWord_(verb: StrictTree): Word | CovertWord {
 		case 'VP':
 			return getVerbWord(verb);
 		case 'shuP':
-		case 'mıP':
 			if ('word' in verb || !('word' in verb.left))
 				throw new Unrecognized(`${verb.label} shape`);
 			if (verb.left.word.covert)
@@ -110,7 +110,13 @@ function getVerbWord_(verb: StrictTree): Word | CovertWord {
 }
 
 function getVerbWord(vp: StrictTree): Word | CovertWord {
-	return 'word' in vp ? vp.word : getVerbWord_(vp.left);
+	if ('word' in vp) return vp.word;
+	if (vp.label === 'mıP') {
+		if ('word' in vp || !('word' in vp.right))
+			throw new Unrecognized('mıP shape');
+		return vp.right.word;
+	}
+	return getVerbWord_(vp.left);
 }
 
 function animacyClass(verb: VerbEntry): AnimacyClass | null {
@@ -481,6 +487,13 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	if (leaf.label === 'word') {
 		if (leaf.word.covert) throw new Impossible('Covert word');
 		return quote(leaf.word.text);
+	}
+
+	if (leaf.label === 'mı') {
+		if (leaf.word.covert) throw new Impossible('Covert mı');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`mı: ${leaf.word.text}`);
+		return lex(leaf.word.entry.toaq, Fn('e', Fn('e', Fn('v', 't'))));
 	}
 
 	if (
