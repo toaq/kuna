@@ -69,7 +69,9 @@ function findVp(tree: StrictTree): StrictTree | null {
 			'word' in tree.left &&
 			!tree.left.word.covert) ||
 		tree.label === "EvA'" ||
-		tree.label === 'mıP'
+		tree.label === 'mıP' ||
+		tree.label === 'shuP' ||
+		tree.label === 'moP'
 	)
 		return tree;
 	if ('word' in tree) return null;
@@ -85,18 +87,17 @@ function getVerbWord_(verb: StrictTree): Word | CovertWord {
 			return verb.word;
 		case 'VP':
 			return getVerbWord(verb);
+		case 'mıP':
+			if ('word' in verb || !('word' in verb.right))
+				throw new Unrecognized('mıP shape');
+			return verb.right.word;
 		case 'shuP':
+		case 'moP':
 			if ('word' in verb || !('word' in verb.left))
 				throw new Unrecognized(`${verb.label} shape`);
 			if (verb.left.word.covert)
 				throw new Impossible(`Covert ${verb.left.label}`);
 			return verb.left.word;
-		case 'teoP':
-			if ('word' in verb || 'word' in verb.left || !('word' in verb.left.left))
-				throw new Unrecognized('teoP shape');
-			if (verb.left.left.word.covert)
-				throw new Impossible(`Covert ${verb.left.left.label}`);
-			return verb.left.left.word;
 		case 'buP':
 		case 'muP':
 		case 'geP':
@@ -111,11 +112,8 @@ function getVerbWord_(verb: StrictTree): Word | CovertWord {
 
 function getVerbWord(vp: StrictTree): Word | CovertWord {
 	if ('word' in vp) return vp.word;
-	if (vp.label === 'mıP') {
-		if ('word' in vp || !('word' in vp.right))
-			throw new Unrecognized('mıP shape');
-		return vp.right.word;
-	}
+	if (vp.label === 'mıP' || vp.label === 'shuP' || vp.label === 'moP')
+		return getVerbWord_(vp);
 	return getVerbWord_(vp.left);
 }
 
@@ -243,7 +241,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`D: ${leaf.word.text}`);
 
-		if (leaf.word.text === '◌́') {
+		if (leaf.word.bare === '◌') {
 			if (cCommand.label === 'word') {
 				assertLeaf(cCommand);
 				if (cCommand.word.covert) throw new Impossible('Covert name');
@@ -346,7 +344,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 						verb.entry.type !== 'predicatizer'
 					)
 						result = bind(
-							'pronominal_class' in verb.entry
+							verb.entry.type === 'predicate'
 								? { type: 'name', verb: verb.entry.toaq }
 								: { type: 'head', head: verb.bare },
 							v(x),
@@ -484,16 +482,22 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		);
 	}
 
-	if (leaf.label === 'word') {
-		if (leaf.word.covert) throw new Impossible('Covert word');
+	if (leaf.label === 'word' || leaf.label === 'text') {
+		if (leaf.word.covert) throw new Impossible(`Covert ${leaf.label}`);
 		return quote(leaf.word.text);
 	}
 
-	if (leaf.label === 'mı') {
-		if (leaf.word.covert) throw new Impossible('Covert mı');
+	if (leaf.label === 'mı' || leaf.label === 'shu' || leaf.label === 'mo') {
+		if (leaf.word.covert) throw new Impossible(`Covert ${leaf.label}`);
 		if (leaf.word.entry === undefined)
-			throw new Unrecognized(`mı: ${leaf.word.text}`);
+			throw new Unrecognized(`${leaf.label}: ${leaf.word.text}`);
 		return lex(leaf.word.entry.toaq, Fn('e', Fn('e', Fn('v', 't'))));
+	}
+
+	if (leaf.label === 'teo') {
+		if (cCommand === null)
+			throw new Impossible('Cannot denote a teo in isolation');
+		return λ(cCommand.denotation.type, x => v(x));
 	}
 
 	if (
