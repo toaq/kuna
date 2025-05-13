@@ -42,6 +42,7 @@ export function baseForm(word: string): string {
 	const bareForm = bare(word);
 	if (bareForm === 'e') return 'ë';
 	if (bareForm === 'ꝡe') return 'ꝡë';
+	if (bareForm === 'la') return 'lä';
 	return bareForm;
 }
 
