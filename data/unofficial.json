@@ -11,6 +11,7 @@
 	{ "type": "determiner", "toaq": "cúaq", "gloss": "the.concept" },
 	{ "type": "determiner", "toaq": "étu", "gloss": "each*" },
 	{ "type": "determiner", "toaq": "lího", "gloss": "etc" },
+	{ "type": "determiner", "toaq": "nánı", "gloss": "that" },
 	{ "type": "determiner", "toaq": "péı", "gloss": "the.number" },
 	{ "type": "focus particle", "toaq": "cúom", "gloss": "damn" },
 	{ "type": "focus particle", "toaq": "séu", "gloss": "if.nothing.else" },
