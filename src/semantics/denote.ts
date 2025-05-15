@@ -33,6 +33,7 @@ import {
 	pronominalTenses,
 	pronouns,
 	quantifiers,
+	serialFrames,
 	speechActParticles,
 	subjectSharingAdverbial,
 } from './data';
@@ -160,7 +161,19 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				type,
 			);
 		type = Int(type);
-		return lex(entry.toaq, type);
+		const verb = lex(entry.toaq, type);
+
+		// If the complement is a 𝘷P, serialize with it
+		if (cCommand?.label === '𝘷P' && leaf.word.entry !== undefined) {
+			if (leaf.word.entry.type !== 'predicate')
+				throw new Impossible(`Serializing ${leaf.word.entry.type}`);
+			const data = serialFrames.get(leaf.word.entry.frame);
+			if (data === undefined)
+				throw new Unimplemented(`Serial frame (${leaf.word.entry.frame})`);
+			return data(verb);
+		}
+
+		return verb;
 	}
 
 	if (leaf.label === '𝘷') {

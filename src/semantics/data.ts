@@ -17,6 +17,7 @@ import {
 	andMap,
 	animate,
 	app,
+	assertFn,
 	bg,
 	bind,
 	cont,
@@ -43,10 +44,74 @@ import {
 	λ,
 } from './model';
 import { typeToPlainText } from './render';
-import { getFunctor } from './structures';
+import { getBigFunctor, getFunctor, idFunctor } from './structures';
 import type { AnimacyClass, Expr, ExprType } from './types';
 
 export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))));
+
+const propositionContent = lex('ꝡä', Int(Fn(Int('t'), Fn('e', 't'))));
+
+export const serialFrames = new Map<string, (verb: Expr) => Expr>([
+	[
+		'c 0',
+		verb => {
+			const { wrap, unwrap, map } = getBigFunctor(verb.type) ?? idFunctor;
+			const inner = unwrap(verb.type);
+			assertFn(inner);
+			assertFn(inner.range);
+			const subjectType = inner.range.domain;
+			return map(
+				() =>
+					λ(inner, verb_ =>
+						int(
+							λ('s', w =>
+								λ(Int(Fn('v', 't')), tail =>
+									λ(subjectType, subject =>
+										λ('v', e =>
+											some(
+												λ('e', object =>
+													app(
+														app(
+															and,
+															app(
+																app(
+																	app(unint(propositionContent), v(w)),
+																	int(
+																		λ('s', w_ =>
+																			some(
+																				λ('v', e_ =>
+																					app(
+																						app(unint(v(tail)), v(w_)),
+																						v(e_),
+																					),
+																				),
+																			),
+																		),
+																	),
+																),
+																v(object),
+															),
+														),
+														app(
+															app(app(v(verb_), v(object)), v(subject)),
+															v(e),
+														),
+													),
+												),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				() => verb,
+				verb.type,
+				wrap(Fn(Int(Fn('v', 't')), Fn(subjectType, Fn('v', 't'))), verb.type),
+			);
+		},
+	],
+]);
 
 export const nullaryLittleV = λ(Fn('v', 't'), pred => v(pred));
 
@@ -300,7 +365,28 @@ export const overtComplementizers = new Map<string, Expr>([
 			),
 		),
 	],
-	['ꝡä', lex('ꝡä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))))],
+	[
+		'ꝡä',
+		int(
+			λ('s', w =>
+				λ(Int('t'), prop =>
+					λ(Int(Pl('e')), x =>
+						every(
+							λ('e', x_ =>
+								app(
+									app(implies, among(v(x_), app(unint(v(x)), v(w)))),
+									app(
+										app(app(unint(propositionContent), v(w)), v(prop)),
+										v(x_),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
+		),
+	],
 	['mä', lex('mä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))))],
 	[
 		'lä',

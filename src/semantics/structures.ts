@@ -935,6 +935,17 @@ export function composeFunctors(outer: Functor, inner: Functor): Functor {
 	};
 }
 
+/**
+ * Gets the "largest" possible Functor instance for a given type by composing
+ * multiple Functor instances together.
+ */
+export function getBigFunctor(t: ExprType): Functor | null {
+	const outer = getFunctor(t);
+	if (outer === null) return null;
+	const inner = getBigFunctor(outer.unwrap(t));
+	return inner === null ? outer : composeFunctors(outer, inner);
+}
+
 export function getApplicative(t: ExprType): Applicative | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'int') return intApplicative;
