@@ -18,9 +18,8 @@ function snapshot(toaq: string) {
 }
 
 test('predicatizers', () => {
-	// TODO: mea should be distributive
 	snapshot('Mea íme nháo.');
-	// TODO: pó should invoke a salient predicate and be non-distributive
+	// TODO: pó should invoke a salient predicate
 	snapshot('Kuaı jí pó nánı hea bâq nam.');
 });
 

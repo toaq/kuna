@@ -10,9 +10,9 @@ exports[`name verbs > Mı Kuna jí. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí
 
 exports[`name verbs > Mıru Kuna jí. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦mıru⟧ 𝑤 "Kuna" 𝑎) 𝑡)"`;
 
-exports[`predicatizers > Kuaı jí pó nánı hea bâq nam. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑄, 𝑅 ⇐ ⟦nánı⟧ (λ𝑄, 𝑅 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦nam⟧ 𝑤 𝑎) 𝑡''') ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦hea⟧ 𝑤 𝑏 𝑎) 𝑡''))); 𝑄 ⇒ nám, 𝑄 ⇒ máq, 𝑅 ⇒ héa, 𝑅 ⇒ máq; λ𝑤' gen (λ𝑆 ∀𝑎 𝑎 ≺ 𝑆 𝑤' → ⟦tam⟧ 𝑤' (⟦po⟧ 𝑤' (𝑅 𝑤') 𝑎) 𝑡') (λ𝑆 (𝑆 ⇒ tá; ⟦da⟧ (λ𝑤'' ∀𝑎 𝑎 ≺ 𝑃 𝑤'' → (∀𝑏 𝑏 ≺ 𝑆 𝑤'' → ⟦tam⟧ 𝑤'' (⟦kuaı⟧ 𝑤'' 𝑏 𝑎) 𝑡)))))"`;
+exports[`predicatizers > Kuaı jí pó nánı hea bâq nam. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑄, 𝑅 ⇐ ⟦nánı⟧ (λ𝑄, 𝑅 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦nam⟧ 𝑤 𝑎) 𝑡''') ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦hea⟧ 𝑤 𝑏 𝑎) 𝑡''))); 𝑄 ⇒ nám, 𝑄 ⇒ máq, 𝑅 ⇒ héa, 𝑅 ⇒ máq; λ𝑤' gen (λ𝑆 ⟦tam⟧ 𝑤' (⟦po⟧ 𝑤' (𝑅 𝑤') (𝑆 𝑤')) 𝑡') (λ𝑆 (𝑆 ⇒ tá; ⟦da⟧ (λ𝑤'' ∀𝑎 𝑎 ≺ 𝑃 𝑤'' → (∀𝑏 𝑏 ≺ 𝑆 𝑤'' → ⟦tam⟧ 𝑤'' (⟦kuaı⟧ 𝑤'' 𝑏 𝑎) 𝑡)))))"`;
 
-exports[`predicatizers > Mea íme nháo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦nháo⟧, 𝑄 ⇐ ⟦íme⟧; ⟦da⟧ (λ𝑤 ⟦tam⟧ 𝑤 (⟦mea⟧ 𝑤 (𝑄 𝑤) (𝑃 𝑤)) 𝑡)"`;
+exports[`predicatizers > Mea íme nháo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦nháo⟧, 𝑄 ⇐ ⟦íme⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦mea⟧ 𝑤 (𝑄 𝑤) 𝑎) 𝑡)"`;
 
 exports[`quotations > Kuq nháo mó «Ꝡoaq ní hao» teo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦nháo⟧, 𝑡' ⇐ ⟦tuom⟧; λ𝑤 gen (λ𝑄 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦mo⟧ 𝑤 "Ꝡoaq ní hao" 𝑎) 𝑡') (λ𝑄 (𝑄 ⇒ hụ́mo, 𝑄 ⇒ hóq; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑃 𝑤' → (∀𝑏 𝑏 ≺ 𝑄 𝑤' → ⟦tam⟧ 𝑤' (⟦kuq⟧ 𝑤' 𝑏 𝑎) 𝑡))))"`;
 
