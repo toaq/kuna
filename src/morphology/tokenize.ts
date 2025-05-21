@@ -234,6 +234,7 @@ export class ToaqTokenizer {
 						if (
 							entry.type === 'complementizer' ||
 							entry.type === 'subordinating complementizer' ||
+							entry.type === 'event accessor' ||
 							entry.type === 'word quote' ||
 							entry.type === 'text quote'
 						) {

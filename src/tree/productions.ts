@@ -252,24 +252,6 @@ export function makevPdet(
 	};
 }
 
-export function makeEvAP([rl, rr, left]: [Tree, Tree, Tree]) {
-	return {
-		label: 'EvAP',
-		left,
-		right: { label: "EvA'", left: rl, right: rr },
-		source: catSource(left, rl, rr),
-	};
-}
-
-export function makeEvAPdet([rl, rr]: [Tree, Tree]) {
-	return {
-		label: 'EvAP',
-		left: { label: 'DP', word: { covert: true, value: 'PRO' }, source: '' },
-		right: { label: "EvA'", left: rl, right: rr },
-		source: catSource(rl, rr),
-	};
-}
-
 function condClass(q: string): 'IF' | 'IF.CNTF' | 'WHEN' {
 	if (q === 'she' || q === 'daı') return 'IF';
 	if (q === 'ao' || q === 'ea') return 'IF.CNTF';

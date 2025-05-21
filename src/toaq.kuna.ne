@@ -36,8 +36,6 @@ const {
 	makeConn,
 	makeDiscourse,
 	makeEmptynP,
-	makeEvAP,
-	makeEvAPdet,
 	makeLeaf,
 	makeOptLeaf,
 	makePrefixLeaf,
@@ -77,6 +75,8 @@ SAP -> CP SAopt {% makeBranch('SAP') %}
 CP -> Copt Clause<main> {% makeBranch('CP') %}
 # ꝡä hao
 CPsub -> Csub Clause<sub> {% makeBranch('CP') %}
+# ë hao
+CPsub -> EvA vP<sub> {% makeBranch('EvAP') %}
 # (shê ꝡä hao nä) hao
 CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C') %}
 
@@ -152,13 +152,9 @@ SigmaPdet -> Sigmacon TPdet {% makeBranch('ΣP') %}
 
 # pu chum hao jí
 TP<S> -> Tconopt AspP<S> {% makeBranch('TP') %}
-# ë marao óguı ráı
-TP<S> -> EvA vP<sub> DPcon {% makeEvAP %}
 
 # (sá) pu chum hao
 TPdet -> Tconopt AspPdet {% makeBranch('TP') %}
-# (sá) ë marao óguı
-TPdet -> EvA vP<sub> {% makeEvAPdet %}
 
 # chum hao jí
 AspP<S> -> Aspconopt vP<S> {% makeBranch('AspP') %}

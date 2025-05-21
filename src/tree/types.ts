@@ -51,7 +51,6 @@ export type Label =
 	| 'DP'
 	| 'Discourse'
 	| 'EvA'
-	| "EvA'"
 	| 'EvAP'
 	| 'FocAdv'
 	| 'FocAdvP'

@@ -63,9 +63,6 @@ export function getFrame(verb: Tree): string {
 		if (lastSpace === -1) throw new Ungrammatical('Verb is not transitive');
 		return frame.slice(0, lastSpace);
 	}
-	if (verb.label === 'EvAP') {
-		return 'c';
-	}
 	if (verb.label === 'haP') {
 		return 'c c';
 	}

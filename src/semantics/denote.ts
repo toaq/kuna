@@ -69,7 +69,7 @@ function findVp(tree: StrictTree): StrictTree | null {
 			'left' in tree &&
 			'word' in tree.left &&
 			!tree.left.word.covert) ||
-		tree.label === "EvA'" ||
+		tree.label === 'EvAP' ||
 		tree.label === 'mıP' ||
 		tree.label === 'shuP' ||
 		tree.label === 'moP'
@@ -83,9 +83,6 @@ function getVerbWord_(verb: StrictTree): Word | CovertWord {
 	switch (verb.label) {
 		case 'V':
 		case 'C':
-		case 'EvA':
-			if (!('word' in verb)) throw new Unrecognized(`${verb.label} shape`);
-			return verb.word;
 		case 'VP':
 			return getVerbWord(verb);
 		case 'mıP':

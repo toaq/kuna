@@ -57,9 +57,6 @@ export function getDistribution(verb: Tree): string {
 	if (verb.label === 'shuP' || verb.label === 'teoP') {
 		return 'd';
 	}
-	if (verb.label === 'EvAP') {
-		return 'd';
-	}
 	if (verb.label === 'haP' || verb.label === 'suP') {
 		const distribution = getDistribution((verb as Branch<Tree>).right);
 		return `${distribution} ${distribution}`;

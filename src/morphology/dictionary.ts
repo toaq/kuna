@@ -161,10 +161,11 @@ export class Dictionary {
 		] as Entry[];
 
 		for (const e of entries) {
-			if (e.type === 'complementizer') {
-				if (/subordinate|relative|property/.test(e.english)) {
-					e.type = 'subordinating complementizer';
-				}
+			if (
+				e.type === 'complementizer' &&
+				/subordinate|relative|property/.test(e.english)
+			) {
+				e.type = 'subordinating complementizer';
 			}
 
 			// We'll assume "prefix" is a verb-to-verb prefix, and make some
