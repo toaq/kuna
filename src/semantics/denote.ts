@@ -504,7 +504,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (leaf.word.covert) throw new Impossible(`Covert ${leaf.label}`);
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`${leaf.label}: ${leaf.word.text}`);
-		return lex(leaf.word.entry.toaq, Fn('e', Fn('e', Fn('v', 't'))));
+		return lex(leaf.word.entry.toaq, Int(Fn('e', Fn('e', Fn('v', 't')))));
 	}
 
 	if (leaf.label === 'teo') {
