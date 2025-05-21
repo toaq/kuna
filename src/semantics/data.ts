@@ -455,13 +455,13 @@ export const speechActParticles = new Map<
 export const conditionals = new Map<CovertValue, Expr>([
 	[
 		'IF',
-		λ(Int('t'), antecedent =>
-			λ(Int('t'), consequent =>
-				andMap(
-					accessibility,
-					λ(Fn('s', Fn('s', 't')), accessible =>
-						int(
-							λ('s', w =>
+		andMap(
+			accessibility,
+			λ(Fn('s', Fn('s', 't')), accessible =>
+				int(
+					λ('s', w =>
+						λ(Int('t'), antecedent =>
+							λ(Int('t'), consequent =>
 								gen(
 									λ('s', w_ =>
 										app(
