@@ -78,7 +78,7 @@ CP -> Copt Clause<main> {% makeBranch('CP') %}
 # ꝡä hao
 CPsub -> Csub Clause<sub> {% makeBranch('CP') %}
 # (shê ꝡä hao nä) hao
-CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C', 'REL') %}
+CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C') %}
 
 # jí
 DP -> %pronoun Free:* {% makeLeaf('DP') %}
