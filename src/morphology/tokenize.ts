@@ -271,7 +271,11 @@ export class ToaqTokenizer {
 									value: '◌́',
 									index: m.index,
 								});
-								wordTokens.push({ type: 'word', value: base, index: m.index });
+								wordTokens.push({
+									type: 'word',
+									value: inTone(tokenText, tone(base)),
+									index: m.index,
+								});
 								continue;
 							}
 							if (
@@ -314,7 +318,11 @@ export class ToaqTokenizer {
 							value: '◌́',
 							index: m.index,
 						});
-						wordTokens.push({ type: 'word', value: base, index: m.index });
+						wordTokens.push({
+							type: 'word',
+							value: inTone(tokenText, tone(base)),
+							index: m.index,
+						});
 					} else {
 						wordTokens.unshift({
 							type: 'preposition',

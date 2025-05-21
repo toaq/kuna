@@ -120,38 +120,39 @@ test('it tokenizes sentences', () => {
 		{ type: 'complementizer', value: 'Ꝡa', index: 0 },
 		{ type: 'prefix', value: 'buq-', index: 3 },
 		{ type: 'predicate', value: 'gı', index: 3 },
-		{ type: 'determiner', value: '◌́', index: 9 },
+		{ type: 'tonal_determiner', value: '◌́', index: 9 },
 		{ type: 'event_accessor', value: 'ë', index: 9 },
 		{ type: 'predicate', value: 'sho', index: 11 },
 		{ type: 'predicate', value: 'tı', index: 15 },
 		{ type: 'pronoun', value: 'súq', index: 18 },
-		{ type: 'determiner', value: '◌́', index: 22 },
-		{ type: 'predicate', value: 'nırıaq', index: 22 },
+		{ type: 'word_determiner', value: '◌́', index: 22 },
+		{ type: 'word', value: 'nırıaq', index: 22 },
 		{ type: 'illocution', value: 'da', index: 29 },
 	]);
 	expect(tokenizer.next()!.value).toEqual('Ꝡa');
 	expect(tokenizer.next()!.value).toEqual('buq-');
 
 	tokenizer.reset('Âo ꝡä zudeq jí Tóaqzu, nä jaı jí.');
-	expect(tokenizer.next()!.type).toEqual('modality_with_complement');
+	expect(tokenizer.next()!.type).toEqual('quantifier_with_complement');
 
 	tokenizer.reset('Mụcho jí zạ́faq.');
 	expect(tokenizer.tokens).toEqual([
 		{ type: 'prefix', value: 'mu-', index: 0 },
 		{ type: 'predicate', value: 'cho', index: 0 },
 		{ type: 'pronoun', value: 'jí', index: 6 },
-		{ type: 'determiner', value: '◌́', index: 9 },
+		{ type: 'word_determiner', value: '◌́', index: 9 },
+		// TODO: It seems suspicious that the prefix is separate from the word token
 		{ type: 'prefix_aspect', value: 'za-', index: 9 },
-		{ type: 'predicate', value: 'faq', index: 9 },
+		{ type: 'word', value: 'faq', index: 9 },
 	]);
 
 	tokenizer.reset('Kuq mí Mô mó «Shu teo hú mo «azazo» teo» teo');
 	expect(tokenizer.tokens).toEqual([
 		{ type: 'predicate', value: 'Kuq', index: 0 },
-		{ type: 'determiner', value: '◌́', index: 4 },
+		{ type: 'tonal_determiner', value: '◌́', index: 4 },
 		{ type: 'name_verb', value: 'mı', index: 4 },
 		{ type: 'word', value: 'Mô', index: 7 },
-		{ type: 'determiner', value: '◌́', index: 10 },
+		{ type: 'tonal_determiner', value: '◌́', index: 10 },
 		{ type: 'text_quote', value: 'mo', index: 10 },
 		{ type: 'text', value: 'Shu teo hú mo «azazo» teo', index: 14 },
 		{ type: 'end_quote', value: 'teo', index: 41 },
@@ -163,7 +164,7 @@ test('it keeps capitalization', () => {
 	tokenizer.reset('Gı Tóaqzu');
 	expect(tokenizer.tokens).toEqual([
 		{ type: 'predicate', value: 'Gı', index: 0 },
-		{ type: 'determiner', value: '◌́', index: 3 },
-		{ type: 'predicate', value: 'Toaqzu', index: 3 },
+		{ type: 'word_determiner', value: '◌́', index: 3 },
+		{ type: 'word', value: 'Toaqzu', index: 3 },
 	]);
 });

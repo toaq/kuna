@@ -21,214 +21,427 @@ test('it places trees', () => {
 
 	expect(summarize(placed)).toMatchInlineSnapshot(`
 		{
+		  "categoryLabel": {
+		    "lines": [
+		      {
+		        "pieces": [
+		          {
+		            "font": "bold 1em Fira Sans",
+		            "text": "SAP",
+		          },
+		        ],
+		      },
+		    ],
+		  },
 		  "children": [
 		    {
+		      "categoryLabel": {
+		        "lines": [
+		          {
+		            "pieces": [
+		              {
+		                "font": "bold 1em Fira Sans",
+		                "text": "CP",
+		              },
+		            ],
+		          },
+		        ],
+		      },
 		      "children": [
 		        "C",
 		        {
+		          "categoryLabel": {
+		            "lines": [
+		              {
+		                "pieces": [
+		                  {
+		                    "font": "bold 1em Fira Sans",
+		                    "text": "&P",
+		                  },
+		                ],
+		              },
+		            ],
+		          },
 		          "children": [
 		            {
+		              "categoryLabel": {
+		                "lines": [
+		                  {
+		                    "pieces": [
+		                      {
+		                        "font": "bold 1em Fira Sans",
+		                        "text": "TP",
+		                      },
+		                    ],
+		                  },
+		                ],
+		              },
 		              "children": [
-		                "Σ",
+		                "T",
 		                {
+		                  "categoryLabel": {
+		                    "lines": [
+		                      {
+		                        "pieces": [
+		                          {
+		                            "font": "bold 1em Fira Sans",
+		                            "text": "AspP",
+		                          },
+		                        ],
+		                      },
+		                    ],
+		                  },
 		                  "children": [
-		                    "T",
+		                    "Asp",
 		                    {
-		                      "children": [
-		                        "Asp",
-		                        {
-		                          "children": [
-		                            {
-		                              "children": [
-		                                "V",
-		                              ],
-		                              "denotation": undefined,
-		                              "gloss": undefined,
-		                              "label": "*Serial",
-		                              "placement": {
-		                                "distanceBetweenChildren": 0,
-		                                "width": 140,
+		                      "categoryLabel": {
+		                        "lines": [
+		                          {
+		                            "pieces": [
+		                              {
+		                                "font": "bold 1em Fira Sans",
+		                                "text": "*",
 		                              },
-		                              "roof": false,
-		                              "source": "gaı",
-		                              "text": undefined,
-		                            },
-		                            "DP",
-		                            "DP",
+		                              {
+		                                "font": "italic bold 1em Fira Sans",
+		                                "text": "v",
+		                              },
+		                              {
+		                                "font": "bold 1em Fira Sans",
+		                                "text": "P",
+		                              },
+		                            ],
+		                          },
+		                        ],
+		                      },
+		                      "children": [
+		                        {
+		                          "categoryLabel": {
+		                            "lines": [
+		                              {
+		                                "pieces": [
+		                                  {
+		                                    "font": "bold 1em Fira Sans",
+		                                    "text": "*Serial",
+		                                  },
+		                                ],
+		                              },
+		                            ],
+		                          },
+		                          "children": [
+		                            "V",
 		                          ],
 		                          "denotation": undefined,
+		                          "fullCategoryLabel": "Unfixed serial",
 		                          "gloss": undefined,
-		                          "label": "*𝘷P",
+		                          "id": undefined,
+		                          "label": "*Serial",
+		                          "mode": undefined,
 		                          "placement": {
-		                            "distanceBetweenChildren": 130,
-		                            "width": 80,
+		                            "childrenDx": [
+		                              0,
+		                            ],
+		                            "width": 140,
 		                          },
 		                          "roof": false,
-		                          "source": "gaı jí máq",
+		                          "source": "gaı",
 		                          "text": undefined,
+		                          "textStyle": 0,
 		                        },
+		                        "DP",
+		                        "DP",
 		                      ],
 		                      "denotation": undefined,
+		                      "fullCategoryLabel": "Unfixed verb phrase",
 		                      "gloss": undefined,
-		                      "label": "AspP",
+		                      "id": undefined,
+		                      "label": "*𝘷P",
+		                      "mode": undefined,
 		                      "placement": {
-		                        "distanceBetweenChildren": 260,
+		                        "childrenDx": [
+		                          -120,
+		                          0,
+		                          120,
+		                        ],
 		                        "width": 80,
 		                      },
 		                      "roof": false,
 		                      "source": "gaı jí máq",
 		                      "text": undefined,
+		                      "textStyle": 0,
 		                    },
 		                  ],
 		                  "denotation": undefined,
+		                  "fullCategoryLabel": "Aspect phrase",
 		                  "gloss": undefined,
-		                  "label": "TP",
+		                  "id": undefined,
+		                  "label": "AspP",
+		                  "mode": undefined,
 		                  "placement": {
-		                    "distanceBetweenChildren": 200,
-		                    "width": 40,
+		                    "childrenDx": [
+		                      -50,
+		                      50,
+		                    ],
+		                    "width": 80,
 		                  },
 		                  "roof": false,
 		                  "source": "gaı jí máq",
 		                  "text": undefined,
+		                  "textStyle": 0,
 		                },
 		              ],
 		              "denotation": undefined,
+		              "fullCategoryLabel": "Tense phrase",
 		              "gloss": undefined,
-		              "label": "ΣP",
+		              "id": undefined,
+		              "label": "TP",
+		              "mode": undefined,
 		              "placement": {
-		                "distanceBetweenChildren": 150,
+		                "childrenDx": [
+		                  -50,
+		                  50,
+		                ],
 		                "width": 40,
 		              },
 		              "roof": false,
 		              "source": "gaı jí máq",
 		              "text": undefined,
+		              "textStyle": 0,
 		            },
 		            {
+		              "categoryLabel": {
+		                "lines": [
+		                  {
+		                    "pieces": [
+		                      {
+		                        "font": "bold 1em Fira Sans",
+		                        "text": "&'",
+		                      },
+		                    ],
+		                  },
+		                ],
+		              },
 		              "children": [
 		                "&",
 		                {
+		                  "categoryLabel": {
+		                    "lines": [
+		                      {
+		                        "pieces": [
+		                          {
+		                            "font": "bold 1em Fira Sans",
+		                            "text": "TP",
+		                          },
+		                        ],
+		                      },
+		                    ],
+		                  },
 		                  "children": [
-		                    "Σ",
+		                    "T",
 		                    {
+		                      "categoryLabel": {
+		                        "lines": [
+		                          {
+		                            "pieces": [
+		                              {
+		                                "font": "bold 1em Fira Sans",
+		                                "text": "AspP",
+		                              },
+		                            ],
+		                          },
+		                        ],
+		                      },
 		                      "children": [
-		                        "T",
+		                        "Asp",
 		                        {
-		                          "children": [
-		                            "Asp",
-		                            {
-		                              "children": [
-		                                {
-		                                  "children": [
-		                                    "V",
-		                                  ],
-		                                  "denotation": undefined,
-		                                  "gloss": undefined,
-		                                  "label": "*Serial",
-		                                  "placement": {
-		                                    "distanceBetweenChildren": 0,
-		                                    "width": 140,
+		                          "categoryLabel": {
+		                            "lines": [
+		                              {
+		                                "pieces": [
+		                                  {
+		                                    "font": "bold 1em Fira Sans",
+		                                    "text": "*",
 		                                  },
-		                                  "roof": false,
-		                                  "source": "hao",
-		                                  "text": undefined,
-		                                },
-		                                "DP",
+		                                  {
+		                                    "font": "italic bold 1em Fira Sans",
+		                                    "text": "v",
+		                                  },
+		                                  {
+		                                    "font": "bold 1em Fira Sans",
+		                                    "text": "P",
+		                                  },
+		                                ],
+		                              },
+		                            ],
+		                          },
+		                          "children": [
+		                            {
+		                              "categoryLabel": {
+		                                "lines": [
+		                                  {
+		                                    "pieces": [
+		                                      {
+		                                        "font": "bold 1em Fira Sans",
+		                                        "text": "*Serial",
+		                                      },
+		                                    ],
+		                                  },
+		                                ],
+		                              },
+		                              "children": [
+		                                "V",
 		                              ],
 		                              "denotation": undefined,
+		                              "fullCategoryLabel": "Unfixed serial",
 		                              "gloss": undefined,
-		                              "label": "*𝘷P",
+		                              "id": undefined,
+		                              "label": "*Serial",
+		                              "mode": undefined,
 		                              "placement": {
-		                                "distanceBetweenChildren": 120,
-		                                "width": 80,
+		                                "childrenDx": [
+		                                  0,
+		                                ],
+		                                "width": 140,
 		                              },
 		                              "roof": false,
-		                              "source": "hao jí",
+		                              "source": "hao",
 		                              "text": undefined,
+		                              "textStyle": 0,
 		                            },
+		                            "DP",
 		                          ],
 		                          "denotation": undefined,
+		                          "fullCategoryLabel": "Unfixed verb phrase",
 		                          "gloss": undefined,
-		                          "label": "AspP",
+		                          "id": undefined,
+		                          "label": "*𝘷P",
+		                          "mode": undefined,
 		                          "placement": {
-		                            "distanceBetweenChildren": 190,
+		                            "childrenDx": [
+		                              -60,
+		                              60,
+		                            ],
 		                            "width": 80,
 		                          },
 		                          "roof": false,
 		                          "source": "hao jí",
 		                          "text": undefined,
+		                          "textStyle": 0,
 		                        },
 		                      ],
 		                      "denotation": undefined,
+		                      "fullCategoryLabel": "Aspect phrase",
 		                      "gloss": undefined,
-		                      "label": "TP",
+		                      "id": undefined,
+		                      "label": "AspP",
+		                      "mode": undefined,
 		                      "placement": {
-		                        "distanceBetweenChildren": 165,
-		                        "width": 40,
+		                        "childrenDx": [
+		                          -50,
+		                          50,
+		                        ],
+		                        "width": 80,
 		                      },
 		                      "roof": false,
 		                      "source": "hao jí",
 		                      "text": undefined,
+		                      "textStyle": 0,
 		                    },
 		                  ],
 		                  "denotation": undefined,
+		                  "fullCategoryLabel": "Tense phrase",
 		                  "gloss": undefined,
-		                  "label": "ΣP",
+		                  "id": undefined,
+		                  "label": "TP",
+		                  "mode": undefined,
 		                  "placement": {
-		                    "distanceBetweenChildren": 132.5,
+		                    "childrenDx": [
+		                      -50,
+		                      50,
+		                    ],
 		                    "width": 40,
 		                  },
 		                  "roof": false,
 		                  "source": "hao jí",
 		                  "text": undefined,
+		                  "textStyle": 0,
 		                },
 		              ],
 		              "denotation": undefined,
+		              "fullCategoryLabel": "Conjunction bar-level",
 		              "gloss": undefined,
+		              "id": undefined,
 		              "label": "&'",
+		              "mode": undefined,
 		              "placement": {
-		                "distanceBetweenChildren": 136.25,
+		                "childrenDx": [
+		                  -50,
+		                  50,
+		                ],
 		                "width": 40,
 		              },
 		              "roof": false,
 		              "source": "rú hao jí",
 		              "text": undefined,
+		              "textStyle": 0,
 		            },
 		          ],
 		          "denotation": undefined,
+		          "fullCategoryLabel": "Conjunction phrase",
 		          "gloss": undefined,
+		          "id": undefined,
 		          "label": "&P",
+		          "mode": undefined,
 		          "placement": {
-		            "distanceBetweenChildren": 473.125,
+		            "childrenDx": [
+		              -140,
+		              140,
+		            ],
 		            "width": 40,
 		          },
 		          "roof": false,
 		          "source": "gaı jí máq rú hao jí",
 		          "text": undefined,
+		          "textStyle": 0,
 		        },
 		      ],
 		      "denotation": undefined,
+		      "fullCategoryLabel": "Complementizer phrase",
 		      "gloss": undefined,
+		      "id": undefined,
 		      "label": "CP",
+		      "mode": undefined,
 		      "placement": {
-		        "distanceBetweenChildren": 296.5625,
+		        "childrenDx": [
+		          -50,
+		          50,
+		        ],
 		        "width": 40,
 		      },
 		      "roof": false,
 		      "source": "gaı jí máq rú hao jí",
 		      "text": undefined,
+		      "textStyle": 0,
 		    },
 		    "SA",
 		  ],
 		  "denotation": undefined,
+		  "fullCategoryLabel": "Speech act phrase",
 		  "gloss": undefined,
+		  "id": undefined,
 		  "label": "SAP",
+		  "mode": undefined,
 		  "placement": {
-		    "distanceBetweenChildren": 218.28125,
+		    "childrenDx": [
+		      -50,
+		      50,
+		    ],
 		    "width": 60,
 		  },
 		  "roof": false,
 		  "source": "gaı jí máq rú hao jí",
 		  "text": undefined,
+		  "textStyle": 0,
 		}
 	`);
 });

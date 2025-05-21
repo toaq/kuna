@@ -17,17 +17,59 @@ test('it turns trees into scenes', () => {
 		      "from": 1,
 		      "to": 2,
 		    },
+		    {
+		      "from": 0,
+		      "to": 1,
+		    },
 		  ],
 		  "root": {
+		    "categoryLabel": {
+		      "lines": [
+		        {
+		          "pieces": [
+		            {
+		              "font": "bold 1em Fira Sans",
+		              "text": "SAP",
+		            },
+		          ],
+		        },
+		      ],
+		    },
 		    "children": [
 		      {
+		        "categoryLabel": {
+		          "lines": [
+		            {
+		              "pieces": [
+		                {
+		                  "font": "bold 1em Fira Sans",
+		                  "text": "CP",
+		                },
+		              ],
+		            },
+		          ],
+		        },
 		        "children": [
 		          {
+		            "categoryLabel": {
+		              "lines": [
+		                {
+		                  "pieces": [
+		                    {
+		                      "font": "bold 1em Fira Sans",
+		                      "text": "C",
+		                    },
+		                  ],
+		                },
+		              ],
+		            },
 		            "children": [],
 		            "denotation": undefined,
+		            "fullCategoryLabel": "Complementizer",
 		            "gloss": undefined,
 		            "id": undefined,
 		            "label": "C",
+		            "mode": undefined,
 		            "placement": undefined,
 		            "roof": false,
 		            "source": "",
@@ -35,89 +77,219 @@ test('it turns trees into scenes', () => {
 		            "textStyle": 0,
 		          },
 		          {
+		            "categoryLabel": {
+		              "lines": [
+		                {
+		                  "pieces": [
+		                    {
+		                      "font": "bold 1em Fira Sans",
+		                      "text": "TP",
+		                    },
+		                  ],
+		                },
+		              ],
+		            },
 		            "children": [
 		              {
+		                "categoryLabel": {
+		                  "lines": [
+		                    {
+		                      "pieces": [
+		                        {
+		                          "font": "bold 1em Fira Sans",
+		                          "text": "T",
+		                        },
+		                      ],
+		                    },
+		                  ],
+		                },
 		                "children": [],
 		                "denotation": undefined,
+		                "fullCategoryLabel": "Tense",
 		                "gloss": undefined,
-		                "id": undefined,
-		                "label": "Σ",
+		                "id": 3,
+		                "label": "T",
+		                "mode": undefined,
 		                "placement": undefined,
 		                "roof": false,
 		                "source": "",
-		                "text": "∅",
-		                "textStyle": 0,
+		                "text": "hao",
+		                "textStyle": 1,
 		              },
 		              {
+		                "categoryLabel": {
+		                  "lines": [
+		                    {
+		                      "pieces": [
+		                        {
+		                          "font": "bold 1em Fira Sans",
+		                          "text": "AspP",
+		                        },
+		                      ],
+		                    },
+		                  ],
+		                },
 		                "children": [
 		                  {
+		                    "categoryLabel": {
+		                      "lines": [
+		                        {
+		                          "pieces": [
+		                            {
+		                              "font": "bold 1em Fira Sans",
+		                              "text": "Asp",
+		                            },
+		                          ],
+		                        },
+		                      ],
+		                    },
 		                    "children": [],
 		                    "denotation": undefined,
+		                    "fullCategoryLabel": "Aspect",
 		                    "gloss": undefined,
-		                    "id": 3,
-		                    "label": "T",
+		                    "id": 2,
+		                    "label": "Asp",
+		                    "mode": undefined,
 		                    "placement": undefined,
 		                    "roof": false,
 		                    "source": "",
-		                    "text": "hao",
-		                    "textStyle": 1,
+		                    "text": "∅",
+		                    "textStyle": 2,
 		                  },
 		                  {
+		                    "categoryLabel": {
+		                      "lines": [
+		                        {
+		                          "pieces": [
+		                            {
+		                              "font": "italic bold 1em Fira Sans",
+		                              "text": "v",
+		                            },
+		                            {
+		                              "font": "bold 1em Fira Sans",
+		                              "text": "P",
+		                            },
+		                          ],
+		                        },
+		                      ],
+		                    },
 		                    "children": [
 		                      {
+		                        "categoryLabel": {
+		                          "lines": [
+		                            {
+		                              "pieces": [
+		                                {
+		                                  "font": "bold 1em Fira Sans",
+		                                  "text": "DP",
+		                                },
+		                              ],
+		                            },
+		                          ],
+		                        },
 		                        "children": [],
 		                        "denotation": undefined,
-		                        "gloss": undefined,
-		                        "id": 2,
-		                        "label": "Asp",
+		                        "fullCategoryLabel": "Determiner phrase",
+		                        "gloss": "1S",
+		                        "id": undefined,
+		                        "label": "DP",
+		                        "mode": undefined,
 		                        "placement": undefined,
 		                        "roof": false,
-		                        "source": "",
-		                        "text": "∅",
-		                        "textStyle": 2,
+		                        "source": "jí",
+		                        "text": "jí",
+		                        "textStyle": 0,
 		                      },
 		                      {
+		                        "categoryLabel": {
+		                          "lines": [
+		                            {
+		                              "pieces": [
+		                                {
+		                                  "font": "italic bold 1em Fira Sans",
+		                                  "text": "v",
+		                                },
+		                                {
+		                                  "font": "bold 1em Fira Sans",
+		                                  "text": "'",
+		                                },
+		                              ],
+		                            },
+		                          ],
+		                        },
 		                        "children": [
 		                          {
+		                            "categoryLabel": {
+		                              "lines": [
+		                                {
+		                                  "pieces": [
+		                                    {
+		                                      "font": "italic bold 1em Fira Sans",
+		                                      "text": "v",
+		                                    },
+		                                  ],
+		                                },
+		                              ],
+		                            },
 		                            "children": [],
 		                            "denotation": undefined,
+		                            "fullCategoryLabel": "Light verb",
 		                            "gloss": undefined,
 		                            "id": 1,
 		                            "label": "𝘷",
+		                            "mode": undefined,
 		                            "placement": undefined,
 		                            "roof": false,
 		                            "source": "",
-		                            "text": "BE",
+		                            "text": "∅",
 		                            "textStyle": 2,
 		                          },
 		                          {
+		                            "categoryLabel": {
+		                              "lines": [
+		                                {
+		                                  "pieces": [
+		                                    {
+		                                      "font": "bold 1em Fira Sans",
+		                                      "text": "VP",
+		                                    },
+		                                  ],
+		                                },
+		                              ],
+		                            },
 		                            "children": [],
 		                            "denotation": undefined,
-		                            "gloss": undefined,
-		                            "id": undefined,
+		                            "fullCategoryLabel": "Verb phrase",
+		                            "gloss": "stuff",
+		                            "id": 0,
 		                            "label": "VP",
+		                            "mode": undefined,
 		                            "placement": undefined,
 		                            "roof": true,
-		                            "source": "hao jí",
-		                            "text": "hao jí",
-		                            "textStyle": 0,
+		                            "source": "hao",
+		                            "text": "hao",
+		                            "textStyle": 2,
 		                          },
 		                        ],
 		                        "denotation": undefined,
+		                        "fullCategoryLabel": "Light verb bar-level",
 		                        "gloss": undefined,
 		                        "id": undefined,
-		                        "label": "𝘷P",
+		                        "label": "𝘷'",
+		                        "mode": undefined,
 		                        "placement": undefined,
 		                        "roof": false,
-		                        "source": "hao jí",
+		                        "source": "hao",
 		                        "text": undefined,
 		                        "textStyle": 0,
 		                      },
 		                    ],
 		                    "denotation": undefined,
+		                    "fullCategoryLabel": "Light verb phrase",
 		                    "gloss": undefined,
 		                    "id": undefined,
-		                    "label": "AspP",
+		                    "label": "𝘷P",
+		                    "mode": undefined,
 		                    "placement": undefined,
 		                    "roof": false,
 		                    "source": "hao jí",
@@ -126,9 +298,11 @@ test('it turns trees into scenes', () => {
 		                  },
 		                ],
 		                "denotation": undefined,
+		                "fullCategoryLabel": "Aspect phrase",
 		                "gloss": undefined,
 		                "id": undefined,
-		                "label": "TP",
+		                "label": "AspP",
+		                "mode": undefined,
 		                "placement": undefined,
 		                "roof": false,
 		                "source": "hao jí",
@@ -137,9 +311,11 @@ test('it turns trees into scenes', () => {
 		              },
 		            ],
 		            "denotation": undefined,
+		            "fullCategoryLabel": "Tense phrase",
 		            "gloss": undefined,
 		            "id": undefined,
-		            "label": "ΣP",
+		            "label": "TP",
+		            "mode": undefined,
 		            "placement": undefined,
 		            "roof": false,
 		            "source": "hao jí",
@@ -148,9 +324,11 @@ test('it turns trees into scenes', () => {
 		          },
 		        ],
 		        "denotation": undefined,
+		        "fullCategoryLabel": "Complementizer phrase",
 		        "gloss": undefined,
 		        "id": undefined,
 		        "label": "CP",
+		        "mode": undefined,
 		        "placement": undefined,
 		        "roof": false,
 		        "source": "hao jí",
@@ -158,11 +336,25 @@ test('it turns trees into scenes', () => {
 		        "textStyle": 0,
 		      },
 		      {
+		        "categoryLabel": {
+		          "lines": [
+		            {
+		              "pieces": [
+		                {
+		                  "font": "bold 1em Fira Sans",
+		                  "text": "SA",
+		                },
+		              ],
+		            },
+		          ],
+		        },
 		        "children": [],
 		        "denotation": undefined,
+		        "fullCategoryLabel": "Speech act",
 		        "gloss": undefined,
 		        "id": undefined,
 		        "label": "SA",
+		        "mode": undefined,
 		        "placement": undefined,
 		        "roof": false,
 		        "source": "",
@@ -171,9 +363,11 @@ test('it turns trees into scenes', () => {
 		      },
 		    ],
 		    "denotation": undefined,
+		    "fullCategoryLabel": "Speech act phrase",
 		    "gloss": undefined,
 		    "id": undefined,
 		    "label": "SAP",
+		    "mode": undefined,
 		    "placement": undefined,
 		    "roof": false,
 		    "source": "hao jí",
