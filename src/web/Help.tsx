@@ -61,7 +61,7 @@ const TypesHelp = () => (
 );
 
 const effects: [string, string, string][] = [
-	['Gen T', 'generic reference', '{T}'],
+	['Indef T', 'indefinite reference', '{T}'],
 	['Pl T', 'plural constant', '{T}'],
 	['Qn D T', 'question with domain', '{D} × (D → T)'],
 	['Act T', 'speech act (writes to discourse)', 'T × a'],

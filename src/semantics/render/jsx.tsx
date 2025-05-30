@@ -357,8 +357,8 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 				return this.app(token(<mi>Cont</mi>), this.sub(t.inner));
 			case 'pl':
 				return this.app(token(<mi>Pl</mi>), this.sub(t.inner));
-			case 'gen':
-				return this.app(token(<mi>Gen</mi>), this.sub(t.inner));
+			case 'indef':
+				return this.app(token(<mi>Indef</mi>), this.sub(t.inner));
 			case 'qn':
 				return this.app(token(<mi>Qn</mi>), this.sub(t.inner));
 			case 'pair':

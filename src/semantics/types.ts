@@ -69,9 +69,9 @@ export type ExprType =
 	// A plurality which behaves in local syntax like {inner}; isomorphic to a set
 	// of {inner}.
 	| { head: 'pl'; inner: ExprType }
-	// A generic reference which behaves in local syntax like {inner}; isomorphic
-	// to (a set of {domain}) × ({domain} → {inner}).
-	| { head: 'gen'; domain: ExprType; inner: ExprType }
+	// An indefinite reference which behaves in local syntax like {inner};
+	// isomorphic to (a set of {domain}) × ({domain} → {inner}).
+	| { head: 'indef'; domain: ExprType; inner: ExprType }
 	// A question which behaves in local syntax like {inner}; isomorphic to
 	// (a set of {domain}) × ({domain} → {inner}).
 	| { head: 'qn'; domain: ExprType; inner: ExprType }
@@ -146,8 +146,8 @@ interface Constant extends ExprBase {
 		| 'uncont'
 		| 'map'
 		| 'flat_map'
-		| 'gen'
-		| 'ungen'
+		| 'indef'
+		| 'unindef'
 		| 'qn'
 		| 'unqn'
 		| 'some'

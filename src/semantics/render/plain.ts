@@ -43,8 +43,8 @@ export class PlainTextType extends Renderer<ExprType, string> {
 				return this.app(token('Cont'), this.sub(t.inner));
 			case 'pl':
 				return this.app(token('Pl'), this.sub(t.inner));
-			case 'gen':
-				return this.app(token('Gen'), this.sub(t.inner));
+			case 'indef':
+				return this.app(token('Indef'), this.sub(t.inner));
 			case 'qn':
 				return this.app(token('Qn'), this.sub(t.inner));
 			case 'pair':

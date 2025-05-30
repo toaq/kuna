@@ -20,7 +20,7 @@ import {
 	assertCont,
 	assertDx,
 	assertFn,
-	assertGen,
+	assertIndef,
 	assertInt,
 	assertNf,
 	assertPair,
@@ -31,8 +31,8 @@ import {
 	cont,
 	every,
 	flatMap,
-	gen,
 	implies,
+	indef,
 	int,
 	map,
 	nf,
@@ -45,7 +45,7 @@ import {
 	typesEqual,
 	unbind,
 	uncont,
-	ungen,
+	unindef,
 	unint,
 	unnf,
 	unpair,
@@ -263,8 +263,8 @@ const plRunner: Runner = {
 	run: e => every(λ('t', t => app(app(implies, among(v(t), e())), v(t)))),
 };
 
-const genOrQnMonad = (
-	head: 'gen' | 'qn',
+const indefOrQnMonad = (
+	head: 'indef' | 'qn',
 	construct: (restriction: Expr, body: Expr) => Expr,
 	deconstruct: (e: Expr, project: Expr) => Expr,
 ): Monad => ({
@@ -425,18 +425,18 @@ const genOrQnMonad = (
 	},
 });
 
-const genMonad = genOrQnMonad('gen', gen, ungen);
-const genApplicative = genMonad.applicative;
-const genFunctor = genApplicative.functor;
+const indefMonad = indefOrQnMonad('indef', indef, unindef);
+const indefApplicative = indefMonad.applicative;
+const indefFunctor = indefApplicative.functor;
 
-const genRunner: Runner = {
-	functor: genFunctor,
+const indefRunner: Runner = {
+	functor: indefFunctor,
 	eager: false,
 	run: e => {
 		const e_ = e();
-		assertGen(e_.type);
+		assertIndef(e_.type);
 		const { domain } = e_.type;
-		return ungen(
+		return unindef(
 			e_,
 			λ(Fn(domain, 't'), r =>
 				λ(Fn(domain, 't'), b =>
@@ -447,7 +447,7 @@ const genRunner: Runner = {
 	},
 };
 
-const qnMonad = genOrQnMonad('qn', qn, unqn);
+const qnMonad = indefOrQnMonad('qn', qn, unqn);
 const qnApplicative = qnMonad.applicative;
 const qnFunctor = qnApplicative.functor;
 
@@ -758,7 +758,7 @@ const functorPrecedence = new Map(
 			'act',
 			'pair',
 			'qn',
-			'gen',
+			'indef',
 			'cont',
 			'pl',
 		] as (ExprType & object)['head'][]
@@ -789,7 +789,7 @@ export function getFunctor(t: ExprType): Functor | null {
 	if (t.head === 'int') return intFunctor;
 	if (t.head === 'cont') return contFunctor;
 	if (t.head === 'pl') return plFunctor;
-	if (t.head === 'gen') return genFunctor;
+	if (t.head === 'indef') return indefFunctor;
 	if (t.head === 'qn') return qnFunctor;
 	if (t.head === 'pair') return pairFunctor;
 	if (t.head === 'bind') return bindFunctor;
@@ -879,7 +879,7 @@ export function getMatchingFunctor(t1: ExprType, t2: ExprType): Functor | null {
 	if (t1.head === 'int') return intFunctor;
 	if (t1.head === 'cont') return contFunctor;
 	if (t1.head === 'pl') return plFunctor;
-	if (t1.head === 'gen') return genFunctor;
+	if (t1.head === 'indef') return indefFunctor;
 	if (t1.head === 'qn') return qnFunctor;
 	if (
 		t1.head === 'pair' &&
@@ -951,7 +951,7 @@ export function getApplicative(t: ExprType): Applicative | null {
 	if (t.head === 'int') return intApplicative;
 	if (t.head === 'cont') return contApplicative;
 	if (t.head === 'pl') return plApplicative;
-	if (t.head === 'gen') return genApplicative;
+	if (t.head === 'indef') return indefApplicative;
 	if (t.head === 'qn') return qnApplicative;
 	if (t.head === 'ref') return refApplicative;
 	if (t.head === 'nf') return nfApplicative;
@@ -1034,7 +1034,7 @@ export function getMonad(t: ExprType): Monad | null {
 	if (t.head === 'int') return intMonad;
 	if (t.head === 'dx') return dxMonad;
 	if (t.head === 'act') return actMonad;
-	if (t.head === 'gen') return genMonad;
+	if (t.head === 'indef') return indefMonad;
 	if (t.head === 'qn') return qnMonad;
 	return null;
 }
@@ -1057,7 +1057,7 @@ export function getRunner(t: ExprType): Runner | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'cont') return contRunner;
 	if (t.head === 'pl') return plRunner;
-	if (t.head === 'gen') return genRunner;
+	if (t.head === 'indef') return indefRunner;
 	if (t.head === 'bind' && t.binding.type === 'reflexive')
 		return bindReflexiveRunner;
 	return null;
@@ -1075,7 +1075,7 @@ export function findInner(inType: ExprType, like: ExprType): ExprType | null {
 		(inType.head === 'int' ||
 			inType.head === 'cont' ||
 			inType.head === 'pl' ||
-			inType.head === 'gen' ||
+			inType.head === 'indef' ||
 			inType.head === 'qn' ||
 			(inType.head === 'pair' &&
 				typesEqual(

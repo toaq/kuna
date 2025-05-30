@@ -5,7 +5,7 @@ import {
 	Act,
 	Dx,
 	Fn,
-	Gen,
+	Indef,
 	Int,
 	Nf,
 	Pl,
@@ -23,8 +23,8 @@ import {
 	cont,
 	equals,
 	every,
-	gen,
 	implies,
+	indef,
 	int,
 	lex,
 	map,
@@ -36,7 +36,7 @@ import {
 	ref,
 	salient,
 	some,
-	ungen,
+	unindef,
 	unint,
 	unnf,
 	unref,
@@ -182,7 +182,7 @@ export const pronouns = new Map<string, Expr>([
 			λ(Int(Fn(Pl('e'), 't')), r =>
 				int(
 					λ('s', w =>
-						gen(
+						indef(
 							λ(Int(Pl('e')), xx =>
 								app(
 									app(
@@ -303,7 +303,7 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 		'báq',
 		domain =>
 			λ(Fn(domain, 't'), predicate =>
-				gen(
+				indef(
 					v(predicate),
 					λ(domain, x => v(x)),
 				),
@@ -326,7 +326,7 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 ]);
 
 export const littleN = λ(Fn(Int(Pl('e')), 't'), predicate =>
-	gen(
+	indef(
 		v(predicate),
 		λ(Int(Pl('e')), x => v(x)),
 	),
@@ -462,7 +462,7 @@ export const conditionals = new Map<CovertValue, Expr>([
 					λ('s', w =>
 						λ(Int('t'), antecedent =>
 							λ(Int('t'), consequent =>
-								gen(
+								indef(
 									λ('s', w_ =>
 										app(
 											app(and, app(app(v(accessible), v(w)), v(w_))),
@@ -496,7 +496,7 @@ export const conditionals = new Map<CovertValue, Expr>([
 							λ('()', () =>
 								int(
 									λ('s', w =>
-										gen(
+										indef(
 											λ('s', w_ =>
 												app(
 													app(and, app(app(v(accessible), v(w)), v(w_))),
@@ -518,7 +518,7 @@ export const conditionals = new Map<CovertValue, Expr>([
 		'WHEN',
 		λ('t', antecedent =>
 			λ('t', consequent =>
-				gen(
+				indef(
 					λ('()', () => v(antecedent)),
 					λ('()', () => v(consequent)),
 				),
@@ -528,8 +528,8 @@ export const conditionals = new Map<CovertValue, Expr>([
 ]);
 
 const always = (domain: ExprType) =>
-	λ(Gen(domain, 't'), p =>
-		ungen(
+	λ(Indef(domain, 't'), p =>
+		unindef(
 			v(p),
 			λ(Fn(domain, 't'), r =>
 				λ(Fn(domain, 't'), b =>
@@ -542,8 +542,8 @@ const always = (domain: ExprType) =>
 	);
 
 const sometimes = (domain: ExprType) =>
-	λ(Gen(domain, 't'), p =>
-		ungen(
+	λ(Indef(domain, 't'), p =>
+		unindef(
 			v(p),
 			λ(Fn(domain, 't'), r =>
 				λ(Fn(domain, 't'), b =>
@@ -554,8 +554,8 @@ const sometimes = (domain: ExprType) =>
 	);
 
 const never = (domain: ExprType) =>
-	λ(Gen(domain, 't'), p =>
-		ungen(
+	λ(Indef(domain, 't'), p =>
+		unindef(
 			v(p),
 			λ(Fn(domain, 't'), r =>
 				λ(Fn(domain, 't'), b =>

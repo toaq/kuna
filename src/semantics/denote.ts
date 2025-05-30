@@ -42,18 +42,18 @@ import {
 	Cont,
 	Dx,
 	Fn,
-	Gen,
+	Indef,
 	Int,
 	Pl,
 	Qn,
 	app,
 	assertFn,
 	bind,
-	gen,
+	indef,
 	lex,
 	quote,
 	ref,
-	ungen,
+	unindef,
 	v,
 	λ,
 } from './model';
@@ -129,11 +129,13 @@ function animacyClass(verb: VerbEntry): AnimacyClass | null {
 	}
 }
 
-function findGen(t: ExprType): (ExprType & object & { head: 'gen' }) | null {
+function findIndef(
+	t: ExprType,
+): (ExprType & object & { head: 'indef' }) | null {
 	if (typeof t === 'string') return null;
-	if (t.head === 'gen') return t;
+	if (t.head === 'indef') return t;
 	const functor = getFunctor(t);
-	return functor && findGen(functor.unwrap(t));
+	return functor && findIndef(functor.unwrap(t));
 }
 
 function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
@@ -297,12 +299,12 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
 
-		const gen = findGen(cCommand.denotation.type);
-		if (gen === null)
+		const indef = findIndef(cCommand.denotation.type);
+		if (indef === null)
 			throw new Impossible(
 				`D complement: ${typeToPlainText(cCommand.denotation.type)}`,
 			);
-		const data = determiners.get(toaq)?.(gen.domain);
+		const data = determiners.get(toaq)?.(indef.domain);
 		if (data === undefined) throw new Unrecognized(`D: ${toaq}`);
 		assertFn(data.type);
 		const { range } = data.type;
@@ -310,16 +312,16 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (functor === null)
 			throw new Impossible(`${toaq} doesn't return a functor`);
 
-		return λ(Gen(gen.domain, gen.inner), np =>
-			ungen(
+		return λ(Indef(indef.domain, indef.inner), np =>
+			unindef(
 				v(np),
-				λ(Fn(gen.domain, 't'), restriction =>
-					λ(Fn(gen.domain, gen.inner), body =>
+				λ(Fn(indef.domain, 't'), restriction =>
+					λ(Fn(indef.domain, indef.inner), body =>
 						functor.map(
-							() => λ(gen.domain, x => app(v(body), v(x))),
+							() => λ(indef.domain, x => app(v(body), v(x))),
 							() => app(data, v(restriction)),
 							range,
-							functor.wrap(gen.inner, range),
+							functor.wrap(indef.inner, range),
 						),
 					),
 				),
@@ -342,7 +344,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				: null;
 
 		return λ(Fn(Int(Pl('e')), 't'), predicate =>
-			gen(
+			indef(
 				v(predicate),
 				λ(Int(Pl('e')), x => {
 					let result: Expr = v(x);
@@ -416,18 +418,18 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Impossible('Cannot denote a Q in isolation');
 		if (leaf.word.covert) throw new Impossible('Covert Q');
 		const toaq = leaf.word.bare;
-		const gen = findGen(cCommand.denotation.type);
-		if (gen === null)
+		const indef = findIndef(cCommand.denotation.type);
+		if (indef === null)
 			throw new Impossible(
 				`Q complement: ${typeToPlainText(cCommand.denotation.type)}`,
 			);
 
 		return (
-			quantifiers.get(toaq)?.(gen.domain) ??
-			λ(Gen(gen.domain, 't'), g =>
-				ungen(
+			quantifiers.get(toaq)?.(indef.domain) ??
+			λ(Indef(indef.domain, 't'), g =>
+				unindef(
 					v(g),
-					lex(toaq, Fn(Fn(gen.domain, 't'), Fn(Fn(gen.domain, 't'), 't'))),
+					lex(toaq, Fn(Fn(indef.domain, 't'), Fn(Fn(indef.domain, 't'), 't'))),
 				),
 			)
 		);

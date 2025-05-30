@@ -47,7 +47,7 @@ function coerceType_(
 		(inType.head === 'int' ||
 			inType.head === 'cont' ||
 			inType.head === 'pl' ||
-			inType.head === 'gen' ||
+			inType.head === 'indef' ||
 			inType.head === 'qn' ||
 			(inType.head === 'pair' &&
 				typesEqual(

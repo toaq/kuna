@@ -38,8 +38,8 @@ export function Pl(inner: ExprType): ExprType {
 	return { head: 'pl', inner };
 }
 
-export function Gen(domain: ExprType, inner: ExprType): ExprType {
-	return { head: 'gen', domain, inner };
+export function Indef(domain: ExprType, inner: ExprType): ExprType {
+	return { head: 'indef', domain, inner };
 }
 
 export function Qn(domain: ExprType, inner: ExprType): ExprType {
@@ -91,9 +91,9 @@ export function subtype(t1: ExprType, t2: ExprType): boolean {
 			return t2.head === 'cont' && subtype(t1.inner, t2.inner);
 		case 'pl':
 			return t2.head === 'pl' && subtype(t1.inner, t2.inner);
-		case 'gen':
+		case 'indef':
 			return (
-				t2.head === 'gen' &&
+				t2.head === 'indef' &&
 				subtype(t2.domain, t1.domain) &&
 				subtype(t1.inner, t2.inner)
 			);
@@ -162,8 +162,8 @@ export function typesEqual(t1: ExprType, t2: ExprType): boolean {
 			return t2.head === 'cont' && typesEqual(t1.inner, t2.inner);
 		case 'pl':
 			return t2.head === 'pl' && typesEqual(t1.inner, t2.inner);
-		case 'gen':
-			return t2.head === 'gen' && typesEqual(t1.inner, t2.inner);
+		case 'indef':
+			return t2.head === 'indef' && typesEqual(t1.inner, t2.inner);
 		case 'qn':
 			return t2.head === 'qn' && typesEqual(t1.inner, t2.inner);
 		case 'pair':
@@ -241,12 +241,12 @@ export function assertPl(
 		throw new Impossible(`${typeToPlainText(type)} is not a plurality type`);
 }
 
-export function assertGen(
+export function assertIndef(
 	type: ExprType,
-): asserts type is { head: 'gen'; inner: ExprType; domain: ExprType } {
-	if (typeof type === 'string' || type.head !== 'gen')
+): asserts type is { head: 'indef'; inner: ExprType; domain: ExprType } {
+	if (typeof type === 'string' || type.head !== 'indef')
 		throw new Impossible(
-			`${typeToPlainText(type)} is not a generic reference type`,
+			`${typeToPlainText(type)} is not a indefinite reference type`,
 		);
 }
 
@@ -528,9 +528,9 @@ export function flatMap(pl: Expr, project: Expr): Expr {
 }
 
 /**
- * Constructs a generic reference.
+ * Constructs an indefinite reference.
  */
-export function gen(restriction: Expr, body: Expr): Expr {
+export function indef(restriction: Expr, body: Expr): Expr {
 	assertFn(restriction.type);
 	assertFn(body.type);
 	return app(
@@ -541,11 +541,11 @@ export function gen(restriction: Expr, body: Expr): Expr {
 					Fn(restriction.type.domain, 't'),
 					Fn(
 						Fn(restriction.type.domain, body.type.range),
-						Gen(restriction.type.domain, body.type.range),
+						Indef(restriction.type.domain, body.type.range),
 					),
 				),
 				scope: [],
-				name: 'gen',
+				name: 'indef',
 			},
 			restriction,
 		),
@@ -554,10 +554,10 @@ export function gen(restriction: Expr, body: Expr): Expr {
 }
 
 /**
- * Deconstructs a generic reference.
+ * Deconstructs an indefinite reference.
  */
-export function ungen(gen: Expr, project: Expr): Expr {
-	assertGen(gen.type);
+export function unindef(indef: Expr, project: Expr): Expr {
+	assertIndef(indef.type);
 	assertFn(project.type);
 	assertFn(project.type.range);
 	const out = project.type.range.range;
@@ -566,19 +566,19 @@ export function ungen(gen: Expr, project: Expr): Expr {
 			{
 				head: 'constant',
 				type: Fn(
-					gen.type,
+					indef.type,
 					Fn(
 						Fn(
-							Fn(gen.type.domain, 't'),
-							Fn(Fn(gen.type.domain, gen.type.inner), out),
+							Fn(indef.type.domain, 't'),
+							Fn(Fn(indef.type.domain, indef.type.inner), out),
 						),
 						out,
 					),
 				),
 				scope: [],
-				name: 'ungen',
+				name: 'unindef',
 			},
-			gen,
+			indef,
 		),
 		project,
 	);

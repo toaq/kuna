@@ -11,7 +11,7 @@ import {
 	implies,
 	map,
 	unbind,
-	ungen,
+	unindef,
 	unpair,
 	unqn,
 	v,
@@ -115,8 +115,8 @@ function pairlikeDeconstructor(
 	name: (Expr & object & { head: 'constant' })['name'],
 ): ((e: Expr, project: Expr) => Expr) | null {
 	switch (name) {
-		case 'ungen':
-			return ungen;
+		case 'unindef':
+			return unindef;
 		case 'unqn':
 			return unqn;
 		case 'unpair':
@@ -178,9 +178,10 @@ function reduce_(expr: Expr): Expr {
 				const g = expr.arg;
 
 				// unpair (pair x f) g = g x f
-				// and so on for Gen, Qn, Bind
+				// and so on for Indef, Qn, Bind
 				if (
-					(expr.fn.fn.name === 'ungen' && expr.fn.arg.fn.fn.name === 'gen') ||
+					(expr.fn.fn.name === 'unindef' &&
+						expr.fn.arg.fn.fn.name === 'indef') ||
 					(expr.fn.fn.name === 'unqn' && expr.fn.arg.fn.fn.name === 'qn') ||
 					(expr.fn.fn.name === 'unpair' && expr.fn.arg.fn.fn.name === 'pair') ||
 					(expr.fn.fn.name === 'unbind' && expr.fn.arg.fn.fn.name === 'bind')
@@ -329,7 +330,7 @@ function reduce_(expr: Expr): Expr {
 			}
 
 			// f (unpair x (λy λz g)) = unpair x (λy λz f g)
-			// and so on for Gen, Qn, Bind
+			// and so on for Indef, Qn, Bind
 			if (
 				expr.arg.head === 'apply' &&
 				expr.arg.fn.head === 'apply' &&
@@ -355,7 +356,7 @@ function reduce_(expr: Expr): Expr {
 			}
 
 			// unpair x (λy λz g) f = unpair x (λy λz g f)
-			// and so on for Gen, Qn, Bind
+			// and so on for Indef, Qn, Bind
 			if (
 				expr.fn.head === 'apply' &&
 				expr.fn.fn.head === 'apply' &&
@@ -381,11 +382,11 @@ function reduce_(expr: Expr): Expr {
 			}
 
 			// unpair x (λy λz unpair x f) = unpair x (λy λz f y z)
-			// and so on for Gen, Qn, Bind
+			// and so on for Indef, Qn, Bind
 			if (
 				expr.fn.head === 'apply' &&
 				expr.fn.fn.head === 'constant' &&
-				(expr.fn.fn.name === 'ungen' ||
+				(expr.fn.fn.name === 'unindef' ||
 					expr.fn.fn.name === 'unqn' ||
 					expr.fn.fn.name === 'unpair' ||
 					expr.fn.fn.name === 'unbind') &&
