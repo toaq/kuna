@@ -1,6 +1,6 @@
 import { dictionary } from '../morphology/dictionary';
 import { toadua } from '../morphology/toadua';
-import { type ToaqToken, bare } from '../morphology/tokenize';
+import { type ToaqToken, bare, clean } from '../morphology/tokenize';
 import { tone } from '../morphology/tone';
 import { describeSerial } from '../syntax/frame';
 import {
@@ -20,7 +20,7 @@ export function makeNull(label: Label, value: CovertValue = '∅'): Leaf {
 }
 
 export function makeWord([token]: [ToaqToken]): Word {
-	const lemmaForm = token.value.toLowerCase().normalize();
+	const lemmaForm = clean(token.value);
 	const bareWord = bare(token.value);
 	return {
 		covert: false,
