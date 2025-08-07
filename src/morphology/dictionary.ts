@@ -41,6 +41,7 @@ export const nonVerbTypes = [
 	'prefix tense',
 	'preposition',
 	'pronoun',
+	'pronoun prefix form',
 	'quantifier',
 	'quantifier with complement',
 	'retroactive cleft',

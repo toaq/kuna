@@ -26,6 +26,7 @@ test('predicatizers', () => {
 test('object incorporation', () => {
 	snapshot('Rụınua hôq jí nháo.');
 	snapshot('Sạtao súq ba.');
+	snapshot('Họqdua sía poq.');
 });
 
 test('name verbs', () => {

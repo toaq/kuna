@@ -52,6 +52,16 @@
 	{ "type": "pronoun", "toaq": "kóm", "gloss": "it" },
 	{ "type": "pronoun", "toaq": "ré", "gloss": "it" },
 	{ "type": "pronoun", "toaq": "súqneoq", "gloss": "you.POLITE" },
+	{ "type": "pronoun prefix form", "toaq": "aq-", "gloss": "of:REFL" },
+	{ "type": "pronoun prefix form", "toaq": "cheq-", "gloss": "of:RECP" },
+	{ "type": "pronoun prefix form", "toaq": "ho-", "gloss": "of:it.I" },
+	{ "type": "pronoun prefix form", "toaq": "hoa-", "gloss": "of:RSM" },
+	{ "type": "pronoun prefix form", "toaq": "hoq-", "gloss": "of:it.III" },
+	{ "type": "pronoun prefix form", "toaq": "jı-", "gloss": "of:1S" },
+	{ "type": "pronoun prefix form", "toaq": "maq-", "gloss": "of:it.II" },
+	{ "type": "pronoun prefix form", "toaq": "nhao-", "gloss": "of:3S" },
+	{ "type": "pronoun prefix form", "toaq": "suq-", "gloss": "of:2S" },
+	{ "type": "pronoun prefix form", "toaq": "ta-", "gloss": "of:it.IV" },
 	{ "type": "tense", "toaq": "ınaı", "gloss": "NOW.ABS" },
 	{ "type": "tense", "toaq": "tuom", "gloss": "default.tense" }
 ]

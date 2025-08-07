@@ -82,7 +82,7 @@ CPsub -> EvA vP<sub> {% makeBranch('EvAP') %}
 CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C') %}
 
 # jí
-DP -> %pronoun Free:* {% makeLeaf('DP') %}
+DP -> Pronoun Free:* {% id %}
 # háo/hụ́ꝡa
 DP -> WordD Word {% makeBranch('DP') %}
 # sá ...
@@ -225,6 +225,7 @@ V1 -> Verb {% id %}
 V1 -> Verb ConjunctionT1 V1 {% makeConn %}
 Verb -> Prefix Verb {% makePrefixP %}
 Verb -> Dprefix Verb {% makePrefixObjectIncorp %}
+Verb -> PronounPrefix Verb {% makeBranch('V') %}
 Verb -> V {% id %}
 Verb -> ShuP {% id %}
 ShuP -> Shu Word {% makeBranch('shuP') %}
@@ -269,6 +270,8 @@ Prefix -> %focus_particle_prefix_form {% makePrefixLeaf %}
 PrefixNa -> %prefix_conjunctionizer {% makePrefixLeaf %}
 PrefixNaT1 -> %prefix_conjunctionizer_in_t1 {% makePrefixLeaf %}
 PrefixNaT4 -> %prefix_conjunctionizer_in_t4 {% makePrefixLeaf %}
+Pronoun -> %pronoun {% makeLeaf('DP') %}
+PronounPrefix -> %pronoun_prefix_form {% makeLeaf('DP') %}
 Roi -> %plural_coordinator Free:* {% makeLeaf('&') %}
 SA -> %illocution Free:* {% makeLeaf('SA') %}
 SAopt -> SA:? {% makeOptLeaf('SA') %}

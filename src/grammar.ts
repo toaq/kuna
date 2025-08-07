@@ -3,7 +3,6 @@
 // Bypasses TS6133. Allow declared but unused functions.
 // @ts-ignore
 function id(d: any[]): any { return d[0]; }
-declare var pronoun: any;
 declare var incorporated_pronoun: any;
 declare var preposition: any;
 declare var conjunction: any;
@@ -36,6 +35,8 @@ declare var focus_particle_prefix_form: any;
 declare var prefix_conjunctionizer: any;
 declare var prefix_conjunctionizer_in_t1: any;
 declare var prefix_conjunctionizer_in_t4: any;
+declare var pronoun: any;
+declare var pronoun_prefix_form: any;
 declare var plural_coordinator: any;
 declare var illocution: any;
 declare var polarity: any;
@@ -127,7 +128,7 @@ const grammar: Grammar = {
     {"name": "CPna_sub", "symbols": ["Clause_sub"], "postprocess": makeBranchCovertLeft('CP', 'C')},
     {"name": "DP$ebnf$1", "symbols": []},
     {"name": "DP$ebnf$1", "symbols": ["DP$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
-    {"name": "DP", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun), "DP$ebnf$1"], "postprocess": makeLeaf('DP')},
+    {"name": "DP", "symbols": ["Pronoun", "DP$ebnf$1"], "postprocess": id},
     {"name": "DP", "symbols": ["WordD", "Word"], "postprocess": makeBranch('DP')},
     {"name": "DP", "symbols": ["D", "nPopt"], "postprocess": makeBranch('DP')},
     {"name": "DP", "symbols": ["Dtonal", "nP"], "postprocess": makeBranch('DP')},
@@ -262,6 +263,7 @@ const grammar: Grammar = {
     {"name": "V1", "symbols": ["Verb", "ConjunctionT1", "V1"], "postprocess": makeConn},
     {"name": "Verb", "symbols": ["Prefix", "Verb"], "postprocess": makePrefixP},
     {"name": "Verb", "symbols": ["Dprefix", "Verb"], "postprocess": makePrefixObjectIncorp},
+    {"name": "Verb", "symbols": ["PronounPrefix", "Verb"], "postprocess": makeBranch('V')},
     {"name": "Verb", "symbols": ["V"], "postprocess": id},
     {"name": "Verb", "symbols": ["ShuP"], "postprocess": id},
     {"name": "ShuP", "symbols": ["Shu", "Word"], "postprocess": makeBranch('shuP')},
@@ -355,6 +357,8 @@ const grammar: Grammar = {
     {"name": "PrefixNa", "symbols": [(lexer.has("prefix_conjunctionizer") ? {type: "prefix_conjunctionizer"} : prefix_conjunctionizer)], "postprocess": makePrefixLeaf},
     {"name": "PrefixNaT1", "symbols": [(lexer.has("prefix_conjunctionizer_in_t1") ? {type: "prefix_conjunctionizer_in_t1"} : prefix_conjunctionizer_in_t1)], "postprocess": makePrefixLeaf},
     {"name": "PrefixNaT4", "symbols": [(lexer.has("prefix_conjunctionizer_in_t4") ? {type: "prefix_conjunctionizer_in_t4"} : prefix_conjunctionizer_in_t4)], "postprocess": makePrefixLeaf},
+    {"name": "Pronoun", "symbols": [(lexer.has("pronoun") ? {type: "pronoun"} : pronoun)], "postprocess": makeLeaf('DP')},
+    {"name": "PronounPrefix", "symbols": [(lexer.has("pronoun_prefix_form") ? {type: "pronoun_prefix_form"} : pronoun_prefix_form)], "postprocess": makeLeaf('DP')},
     {"name": "Roi$ebnf$1", "symbols": []},
     {"name": "Roi$ebnf$1", "symbols": ["Roi$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "Roi", "symbols": [(lexer.has("plural_coordinator") ? {type: "plural_coordinator"} : plural_coordinator), "Roi$ebnf$1"], "postprocess": makeLeaf('&')},

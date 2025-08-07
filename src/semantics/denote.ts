@@ -201,7 +201,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`DP: ${leaf.word.text}`);
 
-		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+		const toaq = inTone(leaf.word.entry.toaq.replace(/-$/, ''), Tone.T2);
 
 		const data = pronouns.get(toaq);
 		if (data === undefined) throw new Unrecognized(`DP: ${toaq}`);
