@@ -39,6 +39,7 @@ const {
 	makeLeaf,
 	makeOptLeaf,
 	makePrefixLeaf,
+	makePrefixObjectIncorp,
 	makePrefixP,
 	makeQP,
 	makeRetroactiveCleft,
@@ -223,6 +224,7 @@ Vlast -> Verb Argincorp {% makeBranch('V') %}
 V1 -> Verb {% id %}
 V1 -> Verb ConjunctionT1 V1 {% makeConn %}
 Verb -> Prefix Verb {% makePrefixP %}
+Verb -> Dprefix Verb {% makePrefixObjectIncorp %}
 Verb -> V {% id %}
 Verb -> ShuP {% id %}
 ShuP -> Shu Word {% makeBranch('shuP') %}
@@ -249,6 +251,7 @@ D -> %determiner Free:* {% makeLeaf('D') %}
 Dincorp -> %incorporated_determiner Free:* {% makeLeaf('D') %}
 Dtonal -> %tonal_determiner Free:* {% makeLeaf('D') %}
 Dtonalincorp -> %tonal_incorporated_determiner Free:* {% makeLeaf('D') %}
+Dprefix -> %determiner_prefix_form {% makeLeaf('D') %}
 EvA -> %event_accessor Free:* {% makeLeaf('EvA') %}
 Focus -> %focus_particle Free:* {% makeLeaf('Focus') %}
 Go -> %retroactive_cleft Free:* {% makeLeaf('𝘷') %}

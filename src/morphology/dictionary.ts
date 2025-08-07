@@ -20,6 +20,7 @@ export const nonVerbTypes = [
 	'conjunction in t1',
 	'conjunction in t4',
 	'determiner',
+	'determiner prefix form',
 	'end parenthetical',
 	'end quote',
 	'event accessor',

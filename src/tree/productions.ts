@@ -447,6 +447,20 @@ export function makePrefixP([prefix, verb]: [Tree, Tree]) {
 	};
 }
 
+export function makePrefixObjectIncorp([prefix, verb]: [Tree, Tree]) {
+	return {
+		label: 'V',
+		left: {
+			label: 'DP',
+			left: prefix,
+			right: emptynP,
+			source: prefix.source,
+		},
+		right: verb,
+		source: catSource(prefix, verb),
+	};
+}
+
 export function makeRetroactiveCleft([tp, vgo, clause]: [Tree, Tree, Tree]) {
 	return {
 		label: '𝘷P',

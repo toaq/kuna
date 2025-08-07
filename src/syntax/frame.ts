@@ -58,7 +58,9 @@ export function getFrame(verb: Tree): string {
 	if (verb.label === 'V') {
 		// Object incorporation: delete the object place from the V's frame
 		assertBranch(verb);
-		const frame = getFrame(verb.left);
+		// DP could be on either side of the branch (sạtao / tao sâ)
+		const v = verb.left.label === 'DP' ? verb.right : verb.left;
+		const frame = getFrame(v);
 		const lastSpace = frame.lastIndexOf(' ');
 		if (lastSpace === -1) throw new Ungrammatical('Verb is not transitive');
 		return frame.slice(0, lastSpace);

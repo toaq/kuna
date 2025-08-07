@@ -297,7 +297,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			);
 		}
 
-		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
+		const toaq = inTone(leaf.word.entry.toaq.replace(/-$/, ''), Tone.T2);
 
 		const indef = findIndef(cCommand.denotation.type);
 		if (indef === null)

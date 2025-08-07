@@ -23,6 +23,11 @@ test('predicatizers', () => {
 	snapshot('Kuaı jí pó nánı hea bâq nam.');
 });
 
+test('object incorporation', () => {
+	snapshot('Rụınua hôq jí nháo.');
+	snapshot('Sạtao súq ba.');
+});
+
 test('name verbs', () => {
 	snapshot('Mı Kuna jí.');
 	snapshot('Mıru Kuna jí.');

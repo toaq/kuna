@@ -174,11 +174,13 @@ function serialTovP(
 		}
 
 		// Extract the object from an object-incorporated verb
-		return verbs[0].label === 'V' &&
-			'left' in verbs[0] &&
-			verbs[0].left.label === 'V'
-			? makevP(verbs[0].left, [...args, verbs[0].right])
-			: makevP(verbs[0], args);
+		if (verbs[0].label === 'V' && 'left' in verbs[0]) {
+			if (effectiveLabel(verbs[0].right) === 'DP')
+				return makevP(verbs[0].left, [...args, verbs[0].right]);
+			if (effectiveLabel(verbs[0].left) === 'DP')
+				return makevP(verbs[0].right, [...args, verbs[0].left]);
+		}
+		return makevP(verbs[0], args);
 	}
 	const frame = splitNonEmpty(firstFrame.replace(/a/g, 'c'), ' ');
 	for (let i = 0; i < frame.length - 1; i++) {
@@ -336,7 +338,7 @@ export function fixSerial(
 	const lateAdjuncts: Tree[] = [];
 	for (const term of terms) {
 		const label = effectiveLabel(term);
-		if (label === 'DP' || label === '𝘯P') args.push(term);
+		if (label === 'DP') args.push(term);
 		else if (args.length) lateAdjuncts.push(term);
 		else earlyAdjuncts.push(term);
 	}

@@ -18,6 +18,7 @@ declare var determiner: any;
 declare var incorporated_determiner: any;
 declare var tonal_determiner: any;
 declare var tonal_incorporated_determiner: any;
+declare var determiner_prefix_form: any;
 declare var event_accessor: any;
 declare var focus_particle: any;
 declare var retroactive_cleft: any;
@@ -65,6 +66,7 @@ const {
 	makeLeaf,
 	makeOptLeaf,
 	makePrefixLeaf,
+	makePrefixObjectIncorp,
 	makePrefixP,
 	makeQP,
 	makeRetroactiveCleft,
@@ -259,6 +261,7 @@ const grammar: Grammar = {
     {"name": "V1", "symbols": ["Verb"], "postprocess": id},
     {"name": "V1", "symbols": ["Verb", "ConjunctionT1", "V1"], "postprocess": makeConn},
     {"name": "Verb", "symbols": ["Prefix", "Verb"], "postprocess": makePrefixP},
+    {"name": "Verb", "symbols": ["Dprefix", "Verb"], "postprocess": makePrefixObjectIncorp},
     {"name": "Verb", "symbols": ["V"], "postprocess": id},
     {"name": "Verb", "symbols": ["ShuP"], "postprocess": id},
     {"name": "ShuP", "symbols": ["Shu", "Word"], "postprocess": makeBranch('shuP')},
@@ -312,6 +315,7 @@ const grammar: Grammar = {
     {"name": "Dtonalincorp$ebnf$1", "symbols": []},
     {"name": "Dtonalincorp$ebnf$1", "symbols": ["Dtonalincorp$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "Dtonalincorp", "symbols": [(lexer.has("tonal_incorporated_determiner") ? {type: "tonal_incorporated_determiner"} : tonal_incorporated_determiner), "Dtonalincorp$ebnf$1"], "postprocess": makeLeaf('D')},
+    {"name": "Dprefix", "symbols": [(lexer.has("determiner_prefix_form") ? {type: "determiner_prefix_form"} : determiner_prefix_form)], "postprocess": makeLeaf('D')},
     {"name": "EvA$ebnf$1", "symbols": []},
     {"name": "EvA$ebnf$1", "symbols": ["EvA$ebnf$1", "Free"], "postprocess": (d) => d[0].concat([d[1]])},
     {"name": "EvA", "symbols": [(lexer.has("event_accessor") ? {type: "event_accessor"} : event_accessor), "EvA$ebnf$1"], "postprocess": makeLeaf('EvA')},
