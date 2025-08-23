@@ -1,5 +1,13 @@
 import { Impossible } from '../../core/error';
-import { assertBind, assertFn, assertRef, pair } from '../model';
+import {
+	Fn,
+	Indef,
+	assertBind,
+	assertFn,
+	assertIndef,
+	assertRef,
+	pair,
+} from '../model';
 import { rewriteScope, substitute } from '../reduce';
 import type { Binding, Expr, ExprType } from '../types';
 
@@ -99,7 +107,7 @@ interface Quote extends ExprBase {
 
 interface Constant extends ExprBase {
 	head: 'constant';
-	name: (Expr & { head: 'constant' })['name'];
+	name: (Expr & { head: 'constant' })['name'] | 'new';
 }
 
 /**
@@ -350,6 +358,39 @@ export function enrich(e: Expr): RichExpr {
 					right: e.fn.fn.type.range.range.binding,
 					result,
 					pure: !(result.head === 'do' && result.op === 'set'),
+				};
+			}
+
+			// Do notation (sugar replacing 'indef f (λx g)' with 'x ⇐ new f; g')
+			if (
+				e.fn.head === 'apply' &&
+				e.fn.fn.head === 'constant' &&
+				e.fn.fn.name === 'indef' &&
+				e.arg.head === 'lambda'
+			) {
+				const { param, body } = enrichLambda(e.arg);
+				assertIndef(e.type);
+				const newType = Indef(e.type.domain, e.type.domain);
+				return {
+					type: e.type,
+					scope: e.scope,
+					head: 'do',
+					op: 'get',
+					left: enrich(param),
+					right: {
+						type: newType,
+						scope: e.fn.arg.scope,
+						head: 'apply',
+						fn: {
+							type: Fn(e.fn.arg.type, newType),
+							scope: [],
+							head: 'constant',
+							name: 'new',
+						},
+						arg: enrich(e.fn.arg),
+					},
+					result: enrich(body),
+					pure: true,
 				};
 			}
 
