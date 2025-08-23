@@ -77,7 +77,7 @@ export function InspectNode(props: {
 	const { tree, breadcrumbs } = props;
 
 	return (
-		<div className="mt-8 mb-16">
+		<div className="mt-8 mb-16 w-fit">
 			<h2 className="text-2xl my-2 font-bold">
 				{tree.fullCategoryLabel ?? <TreeLabel label={tree.categoryLabel} />}
 			</h2>

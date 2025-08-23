@@ -2,12 +2,15 @@ import { useContext } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { InspectContext } from './inspect';
 
+const minSidebarWidth = 250;
+
 export function Inspector() {
 	const { inspectee, setInspectee, setInspecteePath } =
 		useContext(InspectContext);
 	const sidebarRef = useRef<HTMLDivElement>(null);
+	const contentRef = useRef<HTMLDivElement>(null);
 	const [isResizing, setIsResizing] = useState(false);
-	const [sidebarWidth, setSidebarWidth] = useState(268);
+	const [sidebarWidth, setSidebarWidth] = useState(minSidebarWidth);
 
 	const startResizing = useCallback(() => {
 		document.body.classList.toggle('moving', true);
@@ -40,6 +43,16 @@ export function Inspector() {
 		};
 	}, [resize, stopResizing]);
 
+	useEffect(() => {
+		if (inspectee && contentRef.current) {
+			const contentWidth = contentRef.current.scrollWidth;
+			const maxSidebarWidth = window.innerWidth * 0.75;
+			setSidebarWidth(
+				Math.min(Math.max(contentWidth + 48, minSidebarWidth), maxSidebarWidth),
+			);
+		}
+	}, [inspectee]);
+
 	const open = sidebarWidth >= 100;
 
 	return (
@@ -55,7 +68,11 @@ export function Inspector() {
 		>
 			{open && inspectee ? (
 				<div className="ps-8">
-					<div style={{ width: 8000, overflow: 'hidden' }}>{inspectee}</div>
+					<div style={{ width: 8000, overflow: 'hidden' }}>
+						<div className="w-fit" ref={contentRef}>
+							{inspectee}
+						</div>
+					</div>
 					<button
 						type="button"
 						className="cursor-pointer absolute top-0 end-0 p-4"
@@ -88,7 +105,7 @@ export function Inspector() {
 			) : undefined}
 			{inspectee ? (
 				<div
-					className="inspectee start-0 top-0 bottom-0 w-3 absolute cursor-ew-resize border-l-1 border-black/25 hover:border-current [.moving_&]:border-current transition-colors"
+					className="start-0 top-0 bottom-0 w-3 absolute cursor-ew-resize border-l-1 border-black/25 hover:border-current [.moving_&]:border-current transition-colors"
 					onMouseDown={startResizing}
 				/>
 			) : undefined}
