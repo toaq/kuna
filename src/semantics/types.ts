@@ -184,7 +184,10 @@ export type Expr = Variable | Lambda | Apply | Lexeme | Quote | Constant;
 /**
  * A tree with denotations.
  */
-export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode; steps?: CompositionStep[] })) & {
+export type DTree = (
+	| Leaf
+	| (Branch<DTree> & { mode: CompositionMode; steps?: CompositionStep[] })
+) & {
 	denotation: Expr;
 };
 

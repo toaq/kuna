@@ -645,6 +645,18 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 	let mode = innerModeCoerced;
 	const steps: CompositionStep[] = [];
 
+	function addStep() {
+		assertFn(fn.type);
+		assertFn(fn.type.range);
+		steps.push({
+			leftType,
+			rightType,
+			outType: fn.type.range.range,
+			mode,
+		});
+	}
+	addStep();
+
 	// Work our way back up the effects stack, adding 1 layer to the left or right
 	// at a time, until we finally have a composition mode compatible with the
 	// original types
@@ -656,9 +668,6 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 			rightPrecedences[rightPrecedences.length - 1] ?? '()';
 
 		const applicative = getMatchingApplicative(leftEffect, rightEffect);
-		assertFn(fn.type);
-		assertFn(fn.type.range);
-		steps.push({ leftType, rightType, outType: fn.type.range.range, mode });
 
 		if (applicative !== null) {
 			const {
@@ -689,6 +698,7 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 				),
 			);
 			mode = ['A', mode];
+			addStep();
 		} else if (
 			typeof leftEffect !== 'string' &&
 			leftEffect.head === 'bind' &&
@@ -720,6 +730,7 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 				),
 			);
 			mode = ['↓L', mode];
+			addStep();
 		} else if (
 			typeof leftEffect !== 'string' &&
 			leftEffect.head === 'bind' &&
@@ -747,6 +758,7 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 				),
 			);
 			mode = ['Z', mode];
+			addStep();
 		} else {
 			let choice: 'left' | 'right';
 			if (
@@ -797,6 +809,7 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 					),
 				);
 				mode = ['R', mode];
+				addStep();
 			} else {
 				rightType = wrap(rightType, rightEffect);
 				rightEffects.pop();
@@ -812,6 +825,7 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 					),
 				);
 				mode = ['L', mode];
+				addStep();
 			}
 		}
 
@@ -819,16 +833,9 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 		while (true) {
 			const simplified = simplifyOutput(fn, mode);
 			if (simplified === null) break;
-			assertFn(fn.type);
-			assertFn(fn.type.range);
-			steps.push({
-				leftType,
-				rightType,
-				outType: fn.type.range.range,
-				mode,
-			});
 			fn = simplified.denotation;
 			mode = simplified.mode;
+			addStep();
 		}
 	}
 

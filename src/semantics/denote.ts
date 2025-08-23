@@ -549,7 +549,14 @@ export function denote_(tree: StrictTree, cCommand: DTree | null): DTree {
 
 	const result = compose(left.denotation, right.denotation);
 	const denotation = reduce(result.denotation);
-	return { ...tree, left, right, denotation, mode: result.mode, steps: result.steps };
+	return {
+		...tree,
+		left,
+		right,
+		denotation,
+		mode: result.mode,
+		steps: result.steps,
+	};
 }
 
 /**
