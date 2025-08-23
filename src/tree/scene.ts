@@ -1,3 +1,4 @@
+import type { CompositionStep } from '../semantics/compose';
 import { typeToPlainText } from '../semantics/render';
 import type { CompositionMode, DTree, Expr } from '../semantics/types';
 import { treeChildren } from './functions';
@@ -61,6 +62,10 @@ export interface SceneNode<Denotation, Placement> {
 	 * This node's composition mode.
 	 */
 	mode?: CompositionMode;
+	/**
+	 * This node's composition steps.
+	 */
+	steps?: CompositionStep[];
 	/**
 	 * Whether to draw a roof at this node. If true, the node should not have
 	 * any children.
@@ -211,6 +216,7 @@ export function toScene(
 		const denotation =
 			'denotation' in tree && tree.denotation ? tree.denotation : undefined;
 		const mode = 'mode' in tree && tree.mode ? tree.mode : undefined;
+		const steps = 'steps' in tree && tree.steps ? tree.steps : undefined;
 		const gloss =
 			'word' in tree && !tree.word.covert ? tree.word.entry?.gloss : undefined;
 		const roof = roofLabels.includes(tree.label);
@@ -250,6 +256,7 @@ export function toScene(
 			fullCategoryLabel: describeLabel(tree.label),
 			denotation,
 			mode,
+			steps,
 			roof,
 			text,
 			textStyle,

@@ -84,7 +84,7 @@ export function InspectNode(props: {
 			<div style={{ display: 'inline-flex' }}>
 				<div style={{ display: 'inline-flex', opacity: 0.4 }}>
 					{breadcrumbs.flatMap((crumb, i) => [
-						// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+						// biome-ignore lint/suspicious/noArrayIndexKey: static data
 						<span key={i}>
 							<TreeLabel label={crumb} forceNormalWeight={true} />
 						</span>,
@@ -109,6 +109,37 @@ export function InspectNode(props: {
 							<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
 								{modeToString(tree.mode)}
 							</div>
+						</>
+					)}
+
+					{'steps' in tree && tree.steps && (
+						<>
+							<h3 className="text-lg mt-4 mb-2 font-bold">Composition steps</h3>
+							<table className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded text-left">
+								<thead>
+									<tr>
+										<th className="pr-4 font-semibold">Mode</th>
+										<th className="pr-4 font-semibold">Left type</th>
+										<th className="pr-4 font-semibold">Right type</th>
+										<th className="pr-4 font-semibold">Output type</th>
+									</tr>
+								</thead>
+								<tbody>
+									{tree.steps.map((step, index) => (
+										// biome-ignore lint/suspicious/noArrayIndexKey: static data
+										<tr key={index}>
+											<td className="pr-4 text-right">
+												{modeToString(step.mode)}
+											</td>
+											<td className="pr-4">{typeToPlainText(step.leftType)}</td>
+											<td className="pr-4">
+												{typeToPlainText(step.rightType)}
+											</td>
+											<td>{typeToPlainText(step.outType)}</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
 						</>
 					)}
 

@@ -568,7 +568,20 @@ function simplifyOutput(
 	return null;
 }
 
-function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
+export interface CompositionStep {
+	leftType: ExprType;
+	rightType: ExprType;
+	outType: ExprType;
+	mode: CompositionMode;
+}
+
+export interface CompositionResult {
+	denotation: Expr;
+	mode: CompositionMode;
+	steps: CompositionStep[];
+}
+
+function compose_(left: Expr, right: Expr): CompositionResult {
 	// Determine what basic mode (>, <, +) the types should ultimately compose by
 	const [innerFn, innerMode] = composeInner(left.type, right.type);
 	const {
@@ -607,6 +620,7 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 	let rightType = rightInnerCoerced;
 	let fn = innerFnCoerced;
 	let mode = innerModeCoerced;
+	const steps: CompositionStep[] = [];
 
 	// Work our way back up the effects stack, adding 1 layer to the left or right
 	// at a time, until we finally have a composition mode compatible with the
@@ -619,6 +633,10 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 			rightPrecedences[rightPrecedences.length - 1] ?? '()';
 
 		const applicative = getMatchingApplicative(leftEffect, rightEffect);
+		assertFn(fn.type);
+		assertFn(fn.type.range);
+		steps.push({ leftType, rightType, outType: fn.type.range.range, mode });
+
 		if (applicative !== null) {
 			const {
 				functor: { wrap, map },
@@ -778,19 +796,27 @@ function compose_(left: Expr, right: Expr): [Expr, CompositionMode] {
 		while (true) {
 			const simplified = simplifyOutput(fn, mode);
 			if (simplified === null) break;
+			assertFn(fn.type);
+			assertFn(fn.type.range);
+			steps.push({
+				leftType,
+				rightType,
+				outType: fn.type.range.range,
+				mode,
+			});
 			[fn, mode] = simplified;
 		}
 	}
 
 	// The types are now compatible; compose them
-	return [app(app(fn, left), right), mode];
+	return { denotation: app(app(fn, left), right), mode, steps };
 }
 
 /**
  * Composes the denotations of two trees together.
  * @returns The denotation and the steps that were taken to compose it.
  */
-export function compose(left: Expr, right: Expr): [Expr, CompositionMode] {
+export function compose(left: Expr, right: Expr): CompositionResult {
 	try {
 		return compose_(left, right);
 	} catch (e) {

@@ -1,6 +1,7 @@
 import { bare } from '../morphology/tokenize';
 import { Tone, inTone } from '../morphology/tone';
 import type { Branch, Leaf } from '../tree';
+import type { CompositionStep } from './compose';
 
 export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 
@@ -183,7 +184,7 @@ export type Expr = Variable | Lambda | Apply | Lexeme | Quote | Constant;
 /**
  * A tree with denotations.
  */
-export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode })) & {
+export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode; steps?: CompositionStep[] })) & {
 	denotation: Expr;
 };
 

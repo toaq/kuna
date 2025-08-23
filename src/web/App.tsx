@@ -17,7 +17,7 @@ export function Top(props: {
 
 	return (
 		<>
-			<header className="bg-mio dark:bg-slate-600 flex w-full items-center text-white select-none leading-10 px-3">
+			<header className="bg-mio dark:bg-slate-600 flex w-full items-center text-white leading-10 px-3">
 				<h1
 					className="me-3 text-lg mb-1"
 					style={{ fontFamily: 'Iosevka Toaq Aile' }}
