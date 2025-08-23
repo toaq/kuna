@@ -96,7 +96,7 @@ function coerceInput_(
 	mode: CompositionMode,
 	under: Functor | null,
 	force: boolean,
-): [Expr, CompositionMode] | null {
+): CompositionResult | null {
 	assertFn(fn.type);
 	const { unwrap } = under ?? idFunctor;
 	const inputInner = unwrap(input);
@@ -104,7 +104,8 @@ function coerceInput_(
 	const range = fn.type.range;
 
 	// If the types match there is nothing to do
-	if (subtype(inputInner, domainInner)) return [fn, mode];
+	if (subtype(inputInner, domainInner))
+		return { denotation: fn, mode, steps: [] };
 
 	// If there are matching functors in the input type and the domain, then we
 	// don't need to move them around; simply continue coercion under the functor
@@ -138,78 +139,82 @@ function coerceInput_(
 				force,
 			);
 			if (result !== null) {
-				const [cont, mode] = result;
+				const { denotation: cont, mode } = result;
 				let joined = false;
-				return [
-					λ(input, inputVal => {
-						// We're going to have to do something with the effect that floats to
-						// the top after distributing. The most "efficient" thing to do is join
-						// it with the effect just under it.
-						const distributed = () =>
-							distributive.distribute(() => v(inputVal), under, input);
-						const distributedType = distributive.functor.wrap(
-							coercedInner,
+				const denotation = λ(input, inputVal => {
+					// We're going to have to do something with the effect that floats to
+					// the top after distributing. The most "efficient" thing to do is join
+					// it with the effect just under it.
+					const distributed = () =>
+						distributive.distribute(() => v(inputVal), under, input);
+					const distributedType = distributive.functor.wrap(
+						coercedInner,
+						inputInner,
+					);
+					const monad = getMatchingMonad(
+						distributedType,
+						distributive.functor.unwrap(distributedType),
+					);
+					if (monad !== null) {
+						joined = true;
+						return app(cont, monad.join(distributed));
+					}
+
+					// Unable to join the effect; map over it instead.
+
+					// If the input came from the left or right then the function is a
+					// binary function, and we need to take special care to lift it into the
+					// functor in the right way (f a → b → f c rather than f a → f (b → c))
+					if (inputSide !== 'out') {
+						assertFn(range);
+						assertFn(cont.type);
+						assertFn(cont.type.range);
+						const out = distributive.functor.wrap(
+							cont.type.range.range,
 							inputInner,
 						);
-						const monad = getMatchingMonad(
-							distributedType,
-							distributive.functor.unwrap(distributedType),
+						return λ(range.domain, otherInput =>
+							distributive.functor.map(
+								() =>
+									λ(coercedInner, inputInner =>
+										app(app(cont, v(inputInner)), v(otherInput)),
+									),
+								distributed,
+								distributedType,
+								out,
+							),
 						);
-						if (monad !== null) {
-							joined = true;
-							return app(cont, monad.join(distributed));
-						}
+					}
+					// This is a unary function; just 'map' it
+					assertFn(cont.type);
+					return distributive.functor.map(
+						() => cont,
+						distributed,
+						distributedType,
+						distributive.functor.wrap(cont.type.range, inputInner),
+					);
+				});
 
-						// Unable to join the effect; map over it instead.
-
-						// If the input came from the left or right then the function is a
-						// binary function, and we need to take special care to lift it into the
-						// functor in the right way (f a → b → f c rather than f a → f (b → c))
-						if (inputSide !== 'out') {
-							assertFn(range);
-							assertFn(cont.type);
-							assertFn(cont.type.range);
-							const out = distributive.functor.wrap(
-								cont.type.range.range,
-								inputInner,
-							);
-							return λ(range.domain, otherInput =>
-								distributive.functor.map(
-									() =>
-										λ(coercedInner, inputInner =>
-											app(app(cont, v(inputInner)), v(otherInput)),
-										),
-									distributed,
-									distributedType,
-									out,
-								),
-							);
-						}
-						// This is a unary function; just 'map' it
-						assertFn(cont.type);
-						return distributive.functor.map(
-							() => cont,
-							distributed,
-							distributedType,
-							distributive.functor.wrap(cont.type.range, inputInner),
-						);
-					}),
-					inputSide === 'out'
-						? ['←', joined ? ['J', mode] : mode]
-						: [
-								inputSide === 'left' ? '←L' : '←R',
-								[
-									joined
-										? inputSide === 'left'
-											? 'JL'
-											: 'JR'
-										: inputSide === 'left'
-											? 'R'
-											: 'L',
-									mode,
+				return {
+					denotation,
+					mode:
+						inputSide === 'out'
+							? ['←', joined ? ['J', mode] : mode]
+							: [
+									inputSide === 'left' ? '←L' : '←R',
+									[
+										joined
+											? inputSide === 'left'
+												? 'JL'
+												: 'JR'
+											: inputSide === 'left'
+												? 'R'
+												: 'L',
+										mode,
+									],
 								],
-							],
-				];
+					steps: [],
+				};
 			}
 		}
 
@@ -236,9 +241,9 @@ function coerceInput_(
 					force,
 				);
 				if (result !== null) {
-					const [cont, mode] = result;
-					return [
-						λ(input, inputVal =>
+					const { denotation: cont, mode } = result;
+					return {
+						denotation: λ(input, inputVal =>
 							app(
 								cont,
 								under.map(
@@ -256,11 +261,12 @@ function coerceInput_(
 								),
 							),
 						),
-						[
+						mode: [
 							inputSide === 'out' ? '→' : inputSide === 'left' ? '→L' : '→R',
 							mode,
 						],
-					];
+						steps: [],
+					};
 				}
 			}
 		}
@@ -298,14 +304,15 @@ function coerceInput_(
 				true,
 			);
 			if (result !== null) {
-				const [cont, mode] = result;
-				return [
-					cont,
-					[
+				const { denotation: cont, mode } = result;
+				return {
+					denotation: cont,
+					mode: [
 						inputSide === 'out' ? '↓' : inputSide === 'left' ? '↓L' : '↓R',
 						mode,
 					],
-				];
+					steps: [],
+				};
 			}
 		}
 
@@ -325,9 +332,9 @@ function coerceInput_(
 				force,
 			);
 			if (result !== null) {
-				const [cont, mode] = result;
-				return [
-					λ(input, inputVal =>
+				const { denotation: cont, mode } = result;
+				return {
+					denotation: λ(input, inputVal =>
 						app(
 							cont,
 							under.map(
@@ -341,11 +348,12 @@ function coerceInput_(
 							),
 						),
 					),
-					[
+					mode: [
 						inputSide === 'out' ? '↓' : inputSide === 'left' ? '↓L' : '↓R',
 						mode,
 					],
-				];
+					steps: [],
+				};
 			}
 		}
 	}
@@ -368,16 +376,13 @@ function coerceInput(
 	inputSide: 'left' | 'right' | 'out',
 	mode: CompositionMode,
 	force = false,
-): [Expr, CompositionMode] | null {
+): CompositionResult | null {
 	return coerceInput_(fn, input, inputSide, mode, null, force);
 }
 
 class UnimplementedComposition extends Error {}
 
-function composeInner(
-	left: ExprType,
-	right: ExprType,
-): [Expr, CompositionMode] {
+function composeInner(left: ExprType, right: ExprType): CompositionResult {
 	const leftInner = unwrapEffects(left);
 	const rightInner = unwrapEffects(right);
 
@@ -386,20 +391,24 @@ function composeInner(
 		leftInner.head === 'fn' &&
 		subtype(rightInner, unwrapEffects(leftInner.domain))
 	)
-		return [λ(leftInner, l => v(l)), '>'];
+		return { denotation: λ(leftInner, l => v(l)), mode: '>', steps: [] };
 
 	if (
 		typeof rightInner !== 'string' &&
 		rightInner.head === 'fn' &&
 		subtype(leftInner, unwrapEffects(rightInner.domain))
 	)
-		return [
-			λ(rightInner.domain, l => λ(rightInner, r => app(v(r), v(l)))),
-			'<',
-		];
+		return {
+			denotation: λ(rightInner.domain, l =>
+				λ(rightInner, r => app(v(r), v(l))),
+			),
+			mode: '<',
+			steps: [],
+		};
 
 	const semigroup = getMatchingSemigroup(leftInner, rightInner);
-	if (semigroup !== null) return [semigroup.plus, '+'];
+	if (semigroup !== null)
+		return { denotation: semigroup.plus, mode: '+', steps: [] };
 
 	if (leftInner === 'e') {
 		const rightExpectingSubject = findInner(
@@ -407,14 +416,15 @@ function composeInner(
 			Ref({ type: 'reflexive' }, '()'),
 		);
 		if (rightExpectingSubject !== null)
-			return [
-				λ(Int(Pl('e')), l =>
+			return {
+				denotation: λ(Int(Pl('e')), l =>
 					λ(Ref({ type: 'reflexive' }, rightExpectingSubject), r =>
 						app(unref(v(r)), v(l)),
 					),
 				),
-				'S',
-			];
+				mode: 'S',
+				steps: [],
+			};
 	}
 
 	throw new Unimplemented(
@@ -455,7 +465,7 @@ function unwrapAndCoerce(
 		if (getMatchingFunctor(unwrapped, fn.type.domain) !== null) {
 			const result = coerceInput(fn, unwrapped, inputSide, mode);
 			if (result !== null) {
-				const [coerced, mode] = result;
+				const { denotation: coerced, mode } = result;
 				return { input: unwrapped, fn: coerced, effects, precedences, mode };
 			}
 		}
@@ -504,7 +514,7 @@ function shadowedByLowPrecedence(
 function simplifyOutput(
 	fn: Expr,
 	mode: CompositionMode,
-): [Expr, CompositionMode] | null {
+): CompositionResult | null {
 	assertFn(fn.type);
 	assertFn(fn.type.range);
 	const {
@@ -523,11 +533,14 @@ function simplifyOutput(
 			true,
 		);
 		if (coerced !== null) {
-			const [run, coercedMode] = coerced;
-			return [
-				λ(left, l => λ(right, r => app(run, app(app(fn, v(l)), v(r))))),
-				['↓', coercedMode],
-			];
+			const { denotation: run, mode: coercedMode } = coerced;
+			return {
+				denotation: λ(left, l =>
+					λ(right, r => app(run, app(app(fn, v(l)), v(r)))),
+				),
+				mode: ['↓', coercedMode],
+				steps: [],
+			};
 		}
 	}
 
@@ -540,7 +553,7 @@ function simplifyOutput(
 			},
 			join,
 		} = monad;
-		let coerced: [Expr, CompositionMode] | null;
+		let coerced: CompositionResult | null;
 		if (getDistributive(out) === null) {
 			const inner = coerceType(unwrap(out), out);
 			coerced =
@@ -552,16 +565,23 @@ function simplifyOutput(
 					mode,
 				);
 		} else if (getMatchingMonad(out, unwrap(out))) {
-			coerced = [λ(out, e => join(() => v(e))), mode];
+			coerced = {
+				denotation: λ(out, e => join(() => v(e))),
+				mode,
+				steps: [],
+			};
 		} else {
 			coerced = null;
 		}
 		if (coerced !== null) {
-			const [join, coercedMode] = coerced;
-			return [
-				λ(left, l => λ(right, r => app(join, app(app(fn, v(l)), v(r))))),
-				['J', coercedMode],
-			];
+			const { denotation: join, mode: coercedMode } = coerced;
+			return {
+				denotation: λ(left, l =>
+					λ(right, r => app(join, app(app(fn, v(l)), v(r)))),
+				),
+				mode: ['J', coercedMode],
+				steps: [],
+			};
 		}
 	}
 
@@ -583,7 +603,10 @@ export interface CompositionResult {
 
 function compose_(left: Expr, right: Expr): CompositionResult {
 	// Determine what basic mode (>, <, +) the types should ultimately compose by
-	const [innerFn, innerMode] = composeInner(left.type, right.type);
+	const { denotation: innerFn, mode: innerMode } = composeInner(
+		left.type,
+		right.type,
+	);
 	const {
 		range: { domain: rightInner },
 	} = innerFn.type as ExprType &
@@ -804,7 +827,8 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 				outType: fn.type.range.range,
 				mode,
 			});
-			[fn, mode] = simplified;
+			fn = simplified.denotation;
+			mode = simplified.mode;
 		}
 	}
 
