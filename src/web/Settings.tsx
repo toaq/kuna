@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useContext, useEffect, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { Button } from './Button';
 import BoxesIcon from './icons/BoxesIcon';
@@ -7,6 +7,7 @@ import GlossIcon from './icons/GlossIcon';
 import TextIcon from './icons/TextIcon';
 import TokensIcon from './icons/TokensIcon';
 import TreeIcon from './icons/TreeIcon';
+import { InspectContext } from './inspect';
 
 export type TreeMode =
 	| 'syntax-tree'
@@ -74,6 +75,8 @@ export function Settings(props: SettingsProps) {
 
 	const [raw, setRaw] = useState(false);
 
+	const { setInspectee, setInspecteePath } = useContext(InspectContext);
+
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === 'Control') {
@@ -97,6 +100,8 @@ export function Settings(props: SettingsProps) {
 	}, []);
 
 	function render(mode: Mode) {
+		setInspectee(undefined);
+		setInspecteePath(undefined);
 		setLastMode(mode);
 		if (mode) {
 			props.onSubmit({
