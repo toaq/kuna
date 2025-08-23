@@ -336,7 +336,10 @@ function reduce_(expr: Expr): Expr {
 				expr.arg.fn.head === 'apply' &&
 				expr.arg.fn.fn.head === 'constant' &&
 				expr.arg.arg.head === 'lambda' &&
-				expr.arg.arg.body.head === 'lambda'
+				expr.arg.arg.body.head === 'lambda' &&
+				expr.arg.fn.arg.scope.every(
+					(_type, i) => expr.fn.scope[i] === undefined,
+				)
 			) {
 				const deconstruct = pairlikeDeconstructor(expr.arg.fn.fn.name);
 				if (deconstruct !== null) {
@@ -355,6 +358,28 @@ function reduce_(expr: Expr): Expr {
 				}
 			}
 
+			// unpair x (λy λz f) = f (given y and z are unused in f)
+			// and so on for Indef, Qn, Bind
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				(expr.fn.fn.name === 'unindef' ||
+					expr.fn.fn.name === 'unqn' ||
+					expr.fn.fn.name === 'unpair' ||
+					expr.fn.fn.name === 'unbind') &&
+				expr.arg.head === 'lambda' &&
+				expr.arg.body.scope[0] === undefined &&
+				expr.arg.body.head === 'lambda' &&
+				expr.arg.body.body.scope[0] === undefined
+			) {
+				return reduce(
+					rewriteScope(expr.arg.body.body, i => {
+						if (i < 2) throw new Impossible('Variable deleted');
+						return i - 2;
+					}),
+				);
+			}
+
 			// unpair x (λy λz g) f = unpair x (λy λz g f)
 			// and so on for Indef, Qn, Bind
 			if (
@@ -362,7 +387,10 @@ function reduce_(expr: Expr): Expr {
 				expr.fn.fn.head === 'apply' &&
 				expr.fn.fn.fn.head === 'constant' &&
 				expr.fn.arg.head === 'lambda' &&
-				expr.fn.arg.body.head === 'lambda'
+				expr.fn.arg.body.head === 'lambda' &&
+				expr.fn.fn.arg.scope.every(
+					(_type, i) => expr.arg.scope[i] === undefined,
+				)
 			) {
 				const deconstruct = pairlikeDeconstructor(expr.fn.fn.fn.name);
 				if (deconstruct !== null) {
@@ -411,7 +439,41 @@ function reduce_(expr: Expr): Expr {
 				);
 			}
 
-			// every (λy implies (among y (_ x f)) g)
+			// (unpair x (λy λz f)) (unpair x (λy λz g)) = unpair x (λy λz f g)
+			// and so on for Indef, Qn, Bind
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'apply' &&
+				expr.fn.fn.fn.head === 'constant' &&
+				expr.fn.fn.arg.head === 'variable' &&
+				expr.fn.arg.head === 'lambda' &&
+				expr.fn.arg.body.head === 'lambda' &&
+				expr.arg.head === 'apply' &&
+				expr.arg.fn.head === 'apply' &&
+				expr.arg.fn.fn.head === 'constant' &&
+				expr.arg.fn.fn.name === expr.fn.fn.fn.name &&
+				expr.arg.fn.arg.head === 'variable' &&
+				expr.arg.fn.arg.index === expr.fn.fn.arg.index &&
+				expr.arg.arg.head === 'lambda' &&
+				expr.arg.arg.body.head === 'lambda'
+			) {
+				const deconstruct = pairlikeDeconstructor(expr.fn.fn.fn.name);
+				if (deconstruct !== null) {
+					const x = expr.fn.fn.arg;
+					const y = expr.fn.arg.param;
+					const z = expr.fn.arg.body.param;
+					const f = expr.fn.arg.body.body;
+					const g = expr.arg.arg.body.body;
+					return reduce(
+						deconstruct(
+							x,
+							λ(y, () => λ(z, () => app(f, g))),
+						),
+					);
+				}
+			}
+
+			// every (λy implies (among y (_ f)) g)
 			if (
 				expr.fn.head === 'constant' &&
 				expr.fn.name === 'every' &&

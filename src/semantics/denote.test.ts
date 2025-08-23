@@ -44,11 +44,10 @@ test('quotations', () => {
 
 test('donkey anaphora', () => {
 	snapshot('Kıaı tú poq, ꝡë bo hóa báq aqshe, áqshe.');
-	// TODO: Kıaı tú poq, ꝡë bo hóa báq aqshe, ꝡë bua hóa báq dueq, áqshe rú dúeq.
-	// (not yet fully reduced)
+	// TODO: This should really be "Kıaı tú poq, ꝡë bo hóa báq aqshe, ꝡë bua hóa báq dueq, áqshe rú dúeq."
+	snapshot('Do tú poq, ꝡë bo bâq aqshe, ꝡë bua hóa báq dueq, hóa, áqshe dúeq.');
 	snapshot('Shê, ꝡä Toaq há, nä bo hó sá toakue.');
-	// TODO: Shê, ꝡä bo báq poq báq aqshe, nä kıaı póq áqshe.
-	// (not yet fully reduced)
+	snapshot('Shê, ꝡä bo báq poq báq aqshe, nä kıaı póq áqshe.');
 });
 
 test('(c 0) serials', () => {
