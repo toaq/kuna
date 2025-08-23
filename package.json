@@ -50,7 +50,7 @@
 		"@types/nearley": "^2.11.2",
 		"@types/yargs": "^17.0.20",
 		"better-react-mathjax": "^2.0.3",
-		"canvas": "^2.11.2",
+		"canvas": "^3.2.0",
 		"discord.js": "^14.13.0",
 		"kdljs": "^0.2.0",
 		"lodash": "^4.17.21",
