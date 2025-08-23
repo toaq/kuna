@@ -13,6 +13,7 @@ import {
 import type { Theme } from '../../tree/theme';
 import { TreeBrowser } from './TreeBrowser';
 import { TreeLabel } from './TreeLabel';
+import { SiteleqType, typeToSiteleq } from '../../semantics/render/siteleq';
 
 type Step = {
 	mode: any;
@@ -156,7 +157,7 @@ export function InspectNode(props: {
 				<>
 					<h3 className="text-lg mt-4 mb-2 font-bold">Type</h3>
 					<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
-						{typeToPlainText(tree.denotation.denotation.type)}
+						<SiteleqType t={typeToSiteleq(tree.denotation.denotation.type)} />
 					</div>
 
 					{'mode' in tree && tree.mode && (
