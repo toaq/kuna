@@ -64,7 +64,10 @@ export function Inspector() {
 				opacity: inspectee ? 1 : 1,
 			}}
 			ref={sidebarRef}
-			onMouseDown={e => e.preventDefault()}
+			onMouseDown={e => {
+				const rect = e.currentTarget.getBoundingClientRect();
+				if (Math.abs(e.clientX - rect.left) < 20) e.preventDefault();
+			}}
 		>
 			{open && inspectee ? (
 				<div className="ps-8">
