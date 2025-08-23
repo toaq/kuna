@@ -6,9 +6,7 @@
         devShells.default = pkgs.mkShellNoCC {
           buildInputs = with pkgs; [
             nodejs_latest
-            # The pnpm in nixpkgs is out of date, so we instead rely on Corepack
-            # to provide pnpm
-            corepack_latest
+            pnpm
             nodePackages_latest.typescript-language-server
             nodePackages_latest.vscode-json-languageserver
             # Forces Biome to run as a statically-linked musl binary
