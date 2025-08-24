@@ -1,6 +1,12 @@
 import toaduaGlossesJson from '../../data/toadua/toadua.json';
 import { type Entry, dictionary } from './dictionary';
-import { bare, clean, splitPrefixes } from './tokenize';
+import {
+	bare,
+	clean,
+	joinRaku,
+	splitIntoRaku,
+	splitPrefixes,
+} from './tokenize';
 import { Tone, tone } from './tone';
 
 interface Gloss {
@@ -147,9 +153,10 @@ export class Glosser {
 			return toneGloss + fromToadua;
 		}
 
-		for (let i = bareRoot.length - 2; i >= 2; i--) {
-			const left = bareRoot.slice(0, i);
-			const right = bareRoot.slice(i);
+		const raku = splitIntoRaku(bareRoot);
+		for (let i = raku.length - 1; i >= 1; i--) {
+			const left = joinRaku(raku.slice(0, i));
+			const right = joinRaku(raku.slice(i));
 			const lgloss = dictionary.get(left)?.gloss ?? toaduaGlosses.get(left);
 			if (lgloss) {
 				const rgloss = dictionary.get(right)?.gloss ?? toaduaGlosses.get(right);
@@ -171,7 +178,7 @@ export class Glosser {
 		}
 
 		const { prefixes, root } = splitPrefixes(
-			clean(word.replace(/[\p{Pe}\p{Pf}\p{Pi}\p{Po}\p{Ps}]/gu, '')),
+			clean(word.replace(/(^\p{P}+)|(\p{P}+$)/gu, '')),
 		);
 		return (
 			prefixes.map(p => this.glossPrefix(p)).join('') + this.glossRoot(root)

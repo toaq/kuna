@@ -10,6 +10,7 @@ test('it glosses Toaq words', () => {
 
 	// From Toadua:
 	expect(glosser.glossWord('sáıku')).toEqual('the\\Discord.server');
+	expect(glosser.glossWord("ẹ́'anofeu")).toEqual('event.of-the\\break.up');
 
 	// Break down a compound:
 	expect(glosser.glossWord("kâto'aı")).toEqual('A\\cat.has.the.nature.of');
