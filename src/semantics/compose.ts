@@ -6,6 +6,7 @@ import {
 	Ref,
 	app,
 	assertFn,
+	bind,
 	bindingsEqual,
 	subtype,
 	typesEqual,
@@ -19,7 +20,7 @@ import {
 	type Functor,
 	chooseEffect,
 	composeFunctors,
-	findInner,
+	findEffect,
 	getApplicative,
 	getBigTraversable,
 	getComonad,
@@ -32,6 +33,7 @@ import {
 	getMonad,
 	getRunner,
 	idFunctor,
+	invertibleBinding,
 	unwrapEffects,
 } from './structures';
 import type { Binding, CompositionMode, Expr, ExprType } from './types';
@@ -275,22 +277,16 @@ function coerceInput_(
 		const runner = getRunner(inputInner);
 		if (
 			runner !== null &&
-			(runner.eager || force) &&
+			(runner.runner.eager || force) &&
 			subtype(under.wrap('t', input), fn.type.domain)
 		) {
-			const coercedInner = under.wrap(
-				runner.functor.wrap('t', inputInner),
-				input,
-			);
+			const coercedInner = under.wrap(runner.input, input);
 			const result = coerceInput_(
 				λ(coercedInner, inputVal =>
 					app(
 						fn,
 						under.map(
-							() =>
-								λ(runner.functor.wrap('t', inputInner), inner =>
-									runner.run(() => v(inner)),
-								),
+							() => λ(runner.input, inner => runner.runner.run(() => v(inner))),
 							() => v(inputVal),
 							coercedInner,
 							under.wrap('t', input),
@@ -411,16 +407,14 @@ function composeInner(left: ExprType, right: ExprType): CompositionResult {
 		return { denotation: semigroup.plus, mode: '+', steps: [] };
 
 	if (leftInner === 'e') {
-		const rightExpectingSubject = findInner(
+		const rightExpectingSubject = findEffect(
 			right,
-			Ref({ type: 'reflexive' }, '()'),
+			Ref({ type: 'subject' }, '()'),
 		);
 		if (rightExpectingSubject !== null)
 			return {
 				denotation: λ(Int(Pl('e')), l =>
-					λ(Ref({ type: 'reflexive' }, rightExpectingSubject), r =>
-						app(unref(v(r)), v(l)),
-					),
+					λ(rightExpectingSubject, r => app(unref(v(r)), v(l))),
 				),
 				mode: 'S',
 				steps: [],
@@ -524,9 +518,9 @@ function simplifyOutput(
 
 	// Try running the output effect
 	const runner = getRunner(out);
-	if (runner?.eager) {
+	if (runner?.runner.eager) {
 		const coerced = coerceInput(
-			λ(runner.functor.wrap('t', out), x => runner.run(() => v(x))),
+			λ(runner.input, x => runner.runner.run(() => v(x))),
 			out,
 			'out',
 			mode,
@@ -738,6 +732,7 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 			rightEffect.head === 'ref' &&
 			bindingsEqual(leftEffect.binding, rightEffect.binding)
 		) {
+			// Resolve a left-to-right binding relationship
 			const leftUnwrapped = leftType;
 			leftType = Bind(leftEffect.binding, leftType);
 			rightType = Ref(rightEffect.binding, rightType);
@@ -750,17 +745,71 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 					unbind(
 						v(l),
 						λ(Int(Pl('e')), boundVal =>
-							λ(leftUnwrapped, lVal =>
-								app(app(fn, v(lVal)), app(unref(v(r)), v(boundVal))),
-							),
+							λ(leftUnwrapped, lVal => {
+								const out = app(
+									app(fn, v(lVal)),
+									app(unref(v(r)), v(boundVal)),
+								);
+								// Most binding relationships are linear, meaning that a Bind and Ref
+								// will annihilate each other - The Bind does not live on unless there
+								// is another Bind effect under the Ref to refresh the binding. However,
+								// bindings that can take part in inverted (right-to-left) binding
+								// relationships are different; in this case we refresh the binding
+								// automatically so that the types of áq (... Ref áq ...) and chéq
+								// (... Ref áq Bind áq ...) are distinguishable (chéq actually "writes"
+								// to the áq binding while áq merely needs it to be refreshed). This is
+								// what makes sure that a chéq will always set the value of an áq (not
+								// the other way around), no matter which order the words come in.
+								return invertibleBinding(leftEffect.binding)
+									? bind(leftEffect.binding, v(boundVal), out)
+									: out;
+							}),
 						),
 					),
 				),
 			);
 			mode = ['Z', mode];
 			addStep();
+		} else if (
+			typeof leftEffect !== 'string' &&
+			leftEffect.head === 'ref' &&
+			typeof rightEffect !== 'string' &&
+			rightEffect.head === 'bind' &&
+			bindingsEqual(leftEffect.binding, rightEffect.binding) &&
+			invertibleBinding(leftEffect.binding)
+		) {
+			// Resolve an inverted (right-to-left) binding relationship
+			const rightUnwrapped = rightType;
+			leftType = Ref(leftEffect.binding, leftType);
+			rightType = Bind(rightEffect.binding, rightType);
+			leftEffects.pop();
+			rightEffects.pop();
+			leftPrecedences.pop();
+			rightPrecedences.pop();
+			fn = λ(leftType, l =>
+				λ(rightType, r =>
+					unbind(
+						v(r),
+						λ(Int(Pl('e')), boundVal =>
+							λ(rightUnwrapped, rVal => {
+								const out = app(
+									app(fn, app(unref(v(l)), v(boundVal))),
+									v(rVal),
+								);
+								return invertibleBinding(leftEffect.binding)
+									? bind(leftEffect.binding, v(boundVal), out)
+									: out;
+							}),
+						),
+					),
+				),
+			);
+			mode = ["Z'", mode];
+			addStep();
 		} else {
 			let choice: 'left' | 'right';
+			// If there's a Bind on the left and a Ref higher in the effects stack on
+			// the right, fast-forward to the Ref to resolve the binding relationship.
 			if (
 				leftEffect.head === 'bind' &&
 				rightEffects.some(
@@ -770,6 +819,7 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 				)
 			)
 				choice = 'right';
+			// Similar case when there's a Bind higher in the stack on the left.
 			else if (
 				rightEffect.head === 'ref' &&
 				leftEffects.some(
@@ -779,6 +829,31 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 				)
 			)
 				choice = 'left';
+			// Now let's look for binding relationships that could be resolved in the
+			// inverse direction (right binds left); if there's a Ref on the left and a
+			// Bind higher in the effects stack on the right, fast-forward to the Bind.
+			else if (
+				leftEffect.head === 'ref' &&
+				invertibleBinding(leftEffect.binding) &&
+				rightEffects.some(
+					effect =>
+						effect.head === 'bind' &&
+						bindingsEqual(leftEffect.binding, effect.binding),
+				)
+			)
+				choice = 'right';
+			// Ref higher in the stack on the left.
+			else if (
+				rightEffect.head === 'bind' &&
+				invertibleBinding(rightEffect.binding) &&
+				leftEffects.some(
+					effect =>
+						effect.head === 'ref' &&
+						bindingsEqual(rightEffect.binding, effect.binding),
+				)
+			)
+				choice = 'left';
+			// Default case: choose the functor with the highest precedence.
 			else
 				choice =
 					chooseEffect(leftPrecedence, rightPrecedence).choice ===

@@ -53,3 +53,21 @@ test('donkey anaphora', () => {
 test('(c 0) serials', () => {
 	snapshot('Tua poaq góchıq ké jegaq.');
 });
+
+test('adjuncts', () => {
+	snapshot('Nuo súq dûo géodıo.');
+	snapshot('Marao úmo gâq nhâna.');
+	snapshot('Kueq áma fâ sóaq.');
+});
+
+test('reflexives and reciprocals', () => {
+	snapshot('Jıa geq súho chéq ba.');
+	snapshot('Tua de jí áq.');
+	snapshot('Tua de nhána chéq.');
+	snapshot('Kıaı úmo áq nhûq chéq.');
+	snapshot('Kıaı nhûq chéq úmo áq.');
+	snapshot('Kıaı nhûq chéq úmo áqna.');
+	snapshot('Kueqtua áma áqna.');
+	snapshot('Kueqtua áma áqna gâq chéq.');
+	snapshot('Po póq káto pâı chéq.');
+});

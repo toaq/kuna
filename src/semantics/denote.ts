@@ -26,7 +26,6 @@ import {
 	determiners,
 	distributiveLittleV,
 	nondistributiveLittleV,
-	nullaryLittleV,
 	overtComplementizers,
 	polarities,
 	pro,
@@ -59,7 +58,7 @@ import {
 } from './model';
 import { reduce } from './reduce';
 import { typeToPlainText } from './render';
-import { findInner, getFunctor, unwrapEffects } from './structures';
+import { findEffect, getFunctor, unwrapEffects } from './structures';
 import type { AnimacyClass, DTree, Expr, ExprType } from './types';
 
 function findVp(tree: StrictTree): StrictTree | null {
@@ -181,6 +180,8 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				throw new Impossible("Can't denote covert 𝘷 in isolation");
 			const type = unwrapEffects(cCommand.denotation.type);
 			assertFn(type);
+			if (leaf.word.value === '∅')
+				return λ(cCommand.denotation.type, x => v(x));
 			if (
 				typeof type.domain === 'object' &&
 				type.domain.head === 'pl' &&
@@ -188,7 +189,6 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			)
 				return nondistributiveLittleV;
 			if (type.domain === 'e') return distributiveLittleV;
-			if (type.domain === 'v') return nullaryLittleV;
 			throw new Unrecognized(`𝘷 for type ${typeToPlainText(type)}`);
 		}
 		if (cCommand?.label === "Cond'")
@@ -394,7 +394,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		let toaq: string;
 		if (leaf.word.covert) {
 			toaq =
-				findInner(cCommand.denotation.type, Qn('e', 't')) === null
+				findEffect(cCommand.denotation.type, Qn('e', 't')) === null
 					? 'da'
 					: 'móq';
 		} else if (leaf.word.entry === undefined)

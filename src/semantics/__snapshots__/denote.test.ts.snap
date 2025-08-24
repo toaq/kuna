@@ -2,6 +2,12 @@
 
 exports[`(c 0) serials > Tua poaq góchıq ké jegaq. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦ké⟧ (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦jegaq⟧ 𝑤 𝑎) 𝑡'); 𝑃 ⇒ jégaq, 𝑃 ⇒ tá; 𝑄 ⇐ góchıq; 𝑄 ⇒ góchıq; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑄 𝑤' → (∀𝑏 𝑏 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (λ𝑒 ∃𝑐 ⟦ꝡä⟧ 𝑤' (λ𝑤'' ∃𝑒' ⟦poaq⟧ 𝑤'' 𝑏 𝑒') 𝑐 ∧ ⟦tua⟧ 𝑤' 𝑐 𝑎 𝑒) 𝑡)))"`;
 
+exports[`adjuncts > Kueq áma fâ sóaq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦áma⟧; 𝑄 ⇐ sóaq; 𝑄 ⇒ sóaq, 𝑄 ⇒ máq; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦kueq⟧ 𝑤 (𝑃 𝑤) 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦fa⟧ 𝑤 𝑏 𝑎 𝑒')) 𝑡))"`;
+
+exports[`adjuncts > Marao úmo gâq nhâna. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦úmo⟧, 𝑄 ⇐ ⟦nhána⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦marao⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦gaq⟧ 𝑤 𝑏 𝑎 𝑒')) 𝑡))"`;
+
+exports[`adjuncts > Nuo súq dûo géodıo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦súq⟧; 𝑄 ⇐ géodıo; 𝑄 ⇒ géodıo, 𝑄 ⇒ tá; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦nuo⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' ⟦duo⟧ 𝑤 𝑏 𝑒 𝑒')) 𝑡))"`;
+
 exports[`donkey anaphora > Do tú poq, ꝡë bo bâq aqshe, ꝡë bua hóa báq dueq, hóa, áqshe dúeq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑡'''' ⇐ ⟦tuom⟧, 𝑡''''' ⇐ ⟦tuom⟧; ⟦da⟧ (λ𝑤 ∀𝑄, 𝑅, 𝑃 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦dueq⟧ 𝑤 𝑎) 𝑡''''') ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦aqshe⟧ 𝑤 𝑎) 𝑡''') ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦bua⟧ 𝑤 𝑏 𝑎) 𝑡'''')) ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦poq⟧ 𝑤 𝑎) 𝑡') ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦bo⟧ 𝑤 𝑏 𝑎) 𝑡'')) → (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑅 𝑤 → (∀𝑐 𝑐 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦do⟧ 𝑤 𝑐 𝑏 𝑎) 𝑡))))"`;
 
 exports[`donkey anaphora > Kıaı tú poq, ꝡë bo hóa báq aqshe, áqshe. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧; ⟦da⟧ (λ𝑤 ∀𝑃, 𝑄 (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦aqshe⟧ 𝑤 𝑎) 𝑡''') ∧ (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦poq⟧ 𝑤 𝑎) 𝑡') ∧ (∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦bo⟧ 𝑤 𝑏 𝑎) 𝑡'')) → (∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦kıaı⟧ 𝑤 𝑏 𝑎) 𝑡)))"`;
@@ -31,3 +37,21 @@ exports[`quotations > Mo «Ꝡoaq ní hao» teo ní kaıse. 1`] = `"λ𝑤 (𝑡
 exports[`quotations > Shu «madurudura» shúıtoa. 1`] = `"𝑡 ⇐ ⟦tuom⟧; 𝑃 ⇐ shúıtoa; 𝑃 ⇒ shúıtoa, 𝑃 ⇒ tá; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦shu⟧ 𝑤 "madurudura" 𝑎) 𝑡)"`;
 
 exports[`quotations > Shuıtoa shú «madurudura». 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧; λ𝑤 (𝑃 ⇐ new (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦shu⟧ 𝑤 "madurudura" 𝑎) 𝑡'); 𝑃 ⇒ hụ́shu, 𝑃 ⇒ hóq; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (⟦shuıtoa⟧ 𝑤' 𝑎) 𝑡))"`;
+
+exports[`reflexives and reciprocals > Jıa geq súho chéq ba. 1`] = `"𝑡 ⇐ ⟦jıa⟧, 𝑃 ⇐ ⟦súho⟧; ⟦ba⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (⟦geq⟧ 𝑤 𝑏 𝑎) 𝑡))"`;
+
+exports[`reflexives and reciprocals > Kueqtua áma áqna gâq chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦áma⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦kueqtua⟧ 𝑤 (𝑃 𝑤) 𝑎 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦gaq⟧ 𝑤 𝑏 𝑎 𝑒')) 𝑡))"`;
+
+exports[`reflexives and reciprocals > Kueqtua áma áqna. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦áma⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦kueqtua⟧ 𝑤 (𝑃 𝑤) 𝑎) 𝑡)"`;
+
+exports[`reflexives and reciprocals > Kıaı nhûq chéq úmo áq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦úmo⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (λ𝑒 (∃𝑒' ⟦nhuq⟧ 𝑤 𝑏 𝑒 𝑒') ∧ ⟦kıaı⟧ 𝑤 𝑎 𝑎 𝑒) 𝑡))"`;
+
+exports[`reflexives and reciprocals > Kıaı nhûq chéq úmo áqna. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦úmo⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 → (∀𝑐 𝑐 ≺ 𝑃 𝑤 ∧ 𝑐 ≠ 𝑎 → ⟦tam⟧ 𝑤 (λ𝑒 (∃𝑒' ⟦nhuq⟧ 𝑤 𝑐 𝑒 𝑒') ∧ ⟦kıaı⟧ 𝑤 𝑏 𝑎 𝑒) 𝑡)))"`;
+
+exports[`reflexives and reciprocals > Kıaı úmo áq nhûq chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦úmo⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦kıaı⟧ 𝑤 𝑎 𝑎 𝑒 ∧ (∃𝑒' ⟦nhuq⟧ 𝑤 𝑏 𝑒 𝑒')) 𝑡))"`;
+
+exports[`reflexives and reciprocals > Po póq káto pâı chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧; 𝑃 ⇐ póq; 𝑃 ⇒ póq, 𝑃 ⇒ hó; 𝑄 ⇐ káto; 𝑄 ⇒ káto; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦po⟧ 𝑤 (𝑃 𝑤) (single 𝑎) 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦paı⟧ 𝑤 𝑏 𝑎 𝑒')) 𝑡))"`;
+
+exports[`reflexives and reciprocals > Tua de jí áq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑏 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ⟦de⟧ 𝑤' 𝑎 𝑒') 𝑏 ∧ ⟦tua⟧ 𝑤 𝑏 𝑎 𝑒) 𝑡)"`;
+
+exports[`reflexives and reciprocals > Tua de nhána chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦nhána⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑐 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ⟦de⟧ 𝑤' 𝑏 𝑒') 𝑐 ∧ ⟦tua⟧ 𝑤 𝑐 𝑎 𝑒) 𝑡))"`;

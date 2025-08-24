@@ -52,6 +52,7 @@
 	{ "type": "prefix", "toaq": "e-", "gloss": "event.of" },
 	{ "type": "prefix", "toaq": "hao-", "gloss": "INTR" },
 	{ "type": "pronoun", "toaq": "áhoq", "gloss": "you.VULGAR" },
+	{ "type": "pronoun", "toaq": "áqna", "gloss": "REFL.ND" },
 	{ "type": "pronoun", "toaq": "já", "gloss": "GAP" },
 	{ "type": "pronoun", "toaq": "kóm", "gloss": "it" },
 	{ "type": "pronoun", "toaq": "ré", "gloss": "it" },

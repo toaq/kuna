@@ -298,6 +298,8 @@ function binding(b: Binding): ReactNode {
 			return <mi>hóa</mi>;
 		case 'gap':
 			return <mi>já</mi>;
+		case 'subject':
+			return <mi>áqna</mi>;
 		case 'reflexive':
 			return <mi>áq</mi>;
 		case 'name':
@@ -448,6 +450,11 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 		associativity: 'none',
 	},
 	equals: { symbol: '=', precedence: Precedence.Equals, associativity: 'none' },
+	not_equals: {
+		symbol: '≠',
+		precedence: Precedence.Equals,
+		associativity: 'none',
+	},
 };
 
 function TypeHover(props: {

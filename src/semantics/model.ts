@@ -11,6 +11,8 @@ export function bindingsEqual(b1: Binding, b2: Binding): boolean {
 			return b2.type === 'resumptive';
 		case 'gap':
 			return b2.type === 'gap';
+		case 'subject':
+			return b2.type === 'subject';
 		case 'reflexive':
 			return b2.type === 'reflexive';
 		case 'name':
@@ -485,6 +487,21 @@ export function uncont(cont: Expr): Expr {
 }
 
 /**
+ * Creates a plurality containing a single element.
+ */
+export function single(element: Expr): Expr {
+	return app(
+		{
+			head: 'constant',
+			type: Fn(element.type, Pl(element.type)),
+			scope: [],
+			name: 'single',
+		},
+		element,
+	);
+}
+
+/**
  * Maps a plurality to another plurality by projecting each element.
  */
 export function map(pl: Expr, project: Expr): Expr {
@@ -524,6 +541,25 @@ export function flatMap(pl: Expr, project: Expr): Expr {
 			pl,
 		),
 		project,
+	);
+}
+
+/**
+ * Filters the elements of a plurality by a given predicate.
+ */
+export function filter(pl: Expr, predicate: Expr): Expr {
+	assertPl(pl.type);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(pl.type, Fn(Fn(pl.type.inner, 't'), pl.type)),
+				scope: [],
+				name: 'filter',
+			},
+			pl,
+		),
+		predicate,
 	);
 }
 

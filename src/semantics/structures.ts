@@ -141,7 +141,6 @@ export interface Comonad {
 }
 
 export interface Runner {
-	functor: Functor;
 	/**
 	 * Whether this effect "likes" to be run. A non-eager effect will instead
 	 * prefer to scope out of scope islands.
@@ -226,7 +225,6 @@ const contApplicative: Applicative = {
 };
 
 const contRunner: Runner = {
-	functor: contFunctor,
 	eager: true,
 	run: e =>
 		app(
@@ -258,7 +256,6 @@ const plApplicative: Applicative = {
 };
 
 const plRunner: Runner = {
-	functor: plFunctor,
 	eager: true,
 	run: e => every(λ('t', t => app(app(implies, among(v(t), e())), v(t)))),
 };
@@ -430,7 +427,6 @@ const indefApplicative = indefMonad.applicative;
 const indefFunctor = indefApplicative.functor;
 
 const indefRunner: Runner = {
-	functor: indefFunctor,
 	eager: false,
 	run: e => {
 		const e_ = e();
@@ -532,22 +528,6 @@ const bindComonad: Comonad = {
 	},
 };
 
-// This is an eager Runner instance that applies only to Bind áq _, to prevent
-// áq bindings from scoping too far out of their 𝘷P
-const bindReflexiveRunner: Runner = {
-	functor: bindFunctor,
-	eager: true,
-	run: e => {
-		const e_ = e();
-		assertBind(e_.type);
-		const { inner } = e_.type;
-		return unbind(
-			e_,
-			λ(Int(Pl('e')), () => λ(inner, val => v(val))),
-		);
-	},
-};
-
 const refFunctor: Functor = {
 	wrap: (type, like) => {
 		assertRef(like);
@@ -595,6 +575,38 @@ const refDistributive: Distributive = {
 					functor.wrap(type_.inner, type),
 				),
 			),
+		);
+	},
+};
+
+// This is an eager Runner instance that applies only to Bind áq(na) Ref áq(na) t,
+// preventing áq(na) bindings from scoping too far out of their 𝘷P
+const subjectReflexiveRunner: Runner = {
+	eager: true,
+	run: e => {
+		const e_ = e();
+		assertBind(e_.type);
+		const { inner } = e_.type;
+		return unbind(
+			e_,
+			λ(Int(Pl('e')), subject =>
+				λ(inner, pred => app(unref(v(pred)), v(subject))),
+			),
+		);
+	},
+};
+
+// This is an eager Runner instance that applies only to Bind áqna t, preventing
+// áqna bindings from scoping too far out of their 𝘷P
+const subjectRunner: Runner = {
+	eager: true,
+	run: e => {
+		const e_ = e();
+		assertBind(e_.type);
+		const { inner } = e_.type;
+		return unbind(
+			e_,
+			λ(Int(Pl('e')), () => λ(inner, inner => v(inner))),
 		);
 	},
 };
@@ -749,6 +761,10 @@ export function getMatchingSemigroup(
 	return null;
 }
 
+export function invertibleBinding(binding: Binding): boolean {
+	return binding.type === 'subject' || binding.type === 'reflexive';
+}
+
 const functorPrecedence = new Map(
 	(
 		[
@@ -771,6 +787,7 @@ const bindingTypePrecedence = new Map(
 			'head',
 			'animacy',
 			'name',
+			'subject',
 			'reflexive',
 			'gap',
 			'resumptive',
@@ -811,6 +828,7 @@ function chooseEffect_(left: ExprType, right: ExprType): ExprType {
 				switch (left.binding.type) {
 					case 'resumptive':
 					case 'gap':
+					case 'subject':
 					case 'reflexive':
 						return right;
 					case 'name':
@@ -852,21 +870,21 @@ export function chooseEffect(
 	right: ExprType,
 ): { choice: ExprType; strong: boolean } {
 	if (
-		typeof left === 'string' ||
-		left.head === 'fn' ||
-		(typeof right === 'object' &&
-			(right.head === 'bind' || right.head === 'ref') &&
-			right.binding.type === 'reflexive')
-	)
-		return { choice: right, strong: false };
-	if (
 		typeof right === 'string' ||
 		right.head === 'fn' ||
 		(typeof left === 'object' &&
 			(left.head === 'bind' || left.head === 'ref') &&
-			left.binding.type === 'reflexive')
+			invertibleBinding(left.binding))
 	)
 		return { choice: left, strong: false };
+	if (
+		typeof left === 'string' ||
+		left.head === 'fn' ||
+		(typeof right === 'object' &&
+			(right.head === 'bind' || right.head === 'ref') &&
+			invertibleBinding(right.binding))
+	)
+		return { choice: right, strong: false };
 	if (!functorPrecedence.has(left.head)) return { choice: left, strong: false };
 	if (!functorPrecedence.has(right.head))
 		return { choice: right, strong: false };
@@ -977,8 +995,7 @@ export function getDistributive(t: ExprType): Distributive | null {
 
 export function getTraversable(t: ExprType): Traversable | null {
 	if (typeof t === 'string') return null;
-	if (t.head === 'bind' && t.binding.type !== 'reflexive')
-		return bindTraversable;
+	if (t.head === 'bind') return bindTraversable;
 	return null;
 }
 
@@ -1053,22 +1070,43 @@ export function getMatchingComonad(t1: ExprType, t2: ExprType): Comonad | null {
 	return getMatchingFunctor(t1, t2) && getComonad(t1);
 }
 
-export function getRunner(t: ExprType): Runner | null {
+export function getRunner(
+	t: ExprType,
+): { runner: Runner; input: ExprType } | null {
 	if (typeof t === 'string') return null;
-	if (t.head === 'cont') return contRunner;
-	if (t.head === 'pl') return plRunner;
-	if (t.head === 'indef') return indefRunner;
-	if (t.head === 'bind' && t.binding.type === 'reflexive')
-		return bindReflexiveRunner;
+	if (t.head === 'cont')
+		return { runner: contRunner, input: contFunctor.wrap('t', t) };
+	if (t.head === 'pl')
+		return { runner: plRunner, input: plFunctor.wrap('t', t) };
+	if (t.head === 'indef')
+		return { runner: indefRunner, input: indefFunctor.wrap('t', t) };
+	if (
+		t.head === 'bind' &&
+		(t.binding.type === 'subject' || t.binding.type === 'reflexive') &&
+		typeof t.inner !== 'string'
+	) {
+		const refEffect =
+			findEffect(t.inner, Ref({ type: 'subject' }, '()')) ??
+			findEffect(t.inner, Ref({ type: 'reflexive' }, '()'));
+		if (refEffect !== null)
+			return {
+				runner: subjectReflexiveRunner,
+				input: bindFunctor.wrap(refFunctor.wrap('t', refEffect), t),
+			};
+		if (t.binding.type === 'subject')
+			return { runner: subjectRunner, input: bindFunctor.wrap('t', t) };
+	}
 	return null;
 }
 
 /**
- * Given a type and a type constructor to search for, find the inner type given
- * by unwrapping the first occurrence of that type constructor within the type
- * constructor stack.
+ * Given a type and a type constructor to search for, find the type given by
+ * unwrapping every effect above the matching type constructor.
  */
-export function findInner(inType: ExprType, like: ExprType): ExprType | null {
+export function findEffect(
+	inType: ExprType,
+	like: ExprType,
+): (ExprType & object) | null {
 	if (typeof inType === 'string' || typeof like === 'string') return null;
 	if (
 		inType.head === like.head &&
@@ -1100,9 +1138,9 @@ export function findInner(inType: ExprType, like: ExprType): ExprType | null {
 			inType.head === 'dx' ||
 			inType.head === 'act')
 	)
-		return inType.inner;
+		return inType;
 	const functor = getFunctor(inType);
-	return functor && findInner(functor.unwrap(inType), like);
+	return functor && findEffect(functor.unwrap(inType), like);
 }
 
 export function unwrapEffects(type: ExprType): ExprType {

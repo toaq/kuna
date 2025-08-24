@@ -246,7 +246,7 @@ test('it turns trees into scenes', () => {
 		                            "roof": false,
 		                            "source": "",
 		                            "steps": undefined,
-		                            "text": "∅",
+		                            "text": "SUBJ",
 		                            "textStyle": 2,
 		                          },
 		                          {

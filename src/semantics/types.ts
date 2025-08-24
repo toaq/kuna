@@ -8,6 +8,7 @@ export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 export type Binding =
 	| { type: 'resumptive' }
 	| { type: 'gap' }
+	| { type: 'subject' }
 	| { type: 'reflexive' }
 	| { type: 'name'; verb: string }
 	| { type: 'animacy'; class: AnimacyClass }
@@ -32,6 +33,8 @@ export function bindingToString(b: Binding): string {
 			return 'hóa';
 		case 'gap':
 			return 'já';
+		case 'subject':
+			return 'áqna';
 		case 'reflexive':
 			return 'áq';
 		case 'name':
@@ -145,8 +148,10 @@ interface Constant extends ExprBase {
 		| 'unint'
 		| 'cont'
 		| 'uncont'
+		| 'single'
 		| 'map'
 		| 'flat_map'
+		| 'filter'
 		| 'indef'
 		| 'unindef'
 		| 'qn'
@@ -211,7 +216,8 @@ export type CompositionMode =
 	| ['JL', CompositionMode] // Join monads on the left
 	| ['JR', CompositionMode] // Join monads on the right
 	| ['J', CompositionMode] // Join monads
-	| ['Z', CompositionMode]; // Resolve binding relationship
+	| ['Z', CompositionMode] // Resolve binding relationship
+	| ["Z'", CompositionMode]; // Resolve inverted binding relationship
 
 export function modeToString(mode: CompositionMode): string {
 	return typeof mode === 'string'

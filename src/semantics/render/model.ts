@@ -52,7 +52,7 @@ interface Prefix extends ExprBase {
 
 interface Infix extends ExprBase {
 	head: 'infix';
-	op: 'among' | 'and' | 'or' | 'implies' | 'equals';
+	op: 'among' | 'and' | 'or' | 'implies' | 'equals' | 'not_equals';
 	left: RichExpr;
 	right: RichExpr;
 }
@@ -226,14 +226,19 @@ export function enrich(e: Expr): RichExpr {
 			}
 
 			// Prefix notation
-			if (e.fn.head === 'constant' && e.fn.name === 'not')
+			if (e.fn.head === 'constant' && e.fn.name === 'not') {
+				const body = enrich(e.arg);
+				if (body.head === 'infix' && body.op === 'equals')
+					return { ...body, op: 'not_equals' };
+
 				return {
 					type: e.type,
 					scope: e.scope,
 					head: 'prefix',
 					op: 'not',
-					body: enrich(e.arg),
+					body,
 				};
+			}
 
 			// Infix notation
 			if (

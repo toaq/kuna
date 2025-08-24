@@ -3,6 +3,7 @@ import type { SubjectType } from '../morphology/dictionary';
 import type { CovertValue } from '../tree/types';
 import {
 	Act,
+	Bind,
 	Dx,
 	Fn,
 	Indef,
@@ -23,6 +24,7 @@ import {
 	cont,
 	equals,
 	every,
+	filter,
 	implies,
 	indef,
 	int,
@@ -35,6 +37,7 @@ import {
 	qn,
 	ref,
 	salient,
+	single,
 	some,
 	unindef,
 	unint,
@@ -113,20 +116,27 @@ export const serialFrames = new Map<string, (verb: Expr) => Expr>([
 	],
 ]);
 
-export const nullaryLittleV = λ(Fn('v', 't'), pred => v(pred));
-
 export const distributiveLittleV = ref(
-	{ type: 'reflexive' },
+	{ type: 'subject' },
 	λ(Int(Pl('e')), subject =>
 		bind(
-			{ type: 'reflexive' },
+			{ type: 'subject' },
 			v(subject),
-			int(
-				λ('s', w =>
-					map(
-						app(unint(v(subject)), v(w)),
-						λ('e', subject_ =>
-							λ(Fn('e', Fn('v', 't')), pred => app(v(pred), v(subject_))),
+			ref(
+				{ type: 'reflexive' },
+				λ(Int(Pl('e')), refl =>
+					int(
+						λ('s', w =>
+							map(
+								app(unint(v(refl)), v(w)),
+								λ('e', refl_ =>
+									bind(
+										{ type: 'reflexive' },
+										int(λ('s', () => single(v(refl_)))),
+										λ(Fn('e', Fn('v', 't')), pred => app(v(pred), v(refl_))),
+									),
+								),
+							),
 						),
 					),
 				),
@@ -136,15 +146,24 @@ export const distributiveLittleV = ref(
 );
 
 export const nondistributiveLittleV = ref(
-	{ type: 'reflexive' },
+	{ type: 'subject' },
 	λ(Int(Pl('e')), subject =>
 		bind(
-			{ type: 'reflexive' },
+			{ type: 'subject' },
 			v(subject),
 			int(
 				λ('s', w =>
-					λ(Fn(Pl('e'), Fn('v', 't')), pred =>
-						app(v(pred), app(unint(v(subject)), v(w))),
+					bind(
+						{ type: 'reflexive' },
+						int(λ('s', () => app(unint(v(subject)), v(w)))),
+						ref(
+							{ type: 'reflexive' },
+							λ(Int(Pl('e')), refl =>
+								λ(Fn(Pl('e'), Fn('v', 't')), pred =>
+									app(v(pred), app(unint(v(refl)), v(w))),
+								),
+							),
+						),
 					),
 				),
 			),
@@ -235,10 +254,65 @@ export const pronouns = new Map<string, Expr>([
 		),
 	],
 	[
+		'áqna',
+		ref(
+			{ type: 'subject' },
+			λ(Int(Pl('e')), x => v(x)),
+		),
+	],
+	[
 		'áq',
 		ref(
 			{ type: 'reflexive' },
-			λ(Int(Pl('e')), x => bind({ type: 'reflexive' }, v(x), v(x))),
+			λ(Int(Pl('e')), x => v(x)),
+		),
+	],
+	[
+		'chéq',
+		ref(
+			{ type: 'subject' },
+			λ(Int(Pl('e')), subject =>
+				ref(
+					{ type: 'reflexive' },
+					λ(Int(Pl('e')), refl =>
+						int(
+							λ('s', w =>
+								cont(
+									λ(Fn(Bind({ type: 'reflexive' }, Int(Pl('e'))), 't'), pred =>
+										every(
+											λ('e', refl_ =>
+												app(
+													app(
+														implies,
+														among(v(refl_), app(unint(v(refl)), v(w))),
+													),
+													app(
+														v(pred),
+														bind(
+															{ type: 'reflexive' },
+															int(λ('s', () => single(v(refl_)))),
+															int(
+																λ('s', w_ =>
+																	filter(
+																		app(unint(v(subject)), v(w_)),
+																		λ('e', subject_ =>
+																			app(not, equals(v(subject_), v(refl_))),
+																		),
+																	),
+																),
+															),
+														),
+													),
+												),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
 		),
 	],
 ]);
@@ -596,28 +670,24 @@ const eventiveAdverbial = (distributive: boolean) => {
 const distributiveSubjectSharingAdverbial = ref(
 	{ type: 'reflexive' },
 	λ(Int(Pl('e')), subject =>
-		bind(
-			{ type: 'reflexive' },
-			v(subject),
-			int(
-				λ('s', w =>
-					map(
-						app(unint(v(subject)), v(w)),
-						λ('e', subject_ =>
-							λ(Fn('e', Fn('v', 't')), p =>
-								λ('v', outerEvent =>
-									some(
-										λ('v', innerEvent =>
+		int(
+			λ('s', w =>
+				map(
+					app(unint(v(subject)), v(w)),
+					λ('e', subject_ =>
+						λ(Fn('e', Fn('v', 't')), p =>
+							λ('v', outerEvent =>
+								some(
+									λ('v', innerEvent =>
+										app(
 											app(
+												and,
 												app(
-													and,
-													app(
-														app(app(unint(overlap), v(w)), v(innerEvent)),
-														v(outerEvent),
-													),
+													app(app(unint(overlap), v(w)), v(innerEvent)),
+													v(outerEvent),
 												),
-												app(app(v(p), v(subject_)), v(innerEvent)),
 											),
+											app(app(v(p), v(subject_)), v(innerEvent)),
 										),
 									),
 								),
@@ -633,25 +703,21 @@ const distributiveSubjectSharingAdverbial = ref(
 const nondistributiveSubjectSharingAdverbial = ref(
 	{ type: 'reflexive' },
 	λ(Int(Pl('e')), subject =>
-		bind(
-			{ type: 'reflexive' },
-			v(subject),
-			int(
-				λ('s', w =>
-					λ(Fn(Pl('e'), Fn('v', 't')), p =>
-						λ('v', outerEvent =>
-							some(
-								λ('v', innerEvent =>
+		int(
+			λ('s', w =>
+				λ(Fn(Pl('e'), Fn('v', 't')), p =>
+					λ('v', outerEvent =>
+						some(
+							λ('v', innerEvent =>
+								app(
 									app(
+										and,
 										app(
-											and,
-											app(
-												app(app(unint(overlap), v(w)), v(innerEvent)),
-												v(outerEvent),
-											),
+											app(app(unint(overlap), v(w)), v(innerEvent)),
+											v(outerEvent),
 										),
-										app(app(v(p), app(unint(v(subject)), v(w))), v(innerEvent)),
 									),
+									app(app(v(p), app(unint(v(subject)), v(w))), v(innerEvent)),
 								),
 							),
 						),

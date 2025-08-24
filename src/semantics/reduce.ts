@@ -1,6 +1,7 @@
 import { Impossible } from '../core/error';
 import {
 	among,
+	and,
 	andMap,
 	andThen,
 	app,
@@ -10,6 +11,7 @@ import {
 	flatMap,
 	implies,
 	map,
+	single,
 	unbind,
 	unindef,
 	unpair,
@@ -317,6 +319,18 @@ function reduce_(expr: Expr): Expr {
 				}
 			}
 
+			// map (single x) f = single (f x)
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'map' &&
+				expr.fn.arg.head === 'apply' &&
+				expr.fn.arg.fn.head === 'constant' &&
+				expr.fn.arg.fn.name === 'single'
+			) {
+				return reduce(single(app(expr.arg, expr.fn.arg.arg)));
+			}
+
 			// and_map x (λy y) = x
 			if (
 				expr.fn.head === 'apply' &&
@@ -488,61 +502,101 @@ function reduce_(expr: Expr): Expr {
 				expr.arg.body.fn.arg.fn.fn.name === 'among' &&
 				expr.arg.body.fn.arg.fn.arg.head === 'variable' &&
 				expr.arg.body.fn.arg.fn.arg.index === 0 &&
-				expr.arg.body.fn.arg.arg.head === 'apply' &&
-				expr.arg.body.fn.arg.arg.fn.head === 'apply' &&
-				expr.arg.body.fn.arg.arg.fn.fn.head === 'constant'
+				expr.arg.body.fn.arg.arg.head === 'apply'
 			) {
-				const x = expr.arg.body.fn.arg.arg.fn.arg;
 				const f = expr.arg.body.fn.arg.arg.arg;
 				const g = expr.arg.body.arg;
 				const originalDomain = expr.arg.param;
 
-				// every (λy implies (among y (map x f)) g) = every (λz implies (among z x) ((λy g) (f z)))
+				// every (λy implies (among y (single f)) g) = (λy g) f
 				if (
-					expr.arg.body.fn.arg.arg.fn.fn.name === 'map' &&
-					x.scope[0] === undefined &&
+					expr.arg.body.fn.arg.arg.fn.head === 'constant' &&
+					expr.arg.body.fn.arg.arg.fn.name === 'single' &&
 					f.scope[0] === undefined
 				) {
-					assertPl(x.type);
-					const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
+					const ff = rewriteScope(f, i => {
+						if (i === 0) throw new Impossible('Variable deleted');
+						return i - 1;
+					});
 					return reduce(
-						every(
-							λ(x.type.inner, z =>
-								app(
-									app(implies, among(v(z), x)),
-									app(
-										λ(originalDomain, () => gg),
-										app(f, v(z)),
-									),
-								),
-							),
+						app(
+							λ(originalDomain, () => g),
+							ff,
 						),
 					);
 				}
 
-				// every (λy implies (among y (flat_map x f)) g) = every (λz implies (among z x) (every (λy implies (among y (f z)) g)))
+				// every (λy implies (among y (_ x f)) g)
 				if (
-					expr.arg.body.fn.arg.arg.fn.fn.name === 'flat_map' &&
-					x.scope[0] === undefined
+					expr.arg.body.fn.arg.arg.fn.head === 'apply' &&
+					expr.arg.body.fn.arg.arg.fn.fn.head === 'constant'
 				) {
-					assertPl(x.type);
-					const ff = rewriteScope(f, i => (i === 0 ? 0 : i + 1));
-					const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
-					return reduce(
-						every(
-							λ(x.type.inner, z =>
-								app(
-									app(implies, among(v(z), x)),
-									every(
-										λ(originalDomain, y =>
-											app(app(implies, among(v(y), app(ff, v(z)))), gg),
+					const x = expr.arg.body.fn.arg.arg.fn.arg;
+
+					// every (λy implies (among y (map x f)) g) = every (λz implies (among z x) ((λy g) (f z)))
+					if (
+						expr.arg.body.fn.arg.arg.fn.fn.name === 'map' &&
+						x.scope[0] === undefined &&
+						f.scope[0] === undefined
+					) {
+						assertPl(x.type);
+						const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
+						return reduce(
+							every(
+								λ(x.type.inner, z =>
+									app(
+										app(implies, among(v(z), x)),
+										app(
+											λ(originalDomain, () => gg),
+											app(f, v(z)),
 										),
 									),
 								),
 							),
-						),
-					);
+						);
+					}
+
+					// every (λy implies (among y (flat_map x f)) g) = every (λz implies (among z x) (every (λy implies (among y (f z)) g)))
+					if (
+						expr.arg.body.fn.arg.arg.fn.fn.name === 'flat_map' &&
+						x.scope[0] === undefined
+					) {
+						assertPl(x.type);
+						const ff = rewriteScope(f, i => (i === 0 ? 0 : i + 1));
+						const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
+						return reduce(
+							every(
+								λ(x.type.inner, z =>
+									app(
+										app(implies, among(v(z), x)),
+										every(
+											λ(originalDomain, y =>
+												app(app(implies, among(v(y), app(ff, v(z)))), gg),
+											),
+										),
+									),
+								),
+							),
+						);
+					}
 				}
+			}
+
+			// among x (filter y f) = and (among x y) (f x)
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'among' &&
+				expr.arg.head === 'apply' &&
+				expr.arg.fn.head === 'apply' &&
+				expr.arg.fn.fn.head === 'constant' &&
+				expr.arg.fn.fn.name === 'filter'
+			) {
+				const amongX = expr.fn;
+				const x = expr.fn.arg;
+				const y = expr.arg.fn.arg;
+				const f = expr.arg.arg;
+				return reduce(app(app(and, app(amongX, y)), app(f, x)));
 			}
 
 			const fn = reduce(expr.fn);

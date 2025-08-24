@@ -129,6 +129,11 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 		associativity: 'none',
 	},
 	equals: { symbol: '=', precedence: Precedence.Equals, associativity: 'none' },
+	not_equals: {
+		symbol: '≠',
+		precedence: Precedence.Equals,
+		associativity: 'none',
+	},
 };
 
 export class PlainText extends Renderer<RichExpr, string> {
