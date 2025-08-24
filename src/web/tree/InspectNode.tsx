@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { modeToString } from '../../semantics/types';
-import type { Theme } from '../../tree/theme';
-import { TreeBrowser } from './TreeBrowser';
 import { keyFor } from '../../core/misc';
-import { typeToPlainText, toJsx } from '../../semantics/render';
+import { toJsx, typeToPlainText } from '../../semantics/render';
+import { modeToString } from '../../semantics/types';
 import type { PlacedTree } from '../../tree/place';
 import {
+	type RichSceneLabel,
 	type Scene,
-	type Unplaced,
 	type SceneNode,
 	SceneTextStyle,
-	type RichSceneLabel,
+	type Unplaced,
 } from '../../tree/scene';
+import type { Theme } from '../../tree/theme';
+import { TreeBrowser } from './TreeBrowser';
 import { TreeLabel } from './TreeLabel';
 
 type Step = {

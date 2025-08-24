@@ -19,8 +19,8 @@ import type { Theme } from '../../tree/theme';
 import './TreeBrowser.css';
 import { useContext } from 'react';
 import { InspectContext } from '../inspect';
-import { TreeLabel } from './TreeLabel';
 import { InspectNode } from './InspectNode';
+import { TreeLabel } from './TreeLabel';
 
 interface TreeBrowserOptions {
 	theme: Theme;
