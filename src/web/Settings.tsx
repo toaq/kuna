@@ -247,6 +247,12 @@ export function Settings(props: SettingsProps) {
 					setText(e.target.value);
 					props.dismissExplanation();
 				}}
+				onKeyDown={e => {
+					if (e.ctrlKey && e.key === 'Enter') {
+						e.preventDefault();
+						render(lastMode);
+					}
+				}}
 			/>
 			<div className="flex flex-col gap-1">
 				<div className="flex gap-1">
