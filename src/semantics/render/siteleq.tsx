@@ -2,23 +2,18 @@ import type { FC, ReactNode } from 'react';
 import { bindingToString, type Binding, type ExprType } from '../types';
 
 export type Siteleq =
-	| { head: 'binding'; binding: Binding; space: 0 }
+	| { head: 'binding'; binding: Binding }
 	| { head: 'atom'; value: 'e' | 'v' | 'i' | 't' | 's' }
-	| { head: 'fn'; domain: Siteleq; range: Siteleq; space: number }
-	| { head: 'tuple'; items: Siteleq[]; space: number }
+	| { head: 'fn'; domain: Siteleq; range: Siteleq }
+	| { head: 'tuple'; items: Siteleq[] }
 	| {
 			head: 'prefix';
 			prefix: 'int' | 'indef' | 'qn' | 'nf' | 'dx' | 'act';
 			body: Siteleq | null;
-			space: number;
 	  }
 	| { head: 'bracket'; inner: Siteleq }
 	| { head: 'cont'; inner: Siteleq | null }
 	| { head: 'pl'; inner: Siteleq };
-
-function moreSpaceThan(...ts: (Siteleq | Binding)[]): number {
-	return Math.max(...ts.map(t => ('space' in t ? t.space + 1 : 0)));
-}
 
 function addItems(t: ExprType, items: Siteleq[]) {
 	if (typeof t !== 'string') {
@@ -28,40 +23,36 @@ function addItems(t: ExprType, items: Siteleq[]) {
 			return;
 		}
 		if (t.head === 'bind') {
-			items.push({ head: 'binding', binding: t.binding, space: 0 });
+			items.push({ head: 'binding', binding: t.binding });
 			addItems(t.inner, items);
 			return;
 		}
 	}
 
-	const item = maybeBracket(typeToSiteleq(t), 1);
+	const item = maybeBracket(typeToSiteleq(t));
 	if (item !== null) items.push(item);
 }
 
-function maybeBracket<T extends Siteleq | null>(
-	t: T,
-	threshold: number,
-): Siteleq | T {
-	return t !== null && 'space' in t && t.space >= threshold
-		? { head: 'bracket', inner: t }
-		: t;
+function maybeBracket<T extends Siteleq | null>(t: T): Siteleq | T {
+	return t === null ||
+		t.head === 'atom' ||
+		t.head === 'bracket' ||
+		t.head === 'prefix' ||
+		t.head === 'cont' ||
+		t.head === 'pl'
+		? t
+		: { head: 'bracket', inner: t };
 }
 
 function prefix(
 	prefix: (Siteleq & { head: 'prefix' })['prefix'],
 	inner: ExprType,
 ): Siteleq {
-	const body = maybeBracket(typeToSiteleq(inner), 1);
+	const body = maybeBracket(typeToSiteleq(inner));
 	return {
 		head: 'prefix',
 		prefix,
 		body,
-		space:
-			body === null
-				? 0
-				: body.head === 'prefix'
-					? body.space
-					: moreSpaceThan(body),
 	};
 }
 
@@ -72,22 +63,19 @@ function fn(t: ExprType, params: Siteleq[]): Siteleq | null {
 			return fn(t.range, params);
 		}
 		if (t.head === 'ref') {
-			params.push({ head: 'binding', binding: t.binding, space: 0 });
+			params.push({ head: 'binding', binding: t.binding });
 			return fn(t.inner, params);
 		}
 	}
-	const range = maybeBracket(typeToSiteleq(t), 1);
+	const range = maybeBracket(typeToSiteleq(t));
 	if (params.length === 0 || range === null) return range;
 	const domain: Siteleq | Binding =
 		params.length === 1
 			? params[0]
-			: maybeBracket(
-					{ head: 'tuple', items: params, space: moreSpaceThan(...params) },
-					1,
-				);
+			: maybeBracket({ head: 'tuple', items: params });
 	return range === null || params.length === 0
 		? range
-		: { head: 'fn', domain, range, space: moreSpaceThan(domain, range) };
+		: { head: 'fn', domain, range };
 }
 
 export function typeToSiteleq(t: ExprType): Siteleq | null {
@@ -118,13 +106,13 @@ export function typeToSiteleq(t: ExprType): Siteleq | null {
 				? null
 				: items.length === 1
 					? items[0]
-					: { head: 'tuple', items, space: moreSpaceThan(...items) };
+					: { head: 'tuple', items };
 		}
 	}
 }
 
-function makeSpacer(t: Siteleq & { space: number }): ReactNode {
-	return <span style={{ whiteSpace: 'pre' }}>{' '.repeat(t.space)}</span>;
+function makeSpacer(): ReactNode {
+	return <span style={{ whiteSpace: 'pre' }}> </span>;
 }
 
 function prefixSymbol(
@@ -140,7 +128,7 @@ function prefixSymbol(
 		case 'nf':
 			return 'Nf'; // TODO: Remove Nf?
 		case 'dx':
-			return '☝';
+			return '☝\ufe0e';
 		case 'act':
 			return '!';
 	}
@@ -167,7 +155,7 @@ export const SiteleqType: FC<{ t: Siteleq | null }> = ({ t }) => {
 					return t.value satisfies never;
 			}
 		case 'fn': {
-			const spacer = makeSpacer(t);
+			const spacer = makeSpacer();
 			return (
 				<>
 					<SiteleqType t={t.domain} />
@@ -177,7 +165,7 @@ export const SiteleqType: FC<{ t: Siteleq | null }> = ({ t }) => {
 			);
 		}
 		case 'tuple': {
-			const spacer = makeSpacer(t);
+			const spacer = makeSpacer();
 			return t.items.flatMap((item, i) => [
 				// biome-ignore lint/suspicious/noArrayIndexKey: Static tree
 				<SiteleqType key={i} t={item} />,
@@ -185,7 +173,7 @@ export const SiteleqType: FC<{ t: Siteleq | null }> = ({ t }) => {
 			]);
 		}
 		case 'prefix': {
-			const spacer = makeSpacer(t);
+			const spacer = makeSpacer();
 			return (
 				<>
 					{prefixSymbol(t.prefix)}
