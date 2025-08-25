@@ -122,7 +122,7 @@ interface MathMLMoAttributes extends MathMLAttributes<MathMLMoElement> {
 	movablelimits?: boolean | undefined;
 	rspace?: string | undefined;
 	separator?: boolean | undefined;
-	stretchy?: boolean | undefined;
+	stretchy?: string | undefined;
 	symmetric?: boolean | undefined;
 }
 interface MathMLMoverAttributes extends MathMLAttributes<MathMLMoverElement> {
@@ -645,24 +645,30 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 				]);
 			// biome-ignore lint/suspicious/noFallthroughSwitchClause: false positive
 			case 'do':
-				switch (e.op) {
+				switch (e.op.op) {
 					case 'get': {
 						const word =
-							'scope' in e.right
-								? richExprToNameHint(e.right)
-								: bindingToString(e.right);
-						const newNames = addNames(e.left.scope as ExprType[], names, word);
+							'scope' in e.op.right
+								? richExprToNameHint(e.op.right)
+								: bindingToString(e.op.right);
+						const newNames = addNames(
+							e.op.left.scope as ExprType[],
+							names,
+							word,
+						);
 						return this.do(
 							e.pure,
 							join(Precedence.Do, 'right', [
 								this.doRow(
 									join(Precedence.Assign, 'none', [
-										this.go(e.left, newNames),
+										this.go(e.op.left, newNames),
 										token(<mo>⇐</mo>),
-										'scope' in e.right
-											? this.go(e.right, names)
+										'scope' in e.op.right
+											? this.go(e.op.right, names)
 											: token(
-													<mi className="kuna-lexeme">{binding(e.right)}</mi>,
+													<mi className="kuna-lexeme">
+														{binding(e.op.right)}
+													</mi>,
 												),
 									]),
 								),
@@ -676,11 +682,11 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 							join(Precedence.Do, 'right', [
 								this.doRow(
 									join(Precedence.Assign, 'none', [
-										this.go(e.left, names),
+										this.go(e.op.left, names),
 										token(
 											<>
 												<mo>⇒</mo>
-												<mi className="kuna-lexeme">{binding(e.right)}</mi>
+												<mi className="kuna-lexeme">{binding(e.op.right)}</mi>
 											</>,
 										),
 									]),
@@ -692,11 +698,64 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 						return this.do(
 							e.pure,
 							join(Precedence.Do, 'right', [
-								this.doRow(this.go(e.right, names)),
+								this.doRow(this.go(e.op.right, names)),
 								this.doRow(this.go(e.result, names)),
 							]),
 						);
 				}
+			case 'build': {
+				let newNames = names;
+				const predicates: Render<ReactNode>[] = [];
+				for (const pred of e.predicates) {
+					if ('head' in pred) {
+						predicates.push(this.go(pred, newNames));
+					} else {
+						const prevNames = newNames;
+						newNames = addNames(pred.left.scope as ExprType[], newNames);
+						predicates.push(
+							join(Precedence.Assign, 'none', [
+								this.go(pred.left, newNames),
+								token(<mo>⇐</mo>),
+								'scope' in pred.right
+									? this.go(pred.right, prevNames)
+									: token(
+											<mi className="kuna-lexeme">{binding(pred.right)}</mi>,
+										),
+							]),
+						);
+					}
+				}
+				return wrap(
+					Precedence.Bracket,
+					inner => (
+						<mrow
+							className={
+								predicates.length > 0 ? 'kuna-big-brackets' : undefined
+							}
+						>
+							{inner}
+						</mrow>
+					),
+					join(Precedence.Bracket, 'none', [
+						token(<mo>{'{'}</mo>),
+						this.go(e.body, newNames),
+						...(predicates.length === 0
+							? []
+							: [
+									token(<mo stretchy="true">{'|'}</mo>),
+									this.do(
+										false,
+										join(
+											Precedence.Do,
+											'none',
+											predicates.map(pred => this.doRow(pred)),
+										),
+									),
+								]),
+						token(<mo>{'}'}</mo>),
+					]),
+				);
+			}
 			case 'lexeme':
 				return token(<mi className="kuna-lexeme">{e.name}</mi>);
 			case 'quote':

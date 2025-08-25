@@ -193,16 +193,16 @@ export class PlainText extends Renderer<RichExpr, string> {
 				]);
 			// biome-ignore lint/suspicious/noFallthroughSwitchClause: false positive
 			case 'do':
-				switch (e.op) {
+				switch (e.op.op) {
 					case 'get': {
-						const newNames = addNames(e.left.scope as ExprType[], names);
+						const newNames = addNames(e.op.left.scope as ExprType[], names);
 						return join(Precedence.Do, 'right', [
 							join(Precedence.Assign, 'none', [
-								this.go(e.left, newNames),
+								this.go(e.op.left, newNames),
 								token(' ⇐ '),
-								'scope' in e.right
-									? this.go(e.right, names)
-									: token(bindingToString(e.right)),
+								'scope' in e.op.right
+									? this.go(e.op.right, names)
+									: token(bindingToString(e.op.right)),
 							]),
 							token(e.pure ? '; ' : ', '),
 							this.go(e.result, newNames),
@@ -211,19 +211,57 @@ export class PlainText extends Renderer<RichExpr, string> {
 					case 'set':
 						return join(Precedence.Do, 'right', [
 							join(Precedence.Assign, 'none', [
-								this.go(e.left, names),
-								token(` ⇒ ${bindingToString(e.right)}`),
+								this.go(e.op.left, names),
+								token(` ⇒ ${bindingToString(e.op.right)}`),
 							]),
 							token(e.pure ? '; ' : ', '),
 							this.go(e.result, names),
 						]);
 					case 'run':
 						return join(Precedence.Do, 'right', [
-							this.go(e.right, names),
+							this.go(e.op.right, names),
 							token(e.pure ? '; ' : ', '),
 							this.go(e.result, names),
 						]);
 				}
+			case 'build': {
+				let newNames = names;
+				const predicates: Render<string>[] = [];
+				for (const pred of e.predicates) {
+					if ('head' in pred) {
+						predicates.push(this.go(pred, newNames));
+					} else {
+						const prevNames = newNames;
+						newNames = addNames(pred.left.scope as ExprType[], newNames);
+						predicates.push(
+							join(Precedence.Assign, 'none', [
+								this.go(pred.left, newNames),
+								token(' ⇐ '),
+								'scope' in pred.right
+									? this.go(pred.right, prevNames)
+									: token(bindingToString(pred.right)),
+							]),
+						);
+					}
+				}
+				return join(Precedence.Bracket, 'none', [
+					token('{'),
+					this.go(e.body, newNames),
+					...(predicates.length === 0
+						? []
+						: [
+								token(' | '),
+								join(
+									Precedence.Do,
+									'none',
+									predicates.flatMap((pred, i) =>
+										i < predicates.length - 1 ? [pred, token(', ')] : [pred],
+									),
+								),
+							]),
+					token('}'),
+				]);
+			}
 			case 'lexeme':
 				return token(`⟦${e.name}⟧`);
 			case 'quote':

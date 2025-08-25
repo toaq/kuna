@@ -331,6 +331,18 @@ function reduce_(expr: Expr): Expr {
 				return reduce(single(app(expr.arg, expr.fn.arg.arg)));
 			}
 
+			// flat_map (single x) f = f x
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'flat_map' &&
+				expr.fn.arg.head === 'apply' &&
+				expr.fn.arg.fn.head === 'constant' &&
+				expr.fn.arg.fn.name === 'single'
+			) {
+				return reduce(app(expr.arg, expr.fn.arg.arg));
+			}
+
 			// and_map x (λy y) = x
 			if (
 				expr.fn.head === 'apply' &&

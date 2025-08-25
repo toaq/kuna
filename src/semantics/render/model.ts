@@ -5,10 +5,11 @@ import {
 	assertBind,
 	assertFn,
 	assertIndef,
+	assertPl,
 	assertRef,
 	pair,
 } from '../model';
-import { rewriteScope, substitute } from '../reduce';
+import { reduce, rewriteScope, substitute } from '../reduce';
 import type { Binding, Expr, ExprType } from '../types';
 
 interface ExprBase {
@@ -69,30 +70,34 @@ interface Pair extends ExprBase {
 	right: RichExpr;
 }
 
-interface DoGet extends ExprBase {
-	head: 'do';
+interface OpGet {
 	op: 'get';
 	left: RichExpr;
 	right: RichExpr | Binding;
-	result: RichExpr;
-	pure: boolean;
 }
 
-interface DoSet extends ExprBase {
-	head: 'do';
+interface OpSet {
 	op: 'set';
 	left: RichExpr;
 	right: Binding;
+}
+
+interface OpRun {
+	op: 'run';
+	right: RichExpr;
+}
+
+interface Do extends ExprBase {
+	head: 'do';
+	op: OpGet | OpSet | OpRun;
 	result: RichExpr;
 	pure: boolean;
 }
 
-interface DoRun extends ExprBase {
-	head: 'do';
-	op: 'run';
-	right: RichExpr;
-	result: RichExpr;
-	pure: boolean;
+interface Build extends ExprBase {
+	head: 'build';
+	body: RichExpr;
+	predicates: (OpGet | RichExpr)[];
 }
 
 interface Lexeme extends ExprBase {
@@ -121,9 +126,8 @@ export type RichExpr =
 	| Infix
 	| Subscript
 	| Pair
-	| DoGet
-	| DoSet
-	| DoRun
+	| Do
+	| Build
 	| Lexeme
 	| Quote
 	| Constant;
@@ -183,6 +187,117 @@ function enrichLambda(e: Expr & { head: 'lambda' }): {
 	);
 }
 
+interface BuildGet {
+	type: 'get';
+	left: Expr;
+	right: Expr;
+}
+
+interface BuildPredicate {
+	type: 'predicate';
+	pred: Expr;
+}
+
+function enrichBuilder(e: Expr): {
+	body: Expr;
+	predicates: (BuildGet | BuildPredicate)[];
+	vars: number;
+} | null {
+	if (
+		e.head === 'apply' &&
+		e.fn.head === 'apply' &&
+		e.fn.fn.head === 'constant' &&
+		e.arg.head === 'lambda'
+	) {
+		if (e.fn.fn.name === 'map') {
+			const builder = enrichBuilder(e.fn.arg);
+			if (builder === null) {
+				const { param, body } = enrichLambda(e.arg);
+				return {
+					body,
+					predicates: [{ type: 'get', left: param, right: e.fn.arg }],
+					vars: param.scope.length,
+				};
+			}
+			return {
+				body: reduce(
+					substitute(
+						0,
+						builder.body,
+						rewriteScope(e.arg.body, i => (i === 0 ? 0 : i + builder.vars)),
+					),
+				),
+				predicates: builder.predicates,
+				vars: builder.vars,
+			};
+		}
+
+		if (e.fn.fn.name === 'flat_map') {
+			const builder = enrichBuilder(e.arg.body);
+			const { param, body } = enrichLambda(e.arg);
+			if (builder === null) {
+				assertFn(e.arg.type);
+				const variable: Expr = {
+					type: e.arg.type.range,
+					scope: [e.arg.type.range],
+					head: 'variable',
+					index: 0,
+				};
+				return {
+					body: variable,
+					predicates: [
+						{ type: 'get', left: param, right: e.fn.arg },
+						{ type: 'get', left: variable, right: body },
+					],
+					vars: param.scope.length + 1,
+				};
+			}
+			return {
+				body: builder.body,
+				predicates: [
+					{ type: 'get', left: param, right: e.fn.arg },
+					...builder.predicates,
+				],
+				vars: builder.vars + param.scope.length,
+			};
+		}
+
+		if (e.fn.fn.name === 'filter') {
+			const builder = enrichBuilder(e.fn.arg);
+			if (builder === null) {
+				const { param, body } = enrichLambda(e.arg);
+				return {
+					body: param,
+					predicates: [
+						{ type: 'get', left: param, right: e.fn.arg },
+						{ type: 'predicate', pred: body },
+					],
+					vars: param.scope.length,
+				};
+			}
+			return {
+				body: builder.body,
+				predicates: [
+					...builder.predicates,
+					{
+						type: 'predicate',
+						pred: reduce(
+							substitute(
+								0,
+								builder.body,
+								rewriteScope(e.arg.body, i => (i === 0 ? 0 : i + builder.vars)),
+							),
+						),
+					},
+				],
+				vars: builder.vars,
+			};
+		}
+	}
+
+	return null;
+}
+
 export function enrich(e: Expr): RichExpr {
 	switch (e.head) {
 		case 'variable':
@@ -200,7 +315,7 @@ export function enrich(e: Expr): RichExpr {
 				body: enrich(body),
 			};
 		}
-		case 'apply':
+		case 'apply': {
 			// Hide int/cont/uncont applications
 			if (
 				e.fn.head === 'constant' &&
@@ -299,8 +414,7 @@ export function enrich(e: Expr): RichExpr {
 						type: e.type,
 						scope: e.scope,
 						head: 'do',
-						op: 'run',
-						right: enrich(e.fn.arg),
+						op: { op: 'run', right: enrich(e.fn.arg) },
 						result: enrich(
 							rewriteScope(e.arg.body, i => {
 								if (i === 0) throw new Impossible('Variable deleted');
@@ -315,9 +429,7 @@ export function enrich(e: Expr): RichExpr {
 					type: e.type,
 					scope: e.scope,
 					head: 'do',
-					op: 'get',
-					left: enrich(param),
-					right: enrich(e.fn.arg),
+					op: { op: 'get', left: enrich(param), right: enrich(e.fn.arg) },
 					result: enrich(body),
 					pure: e.fn.fn.name === 'and_map',
 				};
@@ -336,9 +448,11 @@ export function enrich(e: Expr): RichExpr {
 					type: e.type,
 					scope: e.scope,
 					head: 'do',
-					op: 'get',
-					left: enrich(param),
-					right: e.fn.type.range.binding,
+					op: {
+						op: 'get',
+						left: enrich(param),
+						right: e.fn.type.range.binding,
+					},
 					result: enrich(body),
 					pure: true,
 				};
@@ -358,11 +472,13 @@ export function enrich(e: Expr): RichExpr {
 					type: e.type,
 					scope: e.scope,
 					head: 'do',
-					op: 'set',
-					left: enrich(e.fn.arg),
-					right: e.fn.fn.type.range.range.binding,
+					op: {
+						op: 'set',
+						left: enrich(e.fn.arg),
+						right: e.fn.fn.type.range.range.binding,
+					},
 					result,
-					pure: !(result.head === 'do' && result.op === 'set'),
+					pure: !(result.head === 'do' && result.op.op === 'set'),
 				};
 			}
 
@@ -380,25 +496,60 @@ export function enrich(e: Expr): RichExpr {
 					type: e.type,
 					scope: e.scope,
 					head: 'do',
-					op: 'get',
-					left: enrich(param),
-					right: {
-						type: newType,
-						scope: e.fn.arg.scope,
-						head: 'apply',
-						fn: {
-							type: Fn(e.fn.arg.type, newType),
-							scope: [],
-							head: 'constant',
-							name: 'new',
+					op: {
+						op: 'get',
+						left: enrich(param),
+						right: {
+							type: newType,
+							scope: e.fn.arg.scope,
+							head: 'apply',
+							fn: {
+								type: Fn(e.fn.arg.type, newType),
+								scope: [],
+								head: 'constant',
+								name: 'new',
+							},
+							arg: enrich(e.fn.arg),
 						},
-						arg: enrich(e.fn.arg),
 					},
 					result: enrich(body),
 					pure: true,
 				};
 			}
 
+			// Set-builder notation (singleton)
+			if (e.fn.head === 'constant' && e.fn.name === 'single')
+				return {
+					type: e.type,
+					scope: e.scope,
+					head: 'build',
+					body: enrich(e.arg),
+					predicates: [],
+				};
+
+			// Set-builder notation
+			const builder = enrichBuilder(e);
+			if (builder !== null) {
+				return {
+					type: e.type,
+					scope: e.scope,
+					head: 'build',
+					body: enrich(builder.body),
+					predicates: builder.predicates.map(pred => {
+						if (pred.type === 'get') {
+							assertPl(pred.right.type);
+							return {
+								op: 'get',
+								left: enrich(pred.left),
+								right: enrich(pred.right),
+							} satisfies OpGet;
+						}
+						return enrich(pred.pred);
+					}),
+				};
+			}
+
 			return { ...e, fn: enrich(e.fn), arg: enrich(e.arg) };
+		}
 	}
 }
