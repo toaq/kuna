@@ -8,10 +8,11 @@ export type Siteleq =
 	| { head: 'tuple'; items: Siteleq[] }
 	| {
 			head: 'prefix';
-			prefix: 'int' | 'indef' | 'qn' | 'nf' | 'dx' | 'act';
+			prefix: 'indef' | 'qn' | 'nf' | 'dx' | 'act';
 			body: Siteleq | null;
 	  }
 	| { head: 'bracket'; inner: Siteleq }
+	| { head: 'int'; inner: Siteleq | null }
 	| { head: 'cont'; inner: Siteleq | null }
 	| { head: 'pl'; inner: Siteleq };
 
@@ -38,6 +39,7 @@ function maybeBracket<T extends Siteleq | null>(t: T): Siteleq | T {
 		t.head === 'atom' ||
 		t.head === 'bracket' ||
 		t.head === 'prefix' ||
+		t.head === 'int' ||
 		t.head === 'cont' ||
 		t.head === 'pl'
 		? t
@@ -85,13 +87,14 @@ export function typeToSiteleq(t: ExprType): Siteleq | null {
 		case 'fn':
 		case 'ref':
 			return fn(t, []);
-		case 'int':
 		case 'indef':
 		case 'qn':
 		case 'nf':
 		case 'dx':
 		case 'act':
 			return prefix(t.head, t.inner);
+		case 'int':
+			return { head: 'int', inner: typeToSiteleq(t.inner) };
 		case 'cont':
 			return { head: 'cont', inner: typeToSiteleq(t.inner) };
 		case 'pl': {
@@ -119,8 +122,6 @@ function prefixSymbol(
 	prefix: (Siteleq & { head: 'prefix' })['prefix'],
 ): string {
 	switch (prefix) {
-		case 'int':
-			return '~';
 		case 'indef':
 			return '+';
 		case 'qn':
@@ -128,13 +129,13 @@ function prefixSymbol(
 		case 'nf':
 			return 'Nf'; // TODO: Remove Nf?
 		case 'dx':
-			return '☝\ufe0e';
+			return '^';
 		case 'act':
 			return '!';
 	}
 }
 
-export const SiteleqType: FC<{ t: Siteleq | null }> = ({ t }) => {
+export const SiteleqTypePart: FC<{ t: Siteleq | null }> = ({ t }) => {
 	if (t === null) return null;
 	switch (t.head) {
 		case 'binding':
@@ -142,13 +143,13 @@ export const SiteleqType: FC<{ t: Siteleq | null }> = ({ t }) => {
 		case 'atom':
 			switch (t.value) {
 				case 'e':
-					return '○';
+					return 'o';
 				case 'v':
-					return '✲';
+					return 'v';
 				case 'i':
-					return '◷';
+					return 't';
 				case 't':
-					return '◐';
+					return '■';
 				case 's':
 					return 's';
 				default:
@@ -158,9 +159,9 @@ export const SiteleqType: FC<{ t: Siteleq | null }> = ({ t }) => {
 			const spacer = makeSpacer();
 			return (
 				<>
-					<SiteleqType t={t.domain} />
+					<SiteleqTypePart t={t.domain} />
 					{spacer}›{spacer}
-					<SiteleqType t={t.range} />
+					<SiteleqTypePart t={t.range} />
 				</>
 			);
 		}
@@ -168,7 +169,7 @@ export const SiteleqType: FC<{ t: Siteleq | null }> = ({ t }) => {
 			const spacer = makeSpacer();
 			return t.items.flatMap((item, i) => [
 				// biome-ignore lint/suspicious/noArrayIndexKey: Static tree
-				<SiteleqType key={i} t={item} />,
+				<SiteleqTypePart key={i} t={item} />,
 				...(i === t.items.length - 1 ? [] : [spacer]),
 			]);
 		}
@@ -178,36 +179,42 @@ export const SiteleqType: FC<{ t: Siteleq | null }> = ({ t }) => {
 				<>
 					{prefixSymbol(t.prefix)}
 					{spacer}
-					<SiteleqType t={t.body} />
+					<SiteleqTypePart t={t.body} />
 				</>
 			);
 		}
 		case 'bracket':
 			return (
 				<>
-					(<SiteleqType t={t.inner} />)
+					(<SiteleqTypePart t={t.inner} />)
 				</>
+			);
+
+		case 'int':
+			return (
+				<div className="inline-flex border-b mb-1 items-baseline">
+					<SiteleqTypePart t={t.inner} />
+				</div>
 			);
 		case 'cont':
 			return (
-				<div
-					style={{
-						display: 'inline-block',
-						paddingBlock: 2,
-						paddingInline: 5,
-						marginInline: 2,
-						border: '1px solid',
-						borderRadius: 4,
-					}}
-				>
-					<SiteleqType t={t.inner} />
+				<div className="inline-flex border-t border-r border-l px-1 mx-1 my-0.5 items-baseline">
+					<SiteleqTypePart t={t.inner} />
 				</div>
 			);
 		case 'pl':
 			return (
 				<>
-					[<SiteleqType t={t.inner} />]
+					[<SiteleqTypePart t={t.inner} />]
 				</>
 			);
 	}
+};
+
+export const SiteleqType: FC<{ t: Siteleq | null }> = ({ t }) => {
+	return (
+		<div className="inline-flex items-baseline">
+			<SiteleqTypePart t={t} />
+		</div>
+	);
 };
