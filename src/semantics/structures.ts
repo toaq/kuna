@@ -18,6 +18,7 @@ import {
 	assertBind,
 	assertCont,
 	assertDx,
+	assertDxOrAct,
 	assertFn,
 	assertIndef,
 	assertInt,
@@ -34,10 +35,13 @@ import {
 	int,
 	map,
 	pair,
+	pure,
 	qn,
 	ref,
+	single,
 	some,
 	subtype,
+	trueExpr,
 	typesCompatible,
 	typesEqual,
 	unbind,
@@ -86,7 +90,10 @@ export interface Functor {
 
 export interface Applicative {
 	functor: Functor;
-	// There is no 'pure' here because we don't really need it
+	/**
+	 * Lifts a value into the applicative functor.
+	 */
+	pure: (e: () => Expr, type: ExprType, like: ExprType) => Expr;
 	/**
 	 * Applies a function to an argument, sequencing their actions.
 	 * @param fn The function in the applicative functor.
@@ -173,6 +180,7 @@ const intFunctor: Functor = {
 
 const intApplicative: Applicative = {
 	functor: intFunctor,
+	pure: e => int(λ('s', () => e())),
 	apply: (fn, arg) =>
 		int(λ('s', w => app(app(unint(fn()), v(w)), app(unint(arg()), v(w))))),
 };
@@ -200,6 +208,7 @@ const contFunctor: Functor = {
 
 const contApplicative: Applicative = {
 	functor: contFunctor,
+	pure: (e, type) => cont(λ(Fn(type, 't'), pred => app(v(pred), e()))),
 	apply: (fn, arg, fnType) => {
 		assertCont(fnType);
 		assertFn(fnType.inner);
@@ -240,6 +249,7 @@ const plFunctor: Functor = {
 
 const plApplicative: Applicative = {
 	functor: plFunctor,
+	pure: e => single(e()),
 	apply: (fn, arg) => {
 		const fn_ = fn();
 		assertPl(fn_.type);
@@ -298,6 +308,14 @@ const indefOrQnMonad = (
 					),
 				);
 			},
+		},
+		pure: (e, _type, like) => {
+			if (typeof like === 'string' || like.head !== head)
+				throw new Impossible(`${typeToPlainText(like)} is not a ${head} type`);
+			return construct(
+				λ(like.domain, () => trueExpr),
+				λ(like.domain, () => e()),
+			);
 		},
 		apply: (fn, arg) => {
 			const fn_ = fn();
@@ -544,6 +562,13 @@ const refFunctor: Functor = {
 
 const refApplicative: Applicative = {
 	functor: refFunctor,
+	pure: (e, _type, like) => {
+		assertRef(like);
+		return ref(
+			like.binding,
+			λ(Int(Pl('e')), () => e()),
+		);
+	},
 	apply: (fn, arg, fnType) => {
 		assertRef(fnType);
 		return ref(
@@ -619,6 +644,10 @@ const opMonad = <T extends ExprType>(
 				return type.inner;
 			},
 			map: (fn, arg) => andMap(arg(), fn()),
+		},
+		pure: (e, _type, like) => {
+			assertDxOrAct(like);
+			return pure(e(), like.head);
 		},
 		apply: (fn, arg) => {
 			const fn_ = fn();

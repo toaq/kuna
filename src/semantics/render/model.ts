@@ -53,7 +53,15 @@ interface Prefix extends ExprBase {
 
 interface Infix extends ExprBase {
 	head: 'infix';
-	op: 'among' | 'and' | 'or' | 'implies' | 'equals' | 'not_equals';
+	op:
+		| 'among'
+		| 'and'
+		| 'or'
+		| 'xor'
+		| 'implies'
+		| 'equals'
+		| 'not_equals'
+		| 'union';
 	left: RichExpr;
 	right: RichExpr;
 }
@@ -365,8 +373,10 @@ export function enrich(e: Expr): RichExpr {
 				(e.fn.fn.name === 'among' ||
 					e.fn.fn.name === 'and' ||
 					e.fn.fn.name === 'or' ||
+					e.fn.fn.name === 'xor' ||
 					e.fn.fn.name === 'implies' ||
-					e.fn.fn.name === 'equals')
+					e.fn.fn.name === 'equals' ||
+					e.fn.fn.name === 'union')
 			)
 				return {
 					type: e.type,
@@ -502,18 +512,23 @@ export function enrich(e: Expr): RichExpr {
 					op: {
 						op: 'get',
 						left: enrich(param),
-						right: {
-							type: newType,
-							scope: e.fn.arg.scope,
-							head: 'apply',
-							fn: {
-								type: Fn(e.fn.arg.type, newType),
-								scope: [],
-								head: 'constant',
-								name: 'new',
-							},
-							arg: enrich(e.fn.arg),
-						},
+						right:
+							e.fn.arg.head === 'lambda' &&
+							e.fn.arg.body.head === 'constant' &&
+							e.fn.arg.body.name === 'true'
+								? { type: newType, scope: [], head: 'constant', name: 'new' }
+								: {
+										type: newType,
+										scope: e.fn.arg.scope,
+										head: 'apply',
+										fn: {
+											type: Fn(e.fn.arg.type, newType),
+											scope: [],
+											head: 'constant',
+											name: 'new',
+										},
+										arg: enrich(e.fn.arg),
+									},
 					},
 					result: enrich(body),
 					pure: true,

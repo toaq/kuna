@@ -8,6 +8,14 @@ exports[`adjuncts > Marao úmo gâq nhâna. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 �
 
 exports[`adjuncts > Nuo súq dûo géodıo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦súq⟧; 𝑄 ⇐ géodıo; 𝑄 ⇒ géodıo, 𝑄 ⇒ tá; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦nuo⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' ⟦duo⟧ 𝑤 𝑏 𝑒 𝑒')) 𝑡))"`;
 
+exports[`conjunctions > Ao jea súq shíukune rí góso? 1`] = `"𝑃 ⇐ accessibility, 𝑄 ⇐ salient, 𝑡 ⇐ ⟦tuom⟧, 𝑅 ⇐ ⟦súq⟧; 𝑆 ⇐ shíukune; 𝑆 ⇒ shíukune, 𝑆 ⇒ hó; 𝑇 ⇐ góso; 𝑇 ⇒ góso, 𝑇 ⇒ tá; λ𝑤 (bg (⟦da⟧ (λ𝑤' ¬(𝑄 𝑤'))), ⟦móq⟧ (λ𝑤' qn (λ𝑈 𝑈 = (λ𝑉 𝑉 𝑆) ∨ 𝑈 = (λ𝑉 𝑉 𝑇)) (λ𝑈 ∀𝑤'' 𝑃 𝑤 𝑤'' ∧ 𝑄 𝑤'' → 𝑈 (λ𝑉 ∀𝑎 𝑎 ≺ 𝑅 𝑤'' → (∀𝑏 𝑏 ≺ 𝑉 𝑤'' → ⟦tam⟧ 𝑤'' (⟦jea⟧ 𝑤'' 𝑏 𝑎) 𝑡)))))"`;
+
+exports[`conjunctions > Aona tú Toaqpoq kéo sía Lojıbaqpoq sáose. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧; 𝑃 ⇐ sáose; 𝑃 ⇒ sáose, 𝑃 ⇒ tá; λ𝑤 (bg (contrast (λ𝑄 ∀𝑅 (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦toaqpoq⟧ 𝑤 𝑎) 𝑡') → 𝑄 (λ𝑤' 𝑅 𝑤')) (λ𝑄 ¬(∃𝑅 (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦lojıbaqpoq⟧ 𝑤 𝑎) 𝑡'') ∧ 𝑄 (λ𝑤' 𝑅 𝑤')))), ⟦da⟧ (λ𝑤' (∀𝑄 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦toaqpoq⟧ 𝑤 𝑎) 𝑡') → (∀𝑎 𝑎 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (⟦aona⟧ 𝑤' 𝑎 (𝑄 𝑤')) 𝑡)) ∧ ¬(∃𝑄 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦lojıbaqpoq⟧ 𝑤 𝑎) 𝑡'') ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (⟦aona⟧ 𝑤' 𝑎 (𝑄 𝑤')) 𝑡))))"`;
+
+exports[`conjunctions > Marao jí rú súq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑄 ⇐ ⟦súq⟧; ⟦da⟧ (λ𝑤 (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦marao⟧ 𝑤 𝑎) 𝑡) ∧ (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦marao⟧ 𝑤 𝑎) 𝑡))"`;
+
+exports[`conjunctions > Tua sı jí súq rá nháo hụ́ra. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑄 ⇐ ⟦súq⟧, 𝑅 ⇐ ⟦nháo⟧; ⟦da⟧ (λ𝑤 (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → (∀𝑐 𝑐 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑑 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ⟦sı⟧ 𝑤' 𝑐 𝑏 𝑒') 𝑑 ∧ ⟦tua⟧ 𝑤 𝑑 𝑎 𝑒) 𝑡))) ∨ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑅 𝑤 → (∀𝑐 𝑐 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑑 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ⟦sı⟧ 𝑤' 𝑐 𝑏 𝑒') 𝑑 ∧ ⟦tua⟧ 𝑤 𝑑 𝑎 𝑒) 𝑡))))"`;
+
 exports[`donkey anaphora > Do tú poq, ꝡë bo bâq aqshe, ꝡë bua hóa báq dueq, hóa, áqshe dúeq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑡'''' ⇐ ⟦tuom⟧, 𝑡''''' ⇐ ⟦tuom⟧; ⟦da⟧ (λ𝑤 ∀𝑄, 𝑅, 𝑃 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦dueq⟧ 𝑤 𝑎) 𝑡''''') ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦aqshe⟧ 𝑤 𝑎) 𝑡''') ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦bua⟧ 𝑤 𝑏 𝑎) 𝑡'''')) ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦poq⟧ 𝑤 𝑎) 𝑡') ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦bo⟧ 𝑤 𝑏 𝑎) 𝑡'')) → (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑅 𝑤 → (∀𝑐 𝑐 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦do⟧ 𝑤 𝑐 𝑏 𝑎) 𝑡))))"`;
 
 exports[`donkey anaphora > Kıaı tú poq, ꝡë bo hóa báq aqshe, áqshe. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧; ⟦da⟧ (λ𝑤 ∀𝑃, 𝑄 (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦aqshe⟧ 𝑤 𝑎) 𝑡''') ∧ (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦poq⟧ 𝑤 𝑎) 𝑡') ∧ (∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦bo⟧ 𝑤 𝑏 𝑎) 𝑡'')) → (∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦kıaı⟧ 𝑤 𝑏 𝑎) 𝑡)))"`;

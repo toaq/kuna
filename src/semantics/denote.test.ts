@@ -71,3 +71,10 @@ test('reflexives and reciprocals', () => {
 	snapshot('Kueqtua áma áqna gâq chéq.');
 	snapshot('Po póq káto pâı chéq.');
 });
+
+test('conjunctions', () => {
+	snapshot('Marao jí rú súq.');
+	snapshot('Tua sı jí súq rá nháo hụ́ra.');
+	snapshot('Ao jea súq shíukune rí góso?');
+	snapshot('Aona tú Toaqpoq kéo sía Lojıbaqpoq sáose.');
+});

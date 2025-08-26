@@ -452,7 +452,31 @@ function unwrapAndCoerce(
 	while (true) {
 		const functor = getFunctor(unwrapped);
 		if (functor === null) {
-			if (associatesWithEffects) throw new UnimplementedComposition();
+			if (associatesWithEffects) {
+				// The effects expected by the function weren't found; maybe we can lift the
+				// input into them via an applicative functor?
+				const applicative = getApplicative(fn.type.domain);
+				if (applicative !== null) {
+					const { domain } = fn.type;
+					const domainInner = applicative.functor.unwrap(domain);
+					const result = unwrapAndCoerce(
+						input,
+						λ(domainInner, x =>
+							app(
+								fn,
+								applicative.pure(() => v(x), domainInner, domain),
+							),
+						),
+						inputSide,
+						mode,
+					);
+					return {
+						...result,
+						mode: [inputSide === 'left' ? '↑L' : '↑R', result.mode],
+					};
+				}
+				throw new UnimplementedComposition();
+			}
 			return { input: unwrapped, fn, effects, precedences, mode };
 		}
 

@@ -408,13 +408,15 @@ enum Precedence {
 	Quantify = 3,
 	Implies = 4,
 	Or = 5,
-	And = 6,
-	Equals = 7,
-	Among = 8,
-	Apply = 9,
-	Prefix = 10,
-	Subscript = 11,
-	Bracket = 12,
+	Xor = 6,
+	And = 7,
+	Equals = 8,
+	Among = 9,
+	Union = 10,
+	Apply = 11,
+	Prefix = 12,
+	Subscript = 13,
+	Bracket = 14,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -440,6 +442,7 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 		associativity: 'none',
 	},
 	or: { symbol: '∨', precedence: Precedence.Or, associativity: 'any' },
+	xor: { symbol: '⊕', precedence: Precedence.Xor, associativity: 'any' },
 	and: { symbol: '∧', precedence: Precedence.And, associativity: 'any' },
 	implies: {
 		symbol: '→',
@@ -451,6 +454,11 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 		symbol: '≠',
 		precedence: Precedence.Equals,
 		associativity: 'none',
+	},
+	union: {
+		symbol: '∪',
+		precedence: Precedence.Union,
+		associativity: 'any',
 	},
 };
 

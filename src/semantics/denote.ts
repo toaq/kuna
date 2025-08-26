@@ -19,6 +19,7 @@ import {
 import { compose } from './compose';
 import {
 	adjuncts,
+	argumentConjunctions,
 	conditionals,
 	covertComplementizers,
 	covertCp,
@@ -468,15 +469,11 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`&: ${leaf.word.text}`);
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
-		const out = Bind({ type: 'head', head: leaf.word.bare }, Int(Pl('e')));
 
 		// TODO: Generalize to more than just verbal arguments
-		return lex(
-			toaq,
-			toaq === 'róı'
-				? Fn(Int(Pl('e')), Fn(Int(Pl('e')), out))
-				: Fn(Int(Pl('e')), Fn(Int(Pl('e')), Cont(out))),
-		);
+		const data = argumentConjunctions.get(toaq);
+		if (data === undefined) throw new Unrecognized('&: ${toaq}');
+		return data;
 	}
 
 	if (leaf.label === 'Focus') {

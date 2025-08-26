@@ -481,6 +481,26 @@ export function single(element: Expr): Expr {
 }
 
 /**
+ * Creates a plurality containing all elements found in the left plurality
+ * and/or the right plurality.
+ */
+export function union(left: Expr, right: Expr): Expr {
+	assertPl(left.type);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(left.type, Fn(left.type, left.type)),
+				scope: [],
+				name: 'union',
+			},
+			left,
+		),
+		right,
+	);
+}
+
+/**
  * Maps a plurality to another plurality by projecting each element.
  */
 export function map(pl: Expr, project: Expr): Expr {
@@ -812,6 +832,21 @@ export function unref(ref: Expr): Expr {
 }
 
 /**
+ * Lifts a value into a deixis or speech act operation that does nothing.
+ */
+export function pure(e: Expr, head: 'dx' | 'act'): Expr {
+	return app(
+		{
+			head: 'constant',
+			type: Fn(e.type, { head, inner: e.type }),
+			scope: [],
+			name: 'pure',
+		},
+		e,
+	);
+}
+
+/**
  * Projects the value returned by a deixis or speech act operation.
  */
 export function andMap(op: Expr, project: Expr): Expr {
@@ -876,6 +911,39 @@ export const bg: Expr = {
 	name: 'bg',
 };
 
+/**
+ * Speech act claiming that there is a certain contrast between the two
+ * arguments.
+ */
+export function constrast(left: Expr, right: Expr): Expr {
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(left.type, Fn(left.type, Act('()'))),
+				scope: [],
+				name: 'contrast',
+			},
+			left,
+		),
+		right,
+	);
+}
+
+export const trueExpr: Expr = {
+	head: 'constant',
+	type: 't',
+	scope: [],
+	name: 'true',
+};
+
+export const falseExpr: Expr = {
+	head: 'constant',
+	type: 't',
+	scope: [],
+	name: 'false',
+};
+
 export const not: Expr = {
 	head: 'constant',
 	type: Fn('t', 't'),
@@ -895,6 +963,13 @@ export const or: Expr = {
 	type: Fn('t', Fn('t', 't')),
 	scope: [],
 	name: 'or',
+};
+
+export const xor: Expr = {
+	head: 'constant',
+	type: Fn('t', Fn('t', 't')),
+	scope: [],
+	name: 'xor',
 };
 
 export const implies: Expr = {

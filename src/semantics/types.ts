@@ -149,6 +149,7 @@ interface Constant extends ExprBase {
 		| 'cont'
 		| 'uncont'
 		| 'single'
+		| 'union'
 		| 'map'
 		| 'flat_map'
 		| 'filter'
@@ -164,13 +165,18 @@ interface Constant extends ExprBase {
 		| 'unbind'
 		| 'ref'
 		| 'unref'
+		| 'pure'
 		| 'and_map'
 		| 'and_then'
 		| 'salient'
 		| 'bg'
+		| 'contrast'
+		| 'true'
+		| 'false'
 		| 'not'
 		| 'and'
 		| 'or'
+		| 'xor'
 		| 'implies'
 		| 'equals'
 		| 'among'
@@ -199,9 +205,11 @@ export type CompositionMode =
 	| '<' // Reverse functional application
 	| '+' // Semigroup combination
 	| 'S' // Subject setting
-	| ['L', CompositionMode] // Lift left into functor
-	| ['R', CompositionMode] // Lift right into functor
+	| ['L', CompositionMode] // Map left over functor
+	| ['R', CompositionMode] // Map right over functor
 	| ['A', CompositionMode] // Sequence effects via applicative functor
+	| ['↑L', CompositionMode] // Lift left into applicative functor
+	| ['↑R', CompositionMode] // Lift right into applicative functor
 	| ['←L', CompositionMode] // Pull distributive functor out of functor on the left
 	| ['←R', CompositionMode] // Pull distributive functor out of functor on the right
 	| ['←', CompositionMode] // Pull distributive functor out of functor

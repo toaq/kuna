@@ -4,6 +4,7 @@ import type { CovertValue } from '../tree/types';
 import {
 	Act,
 	Bind,
+	Cont,
 	Dx,
 	Fn,
 	Indef,
@@ -20,6 +21,7 @@ import {
 	assertFn,
 	bg,
 	bind,
+	constrast,
 	cont,
 	equals,
 	every,
@@ -37,15 +39,18 @@ import {
 	salient,
 	single,
 	some,
+	uncont,
 	unindef,
 	unint,
+	union,
 	unref,
 	v,
+	xor,
 	λ,
 } from './model';
 import { typeToPlainText } from './render';
 import { getBigFunctor, getFunctor, idFunctor } from './structures';
-import type { AnimacyClass, Expr, ExprType } from './types';
+import type { AnimacyClass, Binding, Expr, ExprType } from './types';
 
 export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))));
 
@@ -559,20 +564,20 @@ export const conditionals = new Map<CovertValue, Expr>([
 	],
 	[
 		'IF.CNTF',
-		λ(Int('t'), antecedent =>
-			λ(Int('t'), consequent =>
-				andMap(
-					accessibility,
-					λ(Fn('s', Fn('s', 't')), accessible =>
-						andMap(
+		andMap(
+			accessibility,
+			λ(Fn('s', Fn('s', 't')), accessible =>
+				λ(Int('t'), antecedent =>
+					andMap(
+						app(
+							bg,
 							app(
-								bg,
-								app(
-									lex('da', Fn(Int('t'), Act('()'))),
-									int(λ('s', w => app(not, app(unint(v(antecedent)), v(w))))),
-								),
+								lex('da', Fn(Int('t'), Act('()'))),
+								int(λ('s', w => app(not, app(unint(v(antecedent)), v(w))))),
 							),
-							λ('()', () =>
+						),
+						λ('()', () =>
+							λ(Int('t'), consequent =>
 								int(
 									λ('s', w =>
 										indef(
@@ -747,3 +752,88 @@ export const adjuncts: Partial<
 	agent: subjectSharingAdverbial,
 	individual: subjectSharingAdverbial,
 };
+
+function clausalConjunction(conjoin: Expr, headBinding: string): Expr {
+	const binding: Binding = { type: 'head', head: headBinding };
+	return λ(Cont(Int(Pl('e'))), r =>
+		λ(Cont(Int(Pl('e'))), l =>
+			cont(
+				λ(Fn(Bind(binding, Int(Pl('e'))), 't'), pred => {
+					const pred_ = λ(Int(Pl('e')), x =>
+						app(v(pred), bind(binding, v(x), v(x))),
+					);
+					return app(
+						app(conjoin, app(uncont(v(l)), pred_)),
+						app(uncont(v(r)), pred_),
+					);
+				}),
+			),
+		),
+	);
+}
+
+export const argumentConjunctions = new Map<string, Expr>([
+	['rú', clausalConjunction(and, 'ru')],
+	['rá', clausalConjunction(or, 'ra')],
+	['ró', clausalConjunction(xor, 'ro')],
+	[
+		'rí',
+		λ(Cont(Int(Pl('e'))), r =>
+			λ(Cont(Int(Pl('e'))), l =>
+				qn(
+					λ(Cont(Int(Pl('e'))), x =>
+						app(app(or, equals(v(x), v(l))), equals(v(x), v(r))),
+					),
+					λ(Cont(Int(Pl('e'))), x => {
+						const binding: Binding = { type: 'head', head: 'rı' };
+						return cont(
+							λ(Fn(Bind(binding, Int(Pl('e'))), 't'), pred =>
+								app(
+									uncont(v(x)),
+									λ(Int(Pl('e')), x_ =>
+										app(v(pred), bind(binding, v(x_), v(x_))),
+									),
+								),
+							),
+						);
+					}),
+				),
+			),
+		),
+	],
+	[
+		'kéo',
+		λ(Cont(Int(Pl('e'))), r =>
+			λ(Cont(Int(Pl('e'))), l =>
+				andMap(
+					app(bg, constrast(v(l), v(r))),
+					λ('()', () => {
+						const binding: Binding = { type: 'head', head: 'keo' };
+						return cont(
+							λ(Fn(Bind(binding, Int(Pl('e'))), 't'), pred => {
+								const pred_ = λ(Int(Pl('e')), x =>
+									app(v(pred), bind(binding, v(x), v(x))),
+								);
+								return app(
+									app(and, app(uncont(v(l)), pred_)),
+									app(uncont(v(r)), pred_),
+								);
+							}),
+						);
+					}),
+				),
+			),
+		),
+	],
+	[
+		'róı',
+		λ(Int(Pl('e')), r =>
+			λ(Int(Pl('e')), l => {
+				const result = int(
+					λ('s', w => union(app(unint(v(l)), v(w)), app(unint(v(r)), v(w)))),
+				);
+				return bind({ type: 'head', head: 'roı' }, result, result);
+			}),
+		),
+	],
+]);

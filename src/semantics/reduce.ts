@@ -11,6 +11,7 @@ import {
 	flatMap,
 	implies,
 	map,
+	or,
 	single,
 	unbind,
 	unindef,
@@ -317,41 +318,34 @@ function reduce_(expr: Expr): Expr {
 				}
 			}
 
-			// map (single x) f = single (f x)
+			// _ (single x) f
 			if (
 				expr.fn.head === 'apply' &&
 				expr.fn.fn.head === 'constant' &&
-				expr.fn.fn.name === 'map' &&
 				expr.fn.arg.head === 'apply' &&
 				expr.fn.arg.fn.head === 'constant' &&
 				expr.fn.arg.fn.name === 'single'
 			) {
-				return reduce(single(app(expr.arg, expr.fn.arg.arg)));
+				const f = expr.arg;
+				const x = expr.fn.arg.arg;
+
+				// map (single x) f = single (f x)
+				if (expr.fn.fn.name === 'map') return reduce(single(app(f, x)));
+
+				// flat_map (single x) f = f x
+				if (expr.fn.fn.name === 'flat_map') return reduce(app(f, x));
 			}
 
-			// flat_map (single x) f = f x
+			// map/and_map x (λy y) = x
 			if (
 				expr.fn.head === 'apply' &&
 				expr.fn.fn.head === 'constant' &&
-				expr.fn.fn.name === 'flat_map' &&
-				expr.fn.arg.head === 'apply' &&
-				expr.fn.arg.fn.head === 'constant' &&
-				expr.fn.arg.fn.name === 'single'
-			) {
-				return reduce(app(expr.arg, expr.fn.arg.arg));
-			}
-
-			// and_map x (λy y) = x
-			if (
-				expr.fn.head === 'apply' &&
-				expr.fn.fn.head === 'constant' &&
-				expr.fn.fn.name === 'and_map' &&
+				(expr.fn.fn.name === 'map' || expr.fn.fn.name === 'and_map') &&
 				expr.arg.head === 'lambda' &&
 				expr.arg.body.head === 'variable' &&
 				expr.arg.body.index === 0
-			) {
+			)
 				return reduce(expr.fn.arg);
-			}
 
 			// f (unpair x (λy λz g)) = unpair x (λy λz f g)
 			// and so on for Indef, Qn, Bind
@@ -592,21 +586,55 @@ function reduce_(expr: Expr): Expr {
 				}
 			}
 
-			// among x (filter y f) = and (among x y) (f x)
+			// among x (_ y z)
 			if (
 				expr.fn.head === 'apply' &&
 				expr.fn.fn.head === 'constant' &&
 				expr.fn.fn.name === 'among' &&
 				expr.arg.head === 'apply' &&
 				expr.arg.fn.head === 'apply' &&
-				expr.arg.fn.fn.head === 'constant' &&
-				expr.arg.fn.fn.name === 'filter'
+				expr.arg.fn.fn.head === 'constant'
 			) {
 				const amongX = expr.fn;
 				const x = expr.fn.arg;
 				const y = expr.arg.fn.arg;
-				const f = expr.arg.arg;
-				return reduce(app(app(and, app(amongX, y)), app(f, x)));
+				const z = expr.arg.arg;
+
+				// among x (filter y z) = and (among x y) (z x)
+				if (expr.arg.fn.fn.name === 'filter')
+					return reduce(app(app(and, app(amongX, y)), app(z, x)));
+
+				// among x (union y z) = or (among x y) (among x z)
+				if (expr.arg.fn.fn.name === 'union')
+					return reduce(app(app(or, among(x, y)), among(x, z)));
+			}
+
+			// and _ _
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'and'
+			) {
+				// and true f = f
+				if (expr.fn.arg.head === 'constant' && expr.fn.arg.name === 'true')
+					return reduce(expr.arg);
+				// and f true = f
+				if (expr.arg.head === 'constant' && expr.arg.name === 'true')
+					return reduce(expr.fn.arg);
+			}
+
+			// or _ _
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'or'
+			) {
+				// or false f = f
+				if (expr.fn.arg.head === 'constant' && expr.fn.arg.name === 'false')
+					return reduce(expr.arg);
+				// or f false = f
+				if (expr.arg.head === 'constant' && expr.arg.name === 'false')
+					return reduce(expr.fn.arg);
 			}
 
 			const fn = reduce(expr.fn);
