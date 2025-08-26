@@ -203,6 +203,9 @@ function enrichBuilder(e: Expr): {
 	predicates: (BuildGet | BuildPredicate)[];
 	vars: number;
 } | null {
+	if (e.head === 'apply' && e.fn.head === 'constant' && e.fn.name === 'single')
+		return { body: e.arg, predicates: [], vars: 0 };
+
 	if (
 		e.head === 'apply' &&
 		e.fn.head === 'apply' &&
@@ -516,16 +519,6 @@ export function enrich(e: Expr): RichExpr {
 					pure: true,
 				};
 			}
-
-			// Set-builder notation (singleton)
-			if (e.fn.head === 'constant' && e.fn.name === 'single')
-				return {
-					type: e.type,
-					scope: e.scope,
-					head: 'build',
-					body: enrich(e.arg),
-					predicates: [],
-				};
 
 			// Set-builder notation
 			const builder = enrichBuilder(e);
