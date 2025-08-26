@@ -296,6 +296,8 @@ function binding(b: Binding): ReactNode {
 	switch (b.type) {
 		case 'resumptive':
 			return <mi>hóa</mi>;
+		case 'covert resumptive':
+			return <mi>PRO</mi>;
 		case 'gap':
 			return <mi>já</mi>;
 		case 'subject':

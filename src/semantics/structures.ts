@@ -741,6 +741,7 @@ const bindingTypePrecedence = new Map(
 			'subject',
 			'reflexive',
 			'gap',
+			'covert resumptive',
 			'resumptive',
 		] as Binding['type'][]
 	).map((type, i) => [type, i]),
@@ -777,6 +778,7 @@ function chooseEffect_(left: ExprType, right: ExprType): ExprType {
 			if (left.binding.type === rightCasted.binding.type) {
 				switch (left.binding.type) {
 					case 'resumptive':
+					case 'covert resumptive':
 					case 'gap':
 					case 'subject':
 					case 'reflexive':
