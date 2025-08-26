@@ -73,8 +73,14 @@ test('reflexives and reciprocals', () => {
 });
 
 test('conjunctions', () => {
+	snapshot('Maı jí róı súq chéq.');
+	snapshot('Kueq jí róı súq.');
 	snapshot('Marao jí rú súq.');
 	snapshot('Tua sı jí súq rá nháo hụ́ra.');
 	snapshot('Ao jea súq shíukune rí góso?');
 	snapshot('Aona tú Toaqpoq kéo sía Lojıbaqpoq sáose.');
+	snapshot('Jara kúne rú koı jí.');
+	snapshot('Kıa ro kuo máq.');
+	// TODO: bûı tú jıo kéo gûq sía hoe (needs ad-hoc scope islands)
+	// TODO: ꝡë gı hóa rú ꝡë huı hóa / mêoq rú fôı (needs predicate modification)
 });

@@ -19,7 +19,7 @@ import {
 import { compose } from './compose';
 import {
 	adjuncts,
-	argumentConjunctions,
+	clausalConjunctions,
 	conditionals,
 	covertComplementizers,
 	covertCp,
@@ -28,6 +28,7 @@ import {
 	distributiveLittleV,
 	nondistributiveLittleV,
 	overtComplementizers,
+	pluralCoordinator,
 	polarities,
 	pro,
 	pronominalTenses,
@@ -465,15 +466,17 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === '&') {
+		if (cCommand === null) throw new Impossible('Cannot denote & in isolation');
 		if (leaf.word.covert) throw new Impossible('Covert &');
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`&: ${leaf.word.text}`);
 		const toaq = inTone(leaf.word.entry.toaq, Tone.T2);
 
-		// TODO: Generalize to more than just verbal arguments
-		const data = argumentConjunctions.get(toaq);
+		if (toaq === 'róı') return pluralCoordinator;
+		const conjunct = unwrapEffects(cCommand.denotation.type);
+		const data = clausalConjunctions.get(toaq);
 		if (data === undefined) throw new Unrecognized('&: ${toaq}');
-		return data;
+		return data(conjunct === 'e' ? Int(Pl('e')) : conjunct, conjunct === 'e');
 	}
 
 	if (leaf.label === 'Focus') {

@@ -12,7 +12,15 @@ exports[`conjunctions > Ao jea súq shíukune rí góso? 1`] = `"𝑃 ⇐ access
 
 exports[`conjunctions > Aona tú Toaqpoq kéo sía Lojıbaqpoq sáose. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧; 𝑃 ⇐ sáose; 𝑃 ⇒ sáose, 𝑃 ⇒ tá; λ𝑤 (bg (contrast (λ𝑄 ∀𝑅 (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦toaqpoq⟧ 𝑤 𝑎) 𝑡') → 𝑄 (λ𝑤' 𝑅 𝑤')) (λ𝑄 ¬(∃𝑅 (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦lojıbaqpoq⟧ 𝑤 𝑎) 𝑡'') ∧ 𝑄 (λ𝑤' 𝑅 𝑤')))), ⟦da⟧ (λ𝑤' (∀𝑄 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦toaqpoq⟧ 𝑤 𝑎) 𝑡') → (∀𝑎 𝑎 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (⟦aona⟧ 𝑤' 𝑎 (𝑄 𝑤')) 𝑡)) ∧ ¬(∃𝑄 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦lojıbaqpoq⟧ 𝑤 𝑎) 𝑡'') ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (⟦aona⟧ 𝑤' 𝑎 (𝑄 𝑤')) 𝑡))))"`;
 
+exports[`conjunctions > Jara kúne rú koı jí. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧; 𝑄 ⇐ kúne; 𝑄 ⇒ kúne, 𝑄 ⇒ hó; ⟦da⟧ (λ𝑤 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦jara⟧ 𝑤 𝑎) 𝑡) ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦koı⟧ 𝑤 𝑎) 𝑡'))"`;
+
+exports[`conjunctions > Kueq jí róı súq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑄 ⇐ ⟦súq⟧; λ𝑤 𝑃 𝑤 ∪ 𝑄 𝑤 ⇒ hụ́roı; ⟦da⟧ (λ𝑤 ⟦tam⟧ 𝑤 (⟦kueq⟧ 𝑤 (𝑃 𝑤 ∪ 𝑄 𝑤)) 𝑡)"`;
+
+exports[`conjunctions > Kıa ro kuo máq. 1`] = `"𝑡 ⇐ ⟦tuom⟧; 𝑃 ⇐ máq; 𝑃 ⇒ máq; ⟦da⟧ (λ𝑤 (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦kıa⟧ 𝑤 𝑎) 𝑡) ⊕ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦kuo⟧ 𝑤 𝑎) 𝑡))"`;
+
 exports[`conjunctions > Marao jí rú súq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑄 ⇐ ⟦súq⟧; ⟦da⟧ (λ𝑤 (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦marao⟧ 𝑤 𝑎) 𝑡) ∧ (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦marao⟧ 𝑤 𝑎) 𝑡))"`;
+
+exports[`conjunctions > Maı jí róı súq chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑄 ⇐ ⟦súq⟧; λ𝑤 𝑃 𝑤 ∪ 𝑄 𝑤 ⇒ hụ́roı; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 ∨ 𝑎 ≺ 𝑄 𝑤 → (∀𝑏 (𝑏 ≺ 𝑃 𝑤 ∨ 𝑏 ≺ 𝑄 𝑤) ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (⟦maı⟧ 𝑤 𝑏 𝑎) 𝑡))"`;
 
 exports[`conjunctions > Tua sı jí súq rá nháo hụ́ra. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑄 ⇐ ⟦súq⟧, 𝑅 ⇐ ⟦nháo⟧; ⟦da⟧ (λ𝑤 (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → (∀𝑐 𝑐 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑑 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ⟦sı⟧ 𝑤' 𝑐 𝑏 𝑒') 𝑑 ∧ ⟦tua⟧ 𝑤 𝑑 𝑎 𝑒) 𝑡))) ∨ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑅 𝑤 → (∀𝑐 𝑐 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑑 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ⟦sı⟧ 𝑤' 𝑐 𝑏 𝑒') 𝑑 ∧ ⟦tua⟧ 𝑤 𝑑 𝑎 𝑒) 𝑡))))"`;
 
