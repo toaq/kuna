@@ -245,7 +245,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 					}
 				}
 				return join(Precedence.Bracket, 'none', [
-					token('{'),
+					token('['),
 					this.go(e.body, newNames),
 					...(predicates.length === 0
 						? []
@@ -259,7 +259,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 									),
 								),
 							]),
-					token('}'),
+					token(']'),
 				]);
 			}
 			case 'lexeme':

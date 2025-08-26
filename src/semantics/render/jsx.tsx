@@ -737,7 +737,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 						</mrow>
 					),
 					join(Precedence.Bracket, 'none', [
-						token(<mo>{'{'}</mo>),
+						token(<mo>{'['}</mo>),
 						this.go(e.body, newNames),
 						...(predicates.length === 0
 							? []
@@ -752,7 +752,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 										),
 									),
 								]),
-						token(<mo>{'}'}</mo>),
+						token(<mo>{']'}</mo>),
 					]),
 				);
 			}
@@ -781,9 +781,9 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 				Precedence.Bracket,
 				inner => (
 					<mrow className={big ? 'kuna-big-brackets' : undefined}>
-						<mo>{big ? '[' : '('}</mo>
+						<mo>{'('}</mo>
 						{inner}
-						<mo>{big ? ']' : ')'}</mo>
+						<mo>{')'}</mo>
 					</mrow>
 				),
 				r,
