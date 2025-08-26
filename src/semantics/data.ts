@@ -8,7 +8,6 @@ import {
 	Fn,
 	Indef,
 	Int,
-	Nf,
 	Pl,
 	Qn,
 	Ref,
@@ -30,7 +29,6 @@ import {
 	int,
 	lex,
 	map,
-	nf,
 	not,
 	or,
 	overlap,
@@ -41,7 +39,6 @@ import {
 	some,
 	unindef,
 	unint,
-	unnf,
 	unref,
 	v,
 	λ,
@@ -171,7 +168,10 @@ export const nondistributiveLittleV = ref(
 	),
 );
 
-export const pro = nf(λ(Int(Pl('e')), x => v(x)));
+export const pro = ref(
+	{ type: 'covert resumptive' },
+	λ(Int(Pl('e')), x => v(x)),
+);
 
 const personalPronouns = [
 	'jí',
@@ -408,7 +408,12 @@ export const littleN = λ(Fn(Int(Pl('e')), 't'), predicate =>
 
 export const covertComplementizers = new Map<CovertValue, Expr>([
 	['∅', λ(Int('t'), t => v(t))],
-	['REL', λ(Nf(Int(Pl('e')), 't'), predicate => unnf(v(predicate)))],
+	[
+		'REL',
+		λ(Ref({ type: 'covert resumptive' }, 't'), predicate =>
+			unref(v(predicate)),
+		),
+	],
 ]);
 
 export const overtComplementizers = new Map<string, Expr>([

@@ -9,6 +9,8 @@ export function bindingsEqual(b1: Binding, b2: Binding): boolean {
 	switch (b1.type) {
 		case 'resumptive':
 			return b2.type === 'resumptive';
+		case 'covert resumptive':
+			return b2.type === 'covert resumptive';
 		case 'gap':
 			return b2.type === 'gap';
 		case 'subject':
@@ -58,10 +60,6 @@ export function Bind(binding: Binding, inner: ExprType): ExprType {
 
 export function Ref(binding: Binding, inner: ExprType): ExprType {
 	return { head: 'ref', binding, inner };
-}
-
-export function Nf(domain: ExprType, inner: ExprType): ExprType {
-	return { head: 'nf', domain, inner };
 }
 
 export function Dx(inner: ExprType): ExprType {
@@ -123,12 +121,6 @@ export function subtype(t1: ExprType, t2: ExprType): boolean {
 				bindingsEqual(t1.binding, t2.binding) &&
 				subtype(t1.inner, t2.inner)
 			);
-		case 'nf':
-			return (
-				t2.head === 'nf' &&
-				subtype(t2.domain, t1.domain) &&
-				subtype(t1.inner, t2.inner)
-			);
 		case 'dx':
 			return t2.head === 'dx' && subtype(t1.inner, t2.inner);
 		case 'act':
@@ -184,12 +176,6 @@ export function typesEqual(t1: ExprType, t2: ExprType): boolean {
 			return (
 				t2.head === 'ref' &&
 				bindingsEqual(t1.binding, t2.binding) &&
-				typesEqual(t1.inner, t2.inner)
-			);
-		case 'nf':
-			return (
-				t2.head === 'nf' &&
-				typesEqual(t2.domain, t1.domain) &&
 				typesEqual(t1.inner, t2.inner)
 			);
 		case 'dx':
@@ -278,13 +264,6 @@ export function assertRef(
 ): asserts type is { head: 'ref'; binding: Binding; inner: ExprType } {
 	if (typeof type === 'string' || type.head !== 'ref')
 		throw new Impossible(`${typeToPlainText(type)} is not a reference type`);
-}
-
-export function assertNf(
-	type: ExprType,
-): asserts type is { head: 'nf'; domain: ExprType; inner: ExprType } {
-	if (typeof type === 'string' || type.head !== 'nf')
-		throw new Impossible(`${typeToPlainText(type)} is not a non-finite type`);
 }
 
 export function assertDx(
@@ -829,39 +808,6 @@ export function unref(ref: Expr): Expr {
 			name: 'unref',
 		},
 		ref,
-	);
-}
-
-/**
- * Constructs a non-finite expression.
- */
-export function nf(body: Expr): Expr {
-	assertFn(body.type);
-	const { domain, range: inner } = body.type;
-	return app(
-		{
-			head: 'constant',
-			type: Fn(body.type, Nf(domain, inner)),
-			scope: [],
-			name: 'nf',
-		},
-		body,
-	);
-}
-
-/**
- * Deconstructs a non-finite expression.
- */
-export function unnf(nf: Expr): Expr {
-	assertNf(nf.type);
-	return app(
-		{
-			head: 'constant',
-			type: Fn(nf.type, Fn(nf.type.domain, nf.type.inner)),
-			scope: [],
-			name: 'unnf',
-		},
-		nf,
 	);
 }
 

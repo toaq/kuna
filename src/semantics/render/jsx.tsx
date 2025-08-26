@@ -379,11 +379,6 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 					this.app(token(<mi>Ref</mi>), token(binding(t.binding))),
 					this.sub(t.inner),
 				);
-			case 'nf':
-				return this.app(
-					this.app(token('Nf'), this.sub(t.domain)),
-					this.sub(t.inner),
-				);
 			case 'dx':
 				return this.app(token(<mi>Dx</mi>), this.sub(t.inner));
 			case 'act':

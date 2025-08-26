@@ -158,8 +158,6 @@ function reduce_(expr: Expr): Expr {
 						(outer === 'int' && inner === 'unint') ||
 						(outer === 'unref' && inner === 'ref') ||
 						(outer === 'ref' && inner === 'unref') ||
-						(outer === 'unnf' && inner === 'nf') ||
-						(outer === 'nf' && inner === 'unnf') ||
 						(outer === 'uncont' && inner === 'cont') ||
 						(outer === 'cont' && inner === 'uncont')
 					)
