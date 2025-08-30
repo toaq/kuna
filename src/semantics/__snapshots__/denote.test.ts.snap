@@ -42,7 +42,11 @@ exports[`object incorporation > Rụınua hôq jí nháo. 1`] = `"𝑡 ⇐ ⟦tu
 
 exports[`object incorporation > Sạtao súq ba. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦súq⟧, 𝑡' ⇐ ⟦tuom⟧; ⟦ba⟧ (λ𝑤 ∃𝑄 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦raı⟧ 𝑤 𝑎) 𝑡') ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦tao⟧ 𝑤 𝑏 𝑎) 𝑡)))"`;
 
-exports[`predicatizers > Kuaı jí pó nánı hea bâq nam. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑄, 𝑅 ⇐ ⟦nánı⟧ (λ𝑄, 𝑅 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦nam⟧ 𝑤 𝑎) 𝑡''') ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦hea⟧ 𝑤 𝑏 𝑎) 𝑡''))); 𝑄 ⇒ nám, 𝑄 ⇒ máq, 𝑅 ⇒ héa, 𝑅 ⇒ máq; λ𝑤' (𝑆 ⇐ new (λ𝑆 ⟦tam⟧ 𝑤' (⟦po⟧ 𝑤' (𝑅 𝑤') (𝑆 𝑤')) 𝑡'); 𝑆 ⇒ tá; ⟦da⟧ (λ𝑤'' ∀𝑎 𝑎 ≺ 𝑃 𝑤'' → (∀𝑏 𝑏 ≺ 𝑆 𝑤'' → ⟦tam⟧ 𝑤'' (⟦kuaı⟧ 𝑤'' 𝑏 𝑎) 𝑡))))"`;
+exports[`possessives > Maı póq tú cheqbo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑃 ⇐ salient; 𝑄 ⇐ póq; 𝑄 ⇒ póq, 𝑄 ⇒ hó; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∀𝑅 ⟦tam⟧ 𝑤 (𝑃 𝑤 [𝑏 | 𝑏 ⇐ 𝑄 𝑤, 𝑏 ≠ 𝑎] (𝑅 𝑤)) 𝑡' → (∀𝑏 𝑏 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦maı⟧ 𝑤 𝑏 𝑎) 𝑡)))"`;
+
+exports[`possessives > Paı jí báq poq da. Hobo ní chea. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑄 ⇐ ⟦ní⟧ (λ𝑄 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦chea⟧ 𝑤 𝑎) 𝑡'''), 𝑅 ⇐ salient; λ𝑤' (𝑆 ⇐ new (λ𝑆 ∀𝑎 𝑎 ≺ 𝑆 𝑤' → ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑎) 𝑡'); 𝑆 ⇒ póq, 𝑆 ⇒ hó, 𝑄 ⇒ chéa, 𝑄 ⇒ máq; ⟦da⟧ (λ𝑤'' ∀𝑎 𝑎 ≺ 𝑃 𝑤'' → (∀𝑏 𝑏 ≺ 𝑆 𝑤'' → ⟦tam⟧ 𝑤'' (⟦paı⟧ 𝑤'' 𝑏 𝑎) 𝑡)), ⟦da⟧ (λ𝑤'' ⟦tam⟧ 𝑤'' (𝑅 𝑤'' (𝑆 𝑤'') (𝑄 𝑤'')) 𝑡'')))"`;
+
+exports[`predicatizers > Kuaı jí pó nánı hea bâq nam. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑄 ⇐ salient, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑅, 𝑆 ⇐ ⟦nánı⟧ (λ𝑅, 𝑆 (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦nam⟧ 𝑤 𝑎) 𝑡''') ∧ (∀𝑎 𝑎 ≺ 𝑆 𝑤 → (∀𝑏 𝑏 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦hea⟧ 𝑤 𝑏 𝑎) 𝑡''))); 𝑅 ⇒ nám, 𝑅 ⇒ máq, 𝑆 ⇒ héa, 𝑆 ⇒ máq; λ𝑤' (𝑇 ⇐ new (λ𝑇 ⟦tam⟧ 𝑤' (𝑄 𝑤' (𝑆 𝑤') (𝑇 𝑤')) 𝑡'); 𝑇 ⇒ tá; ⟦da⟧ (λ𝑤'' ∀𝑎 𝑎 ≺ 𝑃 𝑤'' → (∀𝑏 𝑏 ≺ 𝑇 𝑤'' → ⟦tam⟧ 𝑤'' (⟦kuaı⟧ 𝑤'' 𝑏 𝑎) 𝑡))))"`;
 
 exports[`predicatizers > Mea íme nháo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦nháo⟧, 𝑄 ⇐ ⟦íme⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦mea⟧ 𝑤 (𝑄 𝑤) 𝑎) 𝑡)"`;
 
@@ -66,7 +70,7 @@ exports[`reflexives and reciprocals > Kıaı nhûq chéq úmo áqna. 1`] = `"�
 
 exports[`reflexives and reciprocals > Kıaı úmo áq nhûq chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦úmo⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦kıaı⟧ 𝑤 𝑎 𝑎 𝑒 ∧ (∃𝑒' ⟦nhuq⟧ 𝑤 𝑏 𝑒 𝑒')) 𝑡))"`;
 
-exports[`reflexives and reciprocals > Po póq káto pâı chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧; 𝑃 ⇐ póq; 𝑃 ⇒ póq, 𝑃 ⇒ hó; 𝑄 ⇐ káto; 𝑄 ⇒ káto; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦po⟧ 𝑤 (𝑃 𝑤) [𝑎] 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦paı⟧ 𝑤 𝑏 𝑎 𝑒')) 𝑡))"`;
+exports[`reflexives and reciprocals > Po póq káto pâı chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ salient; 𝑄 ⇐ póq; 𝑄 ⇒ póq, 𝑄 ⇒ hó; 𝑅 ⇐ káto; 𝑅 ⇒ káto; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∀𝑏 𝑏 ≺ 𝑅 𝑤 ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (λ𝑒 𝑃 𝑤 (𝑄 𝑤) [𝑎] 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦paı⟧ 𝑤 𝑏 𝑎 𝑒')) 𝑡))"`;
 
 exports[`reflexives and reciprocals > Tua de jí áq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑏 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ⟦de⟧ 𝑤' 𝑎 𝑒') 𝑏 ∧ ⟦tua⟧ 𝑤 𝑏 𝑎 𝑒) 𝑡)"`;
 

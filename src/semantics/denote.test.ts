@@ -19,7 +19,6 @@ function snapshot(toaq: string) {
 
 test('predicatizers', () => {
 	snapshot('Mea íme nháo.');
-	// TODO: pó should invoke a salient predicate
 	snapshot('Kuaı jí pó nánı hea bâq nam.');
 });
 
@@ -27,6 +26,11 @@ test('object incorporation', () => {
 	snapshot('Rụınua hôq jí nháo.');
 	snapshot('Sạtao súq ba.');
 	snapshot('Họqdua sía poq.');
+});
+
+test('possessives', () => {
+	snapshot('Maı póq tú cheqbo.');
+	snapshot('Paı jí báq poq da. Hobo ní chea.');
 });
 
 test('name verbs', () => {

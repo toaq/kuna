@@ -1,6 +1,8 @@
 import { Impossible, Ungrammatical } from '../core/error';
 import type { SubjectType } from '../morphology/dictionary';
+import { bare } from '../morphology/tokenize';
 import type { CovertValue } from '../tree/types';
+import { compose } from './compose';
 import {
 	Act,
 	Bind,
@@ -48,6 +50,7 @@ import {
 	xor,
 	λ,
 } from './model';
+import { reduce } from './reduce';
 import { typeToPlainText } from './render';
 import { getBigFunctor, getFunctor, idFunctor } from './structures';
 import type { AnimacyClass, Binding, Expr, ExprType } from './types';
@@ -320,6 +323,20 @@ export const pronouns = new Map<string, Expr>([
 			),
 		),
 	],
+]);
+
+const po = salient(Int(Fn(Pl('e'), Fn(Pl('e'), Fn('v', 't')))));
+
+export const knownVerbs = new Map<string, Expr>([
+	['po', po],
+	...(function* () {
+		for (const [toaq, e] of pronouns) {
+			yield [`${bare(toaq)}bo`, reduce(compose(po, e).denotation)] satisfies [
+				string,
+				Expr,
+			];
+		}
+	})(),
 ]);
 
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);

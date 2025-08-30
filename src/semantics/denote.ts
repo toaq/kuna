@@ -26,6 +26,7 @@ import {
 	covertV,
 	determiners,
 	distributiveLittleV,
+	knownVerbs,
 	nondistributiveLittleV,
 	overtComplementizers,
 	pluralCoordinator,
@@ -147,6 +148,9 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (!entry) throw new Unrecognized(`verb: ${leaf.word.text}`);
 		if (entry.type !== 'predicate' && entry.type !== 'predicatizer')
 			throw new Impossible('non-predicate V');
+
+		const data = knownVerbs.get(entry.toaq);
+		if (data !== undefined) return data;
 
 		let arity = splitNonEmpty(getFrame(leaf), ' ').length;
 		// In case we don't have lexical data on this word, make sure we're at least
