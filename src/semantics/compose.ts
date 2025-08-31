@@ -74,7 +74,7 @@ function coerceType_(
 	const traversable = getBigTraversable(inType);
 	if (traversable !== null) {
 		return coerceType_(traversable.functor.unwrap(inType), like, inner =>
-			traversable.functor.wrap(cont(inner), inType),
+			cont(traversable.functor.wrap(inner, inType)),
 		);
 	}
 	const functor = getFunctor(inType);
