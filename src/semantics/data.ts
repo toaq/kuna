@@ -1,7 +1,7 @@
 import { Impossible, Ungrammatical } from '../core/error';
-import type { SubjectType } from '../morphology/dictionary';
+import type { SubjectType, VerbEntry } from '../morphology/dictionary';
 import { bare } from '../morphology/tokenize';
-import type { CovertValue } from '../tree/types';
+import type { CovertValue, CovertWord, Word } from '../tree/types';
 import { compose } from './compose';
 import {
 	Act,
@@ -11,6 +11,7 @@ import {
 	Fn,
 	Indef,
 	Int,
+	Pair,
 	Pl,
 	Qn,
 	Ref,
@@ -21,6 +22,8 @@ import {
 	animate,
 	app,
 	assertFn,
+	assertInt,
+	assertPl,
 	bg,
 	bind,
 	constrast,
@@ -36,6 +39,7 @@ import {
 	not,
 	or,
 	overlap,
+	pair,
 	qn,
 	ref,
 	salient,
@@ -45,6 +49,8 @@ import {
 	unindef,
 	unint,
 	union,
+	universe,
+	unpair,
 	unref,
 	v,
 	xor,
@@ -346,6 +352,93 @@ export const polarities = new Map<string, Expr>([
 	['bu', not],
 ]);
 
+// Int Pl e, i, Int Pl e  ->  e, i, e
+function distributeSemaTuple(t: ExprType): ExprType {
+	if (typeof t === 'string') return t;
+	if (t.head === 'pair')
+		return Pair(
+			distributeSemaTuple(t.inner),
+			distributeSemaTuple(t.supplement),
+		);
+	return t.head === 'int' &&
+		typeof t.inner === 'object' &&
+		t.inner.head === 'pl' &&
+		t.inner.inner === 'e'
+		? 'e'
+		: t;
+}
+
+// e, i, e  ->  Int Pl e, i, Int Pl e
+function liftDistributedSemaTuple(e: Expr): Expr {
+	if (e.type === 'e')
+		return app(
+			λ('e', x => int(λ('s', () => single(v(x))))),
+			e,
+		);
+	if (typeof e.type === 'object' && e.type.head === 'pair') {
+		const { inner, supplement } = e.type;
+		return unpair(
+			e,
+			λ(inner, l =>
+				λ(supplement, r =>
+					pair(liftDistributedSemaTuple(v(l)), liftDistributedSemaTuple(v(r))),
+				),
+			),
+		);
+	}
+	return e;
+}
+
+// Int Pl (e, e)  ->  Int Pl e, Int Pl e
+function splitDistributedSemaTuple(e: () => Expr, type: ExprType): Expr {
+	assertInt(type);
+	assertPl(type.inner);
+	if (
+		typeof type.inner.inner === 'object' &&
+		type.inner.inner.head === 'pair'
+	) {
+		const { inner } = type.inner;
+		const { inner: l, supplement: r } = inner;
+		return pair(
+			splitDistributedSemaTuple(
+				() =>
+					int(
+						λ('s', w =>
+							map(
+								app(unint(e()), v(w)),
+								λ(inner, x =>
+									unpair(
+										v(x),
+										λ(l, l => λ(r, () => v(l))),
+									),
+								),
+							),
+						),
+					),
+				Int(Pl(l)),
+			),
+			splitDistributedSemaTuple(
+				() =>
+					int(
+						λ('s', w =>
+							map(
+								app(unint(e()), v(w)),
+								λ(inner, x =>
+									unpair(
+										v(x),
+										λ(l, () => λ(r, r => v(r))),
+									),
+								),
+							),
+						),
+					),
+				Int(Pl(r)),
+			),
+		);
+	}
+	return e();
+}
+
 export const determiners = new Map<string, (domain: ExprType) => Expr>([
 	[
 		'sá',
@@ -376,6 +469,30 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 					),
 				),
 			),
+	],
+	[
+		'túq',
+		domain =>
+			λ(Int(Fn(domain, 't')), predicate => {
+				const distributed = distributeSemaTuple(domain);
+				return splitDistributedSemaTuple(
+					() =>
+						int(
+							λ('s', w =>
+								filter(
+									universe(distributed),
+									λ(distributed, x =>
+										app(
+											app(unint(v(predicate)), v(w)),
+											liftDistributedSemaTuple(v(x)),
+										),
+									),
+								),
+							),
+						),
+					Int(Pl(distributed)),
+				);
+			}),
 	],
 	[
 		'sía',
@@ -421,11 +538,81 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 	['nánı', domain => lex('nánı', Fn(Fn(domain, 't'), Dx(domain)))],
 ]);
 
-export const littleN = λ(Fn(Int(Pl('e')), 't'), predicate =>
-	indef(
-		v(predicate),
-		λ(Int(Pl('e')), x => v(x)),
-	),
+function animacyClass(verb: VerbEntry): AnimacyClass | null {
+	if (verb.toaq === 'raı') return null;
+	switch (verb.pronominal_class) {
+		case 'ho':
+			return 'animate';
+		case 'maq':
+			return 'inanimate';
+		case 'hoq':
+			return 'abstract';
+		default:
+			return 'descriptive';
+	}
+}
+
+export function wrapInBindings(
+	value: Expr,
+	sema: Expr,
+	verb: Word | CovertWord,
+): Expr {
+	let result = value;
+	const animacy =
+		!verb.covert && verb.entry !== undefined && 'pronominal_class' in verb.entry
+			? animacyClass(verb.entry)
+			: null;
+	if (animacy !== null)
+		result = bind({ type: 'animacy', class: animacy }, sema, result);
+	if (
+		!verb.covert &&
+		verb.entry !== undefined &&
+		verb.entry.type !== 'predicatizer'
+	)
+		result = bind(
+			verb.entry.type === 'predicate'
+				? { type: 'name', verb: verb.entry.toaq }
+				: { type: 'head', head: verb.bare },
+			sema,
+			result,
+		);
+	return result;
+}
+
+export const littleNs = new Map<CovertValue, (verb: Word | CovertWord) => Expr>(
+	[
+		[
+			'PL',
+			verb =>
+				λ(Fn(Int(Pl('e')), 't'), predicate =>
+					indef(
+						v(predicate),
+						λ(Int(Pl('e')), x => wrapInBindings(v(x), v(x), verb)),
+					),
+				),
+		],
+		[
+			'SG',
+			verb =>
+				λ(Fn(Int(Pl('e')), 't'), predicate =>
+					indef(
+						λ(Int('e'), x =>
+							app(
+								v(predicate),
+								int(λ('s', w => single(app(unint(v(x)), v(w))))),
+							),
+						),
+						λ(Int('e'), x =>
+							wrapInBindings(
+								int(λ('s', w => single(app(unint(v(x)), v(w))))),
+								int(λ('s', w => single(app(unint(v(x)), v(w))))),
+								verb,
+							),
+						),
+					),
+				),
+		],
+	],
 );
 
 export const covertComplementizers = new Map<CovertValue, Expr>([

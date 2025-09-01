@@ -252,7 +252,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 								token(' | '),
 								join(
 									Precedence.Do,
-									'none',
+									'any',
 									predicates.flatMap((pred, i) =>
 										i < predicates.length - 1 ? [pred, token(', ')] : [pred],
 									),

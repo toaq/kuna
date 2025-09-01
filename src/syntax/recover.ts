@@ -5,10 +5,14 @@ import {
 	assertBranch,
 	assertLeaf,
 	findHead,
+	makeNull,
 	pro,
 } from '../tree';
 import { moveUp } from '../tree/movement';
 import { fixSerial } from './serial';
+
+const pluralN = makeNull('𝘯', 'PL');
+const singularN = makeNull('𝘯', 'SG');
 
 /**
  * Recurses down a parsed syntax tree to recover the deep structure.
@@ -63,17 +67,33 @@ class Recoverer {
 
 			const left = this.recover(tree.left);
 			const right = this.recover(tree.right);
+
+			// Insert 𝘯 in DPs
+			if (tree.label === 'DP' && tree.right.label !== 'word') {
+				assertLeaf(left);
+				if (left.word.covert) throw new Impossible('Covert D');
+				const d = left.word.entry?.toaq;
+				return {
+					label: 'DP',
+					left,
+					right: {
+						label: '𝘯P',
+						left: d === 'tú' ? singularN : pluralN,
+						right,
+						source: right.source,
+					},
+					source: tree.source,
+				};
+			}
+
 			const fixed = { label: tree.label, left, right, source: tree.source };
 
 			// v-to-Asp movement
-			if (tree.label === 'AspP' && right.label === '𝘷P') {
+			if (tree.label === 'AspP' && right.label === '𝘷P')
 				this.move(findHead(right), left);
-			}
-
 			// Asp-to-T movement
-			if (tree.label === 'TP' && right.label === 'AspP') {
+			if (tree.label === 'TP' && right.label === 'AspP')
 				this.move(findHead(right), left);
-			}
 
 			return fixed;
 		}

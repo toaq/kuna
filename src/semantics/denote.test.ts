@@ -52,6 +52,8 @@ test('donkey anaphora', () => {
 	snapshot('Do tú poq, ꝡë bo bâq aqshe, ꝡë bua hóa báq dueq, hóa, áqshe dúeq.');
 	snapshot('Shê, ꝡä Toaq há, nä bo hó sá toakue.');
 	snapshot('Shê, ꝡä bo báq poq báq aqshe, nä kıaı póq áqshe.');
+	// TODO: báq poq, ꝡë gı báq pao hôa
+	snapshot('Kueq túq poq, ꝡë bo hóa báq taqchao. Ꝡa puı máq.');
 });
 
 test('(c 0) serials', () => {
@@ -74,6 +76,7 @@ test('reflexives and reciprocals', () => {
 	snapshot('Kueqtua áma áqna.');
 	snapshot('Kueqtua áma áqna gâq chéq.');
 	snapshot('Po póq káto pâı chéq.');
+	snapshot('Zao túq poq chéq.');
 });
 
 test('conjunctions', () => {

@@ -5,7 +5,6 @@ import {
 	Unrecognized,
 } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
-import type { VerbEntry } from '../morphology/dictionary';
 import { Tone, inTone } from '../morphology/tone';
 import { getFrame } from '../syntax/frame';
 import { getDistribution } from '../syntax/serial';
@@ -27,6 +26,7 @@ import {
 	determiners,
 	distributiveLittleV,
 	knownVerbs,
+	littleNs,
 	nondistributiveLittleV,
 	overtComplementizers,
 	pluralCoordinator,
@@ -38,6 +38,7 @@ import {
 	serialFrames,
 	speechActParticles,
 	subjectSharingAdverbial,
+	wrapInBindings,
 } from './data';
 import {
 	Bind,
@@ -51,18 +52,19 @@ import {
 	app,
 	assertFn,
 	bind,
-	indef,
+	int,
 	lex,
 	quote,
 	ref,
 	unindef,
+	unint,
 	v,
 	λ,
 } from './model';
 import { reduce } from './reduce';
 import { typeToPlainText } from './render';
 import { findEffect, getFunctor, unwrapEffects } from './structures';
-import type { AnimacyClass, DTree, Expr, ExprType } from './types';
+import type { DTree, Expr, ExprType } from './types';
 
 function findVp(tree: StrictTree): StrictTree | null {
 	if (
@@ -115,20 +117,6 @@ function getVerbWord(vp: StrictTree): Word | CovertWord {
 	if (vp.label === 'mıP' || vp.label === 'shuP' || vp.label === 'moP')
 		return getVerbWord_(vp);
 	return getVerbWord_(vp.left);
-}
-
-function animacyClass(verb: VerbEntry): AnimacyClass | null {
-	if (verb.toaq === 'raı') return null;
-	switch (verb.pronominal_class) {
-		case 'ho':
-			return 'animate';
-		case 'maq':
-			return 'inanimate';
-		case 'hoq':
-			return 'abstract';
-		default:
-			return 'descriptive';
-	}
 }
 
 function findIndef(
@@ -265,22 +253,11 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				if (cCommand.word.covert) throw new Impossible('Covert name');
 				if (cCommand.word.entry === undefined)
 					throw new Unrecognized(`name: ${cCommand.word.text}`);
-				const animacy = animacyClass(cCommand.word.entry as VerbEntry);
 				const word = cCommand.word.entry.toaq;
 				return λ('e', () =>
 					ref(
 						{ type: 'name', verb: word },
-						λ(Int(Pl('e')), x => {
-							let result: Expr = v(x);
-							if (animacy !== null)
-								result = bind(
-									{ type: 'animacy', class: animacy },
-									v(x),
-									result,
-								);
-							result = bind({ type: 'name', verb: word }, v(x), result);
-							return result;
-						}),
+						λ(Int(Pl('e')), x => wrapInBindings(v(x), v(x), cCommand.word)),
 					),
 				);
 			}
@@ -312,22 +289,55 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			);
 		const data = determiners.get(toaq)?.(indef.domain);
 		if (data === undefined) throw new Unrecognized(`D: ${toaq}`);
+
+		if (toaq === 'túq')
+			// túq is cursed and requires its own branch
+			return λ(Int(indef), np =>
+				int(
+					λ('s', w =>
+						app(
+							unindef(
+								app(unint(v(np)), v(w)),
+								λ(Fn(indef.domain, 't'), () =>
+									λ(Fn(indef.domain, indef.inner), body => v(body)),
+								),
+							),
+							app(
+								data,
+								int(
+									λ('s', w =>
+										unindef(
+											app(unint(v(np)), v(w)),
+											λ(Fn(indef.domain, 't'), restriction =>
+												λ(Fn(indef.domain, indef.inner), () => v(restriction)),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+			);
+
 		assertFn(data.type);
 		const { range } = data.type;
 		const functor = getFunctor(range);
 		if (functor === null)
 			throw new Impossible(`${toaq} doesn't return a functor`);
 
-		return λ(Indef(indef.domain, indef.inner), np =>
+		return λ(indef, np =>
 			unindef(
 				v(np),
 				λ(Fn(indef.domain, 't'), restriction =>
 					λ(Fn(indef.domain, indef.inner), body =>
-						functor.map(
-							() => λ(indef.domain, x => app(v(body), v(x))),
-							() => app(data, v(restriction)),
-							range,
-							functor.wrap(indef.inner, range),
+						reduce(
+							functor.map(
+								() => v(body),
+								() => app(data, v(restriction)),
+								range,
+								functor.wrap(indef.inner, range),
+							),
 						),
 					),
 				),
@@ -338,40 +348,13 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	if (leaf.label === '𝘯') {
 		if (cCommand === null)
 			throw new Impossible('Cannot denote an 𝘯 in isolation');
+		if (!leaf.word.covert) throw new Impossible('Overt 𝘯');
+
+		const data = littleNs.get(leaf.word.value);
+		if (data === undefined) throw new Unrecognized(`𝘯: ${leaf.word.value}`);
 		const vp = findVp(cCommand);
 		if (vp === null) throw new Impossible("Can't find the VP for this 𝘯");
-		const verb = getVerbWord(vp);
-
-		const animacy =
-			!verb.covert &&
-			verb.entry !== undefined &&
-			'pronominal_class' in verb.entry
-				? animacyClass(verb.entry)
-				: null;
-
-		return λ(Fn(Int(Pl('e')), 't'), predicate =>
-			indef(
-				v(predicate),
-				λ(Int(Pl('e')), x => {
-					let result: Expr = v(x);
-					if (animacy !== null)
-						result = bind({ type: 'animacy', class: animacy }, v(x), result);
-					if (
-						!verb.covert &&
-						verb.entry !== undefined &&
-						verb.entry.type !== 'predicatizer'
-					)
-						result = bind(
-							verb.entry.type === 'predicate'
-								? { type: 'name', verb: verb.entry.toaq }
-								: { type: 'head', head: verb.bare },
-							v(x),
-							result,
-						);
-					return result;
-				}),
-			),
-		);
+		return data(getVerbWord(vp));
 	}
 
 	if (leaf.label === 'C') {

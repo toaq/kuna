@@ -35,7 +35,7 @@ const {
 	makeBranchCovertLeft,
 	makeConn,
 	makeDiscourse,
-	makeEmptynP,
+	makeEmptyCP,
 	makeLeaf,
 	makeOptLeaf,
 	makePrefixLeaf,
@@ -86,31 +86,27 @@ DP -> Pronoun Free:* {% id %}
 # háo/hụ́ꝡa
 DP -> WordD Word {% makeBranch('DP') %}
 # sá ...
-DP -> D nPopt {% makeBranch('DP') %}
-DP -> Dtonal nP {% makeBranch('DP') %}
+DP -> D CPdetopt {% makeBranch('DP') %}
+DP -> Dtonal CPdet {% makeBranch('DP') %}
 
 # jî
 DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
 # hụ̂ꝡa
 DPincorp -> WordDincorp Word {% makeBranch('DP') %}
 # sâ ...
-DPincorp -> Dincorp nPopt {% makeBranch('DP') %}
-DPincorp -> Dtonalincorp nP {% makeBranch('DP') %}
+DPincorp -> Dincorp CPdetopt {% makeBranch('DP') %}
+DPincorp -> Dtonalincorp CPdet {% makeBranch('DP') %}
 
 # ꝡá hao
-DPsub -> D nPsub {% makeBranch('DP') %}
-DPsub -> Dtonal nPsub {% makeBranch('DP') %}
+DPsub -> D CPsub {% makeBranch('DP') %}
+DPsub -> Dtonal CPsub {% makeBranch('DP') %}
 # ꝡâ hao
-DPsubincorp -> Dincorp nPsub {% makeBranch('DP') %}
-DPsubincorp -> Dtonalincorp nPsub {% makeBranch('DP') %}
+DPsubincorp -> Dincorp CPsub {% makeBranch('DP') %}
+DPsubincorp -> Dtonalincorp CPsub {% makeBranch('DP') %}
 
-# (sá) ∅ hao
-nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 # (sá) ∅
-nPopt -> null {% makeEmptynP %}
-nPopt -> nP {% id %}
-# (sá) ꝡä hao
-nPsub -> CPsub {% makeBranchCovertLeft('𝘯P', '𝘯') %}
+CPdetopt -> null {% makeEmptyCP %}
+CPdetopt -> CPdet {% id %}
 # (sá) raı ꝡë hao
 CPdet -> CPdet CPsubcon {% makeBranch('CP') %}
 # (sá) ∅ hao

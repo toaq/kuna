@@ -752,7 +752,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 										false,
 										join(
 											Precedence.Do,
-											'none',
+											'any',
 											predicates.map(pred => this.doRow(pred)),
 										),
 									),

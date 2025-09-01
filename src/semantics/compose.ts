@@ -314,7 +314,7 @@ function coerceInput_(
 
 		// Try simply extracting a value from the functor via a comonad
 		const comonad = getComonad(inputInner);
-		if (comonad !== null) {
+		if (comonad !== null && force) {
 			const coercedInner = under.wrap(
 				comonad.functor.unwrap(inputInner),
 				input,
@@ -481,7 +481,13 @@ function unwrapAndCoerce(
 		}
 
 		if (getMatchingFunctor(unwrapped, fn.type.domain) !== null) {
-			const result = coerceInput(fn, unwrapped, inputSide, mode);
+			const result = coerceInput(
+				fn,
+				unwrapped,
+				inputSide,
+				mode,
+				getDistributive(unwrapped) === null,
+			);
 			if (result !== null) {
 				const { denotation: coerced, mode } = result;
 				return { input: unwrapped, fn: coerced, effects, precedences, mode };

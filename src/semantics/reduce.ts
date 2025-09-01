@@ -13,6 +13,7 @@ import {
 	map,
 	or,
 	single,
+	trueExpr,
 	unbind,
 	unindef,
 	unpair,
@@ -376,6 +377,46 @@ function reduce_(expr: Expr): Expr {
 				}
 			}
 
+			// f (λw unpair x (λy λz g)) = unpair x (λy λz f (λw g))
+			if (
+				expr.arg.head === 'lambda' &&
+				expr.arg.body.head === 'apply' &&
+				expr.arg.body.fn.head === 'apply' &&
+				expr.arg.body.fn.fn.head === 'constant' &&
+				expr.arg.body.fn.arg.scope[0] === undefined &&
+				expr.arg.body.arg.head === 'lambda' &&
+				expr.arg.body.arg.body.head === 'lambda'
+			) {
+				const deconstruct = pairlikeDeconstructor(expr.arg.body.fn.fn.name);
+				if (deconstruct !== null) {
+					const x = expr.arg.body.fn.arg;
+					const xx = rewriteScope(x, i => {
+						if (i === 0) throw new Impossible('Variable deleted');
+						return i - 1;
+					});
+					const f = expr.fn;
+					const ff = rewriteScope(f, i => i + 2);
+					const g = expr.arg.body.arg.body.body;
+					const gg = rewriteScope(g, i => (i === 2 ? 0 : i < 2 ? i + 1 : i));
+					const w = expr.arg.param;
+					const y = expr.arg.body.arg.param;
+					const z = expr.arg.body.arg.body.param;
+					return reduce(
+						deconstruct(
+							xx,
+							λ(y, () =>
+								λ(z, () =>
+									app(
+										ff,
+										λ(w, () => gg),
+									),
+								),
+							),
+						),
+					);
+				}
+			}
+
 			// unpair x (λy λz f) = f (given y and z are unused in f)
 			// and so on for Indef, Qn, Bind
 			if (
@@ -586,27 +627,35 @@ function reduce_(expr: Expr): Expr {
 				}
 			}
 
-			// among x (_ y z)
+			// among _ _
 			if (
 				expr.fn.head === 'apply' &&
 				expr.fn.fn.head === 'constant' &&
-				expr.fn.fn.name === 'among' &&
-				expr.arg.head === 'apply' &&
-				expr.arg.fn.head === 'apply' &&
-				expr.arg.fn.fn.head === 'constant'
+				expr.fn.fn.name === 'among'
 			) {
-				const amongX = expr.fn;
-				const x = expr.fn.arg;
-				const y = expr.arg.fn.arg;
-				const z = expr.arg.arg;
+				// among _ universe = true
+				if (expr.arg.head === 'constant' && expr.arg.name === 'universe')
+					return trueExpr;
 
-				// among x (filter y z) = and (among x y) (z x)
-				if (expr.arg.fn.fn.name === 'filter')
-					return reduce(app(app(and, app(amongX, y)), app(z, x)));
+				// among x (_ y z)
+				if (
+					expr.arg.head === 'apply' &&
+					expr.arg.fn.head === 'apply' &&
+					expr.arg.fn.fn.head === 'constant'
+				) {
+					const amongX = expr.fn;
+					const x = expr.fn.arg;
+					const y = expr.arg.fn.arg;
+					const z = expr.arg.arg;
 
-				// among x (union y z) = or (among x y) (among x z)
-				if (expr.arg.fn.fn.name === 'union')
-					return reduce(app(app(or, among(x, y)), among(x, z)));
+					// among x (filter y z) = and (among x y) (z x)
+					if (expr.arg.fn.fn.name === 'filter')
+						return reduce(app(app(and, app(amongX, y)), app(z, x)));
+
+					// among x (union y z) = or (among x y) (among x z)
+					if (expr.arg.fn.fn.name === 'union')
+						return reduce(app(app(or, among(x, y)), among(x, z)));
+				}
 			}
 
 			// and _ _

@@ -466,6 +466,13 @@ export function uncont(cont: Expr): Expr {
 }
 
 /**
+ * Creates a plurality containing every value of a given type.
+ */
+export function universe(inner: ExprType): Expr {
+	return { head: 'constant', type: Pl(inner), scope: [], name: 'universe' };
+}
+
+/**
  * Creates a plurality containing a single element.
  */
 export function single(element: Expr): Expr {

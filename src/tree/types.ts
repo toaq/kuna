@@ -16,6 +16,8 @@ export type CovertValue =
 	| 'PRO'
 	| 'REL'
 	| 'SUBJ'
+	| 'PL'
+	| 'SG'
 	| 'IF'
 	| 'IF.CNTF'
 	| 'WHEN';

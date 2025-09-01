@@ -148,6 +148,7 @@ interface Constant extends ExprBase {
 		| 'unint'
 		| 'cont'
 		| 'uncont'
+		| 'universe'
 		| 'single'
 		| 'union'
 		| 'map'

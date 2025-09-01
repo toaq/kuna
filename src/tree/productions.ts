@@ -55,30 +55,25 @@ export function pro(): Leaf {
 	return { label: 'DP', word: { covert: true, value: 'PRO' }, source: '' };
 }
 
-const emptynP: Tree = {
-	label: '𝘯P',
-	left: makeNull('𝘯'),
+const emptyCP: Tree = {
+	label: 'CP',
+	left: makeNull('C', 'REL'),
 	right: {
-		label: 'CP',
-		left: makeNull('C', 'REL'),
+		label: 'TP',
+		left: makeNull('T'),
 		right: {
-			label: 'TP',
-			left: makeNull('T'),
+			label: 'AspP',
+			left: makeNull('Asp'),
 			right: {
-				label: 'AspP',
-				left: makeNull('Asp'),
-				right: {
-					label: '*𝘷P',
-					children: [
-						{
-							label: '*Serialdet',
-							children: [makeNull('V')],
-							source: '',
-						},
-						pro(),
-					],
-					source: '',
-				},
+				label: '*𝘷P',
+				children: [
+					{
+						label: '*Serialdet',
+						children: [makeNull('V')],
+						source: '',
+					},
+					pro(),
+				],
 				source: '',
 			},
 			source: '',
@@ -88,8 +83,8 @@ const emptynP: Tree = {
 	source: '',
 };
 
-export function makeEmptynP() {
-	return emptynP;
+export function makeEmptyCP() {
+	return emptyCP;
 }
 
 export function makeBranch(label: Label) {
@@ -453,7 +448,7 @@ export function makePrefixObjectIncorp([prefix, verb]: [Tree, Tree]) {
 		left: {
 			label: 'DP',
 			left: prefix,
-			right: emptynP,
+			right: emptyCP,
 			source: prefix.source,
 		},
 		right: verb,
