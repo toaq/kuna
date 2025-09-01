@@ -71,21 +71,14 @@ export function getDistribution(verb: Tree): string {
 }
 
 function makevP(verb: Tree, args: Tree[], serialTail: boolean): Tree {
-	const v: Leaf = {
-		label: '𝘷',
-		word: {
-			covert: true,
-			value:
-				serialTail ||
-				args.length === 0 ||
-				('word' in args[0] &&
-					args[0].word.covert &&
-					args[0].word.value === 'PRO')
-					? '∅'
-					: 'SUBJ',
-		},
-		source: '',
-	};
+	const v = makeNull(
+		'𝘷',
+		serialTail ||
+			args.length === 0 ||
+			('word' in args[0] && args[0].word.covert && args[0].word.value === 'PRO')
+			? '∅'
+			: 'SUBJ',
+	);
 
 	if ('word' in verb) {
 		moveUp(verb, v);
@@ -106,6 +99,19 @@ function makevP(verb: Tree, args: Tree[], serialTail: boolean): Tree {
 		case 1: {
 			const [subject] = args;
 			const source = `${verb.source} ${subject.source}`;
+			if (subject.label === '𝘷P')
+				// (0) serials position the subject as a complement
+				return {
+					label: '𝘷P',
+					left: makeNull('𝘷'),
+					right: {
+						label: 'VP',
+						left: verb,
+						right: subject,
+						source,
+					},
+					source,
+				};
 			return {
 				label: '𝘷P',
 				left: subject,

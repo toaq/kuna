@@ -56,8 +56,9 @@ test('donkey anaphora', () => {
 	snapshot('Kueq túq poq, ꝡë bo hóa báq taqchao. Ꝡa puı máq.');
 });
 
-test('(c 0) serials', () => {
+test('serials', () => {
 	snapshot('Tua poaq góchıq ké jegaq.');
+	snapshot('Du kuqnu gı ráı.');
 });
 
 test('adjuncts', () => {

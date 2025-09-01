@@ -125,6 +125,56 @@ export const serialFrames = new Map<string, (verb: Expr) => Expr>([
 			);
 		},
 	],
+	[
+		'0',
+		verb => {
+			const { wrap, unwrap, map } = getBigFunctor(verb.type) ?? idFunctor;
+			const inner = unwrap(verb.type);
+			assertFn(inner);
+			assertFn(inner.range);
+			return map(
+				() =>
+					λ(inner, verb_ =>
+						int(
+							λ('s', w =>
+								λ(Int(Fn('v', 't')), tail =>
+									λ('v', e =>
+										some(
+											λ('e', subject =>
+												app(
+													app(
+														and,
+														app(
+															app(
+																app(unint(propositionContent), v(w)),
+																int(
+																	λ('s', w_ =>
+																		some(
+																			λ('v', e_ =>
+																				app(app(unint(v(tail)), v(w_)), v(e_)),
+																			),
+																		),
+																	),
+																),
+															),
+															v(subject),
+														),
+													),
+													app(app(v(verb_), v(subject)), v(e)),
+												),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				() => verb,
+				verb.type,
+				wrap(Fn(Int(Fn('v', 't')), Fn('v', 't')), verb.type),
+			);
+		},
+	],
 ]);
 
 export const distributiveLittleV = ref(

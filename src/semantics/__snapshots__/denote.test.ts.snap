@@ -1,7 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`(c 0) serials > Tua poaq góchıq ké jegaq. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦ké⟧ (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦jegaq⟧ 𝑤 𝑎) 𝑡'); 𝑃 ⇒ jégaq, 𝑃 ⇒ tá; 𝑄 ⇐ góchıq; 𝑄 ⇒ góchıq; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑄 𝑤' → (∀𝑏 𝑏 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (λ𝑒 ∃𝑐 ⟦ꝡä⟧ 𝑤' (λ𝑤'' ∃𝑒' ⟦poaq⟧ 𝑤'' 𝑏 𝑒') 𝑐 ∧ ⟦tua⟧ 𝑤' 𝑐 𝑎 𝑒) 𝑡)))"`;
-
 exports[`adjuncts > Kueq áma fâ sóaq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦áma⟧; 𝑄 ⇐ sóaq; 𝑄 ⇒ sóaq, 𝑄 ⇒ máq; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦kueq⟧ 𝑤 (𝑃 𝑤) 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦fa⟧ 𝑤 𝑏 𝑎 𝑒')) 𝑡))"`;
 
 exports[`adjuncts > Marao úmo gâq nhâna. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦úmo⟧, 𝑄 ⇐ ⟦nhána⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦marao⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦gaq⟧ 𝑤 𝑏 𝑎 𝑒')) 𝑡))"`;
@@ -79,3 +77,7 @@ exports[`reflexives and reciprocals > Tua de jí áq. 1`] = `"𝑡 ⇐ ⟦tuom�
 exports[`reflexives and reciprocals > Tua de nhána chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦nhána⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑐 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ⟦de⟧ 𝑤' 𝑏 𝑒') 𝑐 ∧ ⟦tua⟧ 𝑤 𝑐 𝑎 𝑒) 𝑡))"`;
 
 exports[`reflexives and reciprocals > Zao túq poq chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧; λ𝑤 (λ𝑤' [𝑎 | 𝑎 ⇐ universe, ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑎) 𝑡'] ⇒ póq, λ𝑤' [𝑎 | 𝑎 ⇐ universe, ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑎) 𝑡'] ⇒ hó; ⟦da⟧ (λ𝑤' ∀𝑎 ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑎) 𝑡' → (∀𝑏 ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑏) 𝑡' ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤' (⟦zao⟧ 𝑤' 𝑏 𝑎) 𝑡)))"`;
+
+exports[`serials > Du kuqnu gı ráı. 1`] = `"𝑡 ⇐ ⟦tuom⟧; 𝑃 ⇐ ráı; 𝑃 ⇒ ráı; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑏 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ∃𝑐 ⟦ꝡä⟧ 𝑤' (λ𝑤'' ∃𝑒'' ⟦gı⟧ 𝑤'' 𝑎 𝑒'') 𝑐 ∧ ⟦kuqnu⟧ 𝑤' 𝑐 𝑒') 𝑏 ∧ ⟦du⟧ 𝑤 𝑏 𝑒) 𝑡)"`;
+
+exports[`serials > Tua poaq góchıq ké jegaq. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦ké⟧ (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦jegaq⟧ 𝑤 𝑎) 𝑡'); 𝑃 ⇒ jégaq, 𝑃 ⇒ tá; 𝑄 ⇐ góchıq; 𝑄 ⇒ góchıq; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑄 𝑤' → (∀𝑏 𝑏 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (λ𝑒 ∃𝑐 ⟦ꝡä⟧ 𝑤' (λ𝑤'' ∃𝑒' ⟦poaq⟧ 𝑤'' 𝑏 𝑒') 𝑐 ∧ ⟦tua⟧ 𝑤' 𝑐 𝑎 𝑒) 𝑡)))"`;
