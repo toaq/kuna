@@ -410,6 +410,9 @@ export const knownVerbs = new Map<string, Expr>([
 			];
 		}
 	})(),
+	['nu', lex('nu', Dx(Int(Fn(Pl('e'), Fn('v', 't')))))],
+	['nınu', lex('nınu', Dx(Int(Fn(Pl('e'), Fn('v', 't')))))],
+	['nanu', lex('nanu', Dx(Int(Fn(Pl('e'), Fn('v', 't')))))],
 ]);
 
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
