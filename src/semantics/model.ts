@@ -911,6 +911,15 @@ export function salient(inner: ExprType): Expr {
 	};
 }
 
+export function topic(inner: ExprType): Expr {
+	return {
+		head: 'constant',
+		type: Fn(Pl('e'), Fn(Dx(inner), Dx(inner))),
+		scope: [],
+		name: 'topic',
+	};
+}
+
 export const bg: Expr = {
 	head: 'constant',
 	type: Fn(Act('()'), Act('()')),

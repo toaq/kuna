@@ -97,3 +97,11 @@ test('cleft verb', () => {
 	snapshot('Ní shatı nä loı jí hóa.');
 	snapshot('Sá rua nä maı tú apı rúa.');
 });
+
+test('topics', () => {
+	snapshot('Níchaq bï za ruqshua.');
+	snapshot('Ké patı bï marao hú shı.');
+	snapshot('Níchaq bï tao ké poq, ꝡë bo hóa báq taqchao, ké maqbo.');
+	snapshot('Níchaq bï tao jí ké zuo hôq nha.');
+	snapshot('Níchaq bï tao nánı poq ké zuo hôq nha.');
+});

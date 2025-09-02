@@ -57,6 +57,7 @@ import {
 	lex,
 	quote,
 	ref,
+	topic,
 	unindef,
 	unint,
 	v,
@@ -482,6 +483,17 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				Int(Pl('e')),
 				Cont(Bind({ type: 'head', head: leaf.word.bare }, Int(Pl('e')))),
 			),
+		);
+	}
+
+	if (leaf.label === 'Topic') {
+		if (cCommand === null)
+			throw new Impossible('Cannot denote Topic in isolation');
+		const deixis = findEffect(cCommand.denotation.type, Dx('()'));
+		if (deixis === null) throw new Ungrammatical('Nothing to topicalize');
+		const { inner } = deixis as ExprType & object & { head: 'dx' };
+		return λ(Dx(inner), p =>
+			λ(Pl('e'), x => app(app(topic(inner), v(x)), v(p))),
 		);
 	}
 
