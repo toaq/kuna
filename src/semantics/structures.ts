@@ -131,7 +131,7 @@ export interface Monad {
 	/**
 	 * Collapse two layers of the monad into one.
 	 */
-	join: (e: () => Expr) => Expr;
+	join: (e: () => Expr, type: ExprType) => Expr;
 }
 
 export interface Comonad {
@@ -144,6 +144,7 @@ export interface Comonad {
 }
 
 export interface Runner {
+	functor: Functor;
 	/**
 	 * Whether this effect "likes" to be run. A non-eager effect will instead
 	 * prefer to scope out of scope islands.
@@ -229,7 +230,24 @@ const contApplicative: Applicative = {
 	},
 };
 
+export const contMonad: Monad = {
+	applicative: contApplicative,
+	join: (e, type) => {
+		assertCont(type);
+		assertCont(type.inner);
+		return cont(
+			λ(Fn(type.inner.inner, 't'), pred =>
+				app(
+					uncont(e()),
+					λ(type.inner, c => app(uncont(v(c)), v(pred))),
+				),
+			),
+		);
+	},
+};
+
 const contRunner: Runner = {
+	functor: contFunctor,
 	eager: true,
 	run: e =>
 		app(
@@ -262,6 +280,7 @@ const plApplicative: Applicative = {
 };
 
 const plRunner: Runner = {
+	functor: plFunctor,
 	eager: true,
 	run: e => every(λ('t', t => app(app(implies, among(v(t), e())), v(t)))),
 };
@@ -441,6 +460,7 @@ const indefApplicative = indefMonad.applicative;
 const indefFunctor = indefApplicative.functor;
 
 const indefRunner: Runner = {
+	functor: indefFunctor,
 	eager: false,
 	run: e => {
 		const e_ = e();
@@ -603,6 +623,7 @@ const refDistributive: Distributive = {
 // This is an eager Runner instance that applies only to Bind áq(na) Ref áq(na) t,
 // preventing áq(na) bindings from scoping too far out of their 𝘷P
 const subjectReflexiveRunner: Runner = {
+	functor: composeFunctors(bindFunctor, refFunctor),
 	eager: true,
 	run: e => {
 		const e_ = e();
@@ -620,6 +641,7 @@ const subjectReflexiveRunner: Runner = {
 // This is an eager Runner instance that applies only to Bind áqna t, preventing
 // áqna bindings from scoping too far out of their 𝘷P
 const subjectRunner: Runner = {
+	functor: bindFunctor,
 	eager: true,
 	run: e => {
 		const e_ = e();
@@ -1023,6 +1045,7 @@ export function getBigTraversable(t: ExprType): Traversable | null {
 export function getMonad(t: ExprType): Monad | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'int') return intMonad;
+	if (t.head === 'cont') return contMonad;
 	if (t.head === 'dx') return dxMonad;
 	if (t.head === 'act') return actMonad;
 	if (t.head === 'indef') return indefMonad;

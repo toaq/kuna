@@ -225,7 +225,9 @@ export type CompositionMode =
 	| ['JR', CompositionMode] // Join monads on the right
 	| ['J', CompositionMode] // Join monads
 	| ['Z', CompositionMode] // Resolve binding relationship
-	| ["Z'", CompositionMode]; // Resolve inverted binding relationship
+	| ["Z'", CompositionMode] // Resolve inverted binding relationship
+	| ['CL', CompositionMode] // Convert effect on left to continuation
+	| ['CR', CompositionMode]; // Convert effect on right to continuation
 
 export function modeToString(mode: CompositionMode): string {
 	return typeof mode === 'string'

@@ -1,6 +1,8 @@
 import { Unimplemented } from '../core/error';
 import {
 	Bind,
+	Cont,
+	Fn,
 	Int,
 	Pl,
 	Ref,
@@ -8,6 +10,7 @@ import {
 	assertFn,
 	bind,
 	bindingsEqual,
+	cont,
 	subtype,
 	typesEqual,
 	unbind,
@@ -20,6 +23,7 @@ import {
 	type Functor,
 	chooseEffect,
 	composeFunctors,
+	contMonad,
 	findEffect,
 	getApplicative,
 	getBigTraversable,
@@ -100,9 +104,10 @@ function coerceInput_(
 	force: boolean,
 ): CompositionResult | null {
 	assertFn(fn.type);
-	const { unwrap } = under ?? idFunctor;
+	const { wrap, unwrap, map } = under ?? idFunctor;
 	const inputInner = unwrap(input);
-	const domainInner = unwrap(fn.type.domain);
+	const domain = fn.type.domain;
+	const domainInner = unwrap(domain);
 	const range = fn.type.range;
 
 	// If the types match there is nothing to do
@@ -112,15 +117,105 @@ function coerceInput_(
 	// If there are matching functors in the input type and the domain, then we
 	// don't need to move them around; simply continue coercion under the functor
 	const functor = getMatchingFunctor(inputInner, domainInner);
-	if (functor !== null)
-		return coerceInput_(
-			fn,
-			input,
-			inputSide,
-			mode,
-			under === null ? functor : composeFunctors(under, functor),
-			force,
-		);
+	if (functor !== null) {
+		const newUnder = under === null ? functor : composeFunctors(under, functor);
+		const result = coerceInput_(fn, input, inputSide, mode, newUnder, force);
+		if (result !== null) return result;
+
+		// Straightforward coercion to the original type failed, but maybe we can
+		// coerce to Cont <original type> and join this with an expected Cont instead?
+		if (
+			typeof inputInner === 'object' &&
+			inputInner.head === 'cont' &&
+			inputSide !== 'out'
+		) {
+			const coercedInner = Cont(domainInner);
+			const coerced = wrap(coercedInner, input);
+			const result = coerceInput_(
+				λ(coerced, inputVal =>
+					app(
+						fn,
+						map(
+							() =>
+								λ(coercedInner, x => contMonad.join(() => v(x), coercedInner)),
+							() => v(inputVal),
+							coerced,
+							domain,
+						),
+					),
+				),
+				input,
+				inputSide,
+				mode,
+				newUnder,
+				force,
+			);
+			return (
+				result && {
+					...result,
+					mode: [inputSide === 'left' ? 'JL' : 'JR', result.mode],
+				}
+			);
+		}
+
+		return null;
+	}
+
+	// If we're expecting a Cont and the actual effect is something different that
+	// has a Runner instance, convert it to Cont
+	if (
+		typeof domainInner === 'object' &&
+		domainInner.head === 'cont' &&
+		inputSide !== 'out'
+	) {
+		const runner = getRunner(inputInner);
+		if (runner !== null && (runner.runner.eager || force)) {
+			const coercedInner = runner.runner.functor.wrap(
+				domainInner.inner,
+				inputInner,
+			);
+			const coerced = wrap(coercedInner, input);
+			const result = coerceInput_(
+				λ(coerced, inputVal =>
+					app(
+						fn,
+						map(
+							() =>
+								λ(coercedInner, x =>
+									cont(
+										λ(Fn(domainInner.inner, 't'), pred =>
+											runner.runner.run(() =>
+												runner.runner.functor.map(
+													() => v(pred),
+													() => v(x),
+													inputInner,
+													runner.runner.functor.wrap('t', inputInner),
+												),
+											),
+										),
+									),
+								),
+							() => v(inputVal),
+							coerced,
+							domain,
+						),
+					),
+				),
+				input,
+				inputSide,
+				mode,
+				under === null
+					? runner.runner.functor
+					: composeFunctors(under, runner.runner.functor),
+				true,
+			);
+			if (result !== null)
+				return {
+					...result,
+					mode: [inputSide === 'left' ? 'CL' : 'CR', result.mode],
+				};
+		}
+	}
 
 	// The functors don't match
 	if (under !== null) {
@@ -128,10 +223,7 @@ function coerceInput_(
 		// functor and then continuing conversion under the distributive functor
 		const distributive = getDistributive(inputInner);
 		if (distributive !== null) {
-			const coercedInner = under.wrap(
-				distributive.functor.unwrap(inputInner),
-				input,
-			);
+			const coercedInner = wrap(distributive.functor.unwrap(inputInner), input);
 			const result = coerceInput_(
 				fn,
 				coercedInner,
@@ -159,7 +251,7 @@ function coerceInput_(
 					);
 					if (monad !== null) {
 						joined = true;
-						return app(cont, monad.join(distributed));
+						return app(cont, monad.join(distributed, distributedType));
 					}
 
 					// Unable to join the effect; map over it instead.
@@ -227,7 +319,7 @@ function coerceInput_(
 			const applicative = getApplicative(traversableInner);
 			if (applicative !== null) {
 				const applicativeInner = applicative.functor.unwrap(traversableInner);
-				const coercedInner = under.wrap(
+				const coercedInner = wrap(
 					applicative.functor.wrap(
 						traversable.functor.wrap(applicativeInner, inputInner),
 						traversableInner,
@@ -248,7 +340,7 @@ function coerceInput_(
 						denotation: λ(input, inputVal =>
 							app(
 								cont,
-								under.map(
+								map(
 									() =>
 										λ(inputInner, inputInnerVal =>
 											traversable.sequence(
@@ -278,18 +370,18 @@ function coerceInput_(
 		if (
 			runner !== null &&
 			(runner.runner.eager || force) &&
-			subtype(under.wrap('t', input), fn.type.domain)
+			subtype(wrap('t', input), domain)
 		) {
-			const coercedInner = under.wrap(runner.input, input);
+			const coercedInner = wrap(runner.input, input);
 			const result = coerceInput_(
 				λ(coercedInner, inputVal =>
 					app(
 						fn,
-						under.map(
+						map(
 							() => λ(runner.input, inner => runner.runner.run(() => v(inner))),
 							() => v(inputVal),
 							coercedInner,
-							under.wrap('t', input),
+							wrap('t', input),
 						),
 					),
 				),
@@ -315,10 +407,7 @@ function coerceInput_(
 		// Try simply extracting a value from the functor via a comonad
 		const comonad = getComonad(inputInner);
 		if (comonad !== null && force) {
-			const coercedInner = under.wrap(
-				comonad.functor.unwrap(inputInner),
-				input,
-			);
+			const coercedInner = wrap(comonad.functor.unwrap(inputInner), input);
 			const result = coerceInput_(
 				fn,
 				coercedInner,
@@ -333,7 +422,7 @@ function coerceInput_(
 					denotation: λ(input, inputVal =>
 						app(
 							cont,
-							under.map(
+							map(
 								() =>
 									λ(inputInner, inputInnerVal =>
 										comonad.extract(() => v(inputInnerVal)),
@@ -480,13 +569,19 @@ function unwrapAndCoerce(
 			return { input: unwrapped, fn, effects, precedences, mode };
 		}
 
-		if (getMatchingFunctor(unwrapped, fn.type.domain) !== null) {
+		if (
+			getMatchingFunctor(unwrapped, fn.type.domain) !== null ||
+			(typeof fn.type.domain === 'object' &&
+				fn.type.domain.head === 'cont' &&
+				getRunner(unwrapped) !== null)
+		) {
 			const result = coerceInput(
 				fn,
 				unwrapped,
 				inputSide,
 				mode,
-				getDistributive(unwrapped) === null,
+				getDistributive(unwrapped) === null &&
+					getMatchingFunctor(unwrapped, fn.type.domain) !== null,
 			);
 			if (result !== null) {
 				const { denotation: coerced, mode } = result;
@@ -580,17 +675,19 @@ function simplifyOutput(
 		let coerced: CompositionResult | null;
 		if (getDistributive(out) === null) {
 			const inner = coerceType(unwrap(out), out);
-			coerced =
-				inner &&
-				coerceInput(
-					λ(wrap(inner, out), e => join(() => v(e))),
+			if (inner === null) coerced = null;
+			else {
+				const type = wrap(inner, out);
+				coerced = coerceInput(
+					λ(wrap(inner, out), e => join(() => v(e), type)),
 					out,
 					'out',
 					mode,
 				);
+			}
 		} else if (getMatchingMonad(out, unwrap(out))) {
 			coerced = {
-				denotation: λ(out, e => join(() => v(e))),
+				denotation: λ(out, e => join(() => v(e), out)),
 				mode,
 				steps: [],
 			};

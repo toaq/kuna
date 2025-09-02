@@ -89,8 +89,10 @@ test('conjunctions', () => {
 	snapshot('Aona tú Toaqpoq kéo sía Lojıbaqpoq sáose.');
 	snapshot('Jara kúne rú koı jí.');
 	snapshot('Kıa ro kuo máq.');
-	// TODO: bûı tú jıo kéo gûq sía hoe (needs ad-hoc scope islands)
+	snapshot('Kueq nhána bûı túq jıo kéo gûq sía hoe.');
+	snapshot('Marao báq poq, rú de póq.');
 	// TODO: ꝡë gı hóa rú ꝡë huı hóa / mêoq rú fôı (needs predicate modification)
+	// TODO: sá kıa ro kuo
 });
 
 test('cleft verb', () => {
