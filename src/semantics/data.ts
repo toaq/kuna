@@ -58,7 +58,12 @@ import {
 } from './model';
 import { reduce } from './reduce';
 import { typeToPlainText } from './render';
-import { getBigFunctor, getFunctor, idFunctor } from './structures';
+import {
+	getBigFunctor,
+	getFunctor,
+	idFunctor,
+	unwrapEffects,
+} from './structures';
 import type { AnimacyClass, Binding, Expr, ExprType } from './types';
 
 export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))));
@@ -177,24 +182,30 @@ export const serialFrames = new Map<string, (verb: Expr) => Expr>([
 	],
 ]);
 
-export const distributiveLittleV = ref(
-	{ type: 'subject' },
-	λ(Int(Pl('e')), subject =>
-		bind(
-			{ type: 'subject' },
-			v(subject),
-			ref(
-				{ type: 'reflexive' },
-				λ(Int(Pl('e')), refl =>
-					int(
-						λ('s', w =>
-							map(
-								app(unint(v(refl)), v(w)),
-								λ('e', refl_ =>
-									bind(
-										{ type: 'reflexive' },
-										int(λ('s', () => single(v(refl_)))),
-										λ(Fn('e', Fn('v', 't')), pred => app(v(pred), v(refl_))),
+export const distributiveLittleV = (cCommand: ExprType) => {
+	const unwrapped = unwrapEffects(cCommand);
+	assertFn(unwrapped);
+	return ref(
+		{ type: 'subject' },
+		λ(Int(Pl('e')), subject =>
+			bind(
+				{ type: 'subject' },
+				v(subject),
+				ref(
+					{ type: 'reflexive' },
+					λ(Int(Pl('e')), refl =>
+						int(
+							λ('s', w =>
+								map(
+									app(unint(v(refl)), v(w)),
+									λ('e', refl_ =>
+										bind(
+											{ type: 'reflexive' },
+											int(λ('s', () => single(v(refl_)))),
+											λ(Fn('e', unwrapped.range), pred =>
+												app(v(pred), v(refl_)),
+											),
+										),
 									),
 								),
 							),
@@ -203,25 +214,29 @@ export const distributiveLittleV = ref(
 				),
 			),
 		),
-	),
-);
+	);
+};
 
-export const nondistributiveLittleV = ref(
-	{ type: 'subject' },
-	λ(Int(Pl('e')), subject =>
-		bind(
-			{ type: 'subject' },
-			v(subject),
-			int(
-				λ('s', w =>
-					bind(
-						{ type: 'reflexive' },
-						int(λ('s', () => app(unint(v(subject)), v(w)))),
-						ref(
+export const nondistributiveLittleV = (cCommand: ExprType) => {
+	const unwrapped = unwrapEffects(cCommand);
+	assertFn(unwrapped);
+	return ref(
+		{ type: 'subject' },
+		λ(Int(Pl('e')), subject =>
+			bind(
+				{ type: 'subject' },
+				v(subject),
+				int(
+					λ('s', w =>
+						bind(
 							{ type: 'reflexive' },
-							λ(Int(Pl('e')), refl =>
-								λ(Fn(Pl('e'), Fn('v', 't')), pred =>
-									app(v(pred), app(unint(v(refl)), v(w))),
+							int(λ('s', () => app(unint(v(subject)), v(w)))),
+							ref(
+								{ type: 'reflexive' },
+								λ(Int(Pl('e')), refl =>
+									λ(Fn(Pl('e'), unwrapped.range), pred =>
+										app(v(pred), app(unint(v(refl)), v(w))),
+									),
 								),
 							),
 						),
@@ -229,8 +244,8 @@ export const nondistributiveLittleV = ref(
 				),
 			),
 		),
-	),
-);
+	);
+};
 
 export const cleftVerb = λ(Ref({ type: 'resumptive' }, 't'), p => unref(v(p)));
 

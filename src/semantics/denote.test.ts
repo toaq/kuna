@@ -24,8 +24,9 @@ test('predicatizers', () => {
 
 test('object incorporation', () => {
 	snapshot('Rụınua hôq jí nháo.');
-	snapshot('Sạtao súq ba.');
+	snapshot('Sạtao súq râq tú raı ba.');
 	snapshot('Họqdua sía poq.');
+	snapshot('Tao sâ raı tú poq râq ráı.');
 });
 
 test('relative clauses', () => {
@@ -67,8 +68,9 @@ test('serials', () => {
 
 test('adjuncts', () => {
 	snapshot('Nuo súq dûo géodıo.');
-	snapshot('Marao úmo gâq nhâna.');
+	snapshot('Marao úmo gâq nhána.');
 	snapshot('Kueq áma fâ sóaq.');
+	// TODO: Scope islands as found in "môı sîa raı"
 });
 
 test('reflexives and reciprocals', () => {

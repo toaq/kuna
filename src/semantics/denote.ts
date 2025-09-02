@@ -5,6 +5,7 @@ import {
 	Unrecognized,
 } from '../core/error';
 import { splitNonEmpty } from '../core/misc';
+import type { VerbEntry } from '../morphology/dictionary';
 import { Tone, inTone } from '../morphology/tone';
 import { getFrame } from '../syntax/frame';
 import { getDistribution } from '../syntax/serial';
@@ -53,11 +54,14 @@ import {
 	app,
 	assertFn,
 	bind,
+	cont,
 	int,
 	lex,
 	quote,
 	ref,
+	single,
 	topic,
+	uncont,
 	unindef,
 	unint,
 	v,
@@ -65,7 +69,13 @@ import {
 } from './model';
 import { reduce } from './reduce';
 import { typeToPlainText } from './render';
-import { findEffect, getFunctor, unwrapEffects } from './structures';
+import {
+	findEffect,
+	getBigFunctor,
+	getFunctor,
+	idFunctor,
+	unwrapEffects,
+} from './structures';
 import type { DTree, Expr, ExprType } from './types';
 
 function findVp(tree: StrictTree): StrictTree | null {
@@ -121,6 +131,85 @@ function getVerbWord(vp: StrictTree): Word | CovertWord {
 	return getVerbWord_(vp.left);
 }
 
+function incorpObject_(
+	type: ExprType,
+	relVar: number,
+	objectVar: number,
+	objectType: ExprType,
+	applyArgs: (e: Expr) => Expr,
+): Expr {
+	assertFn(type);
+	if (typeof type.range === 'object' && type.range.head === 'fn')
+		return λ(type.domain, arg =>
+			incorpObject_(type.range, relVar, objectVar, objectType, e =>
+				app(applyArgs(e), v(arg)),
+			),
+		);
+	// This Cont should have highest possible precedence. To achieve this, we wrap
+	// it in a trivial Pl effect.
+	return single(
+		cont(
+			λ(Fn(Fn(type.domain, 't'), 't'), pred =>
+				app(
+					uncont(v(objectVar)),
+					λ(objectType, obj =>
+						app(
+							v(pred),
+							λ(type.domain, arg =>
+								app(applyArgs(app(v(relVar), v(obj))), v(arg)),
+							),
+						),
+					),
+				),
+			),
+		),
+	);
+}
+
+function incorpObject(e: Expr): Expr {
+	const functor = getBigFunctor(e.type) ?? idFunctor;
+	const inner = functor.unwrap(e.type);
+	assertFn(inner);
+	return functor.map(
+		() =>
+			λ(inner, rel =>
+				λ(Cont(inner.domain), object =>
+					incorpObject_(inner.range, rel, object, inner.domain, e => e),
+				),
+			),
+		() => e,
+		e.type,
+		functor.wrap(Fn(Cont(inner.domain), inner.range), e.type),
+	);
+}
+
+function isIncorpObject(tree: StrictTree): boolean {
+	if ('word' in tree) {
+		if (tree.label !== 'D' && tree.label !== 'DP')
+			throw new Impossible("Couldn't find the object's determiner");
+		return (
+			!tree.word.covert &&
+			(tree.word.tone === Tone.T4 ||
+				tree.word.entry?.type === 'determiner prefix form')
+		);
+	}
+	return (
+		tree.label !== "&'" &&
+		isIncorpObject(tree.label === 'FocusP' ? tree.right : tree.left)
+	);
+}
+
+function maybeIncorpObject(
+	verb: Expr,
+	entry: VerbEntry,
+	object: StrictTree | null,
+): Expr {
+	return entry.type === 'predicatizer' ||
+		(object !== null && isIncorpObject(object))
+		? incorpObject(verb)
+		: verb;
+}
+
 function findIndef(
 	t: ExprType,
 ): (ExprType & object & { head: 'indef' }) | null {
@@ -140,7 +229,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Impossible('non-predicate V');
 
 		const data = knownVerbs.get(entry.toaq);
-		if (data !== undefined) return data;
+		if (data !== undefined) return maybeIncorpObject(data, entry, cCommand);
 
 		let arity = splitNonEmpty(getFrame(leaf), ' ').length;
 		// In case we don't have lexical data on this word, make sure we're at least
@@ -159,15 +248,15 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 		// If the complement is a 𝘷P, serialize with it
 		if (cCommand?.label === '𝘷P' && leaf.word.entry !== undefined) {
-			if (leaf.word.entry.type !== 'predicate')
+			if (entry.type !== 'predicate')
 				throw new Impossible(`Serializing ${leaf.word.entry.type}`);
-			const data = serialFrames.get(leaf.word.entry.frame);
+			const data = serialFrames.get(entry.frame);
 			if (data === undefined)
-				throw new Unimplemented(`Serial frame (${leaf.word.entry.frame})`);
+				throw new Unimplemented(`Serial frame (${entry.frame})`);
 			return data(verb);
 		}
 
-		return verb;
+		return maybeIncorpObject(verb, entry, cCommand);
 	}
 
 	if (leaf.label === '𝘷') {
@@ -183,8 +272,9 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				type.domain.head === 'pl' &&
 				type.domain.inner === 'e'
 			)
-				return nondistributiveLittleV;
-			if (type.domain === 'e') return distributiveLittleV;
+				return nondistributiveLittleV(cCommand.denotation.type);
+			if (type.domain === 'e')
+				return distributiveLittleV(cCommand.denotation.type);
 			throw new Unrecognized(`𝘷 for type ${typeToPlainText(type)}`);
 		}
 
