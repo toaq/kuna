@@ -92,3 +92,8 @@ test('conjunctions', () => {
 	// TODO: bûı tú jıo kéo gûq sía hoe (needs ad-hoc scope islands)
 	// TODO: ꝡë gı hóa rú ꝡë huı hóa / mêoq rú fôı (needs predicate modification)
 });
+
+test('cleft verb', () => {
+	snapshot('Ní shatı nä loı jí hóa.');
+	snapshot('Sá rua nä maı tú apı rúa.');
+});

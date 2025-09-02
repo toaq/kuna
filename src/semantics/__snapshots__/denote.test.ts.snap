@@ -6,6 +6,10 @@ exports[`adjuncts > Marao úmo gâq nhâna. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 �
 
 exports[`adjuncts > Nuo súq dûo géodıo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦súq⟧; 𝑄 ⇐ géodıo; 𝑄 ⇒ géodıo, 𝑄 ⇒ tá; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦nuo⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' ⟦duo⟧ 𝑤 𝑏 𝑒 𝑒')) 𝑡))"`;
 
+exports[`cleft verb > Ní shatı nä loı jí hóa. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦ní⟧ (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦shatı⟧ 𝑤 𝑎) 𝑡), 𝑡' ⇐ ⟦tuom⟧, 𝑄 ⇐ ⟦jí⟧; 𝑃 ⇒ shátı, 𝑃 ⇒ máq; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑄 𝑤' → (∀𝑏 𝑏 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (⟦loı⟧ 𝑤' 𝑏 𝑎) 𝑡')))"`;
+
+exports[`cleft verb > Sá rua nä maı tú apı rúa. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧; ⟦da⟧ (λ𝑤 ∃𝑃 (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦rua⟧ 𝑤 𝑎) 𝑡) ∧ (∀𝑄 ⟦tam⟧ 𝑤 (⟦apı⟧ 𝑤 (𝑄 𝑤)) 𝑡'' → (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦maı⟧ 𝑤 𝑎 (𝑄 𝑤)) 𝑡')))"`;
+
 exports[`conjunctions > Ao jea súq shíukune rí góso? 1`] = `"𝑃 ⇐ accessibility, 𝑄 ⇐ salient, 𝑡 ⇐ ⟦tuom⟧, 𝑅 ⇐ ⟦súq⟧; 𝑆 ⇐ shíukune; 𝑆 ⇒ shíukune, 𝑆 ⇒ hó; 𝑇 ⇐ góso; 𝑇 ⇒ góso, 𝑇 ⇒ tá; λ𝑤 (bg (⟦da⟧ (λ𝑤' ¬(𝑄 𝑤'))), ⟦móq⟧ (λ𝑤' qn (λ𝑈 𝑈 = (λ𝑉 𝑉 𝑆) ∨ 𝑈 = (λ𝑉 𝑉 𝑇)) (λ𝑈 ∀𝑤'' 𝑃 𝑤 𝑤'' ∧ 𝑄 𝑤'' → 𝑈 (λ𝑉 ∀𝑎 𝑎 ≺ 𝑅 𝑤'' → (∀𝑏 𝑏 ≺ 𝑉 𝑤'' → ⟦tam⟧ 𝑤'' (⟦jea⟧ 𝑤'' 𝑏 𝑎) 𝑡)))))"`;
 
 exports[`conjunctions > Aona tú Toaqpoq kéo sía Lojıbaqpoq sáose. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧; 𝑃 ⇐ sáose; 𝑃 ⇒ sáose, 𝑃 ⇒ tá; λ𝑤 (bg (contrast (λ𝑄 ∀𝑅 ⟦tam⟧ 𝑤 (⟦toaqpoq⟧ 𝑤 (𝑅 𝑤)) 𝑡' → 𝑄 (λ𝑤' [𝑅 𝑤'])) (λ𝑄 ¬(∃𝑅 (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦lojıbaqpoq⟧ 𝑤 𝑎) 𝑡'') ∧ 𝑄 (λ𝑤' 𝑅 𝑤')))), ⟦da⟧ (λ𝑤' (∀𝑄 ⟦tam⟧ 𝑤 (⟦toaqpoq⟧ 𝑤 (𝑄 𝑤)) 𝑡' → (∀𝑎 𝑎 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (⟦aona⟧ 𝑤' 𝑎 [𝑄 𝑤']) 𝑡)) ∧ ¬(∃𝑄 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦lojıbaqpoq⟧ 𝑤 𝑎) 𝑡'') ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (⟦aona⟧ 𝑤' 𝑎 (𝑄 𝑤')) 𝑡))))"`;

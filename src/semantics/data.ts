@@ -232,6 +232,12 @@ export const nondistributiveLittleV = ref(
 	),
 );
 
+export const cleftVerb = λ(Ref({ type: 'resumptive' }, Int('t')), p =>
+	int(
+		λ('s', w => λ(Int(Pl('e')), x => app(unint(app(unref(v(p)), v(x))), v(w)))),
+	),
+);
+
 export const pro = ref(
 	{ type: 'covert resumptive' },
 	λ(Int(Pl('e')), x => v(x)),

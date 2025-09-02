@@ -19,6 +19,7 @@ import { compose } from './compose';
 import {
 	adjuncts,
 	clausalConjunctions,
+	cleftVerb,
 	conditionals,
 	covertComplementizers,
 	covertCp,
@@ -185,9 +186,12 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			if (type.domain === 'e') return distributiveLittleV;
 			throw new Unrecognized(`𝘷 for type ${typeToPlainText(type)}`);
 		}
+
 		if (cCommand?.label === "Cond'")
 			return λ(unwrapEffects(cCommand.denotation.type), pred => v(pred));
-		throw new Unimplemented(`Overt 𝘷: ${leaf.word.text}`);
+
+		if (leaf.word.entry?.toaq === 'nä') return cleftVerb;
+		throw new Unrecognized(`𝘷: ${leaf.word.entry?.toaq ?? leaf.word.text}`);
 	}
 
 	if (leaf.label === 'DP') {
