@@ -154,6 +154,11 @@ export interface Runner {
 	 * Performs some sort of closure over the effect.
 	 */
 	run: (e: () => Expr) => Expr;
+	/**
+	 * In case this Runner is a composition of multiple effects, move all effects
+	 * up to the top of the effects stack.
+	 */
+	gather?: (e: () => Expr, type: ExprType) => Expr;
 }
 
 const tSemigroup: Semigroup = {
@@ -186,7 +191,7 @@ const intApplicative: Applicative = {
 		int(λ('s', w => app(app(unint(fn()), v(w)), app(unint(arg()), v(w))))),
 };
 
-const contFunctor: Functor = {
+export const contFunctor: Functor = {
 	wrap: type => Cont(type),
 	unwrap: type => {
 		assertCont(type);
@@ -623,7 +628,48 @@ const refDistributive: Distributive = {
 // This is an eager Runner instance that applies only to Bind áq(na) Ref áq(na) t,
 // preventing áq(na) bindings from scoping too far out of their 𝘷P
 const subjectReflexiveRunner: Runner = {
-	functor: composeFunctors(bindFunctor, refFunctor),
+	functor: {
+		...composeFunctors(bindFunctor, refFunctor),
+		wrap: (type, like) =>
+			bindFunctor.wrap(
+				refFunctor.wrap(
+					type,
+					(findEffect(like, Ref({ type: 'subject' }, '()')) ??
+						findEffect(like, Ref({ type: 'reflexive' }, '()')))!,
+				),
+				like,
+			),
+		unwrap: type => {
+			const bindUnwrapped = bindFunctor.unwrap(type);
+			const interveningEffects: (ExprType & object)[] = [];
+			let t = bindUnwrapped;
+			while (
+				typeof t === 'object' &&
+				'inner' in t &&
+				!(
+					t.head === 'ref' &&
+					(t.binding.type === 'subject' || t.binding.type === 'reflexive')
+				)
+			) {
+				interveningEffects.push({ ...t, inner: '()' });
+				t = t.inner;
+			}
+			if (
+				typeof t === 'string' ||
+				!(
+					t.head === 'ref' &&
+					(t.binding.type === 'subject' || t.binding.type === 'reflexive')
+				)
+			)
+				throw new Impossible(
+					`Not a reference type: ${typeToPlainText(bindUnwrapped)}`,
+				);
+			t = t.inner;
+			for (let i = interveningEffects.length - 1; i >= 0; i--)
+				t = { ...interveningEffects[i], inner: t } as ExprType;
+			return t;
+		},
+	},
 	eager: true,
 	run: e => {
 		const e_ = e();
@@ -636,7 +682,43 @@ const subjectReflexiveRunner: Runner = {
 			),
 		);
 	},
+	gather: (e, type) => {
+		assertBind(type);
+		const bindUnwrapped = type.inner;
+		const functor = getBigFunctorUntilSubjRef(bindUnwrapped);
+		if (functor === null)
+			throw new Impossible(
+				`Ref áq(na) not found in ${typeToPlainText(type.inner)}`,
+			);
+		const ref = functor.unwrap(bindUnwrapped);
+		assertRef(ref);
+		return bindFunctor.map(
+			() =>
+				λ(bindUnwrapped, innerVal =>
+					refDistributive.distribute(() => v(innerVal), functor, bindUnwrapped),
+				),
+			e,
+			type,
+			Bind(
+				type.binding,
+				Ref(ref.binding, functor.wrap(ref.inner, bindUnwrapped)),
+			),
+		);
+	},
 };
+
+function getBigFunctorUntilSubjRef(t: ExprType): Functor | null {
+	if (
+		typeof t === 'object' &&
+		t.head === 'ref' &&
+		(t.binding.type === 'subject' || t.binding.type === 'reflexive')
+	)
+		return idFunctor;
+	const outer = getFunctor(t);
+	if (outer === null) return null;
+	const inner = getBigFunctorUntilSubjRef(outer.unwrap(t));
+	return inner && composeFunctors(outer, inner);
+}
 
 // This is an eager Runner instance that applies only to Bind áqna t, preventing
 // áqna bindings from scoping too far out of their 𝘷P
@@ -877,7 +959,8 @@ export function chooseEffect(
 		right.head === 'fn' ||
 		(typeof left === 'object' &&
 			(left.head === 'bind' || left.head === 'ref') &&
-			invertibleBinding(left.binding))
+			(invertibleBinding(left.binding) ||
+				left.binding.type === 'covert resumptive'))
 	)
 		return { choice: left, strong: false };
 	if (
@@ -932,6 +1015,8 @@ export function getMatchingFunctor(t1: ExprType, t2: ExprType): Functor | null {
 }
 
 export function composeFunctors(outer: Functor, inner: Functor): Functor {
+	if (outer === idFunctor) return inner;
+	if (inner === idFunctor) return outer;
 	return {
 		wrap: (type, like) =>
 			outer.wrap(inner.wrap(type, outer.unwrap(like)), like),
@@ -991,7 +1076,7 @@ export function getDistributive(t: ExprType): Distributive | null {
 
 export function getTraversable(t: ExprType): Traversable | null {
 	if (typeof t === 'string') return null;
-	if (t.head === 'bind') return bindTraversable;
+	if (t.head === 'bind' && t.binding.type !== 'subject') return bindTraversable;
 	return null;
 }
 

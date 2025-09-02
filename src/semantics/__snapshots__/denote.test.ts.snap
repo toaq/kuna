@@ -86,6 +86,8 @@ exports[`reflexives and reciprocals > Tua de nhána chéq. 1`] = `"𝑡 ⇐ ⟦t
 
 exports[`reflexives and reciprocals > Zao túq poq chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧; λ𝑤 (λ𝑤' [𝑎 | 𝑎 ⇐ universe, ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑎) 𝑡'] ⇒ póq, λ𝑤' [𝑎 | 𝑎 ⇐ universe, ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑎) 𝑡'] ⇒ hó; ⟦da⟧ (λ𝑤' ∀𝑎 ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑎) 𝑡' → (∀𝑏 ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑏) 𝑡' ∧ 𝑏 ≠ 𝑎 → ⟦tam⟧ 𝑤' (⟦zao⟧ 𝑤' 𝑏 𝑎) 𝑡)))"`;
 
+exports[`relative clauses > Tao sá poq, ꝡë doı tú Toaq hóa, sá raı. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑡'''' ⇐ ⟦tuom⟧; ⟦da⟧ (λ𝑤 ∃𝑃 (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦poq⟧ 𝑤 𝑎) 𝑡') ∧ (∀𝑄 ⟦tam⟧ 𝑤 (⟦Toaq⟧ 𝑤 (𝑄 𝑤)) 𝑡''' → (∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦doı⟧ 𝑤 𝑎 (𝑄 𝑤)) 𝑡'')) ∧ (∃𝑄 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦raı⟧ 𝑤 𝑎) 𝑡'''') ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦tao⟧ 𝑤 𝑏 𝑎) 𝑡))))"`;
+
 exports[`serials > Du kuqnu gı ráı. 1`] = `"𝑡 ⇐ ⟦tuom⟧; 𝑃 ⇐ ráı; 𝑃 ⇒ ráı; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑏 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ∃𝑐 ⟦ꝡä⟧ 𝑤' (λ𝑤'' ∃𝑒'' ⟦gı⟧ 𝑤'' 𝑎 𝑒'') 𝑐 ∧ ⟦kuqnu⟧ 𝑤' 𝑐 𝑒') 𝑏 ∧ ⟦du⟧ 𝑤 𝑏 𝑒) 𝑡)"`;
 
 exports[`serials > Tua poaq góchıq ké jegaq. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦ké⟧ (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (⟦jegaq⟧ 𝑤 𝑎) 𝑡'); 𝑃 ⇒ jégaq, 𝑃 ⇒ tá; 𝑄 ⇐ góchıq; 𝑄 ⇒ góchıq; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑄 𝑤' → (∀𝑏 𝑏 ≺ 𝑃 𝑤' → ⟦tam⟧ 𝑤' (λ𝑒 ∃𝑐 ⟦ꝡä⟧ 𝑤' (λ𝑤'' ∃𝑒' ⟦poaq⟧ 𝑤'' 𝑏 𝑒') 𝑐 ∧ ⟦tua⟧ 𝑤' 𝑐 𝑎 𝑒) 𝑡)))"`;

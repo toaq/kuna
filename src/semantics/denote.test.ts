@@ -28,6 +28,10 @@ test('object incorporation', () => {
 	snapshot('Họqdua sía poq.');
 });
 
+test('relative clauses', () => {
+	snapshot('Tao sá poq, ꝡë doı tú Toaq hóa, sá raı.');
+});
+
 test('possessives', () => {
 	snapshot('Maı póq tú cheqbo.');
 	snapshot('Paı jí báq poq da. Hobo ní chea.');

@@ -232,11 +232,7 @@ export const nondistributiveLittleV = ref(
 	),
 );
 
-export const cleftVerb = λ(Ref({ type: 'resumptive' }, Int('t')), p =>
-	int(
-		λ('s', w => λ(Int(Pl('e')), x => app(unint(app(unref(v(p)), v(x))), v(w)))),
-	),
-);
+export const cleftVerb = λ(Ref({ type: 'resumptive' }, 't'), p => unref(v(p)));
 
 export const pro = ref(
 	{ type: 'covert resumptive' },
@@ -672,7 +668,15 @@ export const littleNs = new Map<CovertValue, (verb: Word | CovertWord) => Expr>(
 );
 
 export const covertComplementizers = new Map<CovertValue, Expr>([
-	['∅', λ(Int('t'), t => v(t))],
+	[
+		'∅',
+		λ(Cont('t'), p =>
+			app(
+				uncont(v(p)),
+				λ('t', t => v(t)),
+			),
+		),
+	],
 	[
 		'REL',
 		λ(Ref({ type: 'covert resumptive' }, 't'), predicate =>
@@ -682,30 +686,32 @@ export const covertComplementizers = new Map<CovertValue, Expr>([
 ]);
 
 export const overtComplementizers = new Map<string, Expr>([
-	['ꝡa', λ(Int('t'), t => v(t))],
+	[
+		'ꝡa',
+		λ(Cont('t'), p =>
+			app(
+				uncont(v(p)),
+				λ('t', t => v(t)),
+			),
+		),
+	],
 	[
 		'ma',
-		λ(Int('t'), p =>
-			int(
-				λ('s', w =>
-					qn(
-						λ(Fn('t', 't'), polarity =>
-							app(
-								app(
-									or,
-									equals(
-										v(polarity),
-										λ('t', t => v(t)),
-									),
-								),
-								equals(v(polarity), not),
+		λ(Cont('t'), p =>
+			qn(
+				λ(Fn('t', 't'), polarity =>
+					app(
+						app(
+							or,
+							equals(
+								v(polarity),
+								λ('t', t => v(t)),
 							),
 						),
-						λ(Fn('t', 't'), polarity =>
-							app(v(polarity), app(unint(v(p)), v(w))),
-						),
+						equals(v(polarity), not),
 					),
 				),
+				λ(Fn('t', 't'), polarity => app(uncont(v(p)), v(polarity))),
 			),
 		),
 	],
@@ -713,14 +719,24 @@ export const overtComplementizers = new Map<string, Expr>([
 		'ꝡä',
 		int(
 			λ('s', w =>
-				λ(Int('t'), prop =>
+				λ(Int(Cont('t')), prop =>
 					λ(Int(Pl('e')), x =>
 						every(
 							λ('e', x_ =>
 								app(
 									app(implies, among(v(x_), app(unint(v(x)), v(w)))),
 									app(
-										app(app(unint(propositionContent), v(w)), v(prop)),
+										app(
+											app(unint(propositionContent), v(w)),
+											int(
+												λ('s', w_ =>
+													app(
+														uncont(app(unint(v(prop)), v(w_))),
+														λ('t', t => v(t)),
+													),
+												),
+											),
+										),
 										v(x_),
 									),
 								),
@@ -755,10 +771,11 @@ export const overtComplementizers = new Map<string, Expr>([
 	],
 	[
 		'ꝡë',
-		λ(Ref({ type: 'resumptive' }, Int('t')), p =>
-			int(
-				λ('s', w =>
-					λ(Int(Pl('e')), x => app(unint(app(unref(v(p)), v(x))), v(w))),
+		λ(Cont(Ref({ type: 'resumptive' }, 't')), p =>
+			λ(Int(Pl('e')), x =>
+				app(
+					uncont(v(p)),
+					λ(Ref({ type: 'resumptive' }, 't'), p_ => app(unref(v(p_)), v(x))),
 				),
 			),
 		),

@@ -23,6 +23,7 @@ import {
 	type Functor,
 	chooseEffect,
 	composeFunctors,
+	contFunctor,
 	contMonad,
 	findEffect,
 	getApplicative,
@@ -118,7 +119,7 @@ function coerceInput_(
 	// don't need to move them around; simply continue coercion under the functor
 	const functor = getMatchingFunctor(inputInner, domainInner);
 	if (functor !== null) {
-		const newUnder = under === null ? functor : composeFunctors(under, functor);
+		const newUnder = composeFunctors(under ?? idFunctor, functor);
 		const result = coerceInput_(fn, input, inputSide, mode, newUnder, force);
 		if (result !== null) return result;
 
@@ -170,50 +171,54 @@ function coerceInput_(
 	) {
 		const runner = getRunner(inputInner);
 		if (runner !== null && (runner.runner.eager || force)) {
-			const coercedInner = runner.runner.functor.wrap(
-				domainInner.inner,
-				inputInner,
-			);
-			const coerced = wrap(coercedInner, input);
+			const { functor, run, gather } = runner.runner;
+			const intermediateInput = wrap(Cont(functor.unwrap(inputInner)), input);
 			const result = coerceInput_(
-				λ(coerced, inputVal =>
-					app(
-						fn,
-						map(
-							() =>
-								λ(coercedInner, x =>
-									cont(
-										λ(Fn(domainInner.inner, 't'), pred =>
-											runner.runner.run(() =>
-												runner.runner.functor.map(
-													() => v(pred),
-													() => v(x),
-													inputInner,
-													runner.runner.functor.wrap('t', inputInner),
+				fn,
+				intermediateInput,
+				inputSide,
+				mode,
+				composeFunctors(under ?? idFunctor, contFunctor),
+				true,
+			);
+			if (result !== null) {
+				// Unwrap and rewrap the input type to account for Runners that might need
+				// to be "gathered" (e.g. Bind áqna Int Ref áqna e -> Bind áqna Ref áqna Int e)
+				const unwrappedInner = functor.unwrap(inputInner);
+				const rewrappedInner = functor.wrap(unwrappedInner, inputInner);
+				return {
+					...result,
+					denotation: λ(input, inputVal =>
+						app(
+							result.denotation,
+							map(
+								() =>
+									λ(inputInner, x =>
+										cont(
+											λ(Fn(unwrappedInner, 't'), pred =>
+												run(() =>
+													functor.map(
+														() => v(pred),
+														() =>
+															gather === undefined
+																? v(x)
+																: gather(() => v(x), inputInner),
+														rewrappedInner,
+														functor.wrap('t', inputInner),
+													),
 												),
 											),
 										),
 									),
-								),
-							() => v(inputVal),
-							coerced,
-							domain,
+								() => v(inputVal),
+								input,
+								intermediateInput,
+							),
 						),
 					),
-				),
-				input,
-				inputSide,
-				mode,
-				under === null
-					? runner.runner.functor
-					: composeFunctors(under, runner.runner.functor),
-				true,
-			);
-			if (result !== null)
-				return {
-					...result,
 					mode: [inputSide === 'left' ? 'CL' : 'CR', result.mode],
 				};
+			}
 		}
 	}
 
@@ -580,8 +585,11 @@ function unwrapAndCoerce(
 				unwrapped,
 				inputSide,
 				mode,
-				getDistributive(unwrapped) === null &&
-					getMatchingFunctor(unwrapped, fn.type.domain) !== null,
+				(getDistributive(unwrapped) === null &&
+					getMatchingFunctor(unwrapped, fn.type.domain) !== null) ||
+					(typeof fn.type.domain === 'object' &&
+						fn.type.domain.head === 'cont' &&
+						getRunner(unwrapped)?.runner.eager),
 			);
 			if (result !== null) {
 				const { denotation: coerced, mode } = result;
@@ -640,28 +648,6 @@ function simplifyOutput(
 		domain: left,
 		range: { domain: right, range: out },
 	} = fn.type;
-
-	// Try running the output effect
-	const runner = getRunner(out);
-	if (runner?.runner.eager) {
-		const coerced = coerceInput(
-			λ(runner.input, x => runner.runner.run(() => v(x))),
-			out,
-			'out',
-			mode,
-			true,
-		);
-		if (coerced !== null) {
-			const { denotation: run, mode: coercedMode } = coerced;
-			return {
-				denotation: λ(left, l =>
-					λ(right, r => app(run, app(app(fn, v(l)), v(r)))),
-				),
-				mode: ['↓', coercedMode],
-				steps: [],
-			};
-		}
-	}
 
 	// Try joining repeated monadic effects
 	const monad = getMonad(out);
