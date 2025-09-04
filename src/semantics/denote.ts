@@ -271,8 +271,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				throw new Impossible("Can't denote covert 𝘷 in isolation");
 			const type = unwrapEffects(cCommand.denotation.type);
 			assertFn(type);
-			if (leaf.word.value === '∅')
-				return λ(cCommand.denotation.type, x => v(x));
+			if (leaf.word.value === '∅') return unit;
 			if (
 				typeof type.domain === 'object' &&
 				type.domain.head === 'pl' &&
@@ -606,12 +605,6 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		return lex(leaf.word.entry.toaq, Int(Fn('e', Fn('e', Fn('v', 't')))));
 	}
 
-	if (leaf.label === 'teo') {
-		if (cCommand === null)
-			throw new Impossible('Cannot denote a teo in isolation');
-		return λ(cCommand.denotation.type, x => v(x));
-	}
-
 	if (
 		leaf.label === 'bu' ||
 		leaf.label === 'mu' ||
@@ -646,7 +639,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 	if (leaf.label === 'kıo') return bg;
 
-	if (leaf.label === 'kı') return unit;
+	if (leaf.label === 'teo' || leaf.label === 'kı') return unit;
 
 	throw new Unimplemented(`TODO: ${leaf.label}`);
 }
