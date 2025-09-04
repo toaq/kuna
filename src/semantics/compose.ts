@@ -610,6 +610,18 @@ function composeInner(left: ExprType, right: ExprType): CompositionResult {
 		};
 	}
 
+	if (leftInner === '()')
+		return {
+			denotation: λ('()', () => λ(rightInner, r => v(r))),
+			mode: { mode: '+', left: '()', right: rightInner, out: rightInner },
+		};
+
+	if (rightInner === '()')
+		return {
+			denotation: λ(leftInner, l => λ('()', () => v(l))),
+			mode: { mode: '+', left: leftInner, right: '()', out: leftInner },
+		};
+
 	if (leftInner === 'e') {
 		const rightExpectingSubject = findEffect(
 			right,

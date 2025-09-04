@@ -43,6 +43,7 @@ import {
 	wrapInBindings,
 } from './data';
 import {
+	Act,
 	Bind,
 	Cont,
 	Dx,
@@ -52,9 +53,11 @@ import {
 	Pl,
 	Qn,
 	app,
+	ask,
 	assertFn,
 	bind,
 	cont,
+	empathize,
 	int,
 	lex,
 	quote,
@@ -83,8 +86,8 @@ function findVp(tree: StrictTree): StrictTree | null {
 		tree.label === 'VP' ||
 		(tree.label === 'CP' &&
 			'left' in tree &&
-			'word' in tree.left &&
-			!tree.left.word.covert) ||
+			tree.left.label === 'C' &&
+			('left' in tree.left || !tree.left.word.covert)) ||
 		tree.label === 'EvAP' ||
 		tree.label === 'mıP' ||
 		tree.label === 'shuP' ||
@@ -619,6 +622,22 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Unrecognized(`${leaf.label}: ${leaf.word.text}`);
 		const type = unwrapEffects(cCommand.denotation.type);
 		return lex(leaf.word.entry.toaq, Fn(type, type));
+	}
+
+	if (leaf.label === 'SAP') {
+		if (leaf.word.covert) throw new Impossible('Covert SAP');
+		if (leaf.word.entry === undefined)
+			throw new Unrecognized(`SAP: ${leaf.word.text}`);
+		const base = lex(leaf.word.bare, Act('()'));
+		switch (leaf.word.tone) {
+			case Tone.T1:
+			case Tone.T3:
+				return base;
+			case Tone.T2:
+				return app(ask, base);
+			case Tone.T4:
+				return app(empathize, base);
+		}
 	}
 
 	throw new Unimplemented(`TODO: ${leaf.label}`);

@@ -160,6 +160,31 @@ export function makeOptLeaf(label: Label, value?: CovertValue) {
 	};
 }
 
+export function makeFree<T extends unknown[]>(fn: (content: T) => Tree) {
+	return (data: [...T, Tree[]]) => {
+		const content = data.slice(0, -1) as T;
+		const frees = data[data.length - 1] as Tree[];
+		let result = fn(content);
+		for (const free of frees)
+			result = {
+				left: result,
+				right: free,
+				label: result.label,
+				source: catSource(result, free),
+			};
+		return result;
+	};
+}
+
+export function makeFreeFragment([free, fragment]: [Tree, Tree]) {
+	return {
+		left: free,
+		right: fragment,
+		label: fragment.label,
+		source: catSource(free, fragment),
+	};
+}
+
 export function makeSerial(label: Label) {
 	return ([verbs, vlast]: [Tree[], Tree]) => {
 		const children = verbs.concat([vlast]);

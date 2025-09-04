@@ -165,10 +165,6 @@ const tSemigroup: Semigroup = {
 	plus: and,
 };
 
-const unitSemigroup: Semigroup = {
-	plus: λ('()', () => λ('()', second => v(second))),
-};
-
 export const idFunctor: Functor = {
 	wrap: type => type,
 	unwrap: type => type,
@@ -812,7 +808,6 @@ export function getMatchingSemigroup(
 		if (left !== right) return null;
 		// Trivial semigroups
 		if (left === 't') return tSemigroup;
-		if (left === '()') return unitSemigroup;
 	} else if (
 		left.head === 'fn' &&
 		typeof right !== 'string' &&

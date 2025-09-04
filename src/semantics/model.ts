@@ -946,6 +946,27 @@ export function contrast(left: Expr, right: Expr): Expr {
 	);
 }
 
+/**
+ * Asks whether someone is in the position to produce a given speech act.
+ */
+export const ask: Expr = {
+	head: 'constant',
+	type: Fn(Act('()'), Act('()')),
+	scope: [],
+	name: 'ask',
+};
+
+/**
+ * Expresses empathy with someone by acknowledging that they are in the position
+ * to produce a given speech act.
+ */
+export const empathize: Expr = {
+	head: 'constant',
+	type: Fn(Act('()'), Act('()')),
+	scope: [],
+	name: 'empathize',
+};
+
 export const trueExpr: Expr = {
 	head: 'constant',
 	type: 't',

@@ -272,6 +272,14 @@ export class ToaqTokenizer {
 							);
 							continue;
 						}
+						if (entry.type === 'interjection') {
+							wordTokens.push({
+								type: 'interjection',
+								value: tokenText,
+								index: m.index,
+							});
+							continue;
+						}
 						if (wordTone === Tone.T2) {
 							if (entry.type === 'predicate') {
 								wordTokens.unshift({

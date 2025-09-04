@@ -172,6 +172,8 @@ interface Constant extends ExprBase {
 		| 'topic'
 		| 'bg'
 		| 'contrast'
+		| 'ask'
+		| 'empathize'
 		| 'true'
 		| 'false'
 		| 'not'
