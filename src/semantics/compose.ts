@@ -314,9 +314,9 @@ function coerceInput_(
 											? 'JR'
 											: 'J',
 								from: coercedMode,
-								type: cont.type,
+								type: Fn(distributedType, cont.type.range),
 							},
-							type: Fn(distributedType, cont.type.range),
+							type: Fn(input, cont.type.range),
 						};
 						return app(cont, monad.join(distributed, distributedType));
 					}
@@ -454,7 +454,8 @@ function coerceInput_(
 							mode:
 								inputSide === 'out' ? '→' : inputSide === 'left' ? '→L' : '→R',
 							from: mode,
-							type: cont.type,
+							type:
+								inputSide === 'out' ? cont.type : Fn(input, cont.type.range),
 						},
 					};
 				}
