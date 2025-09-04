@@ -829,6 +829,7 @@ export const speechActParticles = new Map<
 	['nha', () => Fn(Int('t'), Act('()'))],
 	['doa', () => Fn(Int('t'), Act('()'))],
 	['ꝡo', () => Fn(Int('t'), Act('()'))],
+	['ꝡeı', () => Fn(Int('t'), Act('()'))], // TODO: Interaction with degrees?
 ]);
 
 export const conditionals = new Map<CovertValue, Expr>([
