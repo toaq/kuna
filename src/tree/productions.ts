@@ -44,7 +44,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 }
 
 export function makeLeaf(label: Label) {
-	return ([token, _free]: [ToaqToken, Tree[]]) => ({
+	return ([token]: [ToaqToken]) => ({
 		label,
 		word: makeWord([token]),
 		source: token.value,
@@ -535,4 +535,27 @@ export function makeDiscourse(
 	if (leftSA.word.covert && rightC.word.covert) return reject;
 
 	return { label: 'Discourse', left, right, source: catSource(left, right) };
+}
+
+export function makeParen([kio, content, ki]: [ToaqToken, Tree, ToaqToken]) {
+	const kioPSource = catSource(kio.value, content);
+	return {
+		label: 'kıP',
+		left: {
+			label: 'kıoP',
+			left: {
+				label: 'kıo',
+				word: makeWord([kio]),
+				source: kio.value,
+			},
+			right: content,
+			source: kioPSource,
+		},
+		right: {
+			label: 'kı',
+			word: makeWord([ki]),
+			source: ki.value,
+		},
+		source: catSource(kioPSource, ki.value),
+	};
 }

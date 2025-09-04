@@ -40,6 +40,7 @@ const {
 	makeFreeFragment,
 	makeLeaf,
 	makeOptLeaf,
+	makeParen,
 	makePrefixLeaf,
 	makePrefixObjectIncorp,
 	makePrefixP,
@@ -288,7 +289,7 @@ VocativeP -> Vocative Argument {% makeBranch('VocativeP') %}
 Vocative -> %vocative {% makeLeaf('Vocative') %}
 VocArgument -> Argument {% id %}
 VocArgument -> VocativeP {% id %}
-Parenthetical -> %start_parenthetical Fragment %end_parenthetical {% id %}
+Parenthetical -> %start_parenthetical Fragment %end_parenthetical {% makeParen %}
 
 Free -> Interjection {% id %}
 Free -> Parenthetical {% id %}

@@ -56,6 +56,7 @@ import {
 	app,
 	ask,
 	assertFn,
+	bg,
 	bind,
 	cont,
 	empathize,
@@ -68,6 +69,7 @@ import {
 	uncont,
 	unindef,
 	unint,
+	unit,
 	v,
 	λ,
 } from './model';
@@ -641,6 +643,10 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				return app(empathize, base);
 		}
 	}
+
+	if (leaf.label === 'kıo') return bg;
+
+	if (leaf.label === 'kı') return unit;
 
 	throw new Unimplemented(`TODO: ${leaf.label}`);
 }

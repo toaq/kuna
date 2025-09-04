@@ -174,6 +174,7 @@ interface Constant extends ExprBase {
 		| 'contrast'
 		| 'ask'
 		| 'empathize'
+		| 'unit'
 		| 'true'
 		| 'false'
 		| 'not'

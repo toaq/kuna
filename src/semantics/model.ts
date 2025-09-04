@@ -967,6 +967,13 @@ export const empathize: Expr = {
 	name: 'empathize',
 };
 
+export const unit: Expr = {
+	head: 'constant',
+	type: '()',
+	scope: [],
+	name: 'unit',
+};
+
 export const trueExpr: Expr = {
 	head: 'constant',
 	type: 't',

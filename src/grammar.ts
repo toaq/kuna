@@ -68,6 +68,7 @@ const {
 	makeFreeFragment,
 	makeLeaf,
 	makeOptLeaf,
+	makeParen,
 	makePrefixLeaf,
 	makePrefixObjectIncorp,
 	makePrefixP,
@@ -400,7 +401,7 @@ const grammar: Grammar = {
     {"name": "Vocative", "symbols": [(lexer.has("vocative") ? {type: "vocative"} : vocative)], "postprocess": makeLeaf('Vocative')},
     {"name": "VocArgument", "symbols": ["Argument"], "postprocess": id},
     {"name": "VocArgument", "symbols": ["VocativeP"], "postprocess": id},
-    {"name": "Parenthetical", "symbols": [(lexer.has("start_parenthetical") ? {type: "start_parenthetical"} : start_parenthetical), "Fragment", (lexer.has("end_parenthetical") ? {type: "end_parenthetical"} : end_parenthetical)], "postprocess": id},
+    {"name": "Parenthetical", "symbols": [(lexer.has("start_parenthetical") ? {type: "start_parenthetical"} : start_parenthetical), "Fragment", (lexer.has("end_parenthetical") ? {type: "end_parenthetical"} : end_parenthetical)], "postprocess": makeParen},
     {"name": "Free", "symbols": ["Interjection"], "postprocess": id},
     {"name": "Free", "symbols": ["Parenthetical"], "postprocess": id}
   ],

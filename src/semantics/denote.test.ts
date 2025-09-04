@@ -113,3 +113,14 @@ test('topics', () => {
 	snapshot('Níchaq bï tao jí ké zuo hôq nha.');
 	snapshot('Níchaq bï tao nánı poq ké zuo hôq nha.');
 });
+
+test('interjections', () => {
+	snapshot('Áhı?');
+	snapshot('Âhı.');
+	snapshot('Dua jí ꝡá nho, ruqshua.');
+	snapshot('Aojaı jí, eju… pó ní.');
+});
+
+test('parentheticals', () => {
+	snapshot('Kóacao (kïo he cho jí báq koacao kı) bï baı jí báq nıaopoq.');
+});

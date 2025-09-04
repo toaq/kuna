@@ -450,14 +450,16 @@ function reduce_(expr: Expr): Expr {
 				if (expr.fn.fn.name === 'flat_map') return reduce(app(f, x));
 			}
 
-			// map/and_map x (λy y) = x
+			// map/and_map x (λy y/unit) = x
 			if (
 				expr.fn.head === 'apply' &&
 				expr.fn.fn.head === 'constant' &&
 				(expr.fn.fn.name === 'map' || expr.fn.fn.name === 'and_map') &&
 				expr.arg.head === 'lambda' &&
-				expr.arg.body.head === 'variable' &&
-				expr.arg.body.index === 0
+				((expr.arg.body.head === 'variable' && expr.arg.body.index === 0) ||
+					(expr.arg.param === '()' &&
+						expr.arg.body.head === 'constant' &&
+						expr.arg.body.name === 'unit'))
 			)
 				return reduce(expr.fn.arg);
 
