@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { keyFor } from '../../core/misc';
 import { toJsx, typeToPlainText } from '../../semantics/render';
-import { modeToString } from '../../semantics/types';
+import { type CompositionMode, modeToString } from '../../semantics/types';
 import type { PlacedTree } from '../../tree/place';
 import {
 	type RichSceneLabel,
@@ -13,13 +13,6 @@ import {
 import type { Theme } from '../../tree/theme';
 import { TreeBrowser } from './TreeBrowser';
 import { TreeLabel } from './TreeLabel';
-
-type Step = {
-	mode: any;
-	leftType: any;
-	rightType: any;
-	outType: any;
-};
 
 // Helper function to create a Scene containing all three types arranged as a tree
 function createCompositionScene(
@@ -37,7 +30,6 @@ function createCompositionScene(
 			fullCategoryLabel: label,
 			denotation: undefined,
 			mode: undefined,
-			steps: undefined,
 			roof: false,
 			text: undefined,
 			textStyle: SceneTextStyle.Plain,
@@ -60,12 +52,23 @@ function createCompositionScene(
 }
 
 export function CompositionStepsSlider({
-	steps,
+	mode,
 	theme,
 }: {
-	steps: Step[];
+	mode: CompositionMode;
 	theme: Theme;
 }) {
+	const steps = useMemo(() => {
+		const steps: CompositionMode[] = [];
+		let m = mode;
+		while ('from' in m) {
+			steps.push(m);
+			m = m.from;
+		}
+		steps.push(m);
+		steps.reverse();
+		return steps;
+	}, [mode]);
 	const [stepIndex, setStepIndex] = useState(steps.length - 1);
 
 	if (!steps || steps.length === 0) {
@@ -73,13 +76,13 @@ export function CompositionStepsSlider({
 	}
 
 	const step = steps[stepIndex] ?? steps[0];
-	const lastModeString = modeToString(steps[steps.length - 1].mode);
-	const modeString = modeToString(step.mode);
+	const lastModeString = modeToString(steps[steps.length - 1]);
+	const modeString = modeToString(step);
 
 	const compositionScene = createCompositionScene(
-		step.leftType,
-		step.rightType,
-		step.outType,
+		step.left,
+		step.right,
+		step.out,
 	);
 
 	return (
@@ -165,15 +168,10 @@ export function InspectNode(props: {
 							<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
 								{modeToString(tree.mode)}
 							</div>
-						</>
-					)}
-
-					{'steps' in tree && tree.steps && (
-						<>
 							<h3 className="text-lg mt-4 mb-2 font-bold">Composition steps</h3>
 							<CompositionStepsSlider
 								key={keyFor(tree)}
-								steps={tree.steps}
+								mode={tree.mode}
 								theme={theme}
 							/>
 						</>

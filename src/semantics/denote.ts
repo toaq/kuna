@@ -648,7 +648,6 @@ export function denote_(tree: StrictTree, cCommand: DTree | null): DTree {
 		right,
 		denotation,
 		mode: result.mode,
-		steps: result.steps,
 	};
 }
 

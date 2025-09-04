@@ -48,8 +48,6 @@ exports[`object incorporation > Họqdua sía poq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 
 
 exports[`object incorporation > Rụınua hôq jí nháo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑄 ⇐ ⟦nháo⟧; 𝑅 ⇐ hóq; 𝑅 ⇒ hóq; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → (∀𝑐 𝑐 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦ruı-⟧ (⟦nua⟧ 𝑤) 𝑐 𝑏 𝑎) 𝑡)))"`;
 
-exports[`object incorporation > Sạtao súq ba. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦súq⟧, 𝑡' ⇐ ⟦tuom⟧; ⟦ba⟧ (λ𝑤 ∃𝑄 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦raı⟧ 𝑤 𝑎) 𝑡') ∧ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦tao⟧ 𝑤 𝑏 𝑎) 𝑡)))"`;
-
 exports[`object incorporation > Sạtao súq râq tú raı ba. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦súq⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧; ⟦ba⟧ (λ𝑤 ∀𝑄 ⟦tam⟧ 𝑤 (⟦raı⟧ 𝑤 (𝑄 𝑤)) 𝑡'' → (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∃𝑅 (∀𝑏 𝑏 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦raı⟧ 𝑤 𝑏) 𝑡') ∧ (∀𝑏 𝑏 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦tao⟧ 𝑤 𝑏 𝑎 𝑒 ∧ (∃𝑒' ⟦raq⟧ 𝑤 (𝑄 𝑤) 𝑒 𝑒')) 𝑡))))"`;
 
 exports[`object incorporation > Tao sâ raı tú poq râq ráı. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧; 𝑃 ⇐ ráı; 𝑃 ⇒ ráı; ⟦da⟧ (λ𝑤 ∀𝑄 ⟦tam⟧ 𝑤 (⟦poq⟧ 𝑤 (𝑄 𝑤)) 𝑡' → (∃𝑅 (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦raı⟧ 𝑤 𝑎) 𝑡'') ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∀𝑏 𝑏 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦tao⟧ 𝑤 𝑎 (𝑄 𝑤) 𝑒 ∧ (∃𝑒' ⟦raq⟧ 𝑤 𝑏 𝑒 𝑒')) 𝑡))))"`;

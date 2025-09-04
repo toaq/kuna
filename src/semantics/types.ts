@@ -1,7 +1,6 @@
 import { bare } from '../morphology/tokenize';
 import { Tone, inTone } from '../morphology/tone';
 import type { Branch, Leaf } from '../tree';
-import type { CompositionStep } from './compose';
 
 export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 
@@ -195,45 +194,55 @@ export type Expr = Variable | Lambda | Apply | Lexeme | Quote | Constant;
 /**
  * A tree with denotations.
  */
-export type DTree = (
-	| Leaf
-	| (Branch<DTree> & { mode: CompositionMode; steps?: CompositionStep[] })
-) & {
+export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode })) & {
 	denotation: Expr;
 };
 
-export type CompositionMode =
+export type BasicMode =
 	| '>' // Functional application
 	| '<' // Reverse functional application
 	| '+' // Semigroup combination
-	| 'S' // Subject setting
-	| ['L', CompositionMode] // Map left over functor
-	| ['R', CompositionMode] // Map right over functor
-	| ['A', CompositionMode] // Sequence effects via applicative functor
-	| ['↑L', CompositionMode] // Lift left into applicative functor
-	| ['↑R', CompositionMode] // Lift right into applicative functor
-	| ['←L', CompositionMode] // Pull distributive functor out of functor on the left
-	| ['←R', CompositionMode] // Pull distributive functor out of functor on the right
-	| ['←', CompositionMode] // Pull distributive functor out of functor
-	| ['→L', CompositionMode] // Push traversable functor into applicative on the left
-	| ['→R', CompositionMode] // Push traversable functor into applicative on the right
-	| ['→', CompositionMode] // Push traversable functor into applicative
-	| ['↓L', CompositionMode] // Extract from effect on the left
-	| ['↓R', CompositionMode] // Extract from effect on the right
-	| ['↓', CompositionMode] // Extract from effect
-	| ['JL', CompositionMode] // Join monads on the left
-	| ['JR', CompositionMode] // Join monads on the right
-	| ['J', CompositionMode] // Join monads
-	| ['Z', CompositionMode] // Resolve binding relationship
-	| ["Z'", CompositionMode] // Resolve inverted binding relationship
-	| ['CL', CompositionMode] // Convert effect on left to continuation
-	| ['CR', CompositionMode]; // Convert effect on right to continuation
+	| 'S'; // Subject setting
+
+export type DerivedMode =
+	| 'L' // Map left over functor
+	| 'R' // Map right over functor
+	| 'A' // Sequence effects via applicative functor
+	| '↑L' // Lift left into applicative functor
+	| '↑R' // Lift right into applicative functor
+	| '←L' // Pull distributive functor out of functor on the left
+	| '←R' // Pull distributive functor out of functor on the right
+	| '←' // Pull distributive functor out of functor
+	| '→L' // Push traversable functor into applicative on the left
+	| '→R' // Push traversable functor into applicative on the right
+	| '→' // Push traversable functor into applicative
+	| '↓L' // Extract from effect on the left
+	| '↓R' // Extract from effect on the right
+	| '↓' // Extract from effect
+	| 'JL' // Join monads on the left
+	| 'JR' // Join monads on the right
+	| 'J' // Join monads
+	| 'Z' // Resolve binding relationship
+	| "Z'" // Resolve inverted binding relationship
+	| 'CL' // Convert effect on left to continuation
+	| 'CR'; // Convert effect on right to continuation
+
+interface CompositionTypes {
+	left: ExprType;
+	right: ExprType;
+	out: ExprType;
+}
+
+export type CompositionMode = CompositionTypes &
+	({ mode: BasicMode } | { mode: DerivedMode; from: CompositionMode });
 
 export function modeToString(mode: CompositionMode): string {
-	return typeof mode === 'string'
-		? mode
-		: // @ts-ignore TypeScript can't handle the infinite types here
-			mode
-				.flat(Number.POSITIVE_INFINITY)
-				.join(' ');
+	const modes: string[] = [];
+	let m = mode;
+	while ('from' in m) {
+		modes.push(m.mode);
+		m = m.from;
+	}
+	modes.push(m.mode);
+	return modes.join(' ');
 }
