@@ -26,8 +26,8 @@ import {
 	assertPl,
 	bg,
 	bind,
-	constrast,
 	cont,
+	contrast,
 	equals,
 	every,
 	filter,
@@ -1108,7 +1108,7 @@ export const clausalConjunctions = new Map<string, Conjunction>([
 			λ(Cont(conjunct), r =>
 				λ(Cont(conjunct), l =>
 					andMap(
-						app(bg, constrast(v(l), v(r))),
+						app(bg, contrast(v(l), v(r))),
 						λ('()', () => {
 							const binding: Binding = { type: 'head', head: 'keo' };
 							return cont(

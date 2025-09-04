@@ -931,7 +931,7 @@ export const bg: Expr = {
  * Speech act claiming that there is a certain contrast between the two
  * arguments.
  */
-export function constrast(left: Expr, right: Expr): Expr {
+export function contrast(left: Expr, right: Expr): Expr {
 	return app(
 		app(
 			{
