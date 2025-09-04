@@ -50,6 +50,24 @@ import type {
 	ExprType,
 } from './types';
 
+export interface CompositionResult {
+	denotation: Expr;
+	mode: CompositionMode;
+}
+
+interface DerivedCoercionMode {
+	mode: DerivedMode;
+	from: CoercionMode;
+	type: ExprType;
+}
+
+type CoercionMode = CompositionMode | DerivedCoercionMode;
+
+export interface CoercionResult {
+	denotation: Expr;
+	mode: CoercionMode;
+}
+
 function coerceType_(
 	inType: ExprType,
 	like: ExprType,
@@ -104,15 +122,15 @@ function coerceType(inType: ExprType, like: ExprType): ExprType | null {
 }
 
 function mapModesUntil(
-	inMode: CoercedCompositionMode,
-	untilMode: CoercedCompositionMode,
+	inMode: CoercionMode,
+	untilMode: CoercionMode,
 	project: (t: ExprType) => ExprType,
-	replace?: CoercedCompositionMode,
-): CoercedCompositionMode {
+	replace?: CoercionMode,
+): CoercionMode {
 	if (inMode === untilMode) return replace ?? untilMode;
 	const inMode_ = inMode as {
 		mode: DerivedMode;
-		from: CoercedCompositionMode;
+		from: CoercionMode;
 		type: ExprType;
 	};
 	return {
@@ -126,10 +144,10 @@ function coerceInput_(
 	fn: Expr,
 	input: ExprType,
 	inputSide: 'left' | 'right' | 'out',
-	mode: CoercedCompositionMode,
+	mode: CoercionMode,
 	under: Functor | null,
 	force: boolean,
-): CoercedCompositionResult | null {
+): CoercionResult | null {
 	assertFn(fn.type);
 	const { wrap, unwrap, map } = under ?? idFunctor;
 	const inputInner = unwrap(input);
@@ -271,7 +289,7 @@ function coerceInput_(
 					coercedInner,
 					inputInner,
 				);
-				let mOut: CoercedCompositionMode;
+				let mOut: CoercionMode;
 				const denotation = λ(input, inputVal => {
 					assertFn(cont.type);
 					// We're going to have to do something with the effect that floats to
@@ -534,7 +552,7 @@ function coerceInput(
 	inputSide: 'left' | 'right' | 'out',
 	mode: CompositionMode,
 	force = false,
-): CoercedCompositionResult | null {
+): CoercionResult | null {
 	return coerceInput_(fn, input, inputSide, mode, null, force);
 }
 
@@ -618,7 +636,7 @@ function composeInner(left: ExprType, right: ExprType): CompositionResult {
 }
 
 function resolveCoercedMode(
-	mode: CoercedCompositionMode,
+	mode: CoercionMode,
 	inputSide: 'left' | 'right',
 ): CompositionMode {
 	if ('type' in mode) {
@@ -782,7 +800,7 @@ function simplifyOutput(
 			},
 			join,
 		} = monad;
-		let coerced: CoercedCompositionResult | null;
+		let coerced: CoercionResult | null;
 		if (getDistributive(out) === null) {
 			const inner = unwrap(out);
 			const coercedInner = coerceType(inner, out);
@@ -810,7 +828,7 @@ function simplifyOutput(
 			let mOut = mode;
 			let m = coercedMode;
 			while (m !== mode) {
-				const m_ = m as DerivedCoercedCompositionMode;
+				const m_ = m as DerivedCoercionMode;
 				assertFn(m_.type);
 				mOut = { mode: m_.mode, from: mOut, left, right, out: m_.type.domain };
 				m = m_.from;
@@ -826,24 +844,6 @@ function simplifyOutput(
 	}
 
 	return null;
-}
-
-export interface CompositionResult {
-	denotation: Expr;
-	mode: CompositionMode;
-}
-
-interface DerivedCoercedCompositionMode {
-	mode: DerivedMode;
-	from: CoercedCompositionMode;
-	type: ExprType;
-}
-
-type CoercedCompositionMode = CompositionMode | DerivedCoercedCompositionMode;
-
-export interface CoercedCompositionResult {
-	denotation: Expr;
-	mode: CoercedCompositionMode;
 }
 
 function compose_(left: Expr, right: Expr): CompositionResult {
