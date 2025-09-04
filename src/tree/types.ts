@@ -239,3 +239,13 @@ export function assertLabel(tree: Tree, label: Label): void {
 		throw new Impossible(`Expected ${label} but found ${tree.label}`);
 	}
 }
+
+/**
+ * Given a tree node that is supposed to be a leaf, but might actually be a leaf
+ * wrapped in several layers of free modifiers, extract the actual leaf.
+ */
+export function getLeaf(tree: StrictTree): Leaf {
+	if ('word' in tree) return tree;
+	if (tree.left.label === tree.label) return getLeaf(tree.left);
+	throw new Impossible(`Unexpected non-leaf ${tree.label}`);
+}

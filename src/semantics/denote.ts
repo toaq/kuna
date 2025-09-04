@@ -15,6 +15,7 @@ import {
 	type StrictTree,
 	type Word,
 	assertLeaf,
+	getLeaf,
 } from '../tree';
 import { compose } from './compose';
 import {
@@ -347,15 +348,16 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 		if (leaf.word.bare === '◌') {
 			if (cCommand.label === 'word') {
-				assertLeaf(cCommand);
-				if (cCommand.word.covert) throw new Impossible('Covert name');
-				if (cCommand.word.entry === undefined)
-					throw new Unrecognized(`name: ${cCommand.word.text}`);
-				const word = cCommand.word.entry.toaq;
+				const word = getLeaf(cCommand);
+				assertLeaf(word);
+				if (word.word.covert) throw new Impossible('Covert name');
+				if (word.word.entry === undefined)
+					throw new Unrecognized(`name: ${word.word.text}`);
+				const verb = word.word.entry.toaq;
 				return λ('e', () =>
 					ref(
-						{ type: 'name', verb: word },
-						λ(Int(Pl('e')), x => wrapInBindings(v(x), v(x), cCommand.word)),
+						{ type: 'name', verb },
+						λ(Int(Pl('e')), x => wrapInBindings(v(x), v(x), word.word)),
 					),
 				);
 			}

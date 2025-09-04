@@ -1,5 +1,6 @@
 import { Impossible } from '../core/error';
 import {
+	type Branch,
 	type StrictTree,
 	type Tree,
 	assertBranch,
@@ -13,6 +14,32 @@ import { fixSerial } from './serial';
 
 const pluralN = makeNull('𝘯', 'PL');
 const singularN = makeNull('𝘯', 'SG');
+
+function insertLittleN(
+	left: StrictTree,
+	right: StrictTree,
+	tree: Branch<Tree>,
+): StrictTree | null {
+	if ('left' in left) {
+		const result = insertLittleN(left.left, left.right, left);
+		if (result === null) return null;
+		return { label: tree.label, left: result, right, source: tree.source };
+	}
+	if (left.word.covert) throw new Impossible('Covert D');
+	if (left.label !== 'D' || right.label === 'word') return null;
+	const d = left.word.entry?.toaq;
+	return {
+		label: tree.label,
+		left,
+		right: {
+			label: '𝘯P',
+			left: d === 'tú' ? singularN : pluralN,
+			right,
+			source: right.source,
+		},
+		source: tree.source,
+	};
+}
 
 /**
  * Recurses down a parsed syntax tree to recover the deep structure.
@@ -69,21 +96,9 @@ class Recoverer {
 			const right = this.recover(tree.right);
 
 			// Insert 𝘯 in DPs
-			if (tree.label === 'DP' && tree.right.label !== 'word') {
-				assertLeaf(left);
-				if (left.word.covert) throw new Impossible('Covert D');
-				const d = left.word.entry?.toaq;
-				return {
-					label: 'DP',
-					left,
-					right: {
-						label: '𝘯P',
-						left: d === 'tú' ? singularN : pluralN,
-						right,
-						source: right.source,
-					},
-					source: tree.source,
-				};
+			if (tree.label === 'DP') {
+				const result = insertLittleN(left, right, tree);
+				if (result !== null) return result;
 			}
 
 			const fixed = { label: tree.label, left, right, source: tree.source };
