@@ -53,6 +53,7 @@ import {
 	Int,
 	Pl,
 	Qn,
+	address,
 	app,
 	ask,
 	assertFn,
@@ -636,6 +637,8 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 				return app(empathize, base);
 		}
 	}
+
+	if (leaf.label === 'Vocative') return address;
 
 	if (leaf.label === 'kıo') return bg;
 

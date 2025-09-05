@@ -203,18 +203,18 @@ export function makevP(
 	reject: unknown,
 	depth: 'main' | 'sub',
 ) {
-	let [args, adjpsR] = rest ?? [[], []];
-	args = args.filter(x => x.label !== 'VocativeP');
+	const [args, adjpsR] = rest ?? [[], []];
+	const argCount = args.filter(x => x.label !== 'VocativeP').length;
 
 	const arity = (serial as any).arity;
 	if (arity !== undefined) {
 		// Disallow overfilling clauses:
-		if (args.length > arity) {
+		if (argCount > arity) {
 			return reject;
 		}
 
 		// Disallow underfilling subclauses:
-		if (depth === 'sub' && args.length !== arity) {
+		if (depth === 'sub' && argCount !== arity) {
 			return reject;
 		}
 	}

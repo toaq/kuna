@@ -169,6 +169,7 @@ interface Constant extends ExprBase {
 		| 'and_map'
 		| 'and_then'
 		| 'salient'
+		| 'address'
 		| 'topic'
 		| 'bg'
 		| 'contrast'

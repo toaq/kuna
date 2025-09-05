@@ -124,3 +124,7 @@ test('interjections', () => {
 test('parentheticals', () => {
 	snapshot('Kóacao (kïo he cho jí báq koacao kı) bï baı jí báq nıaopoq.');
 });
+
+test('vocatives', () => {
+	snapshot('Buetı jí hóı máma.');
+});

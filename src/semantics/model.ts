@@ -911,6 +911,16 @@ export function salient(inner: ExprType): Expr {
 	};
 }
 
+/**
+ * Indicates who the current addressees are within the deictic context.
+ */
+export const address: Expr = {
+	head: 'constant',
+	type: Fn(Pl('e'), Dx('()')),
+	scope: [],
+	name: 'address',
+};
+
 export function topic(inner: ExprType): Expr {
 	return {
 		head: 'constant',
