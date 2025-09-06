@@ -1,15 +1,23 @@
 import { Impossible } from '../core/error';
 import {
+	Pair,
 	among,
+	and,
 	andMap,
 	andThen,
 	app,
+	assertDx,
 	assertDxOrAct,
 	assertPl,
 	every,
 	flatMap,
 	implies,
 	map,
+	or,
+	pair,
+	single,
+	topic,
+	trueExpr,
 	unbind,
 	unindef,
 	unpair,
@@ -128,6 +136,115 @@ function pairlikeDeconstructor(
 	}
 }
 
+interface DxResult {
+	tupleDx: Expr;
+	cont: Expr;
+}
+
+function extractDxResult_(e: Expr, cont: Expr, depth: number): DxResult | null {
+	// _ x (λy _)
+	if (
+		e.head === 'apply' &&
+		e.fn.head === 'apply' &&
+		e.fn.fn.head === 'constant' &&
+		e.arg.head === 'lambda'
+	) {
+		// and_then x (λy f)
+		if (e.fn.fn.name === 'and_then') {
+			const result = extractDxResult_(e.arg.body, cont, depth + 1);
+			return (
+				result && {
+					tupleDx: andThen(
+						e.fn.arg,
+						λ(e.arg.param, () => result.tupleDx),
+					),
+					cont: result.cont,
+				}
+			);
+		}
+
+		// unpair x (λy λz f)
+		// Needed to fully reduce Topic complements containing donkey DPs
+		if (e.fn.fn.name === 'unpair' && e.arg.body.head === 'lambda') {
+			const y = e.arg.param;
+			const z = e.arg.body.param;
+			const result = extractDxResult_(e.arg.body.body, cont, depth + 2);
+			return (
+				result && {
+					tupleDx: unpair(
+						e.fn.arg,
+						λ(y, () => λ(z, () => result.tupleDx)),
+					),
+					cont: result.cont,
+				}
+			);
+		}
+
+		// and_map x (λy f)
+		if (e.fn.fn.name === 'and_map') {
+			let tuple: Expr = {
+				head: 'variable',
+				type: e.arg.param,
+				scope: [e.arg.param],
+				index: 0,
+			};
+			let tupleSize = 1;
+			const mapping = [0];
+			for (let i = 0; i < e.scope.length; i++) {
+				if (e.arg.scope[i] !== undefined) {
+					const scope = new Array<ExprType>(i + 2);
+					scope[i + 1] = e.arg.scope[i]!;
+					tuple = pair(
+						{ head: 'variable', type: scope[i + 1], scope, index: i + 1 },
+						tuple,
+					);
+					mapping[i + 1] = tupleSize;
+					tupleSize++;
+				}
+			}
+			let cont_ = substitute(
+				tupleSize * 2 - 1,
+				rewriteScope(e.arg.body, i =>
+					i > depth + 1
+						? i - depth - 1 + 2 * tupleSize - 1
+						: Math.max(0, mapping[i] * 2 - 1),
+				),
+				rewriteScope(cont, i => i + 2 * tupleSize - 1),
+			);
+			let type = e.arg.param;
+			for (let i = 0; i < e.scope.length; i++) {
+				if (e.arg.scope[i] !== undefined) {
+					const x = e.arg.scope[i]!;
+					const y = type;
+					type = Pair(x, y);
+					cont_ = unpair(
+						{ head: 'variable', type, scope: [type], index: 0 },
+						λ(x, () => λ(y, () => cont_)),
+					);
+				}
+			}
+			return {
+				tupleDx: andMap(
+					e.fn.arg,
+					λ(e.arg.param, () => tuple),
+				),
+				cont: cont_,
+			};
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Given a Dx expression like "and_then w (λx and_map y (λz f))", extract the
+ * result out of the final and_map lambda to leave us with the expressions
+ * "and_then w (λx and_map y (λz pair x z))" and "unpair p (λx λz f)".
+ */
+function extractDxResult(e: Expr, cont: Expr): DxResult | null {
+	return extractDxResult_(e, cont, 0);
+}
+
 function reduce_(expr: Expr): Expr {
 	switch (expr.head) {
 		case 'lambda': {
@@ -156,8 +273,6 @@ function reduce_(expr: Expr): Expr {
 						(outer === 'int' && inner === 'unint') ||
 						(outer === 'unref' && inner === 'ref') ||
 						(outer === 'ref' && inner === 'unref') ||
-						(outer === 'unnf' && inner === 'nf') ||
-						(outer === 'nf' && inner === 'unnf') ||
 						(outer === 'uncont' && inner === 'cont') ||
 						(outer === 'cont' && inner === 'uncont')
 					)
@@ -317,17 +432,36 @@ function reduce_(expr: Expr): Expr {
 				}
 			}
 
-			// and_map x (λy y) = x
+			// _ (single x) f
 			if (
 				expr.fn.head === 'apply' &&
 				expr.fn.fn.head === 'constant' &&
-				expr.fn.fn.name === 'and_map' &&
-				expr.arg.head === 'lambda' &&
-				expr.arg.body.head === 'variable' &&
-				expr.arg.body.index === 0
+				expr.fn.arg.head === 'apply' &&
+				expr.fn.arg.fn.head === 'constant' &&
+				expr.fn.arg.fn.name === 'single'
 			) {
-				return reduce(expr.fn.arg);
+				const f = expr.arg;
+				const x = expr.fn.arg.arg;
+
+				// map (single x) f = single (f x)
+				if (expr.fn.fn.name === 'map') return reduce(single(app(f, x)));
+
+				// flat_map (single x) f = f x
+				if (expr.fn.fn.name === 'flat_map') return reduce(app(f, x));
 			}
+
+			// map/and_map x (λy y/unit) = x
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				(expr.fn.fn.name === 'map' || expr.fn.fn.name === 'and_map') &&
+				expr.arg.head === 'lambda' &&
+				((expr.arg.body.head === 'variable' && expr.arg.body.index === 0) ||
+					(expr.arg.param === '()' &&
+						expr.arg.body.head === 'constant' &&
+						expr.arg.body.name === 'unit'))
+			)
+				return reduce(expr.fn.arg);
 
 			// f (unpair x (λy λz g)) = unpair x (λy λz f g)
 			// and so on for Indef, Qn, Bind
@@ -353,6 +487,47 @@ function reduce_(expr: Expr): Expr {
 						deconstruct(
 							x,
 							λ(y, () => λ(z, () => app(ff, g))),
+						),
+					);
+				}
+			}
+
+			// f (λw unpair x (λy λz g)) = unpair x (λy λz f (λw g))
+			// and so on for Indef, Qn, Bind
+			if (
+				expr.arg.head === 'lambda' &&
+				expr.arg.body.head === 'apply' &&
+				expr.arg.body.fn.head === 'apply' &&
+				expr.arg.body.fn.fn.head === 'constant' &&
+				expr.arg.body.fn.arg.scope[0] === undefined &&
+				expr.arg.body.arg.head === 'lambda' &&
+				expr.arg.body.arg.body.head === 'lambda'
+			) {
+				const deconstruct = pairlikeDeconstructor(expr.arg.body.fn.fn.name);
+				if (deconstruct !== null) {
+					const x = expr.arg.body.fn.arg;
+					const xx = rewriteScope(x, i => {
+						if (i === 0) throw new Impossible('Variable deleted');
+						return i - 1;
+					});
+					const f = expr.fn;
+					const ff = rewriteScope(f, i => i + 2);
+					const g = expr.arg.body.arg.body.body;
+					const gg = rewriteScope(g, i => (i === 2 ? 0 : i < 2 ? i + 1 : i));
+					const w = expr.arg.param;
+					const y = expr.arg.body.arg.param;
+					const z = expr.arg.body.arg.body.param;
+					return reduce(
+						deconstruct(
+							xx,
+							λ(y, () =>
+								λ(z, () =>
+									app(
+										ff,
+										λ(w, () => gg),
+									),
+								),
+							),
 						),
 					);
 				}
@@ -488,60 +663,171 @@ function reduce_(expr: Expr): Expr {
 				expr.arg.body.fn.arg.fn.fn.name === 'among' &&
 				expr.arg.body.fn.arg.fn.arg.head === 'variable' &&
 				expr.arg.body.fn.arg.fn.arg.index === 0 &&
-				expr.arg.body.fn.arg.arg.head === 'apply' &&
-				expr.arg.body.fn.arg.arg.fn.head === 'apply' &&
-				expr.arg.body.fn.arg.arg.fn.fn.head === 'constant'
+				expr.arg.body.fn.arg.arg.head === 'apply'
 			) {
-				const x = expr.arg.body.fn.arg.arg.fn.arg;
 				const f = expr.arg.body.fn.arg.arg.arg;
 				const g = expr.arg.body.arg;
 				const originalDomain = expr.arg.param;
 
-				// every (λy implies (among y (map x f)) g) = every (λz implies (among z x) ((λy g) (f z)))
+				// every (λy implies (among y (single f)) g) = (λy g) f
 				if (
-					expr.arg.body.fn.arg.arg.fn.fn.name === 'map' &&
-					x.scope[0] === undefined &&
+					expr.arg.body.fn.arg.arg.fn.head === 'constant' &&
+					expr.arg.body.fn.arg.arg.fn.name === 'single' &&
 					f.scope[0] === undefined
 				) {
-					assertPl(x.type);
-					const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
+					const ff = rewriteScope(f, i => {
+						if (i === 0) throw new Impossible('Variable deleted');
+						return i - 1;
+					});
 					return reduce(
-						every(
-							λ(x.type.inner, z =>
-								app(
-									app(implies, among(v(z), x)),
-									app(
-										λ(originalDomain, () => gg),
-										app(f, v(z)),
-									),
-								),
-							),
+						app(
+							λ(originalDomain, () => g),
+							ff,
 						),
 					);
 				}
 
-				// every (λy implies (among y (flat_map x f)) g) = every (λz implies (among z x) (every (λy implies (among y (f z)) g)))
+				// every (λy implies (among y (_ x f)) g)
 				if (
-					expr.arg.body.fn.arg.arg.fn.fn.name === 'flat_map' &&
-					x.scope[0] === undefined
+					expr.arg.body.fn.arg.arg.fn.head === 'apply' &&
+					expr.arg.body.fn.arg.arg.fn.fn.head === 'constant'
 				) {
-					assertPl(x.type);
-					const ff = rewriteScope(f, i => (i === 0 ? 0 : i + 1));
-					const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
-					return reduce(
-						every(
-							λ(x.type.inner, z =>
-								app(
-									app(implies, among(v(z), x)),
-									every(
-										λ(originalDomain, y =>
-											app(app(implies, among(v(y), app(ff, v(z)))), gg),
+					const x = expr.arg.body.fn.arg.arg.fn.arg;
+
+					// every (λy implies (among y (map x f)) g) = every (λz implies (among z x) ((λy g) (f z)))
+					if (
+						expr.arg.body.fn.arg.arg.fn.fn.name === 'map' &&
+						x.scope[0] === undefined &&
+						f.scope[0] === undefined
+					) {
+						assertPl(x.type);
+						const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
+						return reduce(
+							every(
+								λ(x.type.inner, z =>
+									app(
+										app(implies, among(v(z), x)),
+										app(
+											λ(originalDomain, () => gg),
+											app(f, v(z)),
 										),
 									),
 								),
 							),
-						),
+						);
+					}
+
+					// every (λy implies (among y (flat_map x f)) g) = every (λz implies (among z x) (every (λy implies (among y (f z)) g)))
+					if (
+						expr.arg.body.fn.arg.arg.fn.fn.name === 'flat_map' &&
+						x.scope[0] === undefined
+					) {
+						assertPl(x.type);
+						const ff = rewriteScope(f, i => (i === 0 ? 0 : i + 1));
+						const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
+						return reduce(
+							every(
+								λ(x.type.inner, z =>
+									app(
+										app(implies, among(v(z), x)),
+										every(
+											λ(originalDomain, y =>
+												app(app(implies, among(v(y), app(ff, v(z)))), gg),
+											),
+										),
+									),
+								),
+							),
+						);
+					}
+				}
+			}
+
+			// among _ _
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'among'
+			) {
+				// among _ universe = true
+				if (expr.arg.head === 'constant' && expr.arg.name === 'universe')
+					return trueExpr;
+
+				// among x (_ y z)
+				if (
+					expr.arg.head === 'apply' &&
+					expr.arg.fn.head === 'apply' &&
+					expr.arg.fn.fn.head === 'constant'
+				) {
+					const amongX = expr.fn;
+					const x = expr.fn.arg;
+					const y = expr.arg.fn.arg;
+					const z = expr.arg.arg;
+
+					// among x (filter y z) = and (among x y) (z x)
+					if (expr.arg.fn.fn.name === 'filter')
+						return reduce(app(app(and, app(amongX, y)), app(z, x)));
+
+					// among x (union y z) = or (among x y) (among x z)
+					if (expr.arg.fn.fn.name === 'union')
+						return reduce(app(app(or, among(x, y)), among(x, z)));
+				}
+			}
+
+			// and _ _
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'and'
+			) {
+				// and true f = f
+				if (expr.fn.arg.head === 'constant' && expr.fn.arg.name === 'true')
+					return reduce(expr.arg);
+				// and f true = f
+				if (expr.arg.head === 'constant' && expr.arg.name === 'true')
+					return reduce(expr.fn.arg);
+			}
+
+			// or _ _
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				expr.fn.fn.name === 'or'
+			) {
+				// or false f = f
+				if (expr.fn.arg.head === 'constant' && expr.fn.arg.name === 'false')
+					return reduce(expr.arg);
+				// or f false = f
+				if (expr.arg.head === 'constant' && expr.arg.name === 'false')
+					return reduce(expr.fn.arg);
+			}
+
+			// and_map/and_then (topic x y) (λz f)
+			if (
+				expr.fn.head === 'apply' &&
+				expr.fn.fn.head === 'constant' &&
+				(expr.fn.fn.name === 'and_map' || expr.fn.fn.name === 'and_then') &&
+				expr.fn.arg.head === 'apply' &&
+				expr.fn.arg.fn.head === 'apply' &&
+				expr.fn.arg.fn.fn.head === 'constant' &&
+				expr.fn.arg.fn.fn.name === 'topic' &&
+				expr.arg.head === 'lambda'
+			) {
+				const extracted = extractDxResult(
+					reduce(expr.fn.arg.arg),
+					reduce(expr.arg.body),
+				);
+				if (extracted !== null) {
+					assertDx(extracted.tupleDx.type);
+					const tuple = extracted.tupleDx.type.inner;
+					const result = (expr.fn.fn.name === 'and_map' ? andMap : andThen)(
+						app(app(topic(tuple), expr.fn.arg.fn.arg), extracted.tupleDx),
+						λ(tuple, () => reduce(extracted.cont)),
 					);
+					// Assert that the result is fully reduced to prevent an infinite loop
+					// where we would try to extract the result from the new tupleDx once more
+					(result as ReducedExpr)[reduced] = result;
+					return result;
 				}
 			}
 

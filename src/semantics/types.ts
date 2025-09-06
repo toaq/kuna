@@ -1,13 +1,14 @@
 import { bare } from '../morphology/tokenize';
 import { Tone, inTone } from '../morphology/tone';
 import type { Branch, Leaf } from '../tree';
-import type { CompositionStep } from './compose';
 
 export type AnimacyClass = 'animate' | 'inanimate' | 'abstract' | 'descriptive';
 
 export type Binding =
 	| { type: 'resumptive' }
+	| { type: 'covert resumptive' }
 	| { type: 'gap' }
+	| { type: 'subject' }
 	| { type: 'reflexive' }
 	| { type: 'name'; verb: string }
 	| { type: 'animacy'; class: AnimacyClass }
@@ -30,8 +31,12 @@ export function bindingToString(b: Binding): string {
 	switch (b.type) {
 		case 'resumptive':
 			return 'hóa';
+		case 'covert resumptive':
+			return 'PRO';
 		case 'gap':
 			return 'já';
+		case 'subject':
+			return 'áqna';
 		case 'reflexive':
 			return 'áq';
 		case 'name':
@@ -85,9 +90,6 @@ export type ExprType =
 	// An expression which references a variable and behaves in local syntax like
 	// {inner}; isomorphic to {binding} × (Int Pl e → {inner}).
 	| { head: 'ref'; binding: Binding; inner: ExprType }
-	// A non-finite expression which behaves in local syntax like {inner} and
-	// contains a gap of type {domain}; isomorphic to {domain} → {inner}.
-	| { head: 'nf'; domain: ExprType; inner: ExprType }
 	// An expression which references an element of the discourse context through
 	// deixis; isomorphic to context → {inner}.
 	| { head: 'dx'; inner: ExprType }
@@ -145,8 +147,12 @@ interface Constant extends ExprBase {
 		| 'unint'
 		| 'cont'
 		| 'uncont'
+		| 'universe'
+		| 'single'
+		| 'union'
 		| 'map'
 		| 'flat_map'
+		| 'filter'
 		| 'indef'
 		| 'unindef'
 		| 'qn'
@@ -159,15 +165,23 @@ interface Constant extends ExprBase {
 		| 'unbind'
 		| 'ref'
 		| 'unref'
-		| 'nf'
-		| 'unnf'
+		| 'pure'
 		| 'and_map'
 		| 'and_then'
 		| 'salient'
+		| 'address'
+		| 'topic'
 		| 'bg'
+		| 'contrast'
+		| 'ask'
+		| 'empathize'
+		| 'unit'
+		| 'true'
+		| 'false'
 		| 'not'
 		| 'and'
 		| 'or'
+		| 'xor'
 		| 'implies'
 		| 'equals'
 		| 'among'
@@ -184,40 +198,55 @@ export type Expr = Variable | Lambda | Apply | Lexeme | Quote | Constant;
 /**
  * A tree with denotations.
  */
-export type DTree = (
-	| Leaf
-	| (Branch<DTree> & { mode: CompositionMode; steps?: CompositionStep[] })
-) & {
+export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode })) & {
 	denotation: Expr;
 };
 
-export type CompositionMode =
+export type BasicMode =
 	| '>' // Functional application
 	| '<' // Reverse functional application
 	| '+' // Semigroup combination
-	| 'S' // Subject setting
-	| ['L', CompositionMode] // Lift left into functor
-	| ['R', CompositionMode] // Lift right into functor
-	| ['A', CompositionMode] // Sequence effects via applicative functor
-	| ['←L', CompositionMode] // Pull distributive functor out of functor on the left
-	| ['←R', CompositionMode] // Pull distributive functor out of functor on the right
-	| ['←', CompositionMode] // Pull distributive functor out of functor
-	| ['→L', CompositionMode] // Push traversable functor into applicative on the left
-	| ['→R', CompositionMode] // Push traversable functor into applicative on the right
-	| ['→', CompositionMode] // Push traversable functor into applicative
-	| ['↓L', CompositionMode] // Extract from effect on the left
-	| ['↓R', CompositionMode] // Extract from effect on the right
-	| ['↓', CompositionMode] // Extract from effect
-	| ['JL', CompositionMode] // Join monads on the left
-	| ['JR', CompositionMode] // Join monads on the right
-	| ['J', CompositionMode] // Join monads
-	| ['Z', CompositionMode]; // Resolve binding relationship
+	| 'S'; // Subject setting
+
+export type DerivedMode =
+	| 'L' // Map left over functor
+	| 'R' // Map right over functor
+	| 'A' // Sequence effects via applicative functor
+	| '↑L' // Lift left into applicative functor
+	| '↑R' // Lift right into applicative functor
+	| '←L' // Pull distributive functor out of functor on the left
+	| '←R' // Pull distributive functor out of functor on the right
+	| '←' // Pull distributive functor out of functor
+	| '→L' // Push traversable functor into applicative on the left
+	| '→R' // Push traversable functor into applicative on the right
+	| '→' // Push traversable functor into applicative
+	| '↓L' // Extract from effect on the left
+	| '↓R' // Extract from effect on the right
+	| '↓' // Extract from effect
+	| 'JL' // Join monads on the left
+	| 'JR' // Join monads on the right
+	| 'J' // Join monads
+	| 'Z' // Resolve binding relationship
+	| "Z'" // Resolve inverted binding relationship
+	| 'CL' // Convert effect on left to continuation
+	| 'CR'; // Convert effect on right to continuation
+
+interface CompositionTypes {
+	left: ExprType;
+	right: ExprType;
+	out: ExprType;
+}
+
+export type CompositionMode = CompositionTypes &
+	({ mode: BasicMode } | { mode: DerivedMode; from: CompositionMode });
 
 export function modeToString(mode: CompositionMode): string {
-	return typeof mode === 'string'
-		? mode
-		: // @ts-ignore TypeScript can't handle the infinite types here
-			mode
-				.flat(Number.POSITIVE_INFINITY)
-				.join(' ');
+	const modes: string[] = [];
+	let m = mode;
+	while ('from' in m) {
+		modes.push(m.mode);
+		m = m.from;
+	}
+	modes.push(m.mode);
+	return modes.join(' ');
 }

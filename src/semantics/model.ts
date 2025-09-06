@@ -9,8 +9,12 @@ export function bindingsEqual(b1: Binding, b2: Binding): boolean {
 	switch (b1.type) {
 		case 'resumptive':
 			return b2.type === 'resumptive';
+		case 'covert resumptive':
+			return b2.type === 'covert resumptive';
 		case 'gap':
 			return b2.type === 'gap';
+		case 'subject':
+			return b2.type === 'subject';
 		case 'reflexive':
 			return b2.type === 'reflexive';
 		case 'name':
@@ -56,10 +60,6 @@ export function Bind(binding: Binding, inner: ExprType): ExprType {
 
 export function Ref(binding: Binding, inner: ExprType): ExprType {
 	return { head: 'ref', binding, inner };
-}
-
-export function Nf(domain: ExprType, inner: ExprType): ExprType {
-	return { head: 'nf', domain, inner };
 }
 
 export function Dx(inner: ExprType): ExprType {
@@ -121,12 +121,6 @@ export function subtype(t1: ExprType, t2: ExprType): boolean {
 				bindingsEqual(t1.binding, t2.binding) &&
 				subtype(t1.inner, t2.inner)
 			);
-		case 'nf':
-			return (
-				t2.head === 'nf' &&
-				subtype(t2.domain, t1.domain) &&
-				subtype(t1.inner, t2.inner)
-			);
 		case 'dx':
 			return t2.head === 'dx' && subtype(t1.inner, t2.inner);
 		case 'act':
@@ -182,12 +176,6 @@ export function typesEqual(t1: ExprType, t2: ExprType): boolean {
 			return (
 				t2.head === 'ref' &&
 				bindingsEqual(t1.binding, t2.binding) &&
-				typesEqual(t1.inner, t2.inner)
-			);
-		case 'nf':
-			return (
-				t2.head === 'nf' &&
-				typesEqual(t2.domain, t1.domain) &&
 				typesEqual(t1.inner, t2.inner)
 			);
 		case 'dx':
@@ -276,13 +264,6 @@ export function assertRef(
 ): asserts type is { head: 'ref'; binding: Binding; inner: ExprType } {
 	if (typeof type === 'string' || type.head !== 'ref')
 		throw new Impossible(`${typeToPlainText(type)} is not a reference type`);
-}
-
-export function assertNf(
-	type: ExprType,
-): asserts type is { head: 'nf'; domain: ExprType; inner: ExprType } {
-	if (typeof type === 'string' || type.head !== 'nf')
-		throw new Impossible(`${typeToPlainText(type)} is not a non-finite type`);
 }
 
 export function assertDx(
@@ -485,6 +466,48 @@ export function uncont(cont: Expr): Expr {
 }
 
 /**
+ * Creates a plurality containing every value of a given type.
+ */
+export function universe(inner: ExprType): Expr {
+	return { head: 'constant', type: Pl(inner), scope: [], name: 'universe' };
+}
+
+/**
+ * Creates a plurality containing a single element.
+ */
+export function single(element: Expr): Expr {
+	return app(
+		{
+			head: 'constant',
+			type: Fn(element.type, Pl(element.type)),
+			scope: [],
+			name: 'single',
+		},
+		element,
+	);
+}
+
+/**
+ * Creates a plurality containing all elements found in the left plurality
+ * and/or the right plurality.
+ */
+export function union(left: Expr, right: Expr): Expr {
+	assertPl(left.type);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(left.type, Fn(left.type, left.type)),
+				scope: [],
+				name: 'union',
+			},
+			left,
+		),
+		right,
+	);
+}
+
+/**
  * Maps a plurality to another plurality by projecting each element.
  */
 export function map(pl: Expr, project: Expr): Expr {
@@ -524,6 +547,25 @@ export function flatMap(pl: Expr, project: Expr): Expr {
 			pl,
 		),
 		project,
+	);
+}
+
+/**
+ * Filters the elements of a plurality by a given predicate.
+ */
+export function filter(pl: Expr, predicate: Expr): Expr {
+	assertPl(pl.type);
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(pl.type, Fn(Fn(pl.type.inner, 't'), pl.type)),
+				scope: [],
+				name: 'filter',
+			},
+			pl,
+		),
+		predicate,
 	);
 }
 
@@ -797,35 +839,17 @@ export function unref(ref: Expr): Expr {
 }
 
 /**
- * Constructs a non-finite expression.
+ * Lifts a value into a deixis or speech act operation that does nothing.
  */
-export function nf(body: Expr): Expr {
-	assertFn(body.type);
-	const { domain, range: inner } = body.type;
+export function pure(e: Expr, head: 'dx' | 'act'): Expr {
 	return app(
 		{
 			head: 'constant',
-			type: Fn(body.type, Nf(domain, inner)),
+			type: Fn(e.type, { head, inner: e.type }),
 			scope: [],
-			name: 'nf',
+			name: 'pure',
 		},
-		body,
-	);
-}
-
-/**
- * Deconstructs a non-finite expression.
- */
-export function unnf(nf: Expr): Expr {
-	assertNf(nf.type);
-	return app(
-		{
-			head: 'constant',
-			type: Fn(nf.type, Fn(nf.type.domain, nf.type.inner)),
-			scope: [],
-			name: 'unnf',
-		},
-		nf,
+		e,
 	);
 }
 
@@ -887,11 +911,91 @@ export function salient(inner: ExprType): Expr {
 	};
 }
 
+/**
+ * Indicates who the current addressees are within the deictic context.
+ */
+export const address: Expr = {
+	head: 'constant',
+	type: Fn(Pl('e'), Dx('()')),
+	scope: [],
+	name: 'address',
+};
+
+export function topic(inner: ExprType): Expr {
+	return {
+		head: 'constant',
+		type: Fn(Pl('e'), Fn(Dx(inner), Dx(inner))),
+		scope: [],
+		name: 'topic',
+	};
+}
+
 export const bg: Expr = {
 	head: 'constant',
 	type: Fn(Act('()'), Act('()')),
 	scope: [],
 	name: 'bg',
+};
+
+/**
+ * Speech act claiming that there is a certain contrast between the two
+ * arguments.
+ */
+export function contrast(left: Expr, right: Expr): Expr {
+	return app(
+		app(
+			{
+				head: 'constant',
+				type: Fn(left.type, Fn(left.type, Act('()'))),
+				scope: [],
+				name: 'contrast',
+			},
+			left,
+		),
+		right,
+	);
+}
+
+/**
+ * Asks whether someone is in the position to produce a given speech act.
+ */
+export const ask: Expr = {
+	head: 'constant',
+	type: Fn(Act('()'), Act('()')),
+	scope: [],
+	name: 'ask',
+};
+
+/**
+ * Expresses empathy with someone by acknowledging that they are in the position
+ * to produce a given speech act.
+ */
+export const empathize: Expr = {
+	head: 'constant',
+	type: Fn(Act('()'), Act('()')),
+	scope: [],
+	name: 'empathize',
+};
+
+export const unit: Expr = {
+	head: 'constant',
+	type: '()',
+	scope: [],
+	name: 'unit',
+};
+
+export const trueExpr: Expr = {
+	head: 'constant',
+	type: 't',
+	scope: [],
+	name: 'true',
+};
+
+export const falseExpr: Expr = {
+	head: 'constant',
+	type: 't',
+	scope: [],
+	name: 'false',
 };
 
 export const not: Expr = {
@@ -913,6 +1017,13 @@ export const or: Expr = {
 	type: Fn('t', Fn('t', 't')),
 	scope: [],
 	name: 'or',
+};
+
+export const xor: Expr = {
+	head: 'constant',
+	type: Fn('t', Fn('t', 't')),
+	scope: [],
+	name: 'xor',
 };
 
 export const implies: Expr = {

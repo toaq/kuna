@@ -1,14 +1,45 @@
 import { Impossible } from '../core/error';
 import {
+	type Branch,
 	type StrictTree,
 	type Tree,
 	assertBranch,
 	assertLeaf,
 	findHead,
+	makeNull,
 	pro,
 } from '../tree';
 import { moveUp } from '../tree/movement';
 import { fixSerial } from './serial';
+
+const pluralN = makeNull('𝘯', 'PL');
+const singularN = makeNull('𝘯', 'SG');
+
+function insertLittleN(
+	left: StrictTree,
+	right: StrictTree,
+	tree: Branch<Tree>,
+): StrictTree | null {
+	if ('left' in left) {
+		const result = insertLittleN(left.left, left.right, left);
+		if (result === null) return null;
+		return { label: tree.label, left: result, right, source: tree.source };
+	}
+	if (left.word.covert) throw new Impossible('Covert D');
+	if (left.label !== 'D' || right.label === 'word') return null;
+	const d = left.word.entry?.toaq;
+	return {
+		label: tree.label,
+		left,
+		right: {
+			label: '𝘯P',
+			left: d === 'tú' ? singularN : pluralN,
+			right,
+			source: right.source,
+		},
+		source: tree.source,
+	};
+}
 
 /**
  * Recurses down a parsed syntax tree to recover the deep structure.
@@ -63,17 +94,21 @@ class Recoverer {
 
 			const left = this.recover(tree.left);
 			const right = this.recover(tree.right);
+
+			// Insert 𝘯 in DPs
+			if (tree.label === 'DP') {
+				const result = insertLittleN(left, right, tree);
+				if (result !== null) return result;
+			}
+
 			const fixed = { label: tree.label, left, right, source: tree.source };
 
 			// v-to-Asp movement
-			if (tree.label === 'AspP' && right.label === '𝘷P') {
+			if (tree.label === 'AspP' && right.label === '𝘷P')
 				this.move(findHead(right), left);
-			}
-
 			// Asp-to-T movement
-			if (tree.label === 'TP' && right.label === 'AspP') {
+			if (tree.label === 'TP' && right.label === 'AspP')
 				this.move(findHead(right), left);
-			}
 
 			return fixed;
 		}

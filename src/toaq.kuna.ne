@@ -35,9 +35,12 @@ const {
 	makeBranchCovertLeft,
 	makeConn,
 	makeDiscourse,
-	makeEmptynP,
+	makeEmptyCP,
+	makeFree,
+	makeFreeFragment,
 	makeLeaf,
 	makeOptLeaf,
+	makeParen,
 	makePrefixLeaf,
 	makePrefixObjectIncorp,
 	makePrefixP,
@@ -60,7 +63,8 @@ const lexer = new ToaqTokenizer();
 # Pass your lexer object using the @lexer option:
 @lexer lexer
 
-Fragment -> Free Fragment {% a => a[1] %}
+Fragment -> Free {% id %}
+Fragment -> Free Fragment {% makeFreeFragment %}
 Fragment -> Discourse {% id %}
 Fragment -> Argument {% id %}
 Fragment -> AdjunctPcon {% id %}
@@ -82,35 +86,31 @@ CPsub -> EvA vP<sub> {% makeBranch('EvAP') %}
 CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C') %}
 
 # jí
-DP -> Pronoun Free:* {% id %}
+DP -> Pronoun Free:* {% makeFree(id) %}
 # háo/hụ́ꝡa
 DP -> WordD Word {% makeBranch('DP') %}
 # sá ...
-DP -> D nPopt {% makeBranch('DP') %}
-DP -> Dtonal nP {% makeBranch('DP') %}
+DP -> D CPdetopt {% makeBranch('DP') %}
+DP -> Dtonal CPdet {% makeBranch('DP') %}
 
 # jî
-DPincorp -> %incorporated_pronoun Free:* {% makeLeaf('DP') %}
+DPincorp -> %incorporated_pronoun Free:* {% makeFree(makeLeaf('DP')) %}
 # hụ̂ꝡa
 DPincorp -> WordDincorp Word {% makeBranch('DP') %}
 # sâ ...
-DPincorp -> Dincorp nPopt {% makeBranch('DP') %}
-DPincorp -> Dtonalincorp nP {% makeBranch('DP') %}
+DPincorp -> Dincorp CPdetopt {% makeBranch('DP') %}
+DPincorp -> Dtonalincorp CPdet {% makeBranch('DP') %}
 
 # ꝡá hao
-DPsub -> D nPsub {% makeBranch('DP') %}
-DPsub -> Dtonal nPsub {% makeBranch('DP') %}
+DPsub -> D CPsub {% makeBranch('DP') %}
+DPsub -> Dtonal CPsub {% makeBranch('DP') %}
 # ꝡâ hao
-DPsubincorp -> Dincorp nPsub {% makeBranch('DP') %}
-DPsubincorp -> Dtonalincorp nPsub {% makeBranch('DP') %}
+DPsubincorp -> Dincorp CPsub {% makeBranch('DP') %}
+DPsubincorp -> Dtonalincorp CPsub {% makeBranch('DP') %}
 
-# (sá) ∅ hao
-nP -> CPdet {% makeBranchCovertLeft('𝘯P', '𝘯') %}
 # (sá) ∅
-nPopt -> null {% makeEmptynP %}
-nPopt -> nP {% id %}
-# (sá) ꝡä hao
-nPsub -> CPsub {% makeBranchCovertLeft('𝘯P', '𝘯') %}
+CPdetopt -> null {% makeEmptyCP %}
+CPdetopt -> CPdet {% id %}
 # (sá) raı ꝡë hao
 CPdet -> CPdet CPsubcon {% makeBranch('CP') %}
 # (sá) ∅ hao
@@ -235,36 +235,36 @@ MoP -> Mo Text {% makeBranch('moP') %}
 Verb -> MiP {% id %}
 MiP -> Mi Word {% makeBranch('mıP') %}
 
-Adjunct -> %preposition Free:* {% makeLeaf('Adjunct') %}
-Conjunction -> %conjunction Free:* {% makeLeaf('&') %}
+Adjunct -> %preposition Free:* {% makeFree(makeLeaf('Adjunct')) %}
+Conjunction -> %conjunction Free:* {% makeFree(makeLeaf('&')) %}
 Conjunction -> PrefixNa V {% makeBranch('&(naP)') %}
-ConjunctionT1 -> %conjunction_in_t1 Free:* {% makeLeaf('&') %}
+ConjunctionT1 -> %conjunction_in_t1 Free:* {% makeFree(makeLeaf('&')) %}
 ConjunctionT1 -> PrefixNaT1 V {% makeBranch('&(naP)') %}
-ConjunctionT4 -> %conjunction_in_t4 Free:* {% makeLeaf('&') %}
+ConjunctionT4 -> %conjunction_in_t4 Free:* {% makeFree(makeLeaf('&')) %}
 ConjunctionT4 -> PrefixNaT4 V {% makeBranch('&(naP)') %}
-Asp -> %aspect Free:* {% makeLeaf('Asp') %}
-Asp_prefix -> %prefix_aspect Free:* {% makeLeaf('Asp') %}
-Bi -> %topic_marker Free:* {% makeLeaf('Topic') %}
-C -> %complementizer Free:* {% makeLeaf('C') %}
+Asp -> %aspect Free:* {% makeFree(makeLeaf('Asp')) %}
+Asp_prefix -> %prefix_aspect Free:* {% makeFree(makeLeaf('Asp')) %}
+Bi -> %topic_marker Free:* {% makeFree(makeLeaf('Topic')) %}
+C -> %complementizer Free:* {% makeFree(makeLeaf('C')) %}
 Copt -> C:? {% makeOptLeaf('C') %}
-Csub -> %subordinating_complementizer Free:* {% makeLeaf('C') %}
-D -> %determiner Free:* {% makeLeaf('D') %}
-Dincorp -> %incorporated_determiner Free:* {% makeLeaf('D') %}
-Dtonal -> %tonal_determiner Free:* {% makeLeaf('D') %}
-Dtonalincorp -> %tonal_incorporated_determiner Free:* {% makeLeaf('D') %}
+Csub -> %subordinating_complementizer Free:* {% makeFree(makeLeaf('C')) %}
+D -> %determiner Free:* {% makeFree(makeLeaf('D')) %}
+Dincorp -> %incorporated_determiner Free:* {% makeFree(makeLeaf('D')) %}
+Dtonal -> %tonal_determiner Free:* {% makeFree(makeLeaf('D')) %}
+Dtonalincorp -> %tonal_incorporated_determiner Free:* {% makeFree(makeLeaf('D')) %}
 Dprefix -> %determiner_prefix_form {% makeLeaf('D') %}
-EvA -> %event_accessor Free:* {% makeLeaf('EvA') %}
-Focus -> %focus_particle Free:* {% makeLeaf('Focus') %}
-Go -> %retroactive_cleft Free:* {% makeLeaf('𝘷') %}
-WordD -> %word_determiner Free:* {% makeLeaf('D') %}
-WordDincorp -> %incorporated_word_determiner Free:* {% makeLeaf('D') %}
-Interjection -> %interjection {% makeLeaf('Interjection') %}
-Ki -> %adjective_marker Free:* {% makeLeaf('Adjunct') %}
-Mi -> %name_verb Free:* {% makeLeaf('mı') %}
-Mo -> %text_quote Free:* {% makeLeaf('mo') %}
-Q -> %quantifier Free:* {% makeLeaf('Q') %}
-QT4 -> %quantifier_with_complement Free:* {% makeLeaf('Q') %}
-Na -> %cleft_verb Free:* {% makeLeaf('𝘷') %}
+EvA -> %event_accessor Free:* {% makeFree(makeLeaf('EvA')) %}
+Focus -> %focus_particle Free:* {% makeFree(makeLeaf('Focus')) %}
+Go -> %retroactive_cleft Free:* {% makeFree(makeLeaf('𝘷')) %}
+WordD -> %word_determiner Free:* {% makeFree(makeLeaf('D')) %}
+WordDincorp -> %incorporated_word_determiner Free:* {% makeFree(makeLeaf('D')) %}
+Interjection -> %interjection {% makeLeaf('SAP') %}
+Ki -> %adjective_marker Free:* {% makeFree(makeLeaf('Adjunct')) %}
+Mi -> %name_verb Free:* {% makeFree(makeLeaf('mı')) %}
+Mo -> %text_quote Free:* {% makeFree(makeLeaf('mo')) %}
+Q -> %quantifier Free:* {% makeFree(makeLeaf('Q')) %}
+QT4 -> %quantifier_with_complement Free:* {% makeFree(makeLeaf('Q')) %}
+Na -> %cleft_verb Free:* {% makeFree(makeLeaf('𝘷')) %}
 Prefix -> %prefix {% makePrefixLeaf %}
 Prefix -> %focus_particle_prefix_form {% makePrefixLeaf %}
 PrefixNa -> %prefix_conjunctionizer {% makePrefixLeaf %}
@@ -272,24 +272,24 @@ PrefixNaT1 -> %prefix_conjunctionizer_in_t1 {% makePrefixLeaf %}
 PrefixNaT4 -> %prefix_conjunctionizer_in_t4 {% makePrefixLeaf %}
 Pronoun -> %pronoun {% makeLeaf('DP') %}
 PronounPrefix -> %pronoun_prefix_form {% makeLeaf('DP') %}
-Roi -> %plural_coordinator Free:* {% makeLeaf('&') %}
-SA -> %illocution Free:* {% makeLeaf('SA') %}
+Roi -> %plural_coordinator Free:* {% makeFree(makeLeaf('&')) %}
+SA -> %illocution Free:* {% makeFree(makeLeaf('SA')) %}
 SAopt -> SA:? {% makeOptLeaf('SA') %}
-Sigma -> %polarity Free:* {% makeLeaf('Σ') %}
-Shu -> %word_quote Free:* {% makeLeaf('shu') %}
-T -> %tense Free:* {% makeLeaf('T') %}
-T_prefix -> %prefix_tense Free:* {% makeLeaf('T') %}
-Text -> %text Free:* {% makeLeaf('text') %}
-Teo -> %end_quote Free:* {% makeLeaf('teo') %}
-V -> %predicate Free:* {% makeLeaf('V') %}
-Voiv -> %predicatizer Free:* {% makeLeaf('V') %}
-Word -> %word Free:* {% makeLeaf('word') %}
+Sigma -> %polarity Free:* {% makeFree(makeLeaf('Σ')) %}
+Shu -> %word_quote Free:* {% makeFree(makeLeaf('shu')) %}
+T -> %tense Free:* {% makeFree(makeLeaf('T')) %}
+T_prefix -> %prefix_tense Free:* {% makeFree(makeLeaf('T')) %}
+Text -> %text Free:* {% makeFree(makeLeaf('text')) %}
+Teo -> %end_quote Free:* {% makeFree(makeLeaf('teo')) %}
+V -> %predicate Free:* {% makeFree(makeLeaf('V')) %}
+Voiv -> %predicatizer Free:* {% makeFree(makeLeaf('V')) %}
+Word -> %word Free:* {% makeFree(makeLeaf('word')) %}
 
 VocativeP -> Vocative Argument {% makeBranch('VocativeP') %}
 Vocative -> %vocative {% makeLeaf('Vocative') %}
 VocArgument -> Argument {% id %}
 VocArgument -> VocativeP {% id %}
-Parenthetical -> %start_parenthetical Fragment %end_parenthetical {% id %}
+Parenthetical -> %start_parenthetical Fragment %end_parenthetical {% makeParen %}
 
 Free -> Interjection {% id %}
 Free -> Parenthetical {% id %}

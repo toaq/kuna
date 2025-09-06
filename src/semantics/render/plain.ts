@@ -63,11 +63,6 @@ export class PlainTextType extends Renderer<ExprType, string> {
 					this.app(token('Ref'), token(bindingToString(t.binding))),
 					this.sub(t.inner),
 				);
-			case 'nf':
-				return this.app(
-					this.app(token('Nf'), this.sub(t.domain)),
-					this.sub(t.inner),
-				);
 			case 'dx':
 				return this.app(token('Dx'), this.sub(t.inner));
 			case 'act':
@@ -91,12 +86,14 @@ enum Precedence {
 	Quantify = 3,
 	Implies = 4,
 	Or = 5,
-	And = 6,
-	Equals = 7,
-	Among = 8,
-	Apply = 9,
-	Prefix = 10,
-	Bracket = 11,
+	Xor = 6,
+	And = 7,
+	Equals = 8,
+	Among = 9,
+	Union = 10,
+	Apply = 11,
+	Prefix = 12,
+	Bracket = 13,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -122,6 +119,7 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 		associativity: 'none',
 	},
 	or: { symbol: '∨', precedence: Precedence.Or, associativity: 'any' },
+	xor: { symbol: '⊕', precedence: Precedence.Xor, associativity: 'any' },
 	and: { symbol: '∧', precedence: Precedence.And, associativity: 'any' },
 	implies: {
 		symbol: '→',
@@ -129,6 +127,12 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 		associativity: 'none',
 	},
 	equals: { symbol: '=', precedence: Precedence.Equals, associativity: 'none' },
+	not_equals: {
+		symbol: '≠',
+		precedence: Precedence.Equals,
+		associativity: 'none',
+	},
+	union: { symbol: '∪', precedence: Precedence.Union, associativity: 'any' },
 };
 
 export class PlainText extends Renderer<RichExpr, string> {
@@ -188,16 +192,16 @@ export class PlainText extends Renderer<RichExpr, string> {
 				]);
 			// biome-ignore lint/suspicious/noFallthroughSwitchClause: false positive
 			case 'do':
-				switch (e.op) {
+				switch (e.op.op) {
 					case 'get': {
-						const newNames = addNames(e.left.scope as ExprType[], names);
+						const newNames = addNames(e.op.left.scope as ExprType[], names);
 						return join(Precedence.Do, 'right', [
 							join(Precedence.Assign, 'none', [
-								this.go(e.left, newNames),
+								this.go(e.op.left, newNames),
 								token(' ⇐ '),
-								'scope' in e.right
-									? this.go(e.right, names)
-									: token(bindingToString(e.right)),
+								'scope' in e.op.right
+									? this.go(e.op.right, names)
+									: token(bindingToString(e.op.right)),
 							]),
 							token(e.pure ? '; ' : ', '),
 							this.go(e.result, newNames),
@@ -206,19 +210,57 @@ export class PlainText extends Renderer<RichExpr, string> {
 					case 'set':
 						return join(Precedence.Do, 'right', [
 							join(Precedence.Assign, 'none', [
-								this.go(e.left, names),
-								token(` ⇒ ${bindingToString(e.right)}`),
+								this.go(e.op.left, names),
+								token(` ⇒ ${bindingToString(e.op.right)}`),
 							]),
 							token(e.pure ? '; ' : ', '),
 							this.go(e.result, names),
 						]);
 					case 'run':
 						return join(Precedence.Do, 'right', [
-							this.go(e.right, names),
+							this.go(e.op.right, names),
 							token(e.pure ? '; ' : ', '),
 							this.go(e.result, names),
 						]);
 				}
+			case 'build': {
+				let newNames = names;
+				const predicates: Render<string>[] = [];
+				for (const pred of e.predicates) {
+					if ('head' in pred) {
+						predicates.push(this.go(pred, newNames));
+					} else {
+						const prevNames = newNames;
+						newNames = addNames(pred.left.scope as ExprType[], newNames);
+						predicates.push(
+							join(Precedence.Assign, 'none', [
+								this.go(pred.left, newNames),
+								token(' ⇐ '),
+								'scope' in pred.right
+									? this.go(pred.right, prevNames)
+									: token(bindingToString(pred.right)),
+							]),
+						);
+					}
+				}
+				return join(Precedence.Bracket, 'none', [
+					token('['),
+					this.go(e.body, newNames),
+					...(predicates.length === 0
+						? []
+						: [
+								token(' | '),
+								join(
+									Precedence.Do,
+									'any',
+									predicates.flatMap((pred, i) =>
+										i < predicates.length - 1 ? [pred, token(', ')] : [pred],
+									),
+								),
+							]),
+					token(']'),
+				]);
+			}
 			case 'lexeme':
 				return token(`⟦${e.name}⟧`);
 			case 'quote':

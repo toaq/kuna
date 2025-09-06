@@ -11,7 +11,16 @@ export interface Word {
 	entry: Entry | undefined;
 }
 
-export type CovertValue = '∅' | 'PRO' | 'REL' | 'IF' | 'IF.CNTF' | 'WHEN';
+export type CovertValue =
+	| '∅'
+	| 'PRO'
+	| 'REL'
+	| 'SUBJ'
+	| 'PL'
+	| 'SG'
+	| 'IF'
+	| 'IF.CNTF'
+	| 'WHEN';
 
 export interface CovertWord {
 	covert: true;
@@ -62,6 +71,9 @@ export type Label =
 	| 'haP'
 	| 'haoP'
 	| 'kı'
+	| 'kıP'
+	| 'kıo'
+	| 'kıoP'
 	| 'mı'
 	| 'mıP'
 	| 'mo'
@@ -229,4 +241,14 @@ export function assertLabel(tree: Tree, label: Label): void {
 	if (tree.label !== label) {
 		throw new Impossible(`Expected ${label} but found ${tree.label}`);
 	}
+}
+
+/**
+ * Given a tree node that is supposed to be a leaf, but might actually be a leaf
+ * wrapped in several layers of free modifiers, extract the actual leaf.
+ */
+export function getLeaf(tree: StrictTree): Leaf {
+	if ('word' in tree) return tree;
+	if (tree.left.label === tree.label) return getLeaf(tree.left);
+	throw new Impossible(`Unexpected non-leaf ${tree.label}`);
 }

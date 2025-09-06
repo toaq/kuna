@@ -48,7 +48,8 @@ export function baseForm(word: string): string {
 
 /**
  * Split a word into raku. The output is a list of NFKD-normalized strings, i.e.
- * diacritcs are turned into combining characters.
+ * diacritics are turned into combining characters.
+ * Beware: the raku returned may have a leading o'aomo.
  */
 export function splitIntoRaku(word: string): string[] {
 	const raku = [
@@ -70,6 +71,14 @@ export function splitIntoRaku(word: string): string[] {
 		return raku;
 	}
 	return [word];
+}
+
+/**
+ * Joins raku into a word.
+ * Beware: leading o'aomo must be explicitly written.
+ */
+export function joinRaku(raku: string[]): string {
+	return raku.join('').replace(/^\p{P}/u, ''); // Strip leading o'aomo
 }
 
 /**
@@ -95,10 +104,9 @@ export function splitPrefixes(word: string): {
 		.slice(0, prefixCount)
 		.map(x => bare(x).replace(/-$/, ''));
 	const t = tone(word);
-	const baseRoot = raku
-		.slice(prefixCount)
-		.map(x => x.normalize('NFC'))
-		.join('');
+	const baseRoot = joinRaku(
+		raku.slice(prefixCount).map(x => x.normalize('NFC')),
+	);
 	const root = inTone(baseRoot, t);
 	return { prefixes, root };
 }
@@ -262,6 +270,14 @@ export class ToaqTokenizer {
 											index: m.index,
 										},
 							);
+							continue;
+						}
+						if (entry.type === 'interjection') {
+							wordTokens.push({
+								type: 'interjection',
+								value: tokenText,
+								index: m.index,
+							});
 							continue;
 						}
 						if (wordTone === Tone.T2) {

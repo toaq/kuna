@@ -122,7 +122,7 @@ interface MathMLMoAttributes extends MathMLAttributes<MathMLMoElement> {
 	movablelimits?: boolean | undefined;
 	rspace?: string | undefined;
 	separator?: boolean | undefined;
-	stretchy?: boolean | undefined;
+	stretchy?: string | undefined;
 	symmetric?: boolean | undefined;
 }
 interface MathMLMoverAttributes extends MathMLAttributes<MathMLMoverElement> {
@@ -296,8 +296,12 @@ function binding(b: Binding): ReactNode {
 	switch (b.type) {
 		case 'resumptive':
 			return <mi>hóa</mi>;
+		case 'covert resumptive':
+			return <mi>PRO</mi>;
 		case 'gap':
 			return <mi>já</mi>;
+		case 'subject':
+			return <mi>áqna</mi>;
 		case 'reflexive':
 			return <mi>áq</mi>;
 		case 'name':
@@ -377,11 +381,6 @@ export class JsxType extends Renderer<ExprType, ReactNode> {
 					this.app(token(<mi>Ref</mi>), token(binding(t.binding))),
 					this.sub(t.inner),
 				);
-			case 'nf':
-				return this.app(
-					this.app(token('Nf'), this.sub(t.domain)),
-					this.sub(t.inner),
-				);
 			case 'dx':
 				return this.app(token(<mi>Dx</mi>), this.sub(t.inner));
 			case 'act':
@@ -409,13 +408,15 @@ enum Precedence {
 	Quantify = 3,
 	Implies = 4,
 	Or = 5,
-	And = 6,
-	Equals = 7,
-	Among = 8,
-	Apply = 9,
-	Prefix = 10,
-	Subscript = 11,
-	Bracket = 12,
+	Xor = 6,
+	And = 7,
+	Equals = 8,
+	Among = 9,
+	Union = 10,
+	Apply = 11,
+	Prefix = 12,
+	Subscript = 13,
+	Bracket = 14,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -441,6 +442,7 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 		associativity: 'none',
 	},
 	or: { symbol: '∨', precedence: Precedence.Or, associativity: 'any' },
+	xor: { symbol: '⊕', precedence: Precedence.Xor, associativity: 'any' },
 	and: { symbol: '∧', precedence: Precedence.And, associativity: 'any' },
 	implies: {
 		symbol: '→',
@@ -448,6 +450,16 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 		associativity: 'none',
 	},
 	equals: { symbol: '=', precedence: Precedence.Equals, associativity: 'none' },
+	not_equals: {
+		symbol: '≠',
+		precedence: Precedence.Equals,
+		associativity: 'none',
+	},
+	union: {
+		symbol: '∪',
+		precedence: Precedence.Union,
+		associativity: 'any',
+	},
 };
 
 function TypeHover(props: {
@@ -638,24 +650,30 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 				]);
 			// biome-ignore lint/suspicious/noFallthroughSwitchClause: false positive
 			case 'do':
-				switch (e.op) {
+				switch (e.op.op) {
 					case 'get': {
 						const word =
-							'scope' in e.right
-								? richExprToNameHint(e.right)
-								: bindingToString(e.right);
-						const newNames = addNames(e.left.scope as ExprType[], names, word);
+							'scope' in e.op.right
+								? richExprToNameHint(e.op.right)
+								: bindingToString(e.op.right);
+						const newNames = addNames(
+							e.op.left.scope as ExprType[],
+							names,
+							word,
+						);
 						return this.do(
 							e.pure,
 							join(Precedence.Do, 'right', [
 								this.doRow(
 									join(Precedence.Assign, 'none', [
-										this.go(e.left, newNames),
+										this.go(e.op.left, newNames),
 										token(<mo>⇐</mo>),
-										'scope' in e.right
-											? this.go(e.right, names)
+										'scope' in e.op.right
+											? this.go(e.op.right, names)
 											: token(
-													<mi className="kuna-lexeme">{binding(e.right)}</mi>,
+													<mi className="kuna-lexeme">
+														{binding(e.op.right)}
+													</mi>,
 												),
 									]),
 								),
@@ -669,11 +687,11 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 							join(Precedence.Do, 'right', [
 								this.doRow(
 									join(Precedence.Assign, 'none', [
-										this.go(e.left, names),
+										this.go(e.op.left, names),
 										token(
 											<>
 												<mo>⇒</mo>
-												<mi className="kuna-lexeme">{binding(e.right)}</mi>
+												<mi className="kuna-lexeme">{binding(e.op.right)}</mi>
 											</>,
 										),
 									]),
@@ -685,11 +703,64 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 						return this.do(
 							e.pure,
 							join(Precedence.Do, 'right', [
-								this.doRow(this.go(e.right, names)),
+								this.doRow(this.go(e.op.right, names)),
 								this.doRow(this.go(e.result, names)),
 							]),
 						);
 				}
+			case 'build': {
+				let newNames = names;
+				const predicates: Render<ReactNode>[] = [];
+				for (const pred of e.predicates) {
+					if ('head' in pred) {
+						predicates.push(this.go(pred, newNames));
+					} else {
+						const prevNames = newNames;
+						newNames = addNames(pred.left.scope as ExprType[], newNames);
+						predicates.push(
+							join(Precedence.Assign, 'none', [
+								this.go(pred.left, newNames),
+								token(<mo>⇐</mo>),
+								'scope' in pred.right
+									? this.go(pred.right, prevNames)
+									: token(
+											<mi className="kuna-lexeme">{binding(pred.right)}</mi>,
+										),
+							]),
+						);
+					}
+				}
+				return wrap(
+					Precedence.Bracket,
+					inner => (
+						<mrow
+							className={
+								predicates.length > 0 ? 'kuna-big-brackets' : undefined
+							}
+						>
+							{inner}
+						</mrow>
+					),
+					join(Precedence.Bracket, 'none', [
+						token(<mo>{'['}</mo>),
+						this.go(e.body, newNames),
+						...(predicates.length === 0
+							? []
+							: [
+									token(<mo stretchy="true">{'|'}</mo>),
+									this.do(
+										false,
+										join(
+											Precedence.Do,
+											'any',
+											predicates.map(pred => this.doRow(pred)),
+										),
+									),
+								]),
+						token(<mo>{']'}</mo>),
+					]),
+				);
+			}
 			case 'lexeme':
 				return token(<mi className="kuna-lexeme">{e.name}</mi>);
 			case 'quote':
@@ -715,9 +786,9 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 				Precedence.Bracket,
 				inner => (
 					<mrow className={big ? 'kuna-big-brackets' : undefined}>
-						<mo>{big ? '[' : '('}</mo>
+						<mo>{'('}</mo>
 						{inner}
-						<mo>{big ? ']' : ')'}</mo>
+						<mo>{')'}</mo>
 					</mrow>
 				),
 				r,

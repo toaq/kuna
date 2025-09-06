@@ -44,7 +44,7 @@ export function makeWord([token]: [ToaqToken]): Word {
 }
 
 export function makeLeaf(label: Label) {
-	return ([token, _free]: [ToaqToken, Tree[]]) => ({
+	return ([token]: [ToaqToken]) => ({
 		label,
 		word: makeWord([token]),
 		source: token.value,
@@ -55,30 +55,25 @@ export function pro(): Leaf {
 	return { label: 'DP', word: { covert: true, value: 'PRO' }, source: '' };
 }
 
-const emptynP: Tree = {
-	label: '𝘯P',
-	left: makeNull('𝘯'),
+const emptyCP: Tree = {
+	label: 'CP',
+	left: makeNull('C', 'REL'),
 	right: {
-		label: 'CP',
-		left: makeNull('C', 'REL'),
+		label: 'TP',
+		left: makeNull('T'),
 		right: {
-			label: 'TP',
-			left: makeNull('T'),
+			label: 'AspP',
+			left: makeNull('Asp'),
 			right: {
-				label: 'AspP',
-				left: makeNull('Asp'),
-				right: {
-					label: '*𝘷P',
-					children: [
-						{
-							label: '*Serialdet',
-							children: [makeNull('V')],
-							source: '',
-						},
-						pro(),
-					],
-					source: '',
-				},
+				label: '*𝘷P',
+				children: [
+					{
+						label: '*Serialdet',
+						children: [makeNull('V')],
+						source: '',
+					},
+					pro(),
+				],
 				source: '',
 			},
 			source: '',
@@ -88,8 +83,8 @@ const emptynP: Tree = {
 	source: '',
 };
 
-export function makeEmptynP() {
-	return emptynP;
+export function makeEmptyCP() {
+	return emptyCP;
 }
 
 export function makeBranch(label: Label) {
@@ -165,6 +160,31 @@ export function makeOptLeaf(label: Label, value?: CovertValue) {
 	};
 }
 
+export function makeFree<T extends unknown[]>(fn: (content: T) => Tree) {
+	return (data: [...T, Tree[]]) => {
+		const content = data.slice(0, -1) as T;
+		const frees = data[data.length - 1] as Tree[];
+		let result = fn(content);
+		for (const free of frees)
+			result = {
+				left: result,
+				right: free,
+				label: result.label,
+				source: catSource(result, free),
+			};
+		return result;
+	};
+}
+
+export function makeFreeFragment([free, fragment]: [Tree, Tree]) {
+	return {
+		left: free,
+		right: fragment,
+		label: fragment.label,
+		source: catSource(free, fragment),
+	};
+}
+
 export function makeSerial(label: Label) {
 	return ([verbs, vlast]: [Tree[], Tree]) => {
 		const children = verbs.concat([vlast]);
@@ -183,18 +203,18 @@ export function makevP(
 	reject: unknown,
 	depth: 'main' | 'sub',
 ) {
-	let [args, adjpsR] = rest ?? [[], []];
-	args = args.filter(x => x.label !== 'VocativeP');
+	const [args, adjpsR] = rest ?? [[], []];
+	const argCount = args.filter(x => x.label !== 'VocativeP').length;
 
 	const arity = (serial as any).arity;
 	if (arity !== undefined) {
 		// Disallow overfilling clauses:
-		if (args.length > arity) {
+		if (argCount > arity) {
 			return reject;
 		}
 
 		// Disallow underfilling subclauses:
-		if (depth === 'sub' && args.length !== arity) {
+		if (depth === 'sub' && argCount !== arity) {
 			return reject;
 		}
 	}
@@ -453,7 +473,7 @@ export function makePrefixObjectIncorp([prefix, verb]: [Tree, Tree]) {
 		left: {
 			label: 'DP',
 			left: prefix,
-			right: emptynP,
+			right: emptyCP,
 			source: prefix.source,
 		},
 		right: verb,
@@ -515,4 +535,27 @@ export function makeDiscourse(
 	if (leftSA.word.covert && rightC.word.covert) return reject;
 
 	return { label: 'Discourse', left, right, source: catSource(left, right) };
+}
+
+export function makeParen([kio, content, ki]: [ToaqToken, Tree, ToaqToken]) {
+	const kioPSource = catSource(kio.value, content);
+	return {
+		label: 'kıP',
+		left: {
+			label: 'kıoP',
+			left: {
+				label: 'kıo',
+				word: makeWord([kio]),
+				source: kio.value,
+			},
+			right: content,
+			source: kioPSource,
+		},
+		right: {
+			label: 'kı',
+			word: makeWord([ki]),
+			source: ki.value,
+		},
+		source: catSource(kioPSource, ki.value),
+	};
 }

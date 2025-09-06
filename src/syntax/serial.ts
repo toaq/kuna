@@ -70,8 +70,16 @@ export function getDistribution(verb: Tree): string {
 	throw new Unimplemented(`Can't get distribution of ${verb.label}`);
 }
 
-function makevP(verb: Tree, args: Tree[]): Tree {
-	const v = makeNull('𝘷');
+function makevP(verb: Tree, args: Tree[], serialTail: boolean): Tree {
+	const v = makeNull(
+		'𝘷',
+		serialTail ||
+			args.length === 0 ||
+			('word' in args[0] && args[0].word.covert && args[0].word.value === 'PRO')
+			? '∅'
+			: 'SUBJ',
+	);
+
 	if ('word' in verb) {
 		moveUp(verb, v);
 	} else {
@@ -91,6 +99,19 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 		case 1: {
 			const [subject] = args;
 			const source = `${verb.source} ${subject.source}`;
+			if (subject.label === '𝘷P')
+				// (0) serials position the subject as a complement
+				return {
+					label: '𝘷P',
+					left: makeNull('𝘷'),
+					right: {
+						label: 'VP',
+						left: verb,
+						right: subject,
+						source,
+					},
+					source,
+				};
 			return {
 				label: '𝘷P',
 				left: subject,
@@ -160,11 +181,13 @@ function makevP(verb: Tree, args: Tree[]): Tree {
 /**
  * Given a *Serial and the arguments from a *𝘷P, make a proper 𝘷P. If there
  * aren't enough arguments this will pad with PRO.
+ * @param serialTail Whether the 𝘷P belongs to a serial tail.
  */
 function serialTovP(
 	verbs: Tree[],
 	args: Tree[],
 	newCoindex: () => string,
+	serialTail: boolean,
 ): Tree {
 	const firstFrame = getFrame(verbs[0]);
 	if (verbs.length === 1) {
@@ -176,11 +199,11 @@ function serialTovP(
 		// Extract the object from an object-incorporated verb
 		if (verbs[0].label === 'V' && 'left' in verbs[0]) {
 			if (effectiveLabel(verbs[0].right) === 'DP')
-				return makevP(verbs[0].left, [...args, verbs[0].right]);
+				return makevP(verbs[0].left, [...args, verbs[0].right], serialTail);
 			if (effectiveLabel(verbs[0].left) === 'DP')
-				return makevP(verbs[0].right, [...args, verbs[0].left]);
+				return makevP(verbs[0].right, [...args, verbs[0].left], serialTail);
 		}
-		return makevP(verbs[0], args);
+		return makevP(verbs[0], args, serialTail);
 	}
 	const frame = splitNonEmpty(firstFrame.replace(/a/g, 'c'), ' ');
 	for (let i = 0; i < frame.length - 1; i++) {
@@ -220,13 +243,13 @@ function serialTovP(
 	const innerArgs: Tree[] = [...pros, ...args.slice(cCount)];
 	const v0 = verbs[0];
 	assertLeaf(v0);
-	const vP = serialTovP(verbs.slice(1), innerArgs, newCoindex);
+	const vP = serialTovP(verbs.slice(1), innerArgs, newCoindex, true);
 	assertBranch(vP);
 	const v = vP.left.label === '𝘷' ? vP.left : (vP.right as Branch<Tree>).left;
 	assertLeaf(v);
 	moveUp(v, v0);
 	const outerArgs: Tree[] = [...args.slice(0, cCount), vP];
-	return makevP(v0, outerArgs);
+	return makevP(v0, outerArgs, serialTail);
 }
 
 /**
@@ -250,10 +273,10 @@ function segmentToKivP(
 	if (segment[0].label === 'Adjunct') {
 		return {
 			ki: segment[0],
-			vP: serialTovP(segment.slice(1), args, newCoindex),
+			vP: serialTovP(segment.slice(1), args, newCoindex, false),
 		};
 	}
-	return { vP: serialTovP(segment, args, newCoindex) };
+	return { vP: serialTovP(segment, args, newCoindex, false) };
 }
 
 /**

@@ -1,13 +1,17 @@
 import { Impossible, Ungrammatical } from '../core/error';
-import type { SubjectType } from '../morphology/dictionary';
-import type { CovertValue } from '../tree/types';
+import type { SubjectType, VerbEntry } from '../morphology/dictionary';
+import { bare } from '../morphology/tokenize';
+import type { CovertValue, CovertWord, Word } from '../tree/types';
+import { compose } from './compose';
 import {
 	Act,
+	Bind,
+	Cont,
 	Dx,
 	Fn,
 	Indef,
 	Int,
-	Nf,
+	Pair,
 	Pl,
 	Qn,
 	Ref,
@@ -18,34 +22,49 @@ import {
 	animate,
 	app,
 	assertFn,
+	assertInt,
+	assertPl,
 	bg,
 	bind,
 	cont,
+	contrast,
 	equals,
 	every,
+	filter,
 	implies,
 	indef,
 	int,
 	lex,
 	map,
-	nf,
 	not,
 	or,
 	overlap,
+	pair,
 	qn,
 	ref,
 	salient,
+	single,
 	some,
+	uncont,
 	unindef,
 	unint,
-	unnf,
+	union,
+	universe,
+	unpair,
 	unref,
 	v,
+	xor,
 	λ,
 } from './model';
+import { reduce } from './reduce';
 import { typeToPlainText } from './render';
-import { getBigFunctor, getFunctor, idFunctor } from './structures';
-import type { AnimacyClass, Expr, ExprType } from './types';
+import {
+	getBigFunctor,
+	getFunctor,
+	idFunctor,
+	unwrapEffects,
+} from './structures';
+import type { AnimacyClass, Binding, Expr, ExprType } from './types';
 
 export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))));
 
@@ -111,48 +130,129 @@ export const serialFrames = new Map<string, (verb: Expr) => Expr>([
 			);
 		},
 	],
+	[
+		'0',
+		verb => {
+			const { wrap, unwrap, map } = getBigFunctor(verb.type) ?? idFunctor;
+			const inner = unwrap(verb.type);
+			assertFn(inner);
+			assertFn(inner.range);
+			return map(
+				() =>
+					λ(inner, verb_ =>
+						int(
+							λ('s', w =>
+								λ(Int(Fn('v', 't')), tail =>
+									λ('v', e =>
+										some(
+											λ('e', subject =>
+												app(
+													app(
+														and,
+														app(
+															app(
+																app(unint(propositionContent), v(w)),
+																int(
+																	λ('s', w_ =>
+																		some(
+																			λ('v', e_ =>
+																				app(app(unint(v(tail)), v(w_)), v(e_)),
+																			),
+																		),
+																	),
+																),
+															),
+															v(subject),
+														),
+													),
+													app(app(v(verb_), v(subject)), v(e)),
+												),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				() => verb,
+				verb.type,
+				wrap(Fn(Int(Fn('v', 't')), Fn('v', 't')), verb.type),
+			);
+		},
+	],
 ]);
 
-export const nullaryLittleV = λ(Fn('v', 't'), pred => v(pred));
-
-export const distributiveLittleV = ref(
-	{ type: 'reflexive' },
-	λ(Int(Pl('e')), subject =>
-		bind(
-			{ type: 'reflexive' },
-			v(subject),
-			int(
-				λ('s', w =>
-					map(
-						app(unint(v(subject)), v(w)),
-						λ('e', subject_ =>
-							λ(Fn('e', Fn('v', 't')), pred => app(v(pred), v(subject_))),
+export const distributiveLittleV = (cCommand: ExprType) => {
+	const unwrapped = unwrapEffects(cCommand);
+	assertFn(unwrapped);
+	return ref(
+		{ type: 'subject' },
+		λ(Int(Pl('e')), subject =>
+			bind(
+				{ type: 'subject' },
+				v(subject),
+				ref(
+					{ type: 'reflexive' },
+					λ(Int(Pl('e')), refl =>
+						int(
+							λ('s', w =>
+								map(
+									app(unint(v(refl)), v(w)),
+									λ('e', refl_ =>
+										bind(
+											{ type: 'reflexive' },
+											int(λ('s', () => single(v(refl_)))),
+											λ(Fn('e', unwrapped.range), pred =>
+												app(v(pred), v(refl_)),
+											),
+										),
+									),
+								),
+							),
 						),
 					),
 				),
 			),
 		),
-	),
-);
+	);
+};
 
-export const nondistributiveLittleV = ref(
-	{ type: 'reflexive' },
-	λ(Int(Pl('e')), subject =>
-		bind(
-			{ type: 'reflexive' },
-			v(subject),
-			int(
-				λ('s', w =>
-					λ(Fn(Pl('e'), Fn('v', 't')), pred =>
-						app(v(pred), app(unint(v(subject)), v(w))),
+export const nondistributiveLittleV = (cCommand: ExprType) => {
+	const unwrapped = unwrapEffects(cCommand);
+	assertFn(unwrapped);
+	return ref(
+		{ type: 'subject' },
+		λ(Int(Pl('e')), subject =>
+			bind(
+				{ type: 'subject' },
+				v(subject),
+				int(
+					λ('s', w =>
+						bind(
+							{ type: 'reflexive' },
+							int(λ('s', () => app(unint(v(subject)), v(w)))),
+							ref(
+								{ type: 'reflexive' },
+								λ(Int(Pl('e')), refl =>
+									λ(Fn(Pl('e'), unwrapped.range), pred =>
+										app(v(pred), app(unint(v(refl)), v(w))),
+									),
+								),
+							),
+						),
 					),
 				),
 			),
 		),
-	),
-);
+	);
+};
 
-export const pro = nf(λ(Int(Pl('e')), x => v(x)));
+export const cleftVerb = λ(Ref({ type: 'resumptive' }, 't'), p => unref(v(p)));
+
+export const pro = ref(
+	{ type: 'covert resumptive' },
+	λ(Int(Pl('e')), x => v(x)),
+);
 
 const personalPronouns = [
 	'jí',
@@ -235,12 +335,84 @@ export const pronouns = new Map<string, Expr>([
 		),
 	],
 	[
+		'áqna',
+		ref(
+			{ type: 'subject' },
+			λ(Int(Pl('e')), x => v(x)),
+		),
+	],
+	[
 		'áq',
 		ref(
 			{ type: 'reflexive' },
-			λ(Int(Pl('e')), x => bind({ type: 'reflexive' }, v(x), v(x))),
+			λ(Int(Pl('e')), x => v(x)),
 		),
 	],
+	[
+		'chéq',
+		ref(
+			{ type: 'subject' },
+			λ(Int(Pl('e')), subject =>
+				ref(
+					{ type: 'reflexive' },
+					λ(Int(Pl('e')), refl =>
+						int(
+							λ('s', w =>
+								cont(
+									λ(Fn(Bind({ type: 'reflexive' }, Int(Pl('e'))), 't'), pred =>
+										every(
+											λ('e', refl_ =>
+												app(
+													app(
+														implies,
+														among(v(refl_), app(unint(v(refl)), v(w))),
+													),
+													app(
+														v(pred),
+														bind(
+															{ type: 'reflexive' },
+															int(λ('s', () => single(v(refl_)))),
+															int(
+																λ('s', w_ =>
+																	filter(
+																		app(unint(v(subject)), v(w_)),
+																		λ('e', subject_ =>
+																			app(not, equals(v(subject_), v(refl_))),
+																		),
+																	),
+																),
+															),
+														),
+													),
+												),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
+		),
+	],
+]);
+
+const po = salient(Int(Fn(Pl('e'), Fn(Pl('e'), Fn('v', 't')))));
+
+export const knownVerbs = new Map<string, Expr>([
+	['po', po],
+	...(function* () {
+		for (const [toaq, e] of pronouns) {
+			yield [`${bare(toaq)}bo`, reduce(compose(po, e).denotation)] satisfies [
+				string,
+				Expr,
+			];
+		}
+	})(),
+	['nu', lex('nu', Dx(Int(Fn(Pl('e'), Fn('v', 't')))))],
+	['nınu', lex('nınu', Dx(Int(Fn(Pl('e'), Fn('v', 't')))))],
+	['nanu', lex('nanu', Dx(Int(Fn(Pl('e'), Fn('v', 't')))))],
 ]);
 
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
@@ -249,6 +421,93 @@ export const polarities = new Map<string, Expr>([
 	['jeo', λ('t', t => v(t))],
 	['bu', not],
 ]);
+
+// Int Pl e, i, Int Pl e  ->  e, i, e
+function distributeSemaTuple(t: ExprType): ExprType {
+	if (typeof t === 'string') return t;
+	if (t.head === 'pair')
+		return Pair(
+			distributeSemaTuple(t.inner),
+			distributeSemaTuple(t.supplement),
+		);
+	return t.head === 'int' &&
+		typeof t.inner === 'object' &&
+		t.inner.head === 'pl' &&
+		t.inner.inner === 'e'
+		? 'e'
+		: t;
+}
+
+// e, i, e  ->  Int Pl e, i, Int Pl e
+function liftDistributedSemaTuple(e: Expr): Expr {
+	if (e.type === 'e')
+		return app(
+			λ('e', x => int(λ('s', () => single(v(x))))),
+			e,
+		);
+	if (typeof e.type === 'object' && e.type.head === 'pair') {
+		const { inner, supplement } = e.type;
+		return unpair(
+			e,
+			λ(inner, l =>
+				λ(supplement, r =>
+					pair(liftDistributedSemaTuple(v(l)), liftDistributedSemaTuple(v(r))),
+				),
+			),
+		);
+	}
+	return e;
+}
+
+// Int Pl (e, e)  ->  Int Pl e, Int Pl e
+function splitDistributedSemaTuple(e: () => Expr, type: ExprType): Expr {
+	assertInt(type);
+	assertPl(type.inner);
+	if (
+		typeof type.inner.inner === 'object' &&
+		type.inner.inner.head === 'pair'
+	) {
+		const { inner } = type.inner;
+		const { inner: l, supplement: r } = inner;
+		return pair(
+			splitDistributedSemaTuple(
+				() =>
+					int(
+						λ('s', w =>
+							map(
+								app(unint(e()), v(w)),
+								λ(inner, x =>
+									unpair(
+										v(x),
+										λ(l, l => λ(r, () => v(l))),
+									),
+								),
+							),
+						),
+					),
+				Int(Pl(l)),
+			),
+			splitDistributedSemaTuple(
+				() =>
+					int(
+						λ('s', w =>
+							map(
+								app(unint(e()), v(w)),
+								λ(inner, x =>
+									unpair(
+										v(x),
+										λ(l, () => λ(r, r => v(r))),
+									),
+								),
+							),
+						),
+					),
+				Int(Pl(r)),
+			),
+		);
+	}
+	return e();
+}
 
 export const determiners = new Map<string, (domain: ExprType) => Expr>([
 	[
@@ -280,6 +539,30 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 					),
 				),
 			),
+	],
+	[
+		'túq',
+		domain =>
+			λ(Int(Fn(domain, 't')), predicate => {
+				const distributed = distributeSemaTuple(domain);
+				return splitDistributedSemaTuple(
+					() =>
+						int(
+							λ('s', w =>
+								filter(
+									universe(distributed),
+									λ(distributed, x =>
+										app(
+											app(unint(v(predicate)), v(w)),
+											liftDistributedSemaTuple(v(x)),
+										),
+									),
+								),
+							),
+						),
+					Int(Pl(distributed)),
+				);
+			}),
 	],
 	[
 		'sía',
@@ -325,43 +608,128 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 	['nánı', domain => lex('nánı', Fn(Fn(domain, 't'), Dx(domain)))],
 ]);
 
-export const littleN = λ(Fn(Int(Pl('e')), 't'), predicate =>
-	indef(
-		v(predicate),
-		λ(Int(Pl('e')), x => v(x)),
-	),
-);
+function animacyClass(verb: VerbEntry): AnimacyClass | null {
+	if (verb.toaq === 'raı') return null;
+	switch (verb.pronominal_class) {
+		case 'ho':
+			return 'animate';
+		case 'maq':
+			return 'inanimate';
+		case 'hoq':
+			return 'abstract';
+		default:
+			return 'descriptive';
+	}
+}
 
-export const covertComplementizers = new Map<CovertValue, Expr>([
-	['∅', λ(Int('t'), t => v(t))],
-	['REL', λ(Nf(Int(Pl('e')), 't'), predicate => unnf(v(predicate)))],
-]);
+export function wrapInBindings(
+	value: Expr,
+	sema: Expr,
+	verb: Word | CovertWord,
+): Expr {
+	let result = value;
+	const animacy =
+		!verb.covert && verb.entry !== undefined && 'pronominal_class' in verb.entry
+			? animacyClass(verb.entry)
+			: null;
+	if (animacy !== null)
+		result = bind({ type: 'animacy', class: animacy }, sema, result);
+	if (
+		!verb.covert &&
+		verb.entry !== undefined &&
+		verb.entry.type !== 'predicatizer'
+	)
+		result = bind(
+			verb.entry.type === 'predicate'
+				? { type: 'name', verb: verb.entry.toaq }
+				: { type: 'head', head: verb.bare },
+			sema,
+			result,
+		);
+	return result;
+}
 
-export const overtComplementizers = new Map<string, Expr>([
-	['ꝡa', λ(Int('t'), t => v(t))],
+export const littleNs = new Map<CovertValue, (verb: Word | CovertWord) => Expr>(
 	[
-		'ma',
-		λ(Int('t'), p =>
-			int(
-				λ('s', w =>
-					qn(
-						λ(Fn('t', 't'), polarity =>
+		[
+			'PL',
+			verb =>
+				λ(Fn(Int(Pl('e')), 't'), predicate =>
+					indef(
+						v(predicate),
+						λ(Int(Pl('e')), x => wrapInBindings(v(x), v(x), verb)),
+					),
+				),
+		],
+		[
+			'SG',
+			verb =>
+				λ(Fn(Int(Pl('e')), 't'), predicate =>
+					indef(
+						λ(Int('e'), x =>
 							app(
-								app(
-									or,
-									equals(
-										v(polarity),
-										λ('t', t => v(t)),
-									),
-								),
-								equals(v(polarity), not),
+								v(predicate),
+								int(λ('s', w => single(app(unint(v(x)), v(w))))),
 							),
 						),
-						λ(Fn('t', 't'), polarity =>
-							app(v(polarity), app(unint(v(p)), v(w))),
+						λ(Int('e'), x =>
+							wrapInBindings(
+								int(λ('s', w => single(app(unint(v(x)), v(w))))),
+								int(λ('s', w => single(app(unint(v(x)), v(w))))),
+								verb,
+							),
 						),
 					),
 				),
+		],
+	],
+);
+
+export const covertComplementizers = new Map<CovertValue, Expr>([
+	[
+		'∅',
+		λ(Cont('t'), p =>
+			app(
+				uncont(v(p)),
+				λ('t', t => v(t)),
+			),
+		),
+	],
+	[
+		'REL',
+		λ(Ref({ type: 'covert resumptive' }, 't'), predicate =>
+			unref(v(predicate)),
+		),
+	],
+]);
+
+export const overtComplementizers = new Map<string, Expr>([
+	[
+		'ꝡa',
+		λ(Cont('t'), p =>
+			app(
+				uncont(v(p)),
+				λ('t', t => v(t)),
+			),
+		),
+	],
+	[
+		'ma',
+		λ(Cont('t'), p =>
+			qn(
+				λ(Fn('t', 't'), polarity =>
+					app(
+						app(
+							or,
+							equals(
+								v(polarity),
+								λ('t', t => v(t)),
+							),
+						),
+						equals(v(polarity), not),
+					),
+				),
+				λ(Fn('t', 't'), polarity => app(uncont(v(p)), v(polarity))),
 			),
 		),
 	],
@@ -369,14 +737,24 @@ export const overtComplementizers = new Map<string, Expr>([
 		'ꝡä',
 		int(
 			λ('s', w =>
-				λ(Int('t'), prop =>
+				λ(Int(Cont('t')), prop =>
 					λ(Int(Pl('e')), x =>
 						every(
 							λ('e', x_ =>
 								app(
 									app(implies, among(v(x_), app(unint(v(x)), v(w)))),
 									app(
-										app(app(unint(propositionContent), v(w)), v(prop)),
+										app(
+											app(unint(propositionContent), v(w)),
+											int(
+												λ('s', w_ =>
+													app(
+														uncont(app(unint(v(prop)), v(w_))),
+														λ('t', t => v(t)),
+													),
+												),
+											),
+										),
 										v(x_),
 									),
 								),
@@ -411,10 +789,11 @@ export const overtComplementizers = new Map<string, Expr>([
 	],
 	[
 		'ꝡë',
-		λ(Ref({ type: 'resumptive' }, Int('t')), p =>
-			int(
-				λ('s', w =>
-					λ(Int(Pl('e')), x => app(unint(app(unref(v(p)), v(x))), v(w))),
+		λ(Cont(Ref({ type: 'resumptive' }, 't')), p =>
+			λ(Int(Pl('e')), x =>
+				app(
+					uncont(v(p)),
+					λ(Ref({ type: 'resumptive' }, 't'), p_ => app(unref(v(p_)), v(x))),
 				),
 			),
 		),
@@ -450,6 +829,7 @@ export const speechActParticles = new Map<
 	['nha', () => Fn(Int('t'), Act('()'))],
 	['doa', () => Fn(Int('t'), Act('()'))],
 	['ꝡo', () => Fn(Int('t'), Act('()'))],
+	['ꝡeı', () => Fn(Int('t'), Act('()'))], // TODO: Interaction with degrees?
 ]);
 
 export const conditionals = new Map<CovertValue, Expr>([
@@ -480,20 +860,20 @@ export const conditionals = new Map<CovertValue, Expr>([
 	],
 	[
 		'IF.CNTF',
-		λ(Int('t'), antecedent =>
-			λ(Int('t'), consequent =>
-				andMap(
-					accessibility,
-					λ(Fn('s', Fn('s', 't')), accessible =>
-						andMap(
+		andMap(
+			accessibility,
+			λ(Fn('s', Fn('s', 't')), accessible =>
+				λ(Int('t'), antecedent =>
+					andMap(
+						app(
+							bg,
 							app(
-								bg,
-								app(
-									lex('da', Fn(Int('t'), Act('()'))),
-									int(λ('s', w => app(not, app(unint(v(antecedent)), v(w))))),
-								),
+								lex('da', Fn(Int('t'), Act('()'))),
+								int(λ('s', w => app(not, app(unint(v(antecedent)), v(w))))),
 							),
-							λ('()', () =>
+						),
+						λ('()', () =>
+							λ(Int('t'), consequent =>
 								int(
 									λ('s', w =>
 										indef(
@@ -596,28 +976,24 @@ const eventiveAdverbial = (distributive: boolean) => {
 const distributiveSubjectSharingAdverbial = ref(
 	{ type: 'reflexive' },
 	λ(Int(Pl('e')), subject =>
-		bind(
-			{ type: 'reflexive' },
-			v(subject),
-			int(
-				λ('s', w =>
-					map(
-						app(unint(v(subject)), v(w)),
-						λ('e', subject_ =>
-							λ(Fn('e', Fn('v', 't')), p =>
-								λ('v', outerEvent =>
-									some(
-										λ('v', innerEvent =>
+		int(
+			λ('s', w =>
+				map(
+					app(unint(v(subject)), v(w)),
+					λ('e', subject_ =>
+						λ(Fn('e', Fn('v', 't')), p =>
+							λ('v', outerEvent =>
+								some(
+									λ('v', innerEvent =>
+										app(
 											app(
+												and,
 												app(
-													and,
-													app(
-														app(app(unint(overlap), v(w)), v(innerEvent)),
-														v(outerEvent),
-													),
+													app(app(unint(overlap), v(w)), v(innerEvent)),
+													v(outerEvent),
 												),
-												app(app(v(p), v(subject_)), v(innerEvent)),
 											),
+											app(app(v(p), v(subject_)), v(innerEvent)),
 										),
 									),
 								),
@@ -633,25 +1009,21 @@ const distributiveSubjectSharingAdverbial = ref(
 const nondistributiveSubjectSharingAdverbial = ref(
 	{ type: 'reflexive' },
 	λ(Int(Pl('e')), subject =>
-		bind(
-			{ type: 'reflexive' },
-			v(subject),
-			int(
-				λ('s', w =>
-					λ(Fn(Pl('e'), Fn('v', 't')), p =>
-						λ('v', outerEvent =>
-							some(
-								λ('v', innerEvent =>
+		int(
+			λ('s', w =>
+				λ(Fn(Pl('e'), Fn('v', 't')), p =>
+					λ('v', outerEvent =>
+						some(
+							λ('v', innerEvent =>
+								app(
 									app(
+										and,
 										app(
-											and,
-											app(
-												app(app(unint(overlap), v(w)), v(innerEvent)),
-												v(outerEvent),
-											),
+											app(app(unint(overlap), v(w)), v(innerEvent)),
+											v(outerEvent),
 										),
-										app(app(v(p), app(unint(v(subject)), v(w))), v(innerEvent)),
 									),
+									app(app(v(p), app(unint(v(subject)), v(w))), v(innerEvent)),
 								),
 							),
 						),
@@ -676,3 +1048,92 @@ export const adjuncts: Partial<
 	agent: subjectSharingAdverbial,
 	individual: subjectSharingAdverbial,
 };
+
+export type Conjunction = (conjunct: ExprType, bind: boolean) => Expr;
+
+function clausalConjunction(conjoin: Expr, headBinding: string): Conjunction {
+	const binding: Binding = { type: 'head', head: headBinding };
+	return (conjunct, bnd) =>
+		λ(Cont(conjunct), r =>
+			λ(Cont(conjunct), l =>
+				cont(
+					λ(Fn(bnd ? Bind(binding, conjunct) : conjunct, 't'), pred => {
+						const pred_ = bnd
+							? λ(conjunct, x => app(v(pred), bind(binding, v(x), v(x))))
+							: v(pred);
+						return app(
+							app(conjoin, app(uncont(v(l)), pred_)),
+							app(uncont(v(r)), pred_),
+						);
+					}),
+				),
+			),
+		);
+}
+
+export const clausalConjunctions = new Map<string, Conjunction>([
+	['rú', clausalConjunction(and, 'ru')],
+	['rá', clausalConjunction(or, 'ra')],
+	['ró', clausalConjunction(xor, 'ro')],
+	[
+		'rí',
+		(conjunct, bnd) =>
+			λ(Cont(conjunct), r =>
+				λ(Cont(conjunct), l =>
+					qn(
+						λ(Cont(conjunct), x =>
+							app(app(or, equals(v(x), v(l))), equals(v(x), v(r))),
+						),
+						λ(Cont(conjunct), x => {
+							if (!bnd) return v(x);
+							const binding: Binding = { type: 'head', head: 'rı' };
+							return cont(
+								λ(Fn(Bind(binding, conjunct), 't'), pred =>
+									app(
+										uncont(v(x)),
+										λ(conjunct, x_ =>
+											app(v(pred), bind(binding, v(x_), v(x_))),
+										),
+									),
+								),
+							);
+						}),
+					),
+				),
+			),
+	],
+	[
+		'kéo',
+		(conjunct, bnd) =>
+			λ(Cont(conjunct), r =>
+				λ(Cont(conjunct), l =>
+					andMap(
+						app(bg, contrast(v(l), v(r))),
+						λ('()', () => {
+							const binding: Binding = { type: 'head', head: 'keo' };
+							return cont(
+								λ(Fn(bnd ? Bind(binding, conjunct) : conjunct, 't'), pred => {
+									const pred_ = bnd
+										? λ(conjunct, x => app(v(pred), bind(binding, v(x), v(x))))
+										: v(pred);
+									return app(
+										app(and, app(uncont(v(l)), pred_)),
+										app(uncont(v(r)), pred_),
+									);
+								}),
+							);
+						}),
+					),
+				),
+			),
+	],
+]);
+
+export const pluralCoordinator = λ(Int(Pl('e')), r =>
+	λ(Int(Pl('e')), l => {
+		const result = int(
+			λ('s', w => union(app(unint(v(l)), v(w)), app(unint(v(r)), v(w)))),
+		);
+		return bind({ type: 'head', head: 'roı' }, result, result);
+	}),
+);

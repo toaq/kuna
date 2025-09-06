@@ -19,14 +19,23 @@ function snapshot(toaq: string) {
 
 test('predicatizers', () => {
 	snapshot('Mea íme nháo.');
-	// TODO: pó should invoke a salient predicate
 	snapshot('Kuaı jí pó nánı hea bâq nam.');
 });
 
 test('object incorporation', () => {
 	snapshot('Rụınua hôq jí nháo.');
-	snapshot('Sạtao súq ba.');
+	snapshot('Sạtao súq râq tú raı ba.');
 	snapshot('Họqdua sía poq.');
+	snapshot('Tao sâ raı tú poq râq ráı.');
+});
+
+test('relative clauses', () => {
+	snapshot('Tao sá poq, ꝡë doı tú Toaq hóa, sá raı.');
+});
+
+test('possessives', () => {
+	snapshot('Maı póq tú cheqbo.');
+	snapshot('Paı jí báq poq da. Hobo ní chea.');
 });
 
 test('name verbs', () => {
@@ -48,8 +57,74 @@ test('donkey anaphora', () => {
 	snapshot('Do tú poq, ꝡë bo bâq aqshe, ꝡë bua hóa báq dueq, hóa, áqshe dúeq.');
 	snapshot('Shê, ꝡä Toaq há, nä bo hó sá toakue.');
 	snapshot('Shê, ꝡä bo báq poq báq aqshe, nä kıaı póq áqshe.');
+	// TODO: báq poq, ꝡë gı báq pao hôa
+	snapshot('Kueq túq poq, ꝡë bo hóa báq taqchao. Ꝡa puı máq.');
 });
 
-test('(c 0) serials', () => {
+test('serials', () => {
 	snapshot('Tua poaq góchıq ké jegaq.');
+	snapshot('Du kuqnu gı ráı.');
+});
+
+test('adjuncts', () => {
+	snapshot('Nuo súq dûo géodıo.');
+	snapshot('Marao úmo gâq nhána.');
+	snapshot('Kueq áma fâ sóaq.');
+	// TODO: Scope islands as found in "môı sîa raı"
+});
+
+test('reflexives and reciprocals', () => {
+	snapshot('Jıa geq súho chéq ba.');
+	snapshot('Tua de jí áq.');
+	snapshot('Tua de nhána chéq.');
+	snapshot('Kıaı úmo áq nhûq chéq.');
+	snapshot('Kıaı nhûq chéq úmo áq.');
+	snapshot('Kıaı nhûq chéq úmo áqna.');
+	snapshot('Kueqtua áma áqna.');
+	snapshot('Kueqtua áma áqna gâq chéq.');
+	snapshot('Po póq káto pâı chéq.');
+	snapshot('Zao túq poq chéq.');
+});
+
+test('conjunctions', () => {
+	snapshot('Maı jí róı súq chéq.');
+	snapshot('Kueq jí róı súq.');
+	snapshot('Marao jí rú súq.');
+	snapshot('Tua sı jí súq rá nháo hụ́ra.');
+	snapshot('Ao jea súq shíukune rí góso?');
+	snapshot('Aona tú Toaqpoq kéo sía Lojıbaqpoq sáose.');
+	snapshot('Jara kúne rú koı jí.');
+	snapshot('Kıa ro kuo máq.');
+	snapshot('Kueq nhána bûı túq jıo kéo gûq sía hoe.');
+	snapshot('Marao báq poq, rú de póq.');
+	// TODO: ꝡë gı hóa rú ꝡë huı hóa / mêoq rú fôı (needs predicate modification)
+	// TODO: sá kıa ro kuo
+});
+
+test('cleft verb', () => {
+	snapshot('Ní shatı nä loı jí hóa.');
+	snapshot('Sá rua nä maı tú apı rúa.');
+});
+
+test('topics', () => {
+	snapshot('Níchaq bï za ruqshua.');
+	snapshot('Ké patı bï marao hú shı.');
+	snapshot('Níchaq bï tao ké poq, ꝡë bo hóa báq taqchao, ké maqbo.');
+	snapshot('Níchaq bï tao jí ké zuo hôq nha.');
+	snapshot('Níchaq bï tao nánı poq ké zuo hôq nha.');
+});
+
+test('interjections', () => {
+	snapshot('Áhı?');
+	snapshot('Âhı.');
+	snapshot('Dua jí ꝡá nho, ruqshua.');
+	snapshot('Aojaı jí, eju… pó ní.');
+});
+
+test('parentheticals', () => {
+	snapshot('Kóacao (kïo he cho jí báq koacao kı) bï baı jí báq nıaopoq.');
+});
+
+test('vocatives', () => {
+	snapshot('Buetı jí hóı máma.');
 });
