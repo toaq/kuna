@@ -391,6 +391,27 @@ math .kuna-do.kuna-do-quantify > mtr:last-child > mtd {
 	padding-inline-start: 1em;
 }
 
+.kuna-siteleq-container {
+	position: relative;
+}
+
+math mo.kuna-squiggle {
+	color: transparent;
+}
+
+div.kuna-squiggle {
+	position: absolute;
+	mask: url("/squiggle.svg") repeat-x;
+}
+
+math .kuna-cont {
+	border-top: 1px solid;
+	border-left: 1px solid;
+	border-right: 1px solid;
+	border-radius: 8px 8px 0 0;
+	padding-inline: 5px;
+}
+
 .dark-mode math .kuna-constant,
 .dark-mode math .kuna-quote {
 	color: #ff8888;

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { keyFor } from '../../core/misc';
 import { toJsx, typeToPlainText } from '../../semantics/render';
+import { SiteleqType } from '../../semantics/render/siteleq';
 import { type CompositionMode, modeToString } from '../../semantics/types';
 import type { PlacedTree } from '../../tree/place';
 import {
@@ -13,7 +14,6 @@ import {
 import type { Theme } from '../../tree/theme';
 import { TreeBrowser } from './TreeBrowser';
 import { TreeLabel } from './TreeLabel';
-import { SiteleqType, typeToSiteleq } from '../../semantics/render/siteleq';
 
 // Helper function to create a Scene containing all three types arranged as a tree
 function createCompositionScene(
@@ -160,7 +160,7 @@ export function InspectNode(props: {
 				<>
 					<h3 className="text-lg mt-4 mb-2 font-bold">Type</h3>
 					<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
-						<SiteleqType t={typeToSiteleq(tree.denotation.denotation.type)} />
+						<SiteleqType t={tree.denotation.denotation.type} />
 					</div>
 
 					{'mode' in tree && tree.mode && (

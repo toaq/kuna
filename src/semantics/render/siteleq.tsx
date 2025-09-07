@@ -1,220 +1,291 @@
-import type { FC, ReactNode } from 'react';
-import { bindingToString, type Binding, type ExprType } from '../types';
+import { type FC, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { type Binding, type ExprType, bindingToString } from '../types';
 
-export type Siteleq =
-	| { head: 'binding'; binding: Binding }
-	| { head: 'atom'; value: 'e' | 'v' | 'i' | 't' | 's' }
-	| { head: 'fn'; domain: Siteleq; range: Siteleq }
-	| { head: 'tuple'; items: Siteleq[] }
-	| {
-			head: 'prefix';
-			prefix: 'indef' | 'qn' | 'nf' | 'dx' | 'act';
-			body: Siteleq | null;
-	  }
-	| { head: 'bracket'; inner: Siteleq }
-	| { head: 'int'; inner: Siteleq | null }
-	| { head: 'cont'; inner: Siteleq | null }
-	| { head: 'pl'; inner: Siteleq };
-
-function addItems(t: ExprType, items: Siteleq[]) {
-	if (typeof t !== 'string') {
-		if (t.head === 'pair') {
-			addItems(t.inner, items);
-			addItems(t.supplement, items);
-			return;
-		}
-		if (t.head === 'bind') {
-			items.push({ head: 'binding', binding: t.binding });
-			addItems(t.inner, items);
-			return;
-		}
-	}
-
-	const item = maybeBracket(typeToSiteleq(t));
-	if (item !== null) items.push(item);
+enum Precedence {
+	Prefix = 0,
+	Fn = 1,
+	Suffix = 2,
+	Pair = 3,
+	Bracket = 4,
+	Atom = 5,
 }
 
-function maybeBracket<T extends Siteleq | null>(t: T): Siteleq | T {
+export type Siteleq = { precedence: Precedence } & (
+	| { head: 'atom'; value: 'e' | 'v' | 'i' | 't' | 's' }
+	| { head: 'fn'; domain: Siteleq; range: Siteleq }
+	| { head: 'ref'; binding: Binding; body: Siteleq }
+	| { head: 'bind'; binding: Binding; body: Siteleq | null }
+	| { head: 'pair'; left: Siteleq; right: Siteleq }
+	| { head: 'prefix'; prefix: 'indef' | 'dx'; body: Siteleq | null }
+	| { head: 'suffix'; suffix: 'qn' | 'act'; body: Siteleq | null }
+	| { head: 'bracket'; inner: Siteleq }
+	| { head: 'int'; inner: Siteleq }
+	| { head: 'cont'; inner: Siteleq | null }
+	| { head: 'pl'; inner: Siteleq }
+);
+
+function maybeBracket<T extends Siteleq | null>(
+	t: T,
+	precedence: Precedence,
+): Siteleq | T {
 	return t === null ||
-		t.head === 'atom' ||
-		t.head === 'bracket' ||
-		t.head === 'prefix' ||
-		t.head === 'int' ||
-		t.head === 'cont' ||
-		t.head === 'pl'
+		t.precedence >= precedence ||
+		('body' in t && t.body === null)
 		? t
-		: { head: 'bracket', inner: t };
+		: { head: 'bracket', inner: t, precedence: Precedence.Bracket };
 }
 
 function prefix(
 	prefix: (Siteleq & { head: 'prefix' })['prefix'],
 	inner: ExprType,
 ): Siteleq {
-	const body = maybeBracket(typeToSiteleq(inner));
+	const body = maybeBracket(typeToSiteleq(inner), Precedence.Prefix);
 	return {
 		head: 'prefix',
 		prefix,
 		body,
+		precedence: Precedence.Prefix,
 	};
 }
 
-function fn(t: ExprType, params: Siteleq[]): Siteleq | null {
-	if (typeof t !== 'string') {
-		if (t.head === 'fn') {
-			addItems(t.domain, params);
-			return fn(t.range, params);
-		}
-		if (t.head === 'ref') {
-			params.push({ head: 'binding', binding: t.binding });
-			return fn(t.inner, params);
-		}
-	}
-	const range = maybeBracket(typeToSiteleq(t));
-	if (params.length === 0 || range === null) return range;
-	const domain: Siteleq | Binding =
-		params.length === 1
-			? params[0]
-			: maybeBracket({ head: 'tuple', items: params });
-	return range === null || params.length === 0
-		? range
-		: { head: 'fn', domain, range };
+function suffix(
+	suffix: (Siteleq & { head: 'suffix' })['suffix'],
+	inner: ExprType,
+): Siteleq {
+	const body = maybeBracket(typeToSiteleq(inner), Precedence.Suffix);
+	return {
+		head: 'suffix',
+		suffix,
+		body,
+		precedence: Precedence.Suffix,
+	};
 }
 
-export function typeToSiteleq(t: ExprType): Siteleq | null {
+function typeToSiteleq(t: ExprType): Siteleq | null {
 	if (typeof t === 'string')
-		return t === '()' ? null : { head: 'atom', value: t };
+		return t === '()'
+			? null
+			: { head: 'atom', value: t, precedence: Precedence.Atom };
 	switch (t.head) {
-		case 'fn':
-		case 'ref':
-			return fn(t, []);
+		case 'fn': {
+			const domain = maybeBracket(typeToSiteleq(t.domain), Precedence.Fn + 1);
+			const range = maybeBracket(typeToSiteleq(t.range), Precedence.Fn);
+			return domain === null || range === null
+				? range
+				: { head: 'fn', domain, range, precedence: Precedence.Fn };
+		}
+		case 'ref': {
+			const body = maybeBracket(typeToSiteleq(t.inner), Precedence.Prefix);
+			return (
+				body && {
+					head: 'ref',
+					binding: t.binding,
+					body,
+					precedence: Precedence.Prefix,
+				}
+			);
+		}
 		case 'indef':
-		case 'qn':
-		case 'nf':
 		case 'dx':
-		case 'act':
 			return prefix(t.head, t.inner);
-		case 'int':
-			return { head: 'int', inner: typeToSiteleq(t.inner) };
+		case 'qn':
+		case 'act':
+			return suffix(t.head, t.inner);
+		case 'int': {
+			const inner = typeToSiteleq(t.inner);
+			return inner && { head: 'int', inner, precedence: Precedence.Bracket };
+		}
 		case 'cont':
-			return { head: 'cont', inner: typeToSiteleq(t.inner) };
+			return {
+				head: 'cont',
+				inner: typeToSiteleq(t.inner),
+				precedence: Precedence.Bracket,
+			};
 		case 'pl': {
 			const inner = typeToSiteleq(t.inner);
-			return inner === null ? null : { head: 'pl', inner };
-		}
-		case 'pair':
-		case 'bind': {
-			const items: Siteleq[] = [];
-			addItems(t, items);
-			return items.length === 0
+			return inner === null
 				? null
-				: items.length === 1
-					? items[0]
-					: { head: 'tuple', items };
+				: { head: 'pl', inner, precedence: Precedence.Bracket };
 		}
+		case 'pair': {
+			const left = maybeBracket(typeToSiteleq(t.inner), Precedence.Pair);
+			const right = maybeBracket(typeToSiteleq(t.supplement), Precedence.Pair);
+			return left === null
+				? right
+				: right === null
+					? left
+					: { head: 'pair', left, right, precedence: Precedence.Pair };
+		}
+		case 'bind':
+			return {
+				head: 'bind',
+				binding: t.binding,
+				body: maybeBracket(typeToSiteleq(t.inner), Precedence.Prefix),
+				precedence: Precedence.Prefix,
+			};
 	}
 }
 
-function makeSpacer(): ReactNode {
-	return <span style={{ whiteSpace: 'pre' }}> </span>;
-}
+const Intension: FC<{ inner: Siteleq; container: HTMLElement }> = ({
+	inner,
+	container,
+}) => {
+	const mrowRef = useRef<MathMLElement | null>(null);
+	const moRef = useRef<MathMLElement | null>(null);
+	const divRef = useRef<HTMLDivElement | null>(null);
+	useLayoutEffect(() => {
+		const innerBounds = mrowRef.current!.getBoundingClientRect();
+		const bounds = moRef.current!.getBoundingClientRect();
+		const containerBounds = container.getBoundingClientRect();
+		divRef.current!.style.setProperty(
+			'top',
+			`${bounds.top - containerBounds.top}px`,
+		);
+		divRef.current!.style.setProperty(
+			'left',
+			`${innerBounds.left - containerBounds.left}px`,
+		);
+		divRef.current!.style.setProperty('width', `${innerBounds.width}px`);
+		divRef.current!.style.setProperty('height', '3px');
+	});
+	return (
+		<munderover accent accentunder>
+			<mrow ref={mrowRef}>
+				<SiteleqTypePart t={inner} container={container} />
+			</mrow>
+			<mo className="kuna-squiggle" ref={moRef}>
+				⎵
+			</mo>
+			<mo className="kuna-squiggle">⎴</mo>
+			{createPortal(
+				<div
+					className="kuna-squiggle bg-slate-900 dark:bg-slate-200"
+					ref={divRef}
+				/>,
+				container,
+			)}
+		</munderover>
+	);
+};
 
-function prefixSymbol(
-	prefix: (Siteleq & { head: 'prefix' })['prefix'],
-): string {
-	switch (prefix) {
-		case 'indef':
-			return '+';
-		case 'qn':
-			return '?';
-		case 'nf':
-			return 'Nf'; // TODO: Remove Nf?
-		case 'dx':
-			return '^';
-		case 'act':
-			return '!';
-	}
-}
-
-export const SiteleqTypePart: FC<{ t: Siteleq | null }> = ({ t }) => {
-	if (t === null) return null;
+const SiteleqTypePart: FC<{ t: Siteleq; container: HTMLElement }> = ({
+	t,
+	container,
+}) => {
 	switch (t.head) {
-		case 'binding':
-			return bindingToString(t.binding);
 		case 'atom':
 			switch (t.value) {
 				case 'e':
-					return 'o';
+					return <mi>○</mi>;
 				case 'v':
-					return 'v';
+					return <mi>✲</mi>;
 				case 'i':
-					return 't';
+					return <mi>🕔</mi>;
 				case 't':
-					return '■';
+					return <mi>◐</mi>;
 				case 's':
-					return 's';
+					return <mi>~</mi>;
 				default:
 					return t.value satisfies never;
 			}
-		case 'fn': {
-			const spacer = makeSpacer();
+		case 'fn':
 			return (
 				<>
-					<SiteleqTypePart t={t.domain} />
-					{spacer}›{spacer}
-					<SiteleqTypePart t={t.range} />
+					<SiteleqTypePart t={t.domain} container={container} />
+					<mo>›</mo>
+					<SiteleqTypePart t={t.range} container={container} />
 				</>
 			);
-		}
-		case 'tuple': {
-			const spacer = makeSpacer();
-			return t.items.flatMap((item, i) => [
-				// biome-ignore lint/suspicious/noArrayIndexKey: Static tree
-				<SiteleqTypePart key={i} t={item} />,
-				...(i === t.items.length - 1 ? [] : [spacer]),
-			]);
-		}
-		case 'prefix': {
-			const spacer = makeSpacer();
+		case 'ref':
 			return (
 				<>
-					{prefixSymbol(t.prefix)}
-					{spacer}
-					<SiteleqTypePart t={t.body} />
+					<mi className="kuna-lexeme">{bindingToString(t.binding)}</mi>
+					<mo lspace="0" rspace="0.4em">
+						:
+					</mo>
+					<SiteleqTypePart t={t.body} container={container} />
 				</>
 			);
-		}
+		case 'bind':
+			return (
+				<>
+					<mi className="kuna-lexeme">{bindingToString(t.binding)}</mi>
+					<mspace width={t.body === null ? undefined : '0.4em'} />
+					{t.body && <SiteleqTypePart t={t.body} container={container} />}
+				</>
+			);
+		case 'pair':
+			return (
+				<>
+					<SiteleqTypePart t={t.left} container={container} />
+					<mspace width="0.4em" />
+					<SiteleqTypePart t={t.right} container={container} />
+				</>
+			);
+		case 'prefix':
+			return (
+				<>
+					<mo lspace="0" rspace="0.4em">
+						{t.prefix === 'indef' ? '•' : '↪'}
+					</mo>
+					{t.body && <SiteleqTypePart t={t.body} container={container} />}
+				</>
+			);
+		case 'suffix':
+			return (
+				<>
+					{t.body && <SiteleqTypePart t={t.body} container={container} />}
+					<mo lspace={t.body === null ? undefined : '0.2em'} rspace="0">
+						{t.suffix === 'qn' ? '?' : '!'}
+					</mo>
+				</>
+			);
 		case 'bracket':
 			return (
 				<>
-					(<SiteleqTypePart t={t.inner} />)
+					<mo>(</mo>
+					<SiteleqTypePart t={t.inner} container={container} />
+					<mo>)</mo>
 				</>
 			);
-
 		case 'int':
-			return (
-				<div className="inline-flex border-b mb-1 items-baseline">
-					<SiteleqTypePart t={t.inner} />
-				</div>
-			);
+			return <Intension inner={t.inner} container={container} />;
 		case 'cont':
 			return (
-				<div className="inline-flex border-t border-r border-l px-1 mx-1 my-0.5 items-baseline">
-					<SiteleqTypePart t={t.inner} />
-				</div>
+				<>
+					<mpadded className="kuna-cont">
+						{t.inner && <SiteleqTypePart t={t.inner} container={container} />}
+					</mpadded>
+				</>
 			);
 		case 'pl':
 			return (
 				<>
-					[<SiteleqTypePart t={t.inner} />]
+					<mo>[</mo>
+					<SiteleqTypePart t={t.inner} container={container} />
+					<mo>]</mo>
 				</>
 			);
+		default:
+			t satisfies never;
 	}
 };
 
-export const SiteleqType: FC<{ t: Siteleq | null }> = ({ t }) => {
+export const SiteleqType: FC<{ t: ExprType }> = ({ t }) => {
+	const siteleq = typeToSiteleq(t);
+	const [container, setContainer] = useState<HTMLElement | null>(null);
 	return (
-		<div className="inline-flex items-baseline">
-			<SiteleqTypePart t={t} />
-		</div>
+		siteleq && (
+			<div ref={setContainer} className="kuna-siteleq-container">
+				<math>
+					{container && (
+						<mrow>
+							<SiteleqTypePart t={siteleq} container={container} />
+						</mrow>
+					)}
+				</math>
+			</div>
+		)
 	);
 };
