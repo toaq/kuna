@@ -160,7 +160,7 @@ const Intension: FC<{ inner: Siteleq; container: HTMLElement }> = ({
 			<mo className="kuna-squiggle">⎴</mo>
 			{createPortal(
 				<div
-					className="kuna-squiggle bg-slate-900 dark:bg-slate-200"
+					className="kuna-squiggle bg-neutral-900 dark:bg-slate-200"
 					ref={divRef}
 				/>,
 				container,

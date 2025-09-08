@@ -1,8 +1,8 @@
-# Kuna
+# Kúna
 
 Kuna is a software suite for parsing Toaq Delta. It can translate Toaq into box
-diagrams, syntax trees, logic formulas, and more. The word _kuna_ /ˈkʰuːna/ is
-Toaq for "sentence."
+diagrams, syntax trees, semantic expressions, and more. The word _kuna_
+/ˈkʰuːna/ is Toaq for "sentence."
 
 ## Using Kuna
 
@@ -69,7 +69,7 @@ pnpm run bot
    [syntactic movement](https://en.wikipedia.org/wiki/Syntactic_movement) and
    adding scope information to the tree.
 4. This tree can be interpreted/denoted by the code in `src/semantics` to
-   produce a semantic representation (formula).
+   produce a semantic representation (an expression).
 5. The various modules in `src/modes` can transform, annotate, consume, or
    display these results.
 

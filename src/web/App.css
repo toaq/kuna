@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-	--color-mio: hsla(220deg, 90%, 70%);
-	--blue: #2060ff;
+	--color-mio: #0a36a6;
+	--color-blue: #346edd;
 }
 
 label {
@@ -344,7 +344,7 @@ button {
 
 .effects-denotation {
 	margin-inline-start: 1rem;
-	color: var(--blue);
+	color: var(--color-blue);
 }
 
 
@@ -426,7 +426,7 @@ math .kuna-cont {
 }
 
 .type-hover:hover {
-	background-color: var(--blue);
+	background-color: var(--color-blue);
 	color: white;
 	padding: 0 1px;
 	margin: 0 -1px;

@@ -73,7 +73,7 @@ export function CompositionStepsSlider({
 	const [stepIndex, setStepIndex] = useState(steps.length - 1);
 
 	if (!steps || steps.length === 0) {
-		return <div className="italic text-slate-500">No composition steps</div>;
+		return <div className="italic text-neutral-500">No composition steps</div>;
 	}
 
 	const step = steps[stepIndex] ?? steps[0];
@@ -97,7 +97,7 @@ export function CompositionStepsSlider({
 					onChange={e => setStepIndex(Number(e.target.value))}
 					className="w-48"
 				/>
-				<span className="text-sm text-slate-500">
+				<span className="text-sm text-neutral-500">
 					Step {stepIndex + 1} / {steps.length}
 				</span>
 			</div>
@@ -111,7 +111,7 @@ export function CompositionStepsSlider({
 
 			{/* Type visualization */}
 			<div className="mt-4">
-				<div className="border border-slate-300 dark:border-slate-600 rounded p-2">
+				<div className="border border-neutral-300 dark:border-slate-600 rounded p-2">
 					<TreeBrowser
 						scene={compositionScene}
 						compactDenotations={false}
@@ -153,20 +153,20 @@ export function InspectNode(props: {
 				</div>
 				<TreeLabel label={tree.categoryLabel} forceNormalWeight={true} />
 			</div>
-			<p className="mt-2 py-2 px-4 text-lg bg-slate-100 dark:bg-slate-800 w-fit rounded">
+			<p className="mt-2 py-2 px-4 text-lg bg-neutral-100 dark:bg-slate-800 w-fit rounded">
 				<span className="color-word">{tree.source}</span>
 			</p>
 			{tree.denotation?.denotation && (
 				<>
 					<h3 className="text-lg mt-4 mb-2 font-bold">Type</h3>
-					<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
+					<div className="mt-2 py-1 px-3 bg-neutral-100 dark:bg-slate-800 w-fit rounded">
 						<SiteleqType t={tree.denotation.denotation.type} />
 					</div>
 
 					{'mode' in tree && tree.mode && (
 						<>
 							<h3 className="text-lg mt-4 mb-2 font-bold">Composition mode</h3>
-							<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
+							<div className="mt-2 py-1 px-3 bg-neutral-100 dark:bg-slate-800 w-fit rounded">
 								{modeToString(tree.mode)}
 							</div>
 							<h3 className="text-lg mt-4 mb-2 font-bold">Composition steps</h3>
@@ -179,7 +179,7 @@ export function InspectNode(props: {
 					)}
 
 					<h3 className="text-lg mt-4 mb-2 font-bold">Denotation</h3>
-					<div className="mt-2 py-1 px-3 bg-slate-100 dark:bg-slate-800 w-fit rounded">
+					<div className="mt-2 py-1 px-3 bg-neutral-100 dark:bg-slate-800 w-fit rounded">
 						{toJsx(tree.denotation.denotation)}
 					</div>
 				</>

@@ -817,7 +817,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 						textAlign: 'center',
 						transition: 'none',
 						color: 'white',
-						background: 'var(--blue)',
+						background: 'var(--color-blue)',
 						zIndex: 2,
 					}}
 				/>
