@@ -410,6 +410,7 @@ math .kuna-cont {
 	border-right: 1px solid;
 	border-radius: 8px 8px 0 0;
 	padding-inline: 5px;
+	padding-block-start: 2px;
 }
 
 .dark-mode math .kuna-constant,
