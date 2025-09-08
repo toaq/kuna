@@ -149,11 +149,7 @@ export function Subtree(props: {
 								} else {
 									setInspecteePath(props.path);
 									setInspectee(
-										<InspectNode
-											tree={tree}
-											breadcrumbs={breadcrumbs}
-											theme={options.theme}
-										/>,
+										<InspectNode tree={tree} breadcrumbs={breadcrumbs} />,
 									);
 								}
 							}

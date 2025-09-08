@@ -272,7 +272,9 @@ const SiteleqTypePart: FC<{ t: Siteleq; container: HTMLElement }> = ({
 	}
 };
 
-export const SiteleqType: FC<{ t: ExprType }> = ({ t }) => {
+export const SiteleqType: FC<{
+	t: ExprType;
+}> = ({ t }) => {
 	const siteleq = typeToSiteleq(t);
 	const [container, setContainer] = useState<HTMLElement | null>(null);
 	return (
