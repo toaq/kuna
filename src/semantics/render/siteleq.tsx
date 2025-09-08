@@ -134,21 +134,28 @@ const Intension: FC<{ inner: Siteleq; container: HTMLElement }> = ({
 	const mrowRef = useRef<MathMLElement | null>(null);
 	const moRef = useRef<MathMLElement | null>(null);
 	const divRef = useRef<HTMLDivElement | null>(null);
+
 	useLayoutEffect(() => {
 		const innerBounds = mrowRef.current!.getBoundingClientRect();
 		const bounds = moRef.current!.getBoundingClientRect();
 		const containerBounds = container.getBoundingClientRect();
+		// Pad out the smallest of squiggles
+		const padding = Math.max(0, 10 - innerBounds.width);
 		divRef.current!.style.setProperty(
 			'top',
 			`${bounds.top - containerBounds.top}px`,
 		);
 		divRef.current!.style.setProperty(
 			'left',
-			`${innerBounds.left - containerBounds.left}px`,
+			`${innerBounds.left - containerBounds.left - padding / 2}px`,
 		);
-		divRef.current!.style.setProperty('width', `${innerBounds.width}px`);
+		divRef.current!.style.setProperty(
+			'width',
+			`${innerBounds.width + padding}px`,
+		);
 		divRef.current!.style.setProperty('height', '3px');
 	});
+
 	return (
 		<munderover accent accentunder>
 			<mrow ref={mrowRef}>
