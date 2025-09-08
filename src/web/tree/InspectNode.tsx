@@ -41,7 +41,7 @@ const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 	const outOffset = midPoint - outBounds.width / 2;
 
 	return (
-		<div className="flex flex-col items-start w-fit" ref={ref}>
+		<div className="flex flex-col items-start w-fit">
 			<div
 				className="flex flex-col items-center relative"
 				ref={outRef}
@@ -62,6 +62,7 @@ const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 			<svg
 				className="mb-2 relative"
 				style={{ left: Math.max(0, -outOffset) }}
+				width={rightPoint}
 				height={30}
 				role="presentation"
 			>
@@ -74,6 +75,7 @@ const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 			<div
 				className="flex gap-4 relative"
 				style={{ left: Math.max(0, -outOffset) }}
+				ref={ref}
 			>
 				<div
 					className="flex items-center py-1 px-3 bg-neutral-100 dark:bg-slate-800 rounded"
