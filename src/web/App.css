@@ -391,7 +391,7 @@ math .kuna-do.kuna-do-quantify > mtr:last-child > mtd {
 	padding-inline-start: 1em;
 }
 
-.kuna-siteleq-container {
+.kuna-math-container {
 	position: relative;
 }
 
@@ -436,6 +436,13 @@ math .kuna-cont {
 .type-hover:has(.type-hover:hover) {
 	background-color: inherit;
 	color: inherit;
+}
+
+.kuna-type-tooltip {
+	text-align: center;
+	transition: none;
+	z-index: 2;
+	font-size: 14px;
 }
 
 .help th {

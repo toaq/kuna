@@ -277,7 +277,7 @@ export const SiteleqType: FC<{ t: ExprType }> = ({ t }) => {
 	const [container, setContainer] = useState<HTMLElement | null>(null);
 	return (
 		siteleq && (
-			<div ref={setContainer} className="kuna-siteleq-container">
+			<div ref={setContainer} className="kuna-math-container">
 				<math>
 					{container && (
 						<mrow>

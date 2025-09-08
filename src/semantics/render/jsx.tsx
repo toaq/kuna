@@ -1,9 +1,11 @@
 import classNames from 'classnames';
-import type {
-	CSSProperties,
-	ClassAttributes,
-	DOMAttributes,
-	ReactNode,
+import {
+	type CSSProperties,
+	type ClassAttributes,
+	type DOMAttributes,
+	type FC,
+	type ReactNode,
+	useId,
 } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { Impossible } from '../../core/error';
@@ -28,7 +30,7 @@ import {
 	wrap,
 } from './format';
 import type { RichExpr } from './model';
-import { typeToPlainText } from './plain';
+import { SiteleqType } from './siteleq';
 
 // @types/react does not yet support MathML. The following type declarations are
 // borrowed from https://github.com/DefinitelyTyped/DefinitelyTyped/pull/71187.
@@ -462,12 +464,11 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 	},
 };
 
-function TypeHover(props: {
+const TypeHover: FC<{
 	tooltipId: string;
+	tooltipTypeMap: { [id: string]: ExprType };
 	render: Render<ReactNode>;
-}): ReactNode {
-	const { tooltipId, render } = props;
-
+}> = ({ tooltipId, tooltipTypeMap, render }) => {
 	let inner: ReactNode;
 	switch (render.type) {
 		case 'token':
@@ -475,29 +476,65 @@ function TypeHover(props: {
 			break;
 		case 'join':
 			inner = render.parts.map((part, i) => (
-				// biome-ignore lint/suspicious/noArrayIndexKey: rendering static tree
-				<TypeHover tooltipId={tooltipId} render={part} key={i} />
+				<TypeHover
+					tooltipId={tooltipId}
+					tooltipTypeMap={tooltipTypeMap}
+					render={part}
+					// biome-ignore lint/suspicious/noArrayIndexKey: rendering static tree
+					key={i}
+				/>
 			));
 			break;
 		case 'wrap':
 			inner = render.wrapper(
-				<TypeHover tooltipId={tooltipId} render={render.inner} />,
+				<TypeHover
+					tooltipId={tooltipId}
+					tooltipTypeMap={tooltipTypeMap}
+					render={render.inner}
+				/>,
 			);
 			break;
 	}
+
+	const id = useId();
+	if (render.exprType !== undefined) tooltipTypeMap[id] = render.exprType;
 
 	return render.exprType ? (
 		<mrow
 			className="type-hover"
 			data-tooltip-id={tooltipId}
-			data-tooltip-content={typeToPlainText(render.exprType)}
+			data-tooltip-content={id}
 		>
 			{inner}
 		</mrow>
 	) : (
 		inner
 	);
-}
+};
+
+const ExprRender: FC<{
+	r: Render<ReactNode>;
+	typeMap: { [id: string]: ExprType };
+}> = ({ r, typeMap }) => {
+	const id = useId();
+	return (
+		<>
+			<Tooltip
+				id={id}
+				opacity={1}
+				className="kuna-type-tooltip dark-mode"
+				render={({ content }) => {
+					if (content === null) return undefined;
+					const type = typeMap[content];
+					return type && <SiteleqType t={type} />;
+				}}
+			/>
+			<math>
+				<TypeHover tooltipId={id} tooltipTypeMap={typeMap} render={r} />
+			</math>
+		</>
+	);
+};
 
 function precedence(r: Render<ReactNode>): number | null {
 	switch (r.type) {
@@ -807,24 +844,6 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 	render(input: RichExpr): ReactNode {
 		const raw = this.sub(input);
 		const bracketed = this.bracketAll(raw);
-		const id = Math.random().toString();
-		return (
-			<>
-				<Tooltip
-					id={id}
-					opacity={1}
-					style={{
-						textAlign: 'center',
-						transition: 'none',
-						color: 'white',
-						background: 'var(--color-blue)',
-						zIndex: 2,
-					}}
-				/>
-				<math>
-					<TypeHover tooltipId={id} render={bracketed} />
-				</math>
-			</>
-		);
+		return <ExprRender r={bracketed} typeMap={{}} />;
 	}
 }
