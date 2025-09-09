@@ -2,7 +2,9 @@
 
 @theme {
 	--color-mio: #0a36a6;
-	--color-blue: #477eeb;
+	--color-mio-dark: #08287f;
+	--color-blue: #2969e8;
+	--color-blue-dark: #154ec2;
 }
 
 label {
@@ -11,7 +13,7 @@ label {
 textarea,
 input,
 select {
-	@apply bg-white dark:bg-slate-900 border border-current/20 px-2 py-1;
+	@apply bg-white dark:bg-gray-900 border border-current/20 px-2 py-1;
 }
 
 * {
@@ -432,6 +434,10 @@ math .kuna-cont {
 	padding: 0 1px;
 	margin: 0 -1px;
 	position: relative;
+}
+
+.dark-mode .type-hover:hover {
+	background-color: var(--color-blue-dark);
 }
 
 .type-hover:has(.type-hover:hover) {

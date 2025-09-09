@@ -49,7 +49,7 @@ const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 					left: Math.max(0, outOffset),
 				}}
 			>
-				<div className="py-1 px-3 bg-neutral-100 dark:bg-slate-800 w-fit rounded">
+				<div className="py-1 px-3 bg-neutral-100 dark:bg-gray-900 dark:border-gray-600 dark:border-1 w-fit rounded">
 					<SiteleqType t={step.out} />
 				</div>
 				<div className="mt-2">
@@ -78,20 +78,20 @@ const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 				ref={ref}
 			>
 				<div
-					className="flex items-center py-1 px-3 bg-neutral-100 dark:bg-slate-800 rounded"
+					className="flex items-center py-1 px-3 bg-neutral-100 dark:bg-gray-900 dark:border-gray-600 dark:border-1 rounded"
 					ref={leftRef}
 				>
 					<SiteleqType t={step.left} />
 				</div>
 				<div
-					className="flex items-center py-1 px-3 bg-neutral-100 dark:bg-slate-800 rounded"
+					className="flex items-center py-1 px-3 bg-neutral-100 dark:bg-gray-900 dark:border-gray-600 dark:border-1 rounded"
 					ref={rightRef}
 				>
 					<SiteleqType t={step.right} />
 				</div>
 			</div>
 			<div className="flex flex-col w-full mt-6">
-				<span className="text-sm text-neutral-500 dark:text-slate-400 dark">
+				<span className="text-sm text-neutral-500 dark:text-gray-400 dark">
 					Composition step {stepIndex + 1} / {steps.length}
 				</span>
 				<input
@@ -132,7 +132,7 @@ export function InspectNode(props: {
 				</div>
 				<TreeLabel label={tree.categoryLabel} forceNormalWeight={true} />
 			</div>
-			<p className="mt-2 py-2 px-4 text-lg bg-neutral-100 dark:bg-slate-800 w-fit rounded">
+			<p className="mt-2 py-2 px-4 text-lg bg-neutral-100 dark:bg-gray-900 dark:border-gray-600 dark:border-1 w-fit rounded">
 				<span className="color-word">{tree.source}</span>
 			</p>
 			{tree.denotation?.denotation && (
@@ -145,14 +145,14 @@ export function InspectNode(props: {
 					) : (
 						<>
 							<h3 className="text-lg mt-4 mb-2 font-bold">Type</h3>
-							<div className="mt-2 py-1 px-3 bg-neutral-100 dark:bg-slate-800 w-fit rounded">
+							<div className="mt-2 py-1 px-3 bg-neutral-100 dark:bg-gray-900 dark:border-gray-600 dark:border-1 w-fit rounded">
 								<SiteleqType t={tree.denotation.denotation.type} />
 							</div>
 						</>
 					)}
 
 					<h3 className="text-lg mt-4 mb-2 font-bold">Denotation</h3>
-					<div className="mt-2 py-1 px-3 bg-neutral-100 dark:bg-slate-800 w-fit rounded">
+					<div className="mt-2 py-1 px-3 bg-neutral-100 dark:bg-gray-900 dark:border-gray-600 dark:border-1 w-fit rounded">
 						{toJsx(tree.denotation.denotation)}
 					</div>
 				</>

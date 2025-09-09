@@ -13,11 +13,11 @@ export function Top(props: {
 }) {
 	const darkMode = useDarkMode();
 	const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-		`${isActive ? 'bg-blue dark:bg-slate-500 ' : ''}px-3 hover:underline`;
+		`${isActive ? 'bg-blue dark:bg-blue-dark font-bold ' : ''}px-3 hover:underline`;
 
 	return (
 		<>
-			<header className="bg-mio dark:bg-slate-600 flex w-full items-center text-white leading-10 px-3">
+			<header className="bg-mio dark:bg-mio-dark flex w-full items-center text-white leading-10 px-3">
 				<img src="logo.svg" aria-label="Kúna" width={52} className="mr-3" />
 				<nav className="flex">
 					<NavLink to="/" className={navLinkClass}>
@@ -58,7 +58,7 @@ export function App() {
 	return (
 		<div className={containerClass}>
 			<Top showHelp={showHelp} setShowHelp={setShowHelp} />
-			<main className="flex-1 min-h-0 min-w-0 bg-neutral-50 text-neutral-900 dark:bg-slate-800 dark:text-slate-200">
+			<main className="flex-1 min-h-0 min-w-0 bg-neutral-50 text-neutral-900 dark:bg-gray-950 dark:text-gray-200">
 				{showHelp && <Help closeSelf={() => setShowHelp(false)} />}
 				<Routes>
 					<Route

@@ -91,7 +91,7 @@ const EffectsHelp = () => (
 
 export function Help(props: { closeSelf: () => void }) {
 	return (
-		<div className="help relative lg:fixed lg:start-2 lg:bottom-2 bg-white dark:bg-slate-900 z-20 px-8 pb-8 lg:rounded-xl lg:border lg:border-current/10 text-xs">
+		<div className="help relative lg:fixed lg:start-2 lg:bottom-2 bg-white dark:bg-gray-900 z-20 px-8 pb-8 lg:rounded-xl lg:border lg:border-current/10 text-xs">
 			<button
 				className="absolute top-4 end-4 cursor-pointer hover:underline"
 				type="button"
