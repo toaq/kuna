@@ -30,6 +30,8 @@ exports[`conjunctions > Maı jí róı súq chéq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 
 
 exports[`conjunctions > Tua sı jí súq rá nháo hụ́ra. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑄 ⇐ ⟦súq⟧, 𝑅 ⇐ ⟦nháo⟧; ⟦da⟧ (λ𝑤 (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → (∀𝑐 𝑐 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑑 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ⟦sı⟧ 𝑤' 𝑐 𝑏 𝑒') 𝑑 ∧ ⟦tua⟧ 𝑤 𝑑 𝑎 𝑒) 𝑡))) ∨ (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑅 𝑤 → (∀𝑐 𝑐 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ∃𝑑 ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒' ⟦sı⟧ 𝑤' 𝑐 𝑏 𝑒') 𝑑 ∧ ⟦tua⟧ 𝑤 𝑑 𝑎 𝑒) 𝑡))))"`;
 
+exports[`content clauses > Cho jí, ꝡá fıeq jí báq zu. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑄 ⇐ ⟦jí⟧, 𝑡'' ⇐ ⟦tuom⟧; λ𝑤 (𝑅, 𝑆 ⇐ new (λ𝑅, 𝑆 (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦zu⟧ 𝑤 𝑎) 𝑡'') ∧ (∀𝑎 𝑎 ≺ 𝑆 𝑤 → ⟦ꝡä⟧ 𝑤 (λ𝑤' ∀𝑏 𝑏 ≺ 𝑄 𝑤' → (∀𝑐 𝑐 ≺ 𝑅 𝑤' → ⟦tam⟧ 𝑤' (⟦fıeq⟧ 𝑤' 𝑐 𝑏) 𝑡')) 𝑎)); 𝑅 ⇒ zú, 𝑅 ⇒ hóq, 𝑆 ⇒ hụ́ꝡa; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑃 𝑤' → (∀𝑏 𝑏 ≺ 𝑆 𝑤' → ⟦tam⟧ 𝑤' (⟦cho⟧ 𝑤' 𝑏 𝑎) 𝑡)))"`;
+
 exports[`donkey anaphora > Do tú poq, ꝡë bo bâq aqshe, ꝡë bua hóa báq dueq, hóa, áqshe dúeq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑡'''' ⇐ ⟦tuom⟧, 𝑡''''' ⇐ ⟦tuom⟧; ⟦da⟧ (λ𝑤 ∀𝑄, 𝑅, 𝑃 (∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦dueq⟧ 𝑤 𝑎) 𝑡''''') ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦aqshe⟧ 𝑤 𝑎) 𝑡''') ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦bua⟧ 𝑤 𝑏 𝑎) 𝑡'''')) ∧ ⟦tam⟧ 𝑤 (⟦poq⟧ 𝑤 (𝑃 𝑤)) 𝑡' ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦bo⟧ 𝑤 𝑎 (𝑃 𝑤) 𝑒) 𝑡'') → (∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦do⟧ 𝑤 𝑏 𝑎 (𝑃 𝑤)) 𝑡)))"`;
 
 exports[`donkey anaphora > Kueq túq poq, ꝡë bo hóa báq taqchao. Ꝡa puı máq. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑡'''' ⇐ ⟦tuom⟧; λ𝑤 (λ𝑤' [𝑎 | 𝑎, 𝑏 ⇐ universe, ⟦tam⟧ 𝑤' (⟦taqchao⟧ 𝑤' 𝑎) 𝑡''' ∧ ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑏) 𝑡' ∧ ⟦tam⟧ 𝑤' (⟦bo⟧ 𝑤' 𝑎 𝑏) 𝑡''] ⇒ táqchao, λ𝑤' [𝑎 | 𝑎, 𝑏 ⇐ universe, ⟦tam⟧ 𝑤' (⟦taqchao⟧ 𝑤' 𝑎) 𝑡''' ∧ ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑏) 𝑡' ∧ ⟦tam⟧ 𝑤' (⟦bo⟧ 𝑤' 𝑎 𝑏) 𝑡''] ⇒ máq, λ𝑤' [𝑏 | 𝑎, 𝑏 ⇐ universe, ⟦tam⟧ 𝑤' (⟦taqchao⟧ 𝑤' 𝑎) 𝑡''' ∧ ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑏) 𝑡' ∧ ⟦tam⟧ 𝑤' (⟦bo⟧ 𝑤' 𝑎 𝑏) 𝑡''] ⇒ póq, λ𝑤' [𝑏 | 𝑎, 𝑏 ⇐ universe, ⟦tam⟧ 𝑤' (⟦taqchao⟧ 𝑤' 𝑎) 𝑡''' ∧ ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑏) 𝑡' ∧ ⟦tam⟧ 𝑤' (⟦bo⟧ 𝑤' 𝑎 𝑏) 𝑡''] ⇒ hó; ⟦da⟧ (λ𝑤' ⟦tam⟧ 𝑤' (⟦kueq⟧ 𝑤' [𝑏 | 𝑎, 𝑏 ⇐ universe, ⟦tam⟧ 𝑤' (⟦taqchao⟧ 𝑤' 𝑎) 𝑡''' ∧ ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑏) 𝑡' ∧ ⟦tam⟧ 𝑤' (⟦bo⟧ 𝑤' 𝑎 𝑏) 𝑡'']) 𝑡), ⟦da⟧ (λ𝑤' ⟦tam⟧ 𝑤' (⟦puı⟧ 𝑤' [𝑎 | 𝑎, 𝑏 ⇐ universe, ⟦tam⟧ 𝑤' (⟦taqchao⟧ 𝑤' 𝑎) 𝑡''' ∧ ⟦tam⟧ 𝑤' (⟦poq⟧ 𝑤' 𝑏) 𝑡' ∧ ⟦tam⟧ 𝑤' (⟦bo⟧ 𝑤' 𝑎 𝑏) 𝑡'']) 𝑡''''))"`;
@@ -69,6 +71,8 @@ exports[`possessives > Paı jí báq poq da. Hobo ní chea. 1`] = `"λ𝑤 (𝑡
 exports[`predicatizers > Kuaı jí pó nánı hea bâq nam. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑄 ⇐ salient, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧, 𝑅, 𝑆 ⇐ ⟦nánı⟧ (λ𝑅, 𝑆 (∀𝑎 𝑎 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (⟦nam⟧ 𝑤 𝑎) 𝑡''') ∧ (∀𝑎 𝑎 ≺ 𝑆 𝑤 → (∀𝑏 𝑏 ≺ 𝑅 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦hea⟧ 𝑤 𝑏 𝑎 𝑒) 𝑡''))); 𝑅 ⇒ nám, 𝑅 ⇒ máq, 𝑆 ⇒ héa, 𝑆 ⇒ máq; λ𝑤' (𝑇 ⇐ new (λ𝑇 ⟦tam⟧ 𝑤' (λ𝑒 𝑄 𝑤' (𝑆 𝑤') (𝑇 𝑤') 𝑒) 𝑡'); 𝑇 ⇒ tá; ⟦da⟧ (λ𝑤'' ∀𝑎 𝑎 ≺ 𝑃 𝑤'' → (∀𝑏 𝑏 ≺ 𝑇 𝑤'' → ⟦tam⟧ 𝑤'' (⟦kuaı⟧ 𝑤'' 𝑏 𝑎) 𝑡))))"`;
 
 exports[`predicatizers > Mea íme nháo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦nháo⟧, 𝑄 ⇐ ⟦íme⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦mea⟧ 𝑤 (𝑄 𝑤) 𝑎 𝑒) 𝑡)"`;
+
+exports[`questions > Âo, ꝡä kato jí, nä kıaı hí poq jí? 1`] = `"𝑃 ⇐ accessibility, 𝑡 ⇐ ⟦tuom⟧, 𝑄 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑅 ⇐ ⟦jí⟧; bg (⟦da⟧ (λ𝑤 ¬(∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦kato⟧ 𝑤 𝑎) 𝑡))), ⟦móq⟧ (λ𝑤 qn (λ𝑆 ∀𝑎 𝑎 ≺ 𝑆 𝑤 → ⟦tam⟧ 𝑤 (⟦poq⟧ 𝑤 𝑎) 𝑡'') (λ𝑆 ∀𝑤' 𝑃 𝑤 𝑤' ∧ (∀𝑎 𝑎 ≺ 𝑄 𝑤' → ⟦tam⟧ 𝑤' (⟦kato⟧ 𝑤' 𝑎) 𝑡) → (∀𝑎 𝑎 ≺ 𝑆 𝑤' → (∀𝑏 𝑏 ≺ 𝑅 𝑤' → ⟦tam⟧ 𝑤' (⟦kıaı⟧ 𝑤' 𝑏 𝑎) 𝑡'))))"`;
 
 exports[`quotations > Kuq nháo mó «Ꝡoaq ní hao» teo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦nháo⟧, 𝑡' ⇐ ⟦tuom⟧; λ𝑤 (𝑄 ⇐ new (λ𝑄 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦mo⟧ 𝑤 "Ꝡoaq ní hao" 𝑎) 𝑡'); 𝑄 ⇒ hụ́mo, 𝑄 ⇒ hóq; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑃 𝑤' → (∀𝑏 𝑏 ≺ 𝑄 𝑤' → ⟦tam⟧ 𝑤' (⟦kuq⟧ 𝑤' 𝑏 𝑎) 𝑡)))"`;
 

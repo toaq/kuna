@@ -697,8 +697,13 @@ export const covertComplementizers = new Map<CovertValue, Expr>([
 	],
 	[
 		'REL',
-		λ(Ref({ type: 'covert resumptive' }, 't'), predicate =>
-			unref(v(predicate)),
+		λ(Ref({ type: 'covert resumptive' }, Cont('t')), p =>
+			λ(Int(Pl('e')), x =>
+				app(
+					uncont(app(unref(v(p)), v(x))),
+					λ('t', t => v(t)),
+				),
+			),
 		),
 	],
 ]);
@@ -789,11 +794,11 @@ export const overtComplementizers = new Map<string, Expr>([
 	],
 	[
 		'ꝡë',
-		λ(Cont(Ref({ type: 'resumptive' }, 't')), p =>
+		λ(Ref({ type: 'resumptive' }, Cont('t')), p =>
 			λ(Int(Pl('e')), x =>
 				app(
-					uncont(v(p)),
-					λ(Ref({ type: 'resumptive' }, 't'), p_ => app(unref(v(p_)), v(x))),
+					uncont(app(unref(v(p)), v(x))),
+					λ('t', t => v(t)),
 				),
 			),
 		),

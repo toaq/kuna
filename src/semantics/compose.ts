@@ -26,6 +26,7 @@ import {
 	composeFunctors,
 	contFunctor,
 	contMonad,
+	effectsEqual,
 	findEffect,
 	getApplicative,
 	getBigTraversable,
@@ -140,13 +141,30 @@ function mapModesUntil(
 	};
 }
 
+function fishOutFunctor(
+	inType: ExprType,
+	like: ExprType,
+): { type: ExprType; under: Functor } | null {
+	if (effectsEqual(inType, like)) return { type: inType, under: idFunctor };
+	const functor = getFunctor(inType);
+	if (functor === null) return null;
+	const result = fishOutFunctor(functor.unwrap(inType), like);
+	return (
+		result && {
+			type: result.type,
+			under: composeFunctors(functor, result.under),
+		}
+	);
+}
+
 function coerceInput_(
 	fn: Expr,
 	input: ExprType,
 	inputSide: 'left' | 'right' | 'out',
 	mode: CoercionMode,
 	under: Functor | null,
-	force: boolean,
+	mayLower: boolean | undefined,
+	mayLift: boolean,
 ): CoercionResult | null {
 	assertFn(fn.type);
 	const { wrap, unwrap, map } = under ?? idFunctor;
@@ -163,7 +181,19 @@ function coerceInput_(
 	const functor = getMatchingFunctor(inputInner, domainInner);
 	if (functor !== null) {
 		const newUnder = composeFunctors(under ?? idFunctor, functor);
-		const result = coerceInput_(fn, input, inputSide, mode, newUnder, force);
+		const result = coerceInput_(
+			fn,
+			input,
+			inputSide,
+			mode,
+			newUnder,
+			mayLower ??
+				((typeof domainInner === 'object' &&
+					domainInner.head === 'cont' &&
+					getRunner(inputInner)?.runner.eager) ||
+					mayLower),
+			mayLift,
+		);
 		if (result !== null) return result;
 
 		// Straightforward coercion to the original type failed, but maybe we can
@@ -196,7 +226,8 @@ function coerceInput_(
 					type: Fn(coerced, range),
 				},
 				newUnder,
-				force,
+				mayLower ?? true,
+				mayLift,
 			);
 		}
 
@@ -211,7 +242,7 @@ function coerceInput_(
 		inputSide !== 'out'
 	) {
 		const runner = getRunner(inputInner);
-		if (runner !== null && (runner.runner.eager || force)) {
+		if (runner !== null && (runner.runner.eager || mayLower)) {
 			const { functor, run, gather } = runner.runner;
 			const intermediateInput = wrap(Cont(functor.unwrap(inputInner)), input);
 			const result = coerceInput_(
@@ -220,7 +251,8 @@ function coerceInput_(
 				inputSide,
 				mode,
 				composeFunctors(under ?? idFunctor, contFunctor),
-				true,
+				mayLower ?? true,
+				false,
 			);
 			if (result !== null) {
 				assertFn(result.denotation.type);
@@ -281,7 +313,8 @@ function coerceInput_(
 				inputSide,
 				mode,
 				under,
-				force,
+				mayLower,
+				mayLift,
 			);
 			if (result !== null) {
 				const { denotation: cont, mode: coercedMode } = result;
@@ -426,7 +459,8 @@ function coerceInput_(
 					inputSide,
 					mode,
 					under,
-					force,
+					mayLower ?? false,
+					mayLift,
 				);
 				if (result !== null) {
 					const { denotation: cont, mode } = result;
@@ -466,7 +500,7 @@ function coerceInput_(
 		const runner = getRunner(inputInner);
 		if (
 			runner !== null &&
-			(runner.runner.eager || force) &&
+			(runner.runner.eager || mayLower) &&
 			subtype(wrap('t', input), domain)
 		) {
 			const coercedInner = wrap(runner.input, input);
@@ -490,13 +524,14 @@ function coerceInput_(
 					type: Fn(coercedInner, range),
 				},
 				under,
-				true,
+				mayLower,
+				mayLift,
 			);
 		}
 
 		// Try simply extracting a value from the functor via a comonad
 		const comonad = getComonad(inputInner);
-		if (comonad !== null && force) {
+		if (comonad !== null && mayLower) {
 			const coercedInner = wrap(comonad.functor.unwrap(inputInner), input);
 			const result = coerceInput_(
 				fn,
@@ -504,7 +539,8 @@ function coerceInput_(
 				inputSide,
 				mode,
 				under,
-				force,
+				mayLower,
+				mayLift,
 			);
 			if (result !== null) {
 				const { denotation: cont, mode } = result;
@@ -535,6 +571,100 @@ function coerceInput_(
 		}
 	}
 
+	// Try fishing out a distributive functor matching the desired effect from
+	// somewhere deeper within the input type
+	const distributive = getDistributive(domainInner);
+	if (distributive !== null) {
+		const fishedOut = fishOutFunctor(inputInner, domainInner);
+		if (fishedOut !== null) {
+			const coercedInner = distributive.functor.wrap(
+				fishedOut.under.wrap(
+					distributive.functor.unwrap(fishedOut.type),
+					inputInner,
+				),
+				fishedOut.type,
+			);
+			const coerced = wrap(coercedInner, input);
+			const result = coerceInput_(
+				fn,
+				coerced,
+				inputSide,
+				mode,
+				under === null
+					? distributive.functor
+					: composeFunctors(distributive.functor, under),
+				mayLower,
+				mayLift,
+			);
+			if (result !== null) {
+				const { denotation: cont, mode } = result;
+				assertFn(cont.type);
+				return {
+					denotation: λ(input, inputVal =>
+						app(
+							cont,
+							map(
+								() =>
+									λ(inputInner, inputInnerVal =>
+										distributive.distribute(
+											() => v(inputInnerVal),
+											fishedOut.under,
+											inputInner,
+										),
+									),
+								() => v(inputVal),
+								input,
+								coerced,
+							),
+						),
+					),
+					mode: {
+						mode:
+							inputSide === 'out' ? '←' : inputSide === 'left' ? '←L' : '←R',
+						from: mode,
+						type: Fn(input, cont.type.range),
+					},
+				};
+			}
+		}
+	}
+
+	if (mayLift) {
+		// Try lifting the input into the desired effect via an applicative functor
+		const applicative = getApplicative(domainInner);
+		if (applicative !== null) {
+			const coercedInner = applicative.functor.unwrap(domainInner);
+			const coerced = wrap(coercedInner, domain);
+			const result = coerceInput_(
+				λ(coerced, inputVal =>
+					app(
+						fn,
+						map(
+							() =>
+								λ(coercedInner, inner =>
+									applicative.pure(() => v(inner), coercedInner, domainInner),
+								),
+							() => v(inputVal),
+							coerced,
+							domain,
+						),
+					),
+				),
+				input,
+				inputSide,
+				{
+					mode: inputSide === 'left' ? '↑L' : '↑R',
+					from: mode,
+					type: Fn(coercedInner, range),
+				},
+				under,
+				false,
+				mayLift,
+			);
+			if (result !== null) return result;
+		}
+	}
+
 	return null;
 }
 
@@ -545,16 +675,20 @@ function coerceInput_(
  * @param inputSide The side of the tree which the input comes from. If this is
  *   'left' or 'right' then the function will be treated as a binary function so
  *   that functors map like f a → b → f c rather than f a → f (b → c).
- * @param force Forces even non-eager Runner instances to be run.
+ * @param mayLower Whether values should be allowed to be extracted via Comonad
+ *   instances or non-eager Runner instances.
+ * @param mayLift Whether values should be allowed to be lifted into applicative
+ *   functors.
  */
 function coerceInput(
 	fn: Expr,
 	input: ExprType,
 	inputSide: 'left' | 'right' | 'out',
 	mode: CompositionMode,
-	force = false,
+	mayLower: boolean | undefined = undefined,
+	mayLift = false,
 ): CoercionResult | null {
-	return coerceInput_(fn, input, inputSide, mode, null, force);
+	return coerceInput_(fn, input, inputSide, mode, null, mayLower, mayLift);
 }
 
 class UnimplementedComposition extends Error {}
@@ -670,6 +804,39 @@ function resolveCoercedMode(
 	return mode;
 }
 
+function tryCoerce(
+	fn: Expr,
+	types: ExprType[],
+	effects: (ExprType & object)[],
+	precedences: (ExprType & object)[],
+	mode: CompositionMode,
+	inputSide: 'left' | 'right',
+	mayLower: boolean | undefined = undefined,
+	mayLift = false,
+) {
+	for (let i = 0; i < types.length; i++) {
+		const result = coerceInput(
+			fn,
+			types[i],
+			inputSide,
+			mode,
+			mayLower,
+			mayLift,
+		);
+		if (result !== null) {
+			const { denotation: coerced, mode: coercedMode } = result;
+			return {
+				input: types[i],
+				fn: coerced,
+				effects: effects.slice(0, i),
+				precedences: precedences.slice(0, i),
+				mode: resolveCoercedMode(coercedMode, inputSide),
+			};
+		}
+	}
+	return null;
+}
+
 /**
  * Unwrap effects from the input type until it becomes possible to coerce it
  * into a type that the function accepts, then return the unwrapped input type
@@ -690,72 +857,15 @@ function unwrapAndCoerce(
 } {
 	assertFn(fn.type);
 	assertFn(fn.type.range);
+
 	let unwrapped = input;
+	const types: ExprType[] = [];
 	const effects: (ExprType & object)[] = [];
 	const precedences: (ExprType & object)[] = [];
-	const associatesWithEffects = getFunctor(fn.type.domain) !== null;
 	while (true) {
+		types.push(unwrapped);
 		const functor = getFunctor(unwrapped);
-		if (functor === null) {
-			if (associatesWithEffects) {
-				// The effects expected by the function weren't found; maybe we can lift the
-				// input into them via an applicative functor?
-				const applicative = getApplicative(fn.type.domain);
-				if (applicative !== null) {
-					const { domain } = fn.type;
-					const domainInner = applicative.functor.unwrap(domain);
-					return unwrapAndCoerce(
-						input,
-						λ(domainInner, x =>
-							app(
-								fn,
-								applicative.pure(() => v(x), domainInner, domain),
-							),
-						),
-						inputSide,
-						{
-							mode: inputSide === 'left' ? '↑L' : '↑R',
-							from: mode,
-							left: inputSide === 'left' ? domainInner : fn.type.range.domain,
-							right: inputSide === 'right' ? domainInner : fn.type.range.domain,
-							out: fn.type.range.range,
-						},
-					);
-				}
-				throw new UnimplementedComposition();
-			}
-			return { input: unwrapped, fn, effects, precedences, mode };
-		}
-
-		if (
-			getMatchingFunctor(unwrapped, fn.type.domain) !== null ||
-			(typeof fn.type.domain === 'object' &&
-				fn.type.domain.head === 'cont' &&
-				getRunner(unwrapped) !== null)
-		) {
-			const result = coerceInput(
-				fn,
-				unwrapped,
-				inputSide,
-				mode,
-				(getDistributive(unwrapped) === null &&
-					getMatchingFunctor(unwrapped, fn.type.domain) !== null) ||
-					(typeof fn.type.domain === 'object' &&
-						fn.type.domain.head === 'cont' &&
-						getRunner(unwrapped)?.runner.eager),
-			);
-			if (result !== null) {
-				const { denotation: coerced, mode: coercedMode } = result;
-				return {
-					input: unwrapped,
-					fn: coerced,
-					effects,
-					precedences,
-					mode: resolveCoercedMode(coercedMode, inputSide),
-				};
-			}
-		}
-
+		if (functor === null) break;
 		const effect = functor.wrap('()', unwrapped) as ExprType & object;
 		effects.push(effect);
 		const highestPrecedenceSoFar = precedences[precedences.length - 1] ?? '()';
@@ -770,6 +880,48 @@ function unwrapAndCoerce(
 		}
 		unwrapped = functor.unwrap(unwrapped);
 	}
+
+	// First, try coercing the function's input without doing anything special
+	const coerced = tryCoerce(fn, types, effects, precedences, mode, inputSide);
+	if (coerced !== null) return coerced;
+	// If that fails, try additionally allowing effects to be lowered (may result
+	// in some bindings being dropped)
+	const loweredCoerced = tryCoerce(
+		fn,
+		types,
+		effects,
+		precedences,
+		mode,
+		inputSide,
+		true,
+	);
+	if (loweredCoerced !== null) return loweredCoerced;
+	// And if that fails, try additionally allowing types to be lifted into effects
+	const liftedCoerced = tryCoerce(
+		fn,
+		types,
+		effects,
+		precedences,
+		mode,
+		inputSide,
+		undefined,
+		true,
+	);
+	if (liftedCoerced !== null) return liftedCoerced;
+	// Finally, try with both lifting and lowering enabled
+	const liftedLoweredCoerced = tryCoerce(
+		fn,
+		types,
+		effects,
+		precedences,
+		mode,
+		inputSide,
+		true,
+		true,
+	);
+	if (liftedLoweredCoerced !== null) return liftedLoweredCoerced;
+
+	throw new UnimplementedComposition();
 }
 
 function shadowedByLowPrecedence(

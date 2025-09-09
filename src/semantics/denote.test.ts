@@ -51,6 +51,10 @@ test('quotations', () => {
 	// TODO: mım(o)
 });
 
+test('content clauses', () => {
+	snapshot('Cho jí, ꝡá fıeq jí báq zu.');
+});
+
 test('donkey anaphora', () => {
 	snapshot('Kıaı tú poq, ꝡë bo hóa báq aqshe, áqshe.');
 	// TODO: This should really be "Kıaı tú poq, ꝡë bo hóa báq aqshe, ꝡë bua hóa báq dueq, áqshe rú dúeq."
@@ -127,4 +131,8 @@ test('parentheticals', () => {
 
 test('vocatives', () => {
 	snapshot('Buetı jí hóı máma.');
+});
+
+test('questions', () => {
+	snapshot('Âo, ꝡä kato jí, nä kıaı hí poq jí?');
 });

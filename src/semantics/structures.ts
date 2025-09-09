@@ -1177,6 +1177,39 @@ export function getRunner(
 }
 
 /**
+ * Determines whether the outermost effects in two types are equal.
+ */
+export function effectsEqual(left: ExprType, right: ExprType): boolean {
+	return (
+		typeof left !== 'string' &&
+		typeof right !== 'string' &&
+		left.head === right.head &&
+		(left.head === 'int' ||
+			left.head === 'cont' ||
+			left.head === 'pl' ||
+			left.head === 'indef' ||
+			left.head === 'qn' ||
+			(left.head === 'pair' &&
+				typesEqual(
+					left.supplement,
+					(right as ExprType & object & { head: 'pair' }).supplement,
+				)) ||
+			(left.head === 'bind' &&
+				bindingsEqual(
+					left.binding,
+					(right as ExprType & object & { head: 'bind' }).binding,
+				)) ||
+			(left.head === 'ref' &&
+				bindingsEqual(
+					left.binding,
+					(right as ExprType & object & { head: 'ref' }).binding,
+				)) ||
+			left.head === 'dx' ||
+			left.head === 'act')
+	);
+}
+
+/**
  * Given a type and a type constructor to search for, find the type given by
  * unwrapping every effect above the matching type constructor.
  */
@@ -1185,32 +1218,7 @@ export function findEffect(
 	like: ExprType,
 ): (ExprType & object) | null {
 	if (typeof inType === 'string' || typeof like === 'string') return null;
-	if (
-		inType.head === like.head &&
-		(inType.head === 'int' ||
-			inType.head === 'cont' ||
-			inType.head === 'pl' ||
-			inType.head === 'indef' ||
-			inType.head === 'qn' ||
-			(inType.head === 'pair' &&
-				typesEqual(
-					inType.supplement,
-					(like as ExprType & object & { head: 'pair' }).supplement,
-				)) ||
-			(inType.head === 'bind' &&
-				bindingsEqual(
-					inType.binding,
-					(like as ExprType & object & { head: 'bind' }).binding,
-				)) ||
-			(inType.head === 'ref' &&
-				bindingsEqual(
-					inType.binding,
-					(like as ExprType & object & { head: 'ref' }).binding,
-				)) ||
-			inType.head === 'dx' ||
-			inType.head === 'act')
-	)
-		return inType;
+	if (effectsEqual(inType, like)) return inType;
 	const functor = getFunctor(inType);
 	return functor && findEffect(functor.unwrap(inType), like);
 }
