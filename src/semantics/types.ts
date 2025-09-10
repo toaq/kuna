@@ -248,5 +248,5 @@ export function modeToString(mode: CompositionMode): string {
 		m = m.from;
 	}
 	modes.push(m.mode);
-	return modes.join(' ');
+	return modes.reverse().join(' ');
 }

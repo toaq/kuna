@@ -53,10 +53,10 @@ const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 					<SiteleqType t={step.out} />
 				</div>
 				<div className="mt-2">
-					<span className="opacity-10">
-						{lastModeString.slice(0, lastModeString.length - modeString.length)}
-					</span>
 					{modeString}
+					<span className="opacity-40">
+						{lastModeString.slice(modeString.length)}
+					</span>
 				</div>
 			</div>
 			<svg

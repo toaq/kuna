@@ -126,7 +126,7 @@ export function Subtree(props: {
 						opacity: lit ? 1 : 0.4,
 					}}
 				>
-					{modeToString(props.tree.mode).at(-1) ?? ' '}
+					{modeToString(props.tree.mode).at(0) ?? ' '}
 				</div>
 			)}
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: No keyboard controls */}
