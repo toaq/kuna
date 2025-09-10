@@ -48,7 +48,7 @@ export function Inspector() {
 			const contentWidth = contentRef.current.scrollWidth;
 			const maxSidebarWidth = window.innerWidth * 0.75;
 			setSidebarWidth(
-				Math.min(Math.max(contentWidth + 48, minSidebarWidth), maxSidebarWidth),
+				Math.min(Math.max(contentWidth + 72, minSidebarWidth), maxSidebarWidth),
 			);
 		}
 	}, [inspectee]);
