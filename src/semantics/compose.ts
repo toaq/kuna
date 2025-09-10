@@ -1074,6 +1074,8 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 	// at a time, until we finally have a composition mode compatible with the
 	// original types
 	while (leftEffects.length || rightEffects.length) {
+		assertFn(fn.type);
+		assertFn(fn.type.range);
 		const leftEffect = leftEffects[leftEffects.length - 1] ?? '()';
 		const rightEffect = rightEffects[rightEffects.length - 1] ?? '()';
 		const leftPrecedence = leftPrecedences[leftPrecedences.length - 1] ?? '()';
@@ -1093,7 +1095,6 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 			rightEffects.pop();
 			leftPrecedences.pop();
 			rightPrecedences.pop();
-			assertFn(fn.type);
 			const partiallyApplied = wrap(fn.type.range, leftEffect);
 			fn = λ(leftType, l =>
 				λ(rightType, r =>
@@ -1142,6 +1143,28 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 				),
 			);
 			addStep('↓L');
+		} else if (
+			typeof rightEffect !== 'string' &&
+			rightEffect.head === 'bind' &&
+			findEffect(fn.type.range.range, rightEffect)
+		) {
+			// Drop any bindings on the right that are shadowed by a binding already
+			// present in the output
+			const {
+				functor: { wrap },
+				extract,
+			} = getComonad(rightEffect)!;
+			rightType = wrap(rightType, rightEffect);
+			rightEffects.pop();
+			rightPrecedences.pop();
+			fn = λ(leftType, l =>
+				λ(rightType, r =>
+					app(
+						app(fn, v(l)),
+						extract(() => v(r)),
+					),
+				),
+			);
 		} else if (
 			typeof leftEffect !== 'string' &&
 			leftEffect.head === 'bind' &&
@@ -1279,8 +1302,6 @@ function compose_(left: Expr, right: Expr): CompositionResult {
 			const functor = getFunctor(choice === 'left' ? leftEffect : rightEffect);
 			if (functor === null) throw new UnimplementedComposition();
 			const { wrap, map } = functor;
-			assertFn(fn.type);
-			assertFn(fn.type.range);
 			const out = fn.type.range.range;
 
 			if (choice === 'left') {
