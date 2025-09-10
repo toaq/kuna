@@ -362,10 +362,11 @@ function coerceInput_(
 					if (inputSide !== 'out') {
 						assertFn(range);
 						assertFn(cont.type.range);
-						const out = distributive.functor.wrap(
-							cont.type.range.range,
-							inputInner,
-						);
+						const coercedRange = cont.type.range.range;
+						const out = distributive.functor.wrap(coercedRange, inputInner);
+						// It might still be possible to join the effect at the very end...
+						// (*after* applying the continuation)
+						const monad = getMatchingMonad(out, cont.type.range.range);
 						mOut = {
 							mode: inputSide === 'left' ? '←L' : '←R',
 							from: mapModesUntil(
@@ -396,17 +397,25 @@ function coerceInput_(
 							),
 							type: Fn(input, Fn(range.domain, out)),
 						};
-						return λ(range.domain, otherInput =>
-							distributive.functor.map(
-								() =>
-									λ(coercedInner, inputInner =>
-										app(app(cont, v(inputInner)), v(otherInput)),
-									),
-								distributed,
-								distributedType,
-								out,
-							),
-						);
+						return λ(range.domain, otherInput => {
+							const result = () =>
+								distributive.functor.map(
+									() =>
+										λ(coercedInner, inputInner =>
+											app(app(cont, v(inputInner)), v(otherInput)),
+										),
+									distributed,
+									distributedType,
+									out,
+								);
+							if (monad === null) return result();
+							mOut = {
+								mode: 'J',
+								from: mOut,
+								type: Fn(input, Fn(range.domain, coercedRange)),
+							};
+							return monad.join(result, out);
+						});
 					}
 
 					// This is a unary function; just 'map' it
