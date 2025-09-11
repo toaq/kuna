@@ -393,16 +393,8 @@ math .kuna-do.kuna-do-quantify > mtr:last-child > mtd {
 	padding-inline-start: 1em;
 }
 
-.kuna-math-container {
-	position: relative;
-}
-
 math mo.kuna-squiggle {
 	color: transparent;
-}
-
-div.kuna-squiggle {
-	position: absolute;
 	mask: url("/squiggle.svg") repeat-x;
 }
 
