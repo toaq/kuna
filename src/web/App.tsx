@@ -6,6 +6,7 @@ import './App.css';
 import { useState } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 import { Help } from './Help';
+import { Types } from './Types';
 
 export function Top(props: {
 	showHelp: boolean;
@@ -28,6 +29,9 @@ export function Top(props: {
 					</NavLink>
 					<NavLink to="/treepad" className={navLinkClass}>
 						Treepad
+					</NavLink>
+					<NavLink to="/types" className={navLinkClass}>
+						Types
 					</NavLink>
 				</nav>
 				<button
@@ -72,6 +76,10 @@ export function App() {
 					<Route
 						path="/treepad"
 						element={<Treepad isDarkMode={darkMode.isDarkMode} />}
+					/>
+					<Route
+						path="/types"
+						element={<Types isDarkMode={darkMode.isDarkMode} />}
 					/>
 				</Routes>
 			</main>

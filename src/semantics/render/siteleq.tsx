@@ -1,4 +1,4 @@
-import { type FC, useLayoutEffect, useRef, useState } from 'react';
+import { type FC, useLayoutEffect, useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { type Binding, type ExprType, bindingToString } from '../types';
 
@@ -282,7 +282,13 @@ const SiteleqTypePart: FC<{ t: Siteleq; container: HTMLElement }> = ({
 export const SiteleqType: FC<{
 	t: ExprType;
 }> = ({ t }) => {
-	const siteleq = typeToSiteleq(t);
+	const siteleq = useMemo(() => {
+		try {
+			return typeToSiteleq(t);
+		} catch {
+			return undefined;
+		}
+	}, [t]);
 	const [container, setContainer] = useState<HTMLElement | null>(null);
 	return (
 		siteleq && (
