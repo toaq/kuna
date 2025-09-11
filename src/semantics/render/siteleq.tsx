@@ -1,5 +1,4 @@
-import { type FC, useLayoutEffect, useRef, useState, useMemo } from 'react';
-import { createPortal } from 'react-dom';
+import { type FC, useMemo } from 'react';
 import { type Binding, type ExprType, bindingToString } from '../types';
 
 enum Precedence {
@@ -233,6 +232,25 @@ const SiteleqTypePart: FC<{ t: Siteleq }> = ({ t }) => {
 		default:
 			t satisfies never;
 	}
+};
+
+export const MaybeSiteleqType: FC<{ t: unknown }> = ({ t }) => {
+	const siteleq = useMemo(() => {
+		try {
+			return typeToSiteleq(t as ExprType);
+		} catch {
+			return undefined;
+		}
+	}, [t]);
+	return (
+		siteleq && (
+			<math>
+				<mrow>
+					<SiteleqTypePart t={siteleq} />
+				</mrow>
+			</math>
+		)
+	);
 };
 
 export const SiteleqType: FC<{ t: ExprType }> = ({ t }) => {
