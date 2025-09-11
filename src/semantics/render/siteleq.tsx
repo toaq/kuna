@@ -210,7 +210,9 @@ const SiteleqTypePart: FC<{ t: Siteleq }> = ({ t }) => {
 						<SiteleqTypePart t={t.inner} />
 					</mrow>
 					<mo className="kuna-squiggle bg-neutral-900 dark:bg-gray-200">⎵</mo>
-					<mo className="kuna-squiggle">⎴</mo>
+					<mo className="kuna-squiggle" aria-hidden>
+						⎴
+					</mo>
 				</munderover>
 			);
 		case 'cont':
