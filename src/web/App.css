@@ -396,6 +396,7 @@ math .kuna-do.kuna-do-quantify > mtr:last-child > mtd {
 math mo.kuna-squiggle {
 	color: transparent;
 	mask: url("/squiggle.svg") repeat-x;
+	width: 100%;
 }
 
 math .kuna-cont {
