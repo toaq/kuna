@@ -522,7 +522,13 @@ const ExprRender: FC<{
 			<Tooltip
 				id={id}
 				opacity={1}
-				className="kuna-type-tooltip dark-mode"
+				className="dark-mode"
+				style={{
+					textAlign: 'center',
+					transition: 'none',
+					zIndex: 2,
+					backgroundColor: 'var(--color-gray-800)',
+				}}
 				render={({ content }) => {
 					if (content === null) return undefined;
 					const type = typeMap[content];
