@@ -68,7 +68,7 @@ const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 				</div>
 				<div className="mt-2">
 					{modeString}
-					<span className="opacity-40">
+					<span className="text-neutral-300 dark:text-gray-600">
 						{lastModeString.slice(modeString.length)}
 					</span>
 				</div>
@@ -134,7 +134,7 @@ export function InspectNode(props: {
 				{tree.fullCategoryLabel ?? <TreeLabel label={tree.categoryLabel} />}
 			</h2>
 			<div style={{ display: 'inline-flex' }}>
-				<div style={{ display: 'inline-flex', opacity: 0.4 }}>
+				<div className="inline-flex text-neutral-400 dark:text-gray-500">
 					{breadcrumbs.flatMap((crumb, i) => [
 						// biome-ignore lint/suspicious/noArrayIndexKey: static data
 						<span key={i}>
