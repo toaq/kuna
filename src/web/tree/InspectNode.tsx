@@ -1,5 +1,4 @@
-import { type FC, useMemo, useState } from 'react';
-import useMeasure from 'react-use-measure';
+import { type FC, useLayoutEffect, useMemo, useState } from 'react';
 import { keyFor } from '../../core/misc';
 import { toJsx } from '../../semantics/render';
 import { SiteleqType } from '../../semantics/render/siteleq';
@@ -7,6 +6,22 @@ import { type CompositionMode, modeToString } from '../../semantics/types';
 import type { PlacedTree } from '../../tree/place';
 import type { RichSceneLabel } from '../../tree/scene';
 import { TreeLabel } from './TreeLabel';
+
+function useOffset(): [
+	(element: HTMLElement | null) => void,
+	{ left: number; width: number },
+] {
+	const [element, setElement] = useState<HTMLElement | null>(null);
+	const [left, setLeft] = useState(0);
+	const [width, setWidth] = useState(0);
+	useLayoutEffect(() => {
+		if (element !== null) {
+			setLeft(element.offsetLeft);
+			setWidth(element.offsetWidth);
+		}
+	});
+	return [setElement, { left, width }];
+}
 
 const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 	const steps = useMemo(() => {
@@ -30,13 +45,12 @@ const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 	const lastModeString = modeToString(steps[steps.length - 1]);
 	const modeString = modeToString(step);
 
-	const [ref, bounds] = useMeasure();
-	const [leftRef, leftBounds] = useMeasure();
-	const [rightRef, rightBounds] = useMeasure();
-	const [outRef, outBounds] = useMeasure();
+	const [leftRef, leftBounds] = useOffset();
+	const [rightRef, rightBounds] = useOffset();
+	const [outRef, outBounds] = useOffset();
 
-	const leftPoint = leftBounds.left - bounds.left + leftBounds.width / 2;
-	const rightPoint = rightBounds.left - bounds.left + rightBounds.width / 2;
+	const leftPoint = leftBounds.left + leftBounds.width / 2;
+	const rightPoint = rightBounds.left + rightBounds.width / 2;
 	const midPoint = (leftPoint + rightPoint) / 2;
 	const outOffset = midPoint - outBounds.width / 2;
 
@@ -75,7 +89,6 @@ const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 			<div
 				className="flex gap-4 relative"
 				style={{ left: Math.max(0, -outOffset) }}
-				ref={ref}
 			>
 				<div
 					className="flex items-center py-1 px-3 bg-neutral-100 dark:bg-gray-900 dark:border-gray-600 dark:border-1 rounded"
