@@ -396,7 +396,10 @@ math .kuna-do.kuna-do-quantify > mtr:last-child > mtd {
 math mo.kuna-squiggle {
 	color: transparent;
 	mask: url("/squiggle.svg") repeat-x;
-	width: 100%;
+	/* It's a 16px SVG, designed for 14px font size */
+	mask-size: round(nearest, 16em / 14, 4px);
+	width: 100%; /* For Chrome */
+	font-size: inherit; /* For Chrome */
 }
 
 math .kuna-cont {
