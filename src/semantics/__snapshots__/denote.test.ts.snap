@@ -72,6 +72,8 @@ exports[`predicatizers > Kuaı jí pó nánı hea bâq nam. 1`] = `"λ𝑤 (𝑡
 
 exports[`predicatizers > Mea íme nháo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦nháo⟧, 𝑄 ⇐ ⟦íme⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → ⟦tam⟧ 𝑤 (λ𝑒 ⟦mea⟧ 𝑤 (𝑄 𝑤) 𝑎 𝑒) 𝑡)"`;
 
+exports[`questions > Pu hıa súq? 1`] = `"𝑡 ⇐ ⟦pu⟧, 𝑃 ⇐ ⟦súq⟧; ⟦móq⟧ (λ𝑤 qn (λ𝑄 true) (λ𝑄 ⟦tam⟧ 𝑤 (𝑄 𝑤 (𝑃 𝑤)) 𝑡))"`;
+
 exports[`questions > Âo, ꝡä kato jí, nä kıaı hí poq jí? 1`] = `"𝑃 ⇐ accessibility, 𝑡 ⇐ ⟦tuom⟧, 𝑄 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑅 ⇐ ⟦jí⟧; bg (⟦da⟧ (λ𝑤 ¬(∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦kato⟧ 𝑤 𝑎) 𝑡))), ⟦móq⟧ (λ𝑤 qn (λ𝑆 ∀𝑎 𝑎 ≺ 𝑆 𝑤 → ⟦tam⟧ 𝑤 (⟦poq⟧ 𝑤 𝑎) 𝑡'') (λ𝑆 ∀𝑤' 𝑃 𝑤 𝑤' ∧ (∀𝑎 𝑎 ≺ 𝑄 𝑤' → ⟦tam⟧ 𝑤' (⟦kato⟧ 𝑤' 𝑎) 𝑡) → (∀𝑎 𝑎 ≺ 𝑆 𝑤' → (∀𝑏 𝑏 ≺ 𝑅 𝑤' → ⟦tam⟧ 𝑤' (⟦kıaı⟧ 𝑤' 𝑏 𝑎) 𝑡'))))"`;
 
 exports[`quotations > Kuq nháo mó «Ꝡoaq ní hao» teo. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦nháo⟧, 𝑡' ⇐ ⟦tuom⟧; λ𝑤 (𝑄 ⇐ new (λ𝑄 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦tam⟧ 𝑤 (⟦mo⟧ 𝑤 "Ꝡoaq ní hao" 𝑎) 𝑡'); 𝑄 ⇒ hụ́mo, 𝑄 ⇒ hóq; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑃 𝑤' → (∀𝑏 𝑏 ≺ 𝑄 𝑤' → ⟦tam⟧ 𝑤' (⟦kuq⟧ 𝑤' 𝑏 𝑎) 𝑡)))"`;

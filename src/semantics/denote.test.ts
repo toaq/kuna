@@ -134,5 +134,6 @@ test('vocatives', () => {
 });
 
 test('questions', () => {
+	snapshot('Pu hıa súq?');
 	snapshot('Âo, ꝡä kato jí, nä kıaı hí poq jí?');
 });
