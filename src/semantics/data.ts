@@ -250,8 +250,10 @@ export const nondistributiveLittleV = (cCommand: ExprType) => {
 	);
 };
 
-export const cleftVerb = λ(Ref({ type: 'resumptive' }, Int(Fn('v', 't'))), p =>
-	unref(v(p)),
+export const cleftVerb = λ(Int(Pl('e')), x =>
+	λ(Ref({ type: 'resumptive' }, Int(Fn('v', 't'))), p =>
+		app(unref(v(p)), v(x)),
+	),
 );
 
 export const pro = ref(

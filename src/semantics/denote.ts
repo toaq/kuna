@@ -15,6 +15,7 @@ import {
 	type StrictTree,
 	type Word,
 	assertLeaf,
+	effectiveLabel,
 	getLeaf,
 } from '../tree';
 import { compose } from './compose';
@@ -285,9 +286,9 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === '𝘷') {
+		if (cCommand === null) throw new Impossible("Can't denote 𝘷 in isolation");
+
 		if (leaf.word.covert) {
-			if (cCommand === null)
-				throw new Impossible("Can't denote covert 𝘷 in isolation");
 			const type = unwrapEffects(cCommand.denotation.type);
 			assertFn(type);
 			if (leaf.word.value === '∅') return unit;
@@ -302,9 +303,14 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Unrecognized(`𝘷 for type ${typeToPlainText(type)}`);
 		}
 
-		if (cCommand?.label === "Cond'") return unit;
-
-		if (leaf.word.entry?.toaq === 'nä') return cleftVerb;
+		if (leaf.word.entry?.toaq === 'nä')
+			switch (effectiveLabel(cCommand)) {
+				case "Cond'":
+				case 'AdjunctP':
+					return unit;
+				case 'DP':
+					return cleftVerb;
+			}
 		throw new Unrecognized(`𝘷: ${leaf.word.entry?.toaq ?? leaf.word.text}`);
 	}
 
@@ -686,7 +692,7 @@ export function denote_(tree: StrictTree, cCommand: DTree | null): DTree {
 
 	let left: DTree;
 	let right: DTree;
-	if ('word' in tree.left) {
+	if ('word' in tree.left && tree.right.label !== '𝘷') {
 		right = denote_(tree.right, null);
 		left = denote_(tree.left, right);
 	} else {

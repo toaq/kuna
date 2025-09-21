@@ -29,6 +29,7 @@ import * as TreeModule from "./tree";
 
 const {
 	make3L,
+	make3R,
 	makeAdjunctPI,
 	makeAdjunctPT,
 	makeBranch,
@@ -115,13 +116,14 @@ CPdet -> CPdet CPsubcon {% makeBranch('CP') %}
 CPdet -> QSPdet {% makeBranchCovertLeft('CP', 'C', 'REL') %}
 
 # ní bï pu hao
+# TODO: This should use make3R too (but denote.ts changes are needed)
 Clause<S> -> Argument Bi Clause<S> {% make3L('TopicP', "Topic'") %}
 # pu hao
 Clause<S> -> QSP<S> {% id %}
 # jí nä pu hao hóa
-Clause<S> -> Argument Na Clause<S> {% make3L('𝘷P', "𝘷'") %}
+Clause<S> -> Argument Na Clause<S> {% make3R('𝘷P', "𝘷'") %}
 # râo fíachaq nä pu hao hóa
-Clause<S> -> AdjunctPcon Na Clause<S> {% make3L('𝘷P', "𝘷'") %}
+Clause<S> -> AdjunctPcon Na Clause<S> {% make3R('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
 Clause<S> -> QT4 Csub Clause<sub> Na Clause<S> {% makeQP %}
 # hao jí gö hao jí

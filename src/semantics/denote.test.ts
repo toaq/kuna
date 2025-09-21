@@ -137,3 +137,7 @@ test('questions', () => {
 	snapshot('Pu hıa súq?');
 	snapshot('Âo, ꝡä kato jí, nä kıaı hí poq jí?');
 });
+
+test('fronted adjuncts', () => {
+	snapshot('Dûo kóacao nä bu sula nıaoshua.');
+});

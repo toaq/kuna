@@ -124,6 +124,17 @@ export function make3L(label: Label, labelR: Label) {
 	};
 }
 
+export function make3R(label: Label, labelL: Label) {
+	return ([ll, lr, right]: [Tree, Tree, Tree]) => {
+		return {
+			label,
+			left: { label: labelL, left: ll, right: lr, source: catSource(ll, lr) },
+			right,
+			source: catSource(ll, lr, right),
+		};
+	};
+}
+
 export function makeRose(label: Label) {
 	return ([children]: [Tree[]]) => {
 		return {

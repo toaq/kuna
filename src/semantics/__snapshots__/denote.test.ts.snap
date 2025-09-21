@@ -42,6 +42,8 @@ exports[`donkey anaphora > Shê, ꝡä Toaq há, nä bo hó sá toakue. 1`] = `"
 
 exports[`donkey anaphora > Shê, ꝡä bo báq poq báq aqshe, nä kıaı póq áqshe. 1`] = `"𝑃 ⇐ accessibility, 𝑡 ⇐ ⟦tuom⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑡'' ⇐ ⟦tuom⟧, 𝑡''' ⇐ ⟦tuom⟧; ⟦da⟧ (λ𝑤 ∀𝑄, 𝑅, 𝑤' (∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∃𝑒 ⟦tam⟧ 𝑤 (⟦poq⟧ 𝑤 𝑎) 𝑡' 𝑒)) ∧ (∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∃𝑒 ⟦tam⟧ 𝑤 (⟦aqshe⟧ 𝑤 𝑎) 𝑡'' 𝑒)) ∧ 𝑃 𝑤 𝑤' ∧ (∀𝑎 𝑎 ≺ 𝑄 𝑤' → (∀𝑏 𝑏 ≺ 𝑅 𝑤' → (∃𝑒 ⟦tam⟧ 𝑤' (⟦bo⟧ 𝑤' 𝑏 𝑎) 𝑡 𝑒))) → (∀𝑎 𝑎 ≺ 𝑄 𝑤' → (∀𝑏 𝑏 ≺ 𝑅 𝑤' → (∃𝑒 ⟦tam⟧ 𝑤' (⟦kıaı⟧ 𝑤' 𝑏 𝑎) 𝑡''' 𝑒))))"`;
 
+exports[`fronted adjuncts > Dûo kóacao nä bu sula nıaoshua. 1`] = `"𝑃 ⇐ kóacao; 𝑃 ⇒ kóacao, 𝑃 ⇒ hóq; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∃𝑒 (∃𝑒' ⟦duo⟧ 𝑤 𝑎 𝑒 𝑒') ∧ neg (λ𝑤' ⟦sula⟧ (⟦tam⟧ 𝑤' (⟦nıaoshua⟧ 𝑤'))) 𝑤 𝑒))"`;
+
 exports[`interjections > Aojaı jí, eju… pó ní. 1`] = `"λ𝑤 (𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧, 𝑄 ⇐ salient, 𝑡'' ⇐ ⟦tuom⟧, 𝑅 ⇐ ⟦ní⟧ (λ𝑅 ∀𝑎 𝑎 ≺ 𝑅 𝑤 → (∃𝑒 ⟦tam⟧ 𝑤 (⟦raı⟧ 𝑤 𝑎) 𝑡'' 𝑒)); ⟦eju⟧; λ𝑤' (𝑆 ⇐ new (λ𝑆 ∃𝑒 ⟦tam⟧ 𝑤' (λ𝑒' 𝑄 𝑤' (𝑅 𝑤') (𝑆 𝑤') 𝑒') 𝑡' 𝑒); 𝑆 ⇒ tá; ⟦da⟧ (λ𝑤'' ∀𝑎 𝑎 ≺ 𝑆 𝑤'' → (∃𝑒 ⟦tam⟧ 𝑤'' (⟦aojaı⟧ 𝑤'' 𝑎 (𝑃 𝑤'')) 𝑡 𝑒))))"`;
 
 exports[`interjections > Dua jí ꝡá nho, ruqshua. 1`] = `"𝑡 ⇐ ⟦tuom⟧, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ ⟦tuom⟧; ⟦nho⟧; λ𝑤 (𝑄 ⇐ new (λ𝑄 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → ⟦ꝡä⟧ 𝑤 (λ𝑤' ∃𝑒 ⟦tam⟧ 𝑤' (⟦ruqshua⟧ 𝑤') 𝑡' 𝑒) 𝑎); 𝑄 ⇒ hụ́ꝡa; ⟦da⟧ (λ𝑤' ∀𝑎 𝑎 ≺ 𝑃 𝑤' → (∀𝑏 𝑏 ≺ 𝑄 𝑤' → (∃𝑒 ⟦tam⟧ 𝑤' (⟦dua⟧ 𝑤' 𝑏 𝑎) 𝑡 𝑒))))"`;

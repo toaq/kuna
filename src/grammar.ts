@@ -57,6 +57,7 @@ import * as TreeModule from "./tree";
 
 const {
 	make3L,
+	make3R,
 	makeAdjunctPI,
 	makeAdjunctPT,
 	makeBranch,
@@ -152,10 +153,10 @@ const grammar: Grammar = {
     {"name": "Clause_sub", "symbols": ["Argument", "Bi", "Clause_sub"], "postprocess": make3L('TopicP', "Topic'")},
     {"name": "Clause_main", "symbols": ["QSP_main"], "postprocess": id},
     {"name": "Clause_sub", "symbols": ["QSP_sub"], "postprocess": id},
-    {"name": "Clause_main", "symbols": ["Argument", "Na", "Clause_main"], "postprocess": make3L('𝘷P', "𝘷'")},
-    {"name": "Clause_sub", "symbols": ["Argument", "Na", "Clause_sub"], "postprocess": make3L('𝘷P', "𝘷'")},
-    {"name": "Clause_main", "symbols": ["AdjunctPcon", "Na", "Clause_main"], "postprocess": make3L('𝘷P', "𝘷'")},
-    {"name": "Clause_sub", "symbols": ["AdjunctPcon", "Na", "Clause_sub"], "postprocess": make3L('𝘷P', "𝘷'")},
+    {"name": "Clause_main", "symbols": ["Argument", "Na", "Clause_main"], "postprocess": make3R('𝘷P', "𝘷'")},
+    {"name": "Clause_sub", "symbols": ["Argument", "Na", "Clause_sub"], "postprocess": make3R('𝘷P', "𝘷'")},
+    {"name": "Clause_main", "symbols": ["AdjunctPcon", "Na", "Clause_main"], "postprocess": make3R('𝘷P', "𝘷'")},
+    {"name": "Clause_sub", "symbols": ["AdjunctPcon", "Na", "Clause_sub"], "postprocess": make3R('𝘷P', "𝘷'")},
     {"name": "Clause_main", "symbols": ["QT4", "Csub", "Clause_sub", "Na", "Clause_main"], "postprocess": makeQP},
     {"name": "Clause_sub", "symbols": ["QT4", "Csub", "Clause_sub", "Na", "Clause_sub"], "postprocess": makeQP},
     {"name": "Clause_main", "symbols": ["QSP_main", "Go", "Clause_main"], "postprocess": makeRetroactiveCleft},
