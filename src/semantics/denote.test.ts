@@ -74,7 +74,6 @@ test('adjuncts', () => {
 	snapshot('Nuo súq dûo géodıo.');
 	snapshot('Marao úmo gâq nhána.');
 	snapshot('Kueq áma fâ sóaq.');
-	// TODO: Scope islands as found in "môı sîa raı"
 });
 
 test('reflexives and reciprocals', () => {
