@@ -70,7 +70,8 @@ export type ExprType =
 	// s → {inner}.
 	| { head: 'int'; inner: ExprType }
 	// A continuation which behaves in local syntax like {inner} and takes scope at
-	// a t to produce a t; isomorphic to ({inner} → t) → t.
+	// an Int (v → t) to produce an Int (v → t); isomorphic to
+	// ({inner} → Int (v → t)) → Int (v → t).
 	| { head: 'cont'; inner: ExprType }
 	// A plurality which behaves in local syntax like {inner}; isomorphic to a set
 	// of {inner}.
@@ -186,6 +187,8 @@ interface Constant extends ExprBase {
 		| 'equals'
 		| 'among'
 		| 'animate'
+		| 'sum'
+		| 'neg'
 		| 'overlap'
 		| 'accessibility';
 }

@@ -82,8 +82,6 @@ CP -> Copt Clause<main> {% makeBranch('CP') %}
 CPsub -> Csub Clause<sub> {% makeBranch('CP') %}
 # ë hao
 CPsub -> EvA vP<sub> {% makeBranch('EvAP') %}
-# (shê ꝡä hao nä) hao
-CPna<S> -> Clause<S> {% makeBranchCovertLeft('CP', 'C') %}
 
 # jí
 DP -> Pronoun Free:* {% makeFree(id) %}
@@ -125,7 +123,7 @@ Clause<S> -> Argument Na Clause<S> {% make3L('𝘷P', "𝘷'") %}
 # râo fíachaq nä pu hao hóa
 Clause<S> -> AdjunctPcon Na Clause<S> {% make3L('𝘷P', "𝘷'") %}
 # shê ꝡä hao nä jıa hao
-Clause<S> -> QT4 Csub Clause<sub> Na CPna<S> {% makeQP %}
+Clause<S> -> QT4 Csub Clause<sub> Na Clause<S> {% makeQP %}
 # hao jí gö hao jí
 Clause<S> -> QSP<main> Go Clause<S> {% makeRetroactiveCleft %}
 

@@ -36,6 +36,7 @@ import {
 	int,
 	lex,
 	map,
+	neg,
 	not,
 	or,
 	overlap,
@@ -45,16 +46,17 @@ import {
 	salient,
 	single,
 	some,
+	sum,
 	trueExpr,
 	uncont,
 	unindef,
 	unint,
 	union,
+	unit,
 	universe,
 	unpair,
 	unref,
 	v,
-	xor,
 	λ,
 } from './model';
 import { reduce } from './reduce';
@@ -248,7 +250,9 @@ export const nondistributiveLittleV = (cCommand: ExprType) => {
 	);
 };
 
-export const cleftVerb = λ(Ref({ type: 'resumptive' }, 't'), p => unref(v(p)));
+export const cleftVerb = λ(Ref({ type: 'resumptive' }, Int(Fn('v', 't'))), p =>
+	unref(v(p)),
+);
 
 export const pro = ref(
 	{ type: 'covert resumptive' },
@@ -357,30 +361,58 @@ export const pronouns = new Map<string, Expr>([
 				ref(
 					{ type: 'reflexive' },
 					λ(Int(Pl('e')), refl =>
-						int(
-							λ('s', w =>
-								cont(
-									λ(Fn(Bind({ type: 'reflexive' }, Int(Pl('e'))), 't'), pred =>
-										every(
-											λ('e', refl_ =>
-												app(
-													app(
-														implies,
-														among(v(refl_), app(unint(v(refl)), v(w))),
-													),
-													app(
-														v(pred),
-														bind(
-															{ type: 'reflexive' },
-															int(λ('s', () => single(v(refl_)))),
-															int(
-																λ('s', w_ =>
-																	filter(
-																		app(unint(v(subject)), v(w_)),
-																		λ('e', subject_ =>
-																			app(not, equals(v(subject_), v(refl_))),
+						cont(
+							λ(
+								Fn(
+									Bind({ type: 'reflexive' }, Int(Pl('e'))),
+									Int(Fn('v', 't')),
+								),
+								pred =>
+									app(
+										neg,
+										int(
+											λ('s', w =>
+												λ('v', e =>
+													some(
+														λ('e', refl_ =>
+															app(
+																app(
+																	and,
+																	among(v(refl_), app(unint(v(refl)), v(w))),
+																),
+																app(
+																	app(
+																		unint(
+																			app(
+																				neg,
+																				app(
+																					v(pred),
+																					bind(
+																						{ type: 'reflexive' },
+																						int(λ('s', () => single(v(refl_)))),
+																						int(
+																							λ('s', w_ =>
+																								filter(
+																									app(unint(v(subject)), v(w_)),
+																									λ('e', subject_ =>
+																										app(
+																											not,
+																											equals(
+																												v(subject_),
+																												v(refl_),
+																											),
+																										),
+																									),
+																								),
+																							),
+																						),
+																					),
+																				),
+																			),
 																		),
+																		v(w),
 																	),
+																	v(e),
 																),
 															),
 														),
@@ -389,7 +421,6 @@ export const pronouns = new Map<string, Expr>([
 											),
 										),
 									),
-								),
 							),
 						),
 					),
@@ -426,8 +457,8 @@ export const knownVerbs = new Map<string, Expr>([
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
 
 export const polarities = new Map<string, Expr>([
-	['jeo', λ('t', t => v(t))],
-	['bu', not],
+	['jeo', unit],
+	['bu', neg],
 ]);
 
 // Int Pl e, i, Int Pl e  ->  e, i, e
@@ -523,10 +554,19 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 		domain =>
 			λ(Fn(domain, 't'), predicate =>
 				cont(
-					λ(Fn(domain, 't'), c =>
-						some(
-							λ(domain, x =>
-								app(app(and, app(v(predicate), v(x))), app(v(c), v(x))),
+					λ(Fn(domain, Int(Fn('v', 't'))), c =>
+						int(
+							λ('s', w =>
+								λ('v', e =>
+									some(
+										λ(domain, x =>
+											app(
+												app(and, app(v(predicate), v(x))),
+												app(app(unint(app(v(c), v(x))), v(w)), v(e)),
+											),
+										),
+									),
+								),
 							),
 						),
 					),
@@ -538,10 +578,25 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 		domain =>
 			λ(Fn(domain, 't'), predicate =>
 				cont(
-					λ(Fn(domain, 't'), c =>
-						every(
-							λ(domain, x =>
-								app(app(implies, app(v(predicate), v(x))), app(v(c), v(x))),
+					λ(Fn(domain, Int(Fn('v', 't'))), c =>
+						app(
+							neg,
+							int(
+								λ('s', w =>
+									λ('v', e =>
+										some(
+											λ(domain, x =>
+												app(
+													app(and, app(v(predicate), v(x))),
+													app(
+														app(unint(app(neg, app(v(c), v(x)))), v(w)),
+														v(e),
+													),
+												),
+											),
+										),
+									),
+								),
 							),
 						),
 					),
@@ -577,12 +632,21 @@ export const determiners = new Map<string, (domain: ExprType) => Expr>([
 		domain =>
 			λ(Fn(domain, 't'), predicate =>
 				cont(
-					λ(Fn(domain, 't'), c =>
+					λ(Fn(domain, Int(Fn('v', 't'))), c =>
 						app(
-							not,
-							some(
-								λ(domain, x =>
-									app(app(and, app(v(predicate), v(x))), app(v(c), v(x))),
+							neg,
+							int(
+								λ('s', w =>
+									λ('v', e =>
+										some(
+											λ(domain, x =>
+												app(
+													app(and, app(v(predicate), v(x))),
+													app(app(unint(app(v(c), v(x))), v(w)), v(e)),
+												),
+											),
+										),
+									),
 								),
 							),
 						),
@@ -693,56 +757,103 @@ export const littleNs = new Map<CovertValue, (verb: Word | CovertWord) => Expr>(
 	],
 );
 
-export const covertComplementizers = new Map<CovertValue, Expr>([
-	[
-		'∅',
-		λ(Cont('t'), p =>
-			app(
-				uncont(v(p)),
-				λ('t', t => v(t)),
-			),
-		),
-	],
-	[
-		'REL',
-		λ(Ref({ type: 'covert resumptive' }, Cont('t')), p =>
-			λ(Int(Pl('e')), x =>
-				app(
-					uncont(app(unref(v(p)), v(x))),
-					λ('t', t => v(t)),
+const declarativeClause = λ(Cont(Int(Fn('v', 't'))), p =>
+	int(
+		λ('s', w =>
+			some(
+				λ('v', e =>
+					app(
+						app(
+							unint(
+								app(
+									uncont(v(p)),
+									λ(Int(Fn('v', 't')), p => v(p)),
+								),
+							),
+							v(w),
+						),
+						v(e),
+					),
 				),
 			),
 		),
-	],
+	),
+);
+
+const relativeClause = (bindingType: 'resumptive' | 'covert resumptive') =>
+	int(
+		λ('s', w =>
+			λ(Ref({ type: bindingType }, Cont(Int(Fn('v', 't')))), p =>
+				λ(Int(Pl('e')), x =>
+					some(
+						λ('v', e =>
+							app(
+								app(
+									unint(
+										app(
+											uncont(app(unref(v(p)), v(x))),
+											λ(Int(Fn('v', 't')), p => v(p)),
+										),
+									),
+									v(w),
+								),
+								v(e),
+							),
+						),
+					),
+				),
+			),
+		),
+	);
+
+export const covertComplementizers = new Map<CovertValue, Expr>([
+	['∅', declarativeClause],
+	['REL', relativeClause('covert resumptive')],
 ]);
 
 export const overtComplementizers = new Map<string, Expr>([
-	[
-		'ꝡa',
-		λ(Cont('t'), p =>
-			app(
-				uncont(v(p)),
-				λ('t', t => v(t)),
-			),
-		),
-	],
+	['ꝡa', declarativeClause],
 	[
 		'ma',
-		λ(Cont('t'), p =>
-			qn(
-				λ(Fn('t', 't'), polarity =>
+		qn(
+			λ(Fn('t', 't'), polarity =>
+				app(
 					app(
-						app(
-							or,
-							equals(
+						or,
+						equals(
+							v(polarity),
+							λ('t', t => v(t)),
+						),
+					),
+					equals(v(polarity), not),
+				),
+			),
+			λ(Fn('t', 't'), polarity =>
+				int(
+					λ('s', w =>
+						λ(Cont(Int(Fn('v', 't'))), p =>
+							app(
 								v(polarity),
-								λ('t', t => v(t)),
+								some(
+									λ('v', e =>
+										app(
+											app(
+												unint(
+													app(
+														uncont(v(p)),
+														λ(Int(Fn('v', 't')), p => v(p)),
+													),
+												),
+												v(w),
+											),
+											v(e),
+										),
+									),
+								),
 							),
 						),
-						equals(v(polarity), not),
 					),
 				),
-				λ(Fn('t', 't'), polarity => app(uncont(v(p)), v(polarity))),
 			),
 		),
 	],
@@ -750,7 +861,7 @@ export const overtComplementizers = new Map<string, Expr>([
 		'ꝡä',
 		int(
 			λ('s', w =>
-				λ(Int(Cont('t')), prop =>
+				λ(Cont(Int(Fn('v', 't'))), prop =>
 					λ(Int(Pl('e')), x =>
 						every(
 							λ('e', x_ =>
@@ -761,9 +872,21 @@ export const overtComplementizers = new Map<string, Expr>([
 											app(unint(propositionContent), v(w)),
 											int(
 												λ('s', w_ =>
-													app(
-														uncont(app(unint(v(prop)), v(w_))),
-														λ('t', t => v(t)),
+													some(
+														λ('v', e =>
+															app(
+																app(
+																	unint(
+																		app(
+																			uncont(v(prop)),
+																			λ(Int(Fn('v', 't')), p => v(p)),
+																		),
+																	),
+																	v(w_),
+																),
+																v(e),
+															),
+														),
 													),
 												),
 											),
@@ -778,18 +901,23 @@ export const overtComplementizers = new Map<string, Expr>([
 			),
 		),
 	],
-	['mä', lex('mä', Int(Fn(Int('t'), Fn(Int(Pl('e')), 't'))))],
+	['mä', lex('mä', Int(Fn(Int(Fn('v', 't')), Fn(Int(Pl('e')), 't'))))],
 	[
 		'lä',
 		int(
 			λ('s', w =>
-				λ(Ref({ type: 'gap' }, Int('t')), p =>
+				λ(Ref({ type: 'gap' }, Int(Fn('v', 't'))), p =>
 					app(
 						app(
 							unint(
 								lex(
 									'lä',
-									Int(Fn(Fn(Int(Pl('e')), Int('t')), Fn(Int(Pl('e')), 't'))),
+									Int(
+										Fn(
+											Fn(Int(Pl('e')), Int(Fn('v', 't'))),
+											Fn(Int(Pl('e')), 't'),
+										),
+									),
 								),
 							),
 							v(w),
@@ -800,17 +928,7 @@ export const overtComplementizers = new Map<string, Expr>([
 			),
 		),
 	],
-	[
-		'ꝡë',
-		λ(Ref({ type: 'resumptive' }, Cont('t')), p =>
-			λ(Int(Pl('e')), x =>
-				app(
-					uncont(app(unref(v(p)), v(x))),
-					λ('t', t => v(t)),
-				),
-			),
-		),
-	],
+	['ꝡë', relativeClause('resumptive')],
 ]);
 
 export const covertCp = salient(Int('t'));
@@ -854,7 +972,7 @@ export const conditionals = new Map<CovertValue, Expr>([
 				int(
 					λ('s', w =>
 						λ(Int('t'), antecedent =>
-							λ(Int('t'), consequent =>
+							λ(Cont(Int(Fn('v', 't'))), consequent =>
 								indef(
 									λ('s', w_ =>
 										app(
@@ -862,7 +980,17 @@ export const conditionals = new Map<CovertValue, Expr>([
 											app(unint(v(antecedent)), v(w_)),
 										),
 									),
-									λ('s', w_ => app(unint(v(consequent)), v(w_))),
+									λ('s', w_ =>
+										app(
+											unint(
+												app(
+													uncont(v(consequent)),
+													λ(Int(Fn('v', 't')), p => v(p)),
+												),
+											),
+											v(w_),
+										),
+									),
 								),
 							),
 						),
@@ -886,7 +1014,7 @@ export const conditionals = new Map<CovertValue, Expr>([
 							),
 						),
 						λ('()', () =>
-							λ(Int('t'), consequent =>
+							λ(Cont(Int(Fn('v', 't'))), consequent =>
 								int(
 									λ('s', w =>
 										indef(
@@ -896,7 +1024,17 @@ export const conditionals = new Map<CovertValue, Expr>([
 													app(unint(v(antecedent)), v(w_)),
 												),
 											),
-											λ('s', w_ => app(unint(v(consequent)), v(w_))),
+											λ('s', w_ =>
+												app(
+													unint(
+														app(
+															uncont(v(consequent)),
+															λ(Int(Fn('v', 't')), p => v(p)),
+														),
+													),
+													v(w_),
+												),
+											),
 										),
 									),
 								),
@@ -910,10 +1048,15 @@ export const conditionals = new Map<CovertValue, Expr>([
 	[
 		'WHEN',
 		λ('t', antecedent =>
-			λ('t', consequent =>
+			λ(Cont(Int(Fn('v', 't'))), consequent =>
 				indef(
 					λ('()', () => v(antecedent)),
-					λ('()', () => v(consequent)),
+					λ('()', () =>
+						app(
+							uncont(v(consequent)),
+							λ(Int(Fn('v', 't')), p => v(p)),
+						),
+					),
 				),
 			),
 		),
@@ -921,13 +1064,53 @@ export const conditionals = new Map<CovertValue, Expr>([
 ]);
 
 const always = (domain: ExprType) =>
-	λ(Indef(domain, 't'), p =>
-		unindef(
-			v(p),
-			λ(Fn(domain, 't'), r =>
-				λ(Fn(domain, 't'), b =>
-					every(
-						λ(domain, x => app(app(implies, app(v(r), v(x))), app(v(b), v(x)))),
+	λ(Int(Indef(domain, Fn('v', 't'))), p =>
+		app(
+			neg,
+			int(
+				λ('s', w =>
+					λ('v', e =>
+						some(
+							λ(domain, x =>
+								app(
+									app(
+										and,
+										app(
+											unindef(
+												app(unint(v(p)), v(w)),
+												λ(Fn(domain, 't'), r =>
+													λ(Fn(domain, Fn('v', 't')), () => v(r)),
+												),
+											),
+											v(x),
+										),
+									),
+									app(
+										app(
+											unint(
+												app(
+													neg,
+													int(
+														λ('s', w_ =>
+															unindef(
+																app(unint(v(p)), v(w_)),
+																λ(Fn(domain, 't'), () =>
+																	λ(Fn(domain, Fn('v', 't')), b =>
+																		app(v(b), v(x)),
+																	),
+																),
+															),
+														),
+													),
+												),
+											),
+											v(w),
+										),
+										v(e),
+									),
+								),
+							),
+						),
 					),
 				),
 			),
@@ -935,27 +1118,48 @@ const always = (domain: ExprType) =>
 	);
 
 const sometimes = (domain: ExprType) =>
-	λ(Indef(domain, 't'), p =>
-		unindef(
-			v(p),
-			λ(Fn(domain, 't'), r =>
-				λ(Fn(domain, 't'), b =>
-					some(λ(domain, x => app(app(and, app(v(r), v(x))), app(v(b), v(x))))),
+	λ(Int(Indef(domain, Fn('v', 't'))), p =>
+		int(
+			λ('s', w =>
+				unindef(
+					app(unint(v(p)), v(w)),
+					λ(Fn(domain, 't'), r =>
+						λ(Fn(domain, Fn('v', 't')), b =>
+							λ('v', e =>
+								some(
+									λ(domain, x =>
+										app(app(and, app(v(r), v(x))), app(app(v(b), v(x)), v(e))),
+									),
+								),
+							),
+						),
+					),
 				),
 			),
 		),
 	);
 
 const never = (domain: ExprType) =>
-	λ(Indef(domain, 't'), p =>
-		unindef(
-			v(p),
-			λ(Fn(domain, 't'), r =>
-				λ(Fn(domain, 't'), b =>
-					app(
-						not,
-						some(
-							λ(domain, x => app(app(and, app(v(r), v(x))), app(v(b), v(x)))),
+	λ(Int(Indef(domain, Fn('v', 't'))), p =>
+		app(
+			neg,
+			int(
+				λ('s', w =>
+					unindef(
+						app(unint(v(p)), v(w)),
+						λ(Fn(domain, 't'), r =>
+							λ(Fn(domain, Fn('v', 't')), b =>
+								λ('v', e =>
+									some(
+										λ(domain, x =>
+											app(
+												app(and, app(v(r), v(x))),
+												app(app(v(b), v(x)), v(e)),
+											),
+										),
+									),
+								),
+							),
 						),
 					),
 				),
@@ -1064,30 +1268,100 @@ export const adjuncts: Partial<
 
 export type Conjunction = (conjunct: ExprType, bind: boolean) => Expr;
 
-function clausalConjunction(conjoin: Expr, headBinding: string): Conjunction {
-	const binding: Binding = { type: 'head', head: headBinding };
-	return (conjunct, bnd) =>
-		λ(Cont(conjunct), r =>
-			λ(Cont(conjunct), l =>
-				cont(
-					λ(Fn(bnd ? Bind(binding, conjunct) : conjunct, 't'), pred => {
-						const pred_ = bnd
-							? λ(conjunct, x => app(v(pred), bind(binding, v(x), v(x))))
-							: v(pred);
-						return app(
-							app(conjoin, app(uncont(v(l)), pred_)),
-							app(uncont(v(r)), pred_),
-						);
-					}),
-				),
-			),
-		);
-}
-
 export const clausalConjunctions = new Map<string, Conjunction>([
-	['rú', clausalConjunction(and, 'ru')],
-	['rá', clausalConjunction(or, 'ra')],
-	['ró', clausalConjunction(xor, 'ro')],
+	[
+		'rú',
+		(conjunct, bnd) => {
+			const binding: Binding = { type: 'head', head: 'ru' };
+			return λ(Cont(conjunct), r =>
+				λ(Cont(conjunct), l =>
+					cont(
+						λ(
+							Fn(bnd ? Bind(binding, conjunct) : conjunct, Int(Fn('v', 't'))),
+							pred => {
+								return int(
+									λ('s', w =>
+										λ('v', e =>
+											some(
+												λ('v', el =>
+													some(
+														λ('v', er => {
+															const pred_ = bnd
+																? λ(conjunct, x =>
+																		app(v(pred), bind(binding, v(x), v(x))),
+																	)
+																: v(pred);
+															return app(
+																app(
+																	and,
+																	equals(v(e), app(app(sum, v(el)), v(er))),
+																),
+																app(
+																	app(
+																		and,
+																		app(
+																			app(
+																				unint(app(uncont(v(l)), pred_)),
+																				v(w),
+																			),
+																			v(el),
+																		),
+																	),
+																	app(
+																		app(unint(app(uncont(v(r)), pred_)), v(w)),
+																		v(er),
+																	),
+																),
+															);
+														}),
+													),
+												),
+											),
+										),
+									),
+								);
+							},
+						),
+					),
+				),
+			);
+		},
+	],
+	[
+		'rá',
+		(conjunct, bnd) => {
+			const binding: Binding = { type: 'head', head: 'ra' };
+			return λ(Cont(conjunct), r =>
+				λ(Cont(conjunct), l =>
+					cont(
+						λ(
+							Fn(bnd ? Bind(binding, conjunct) : conjunct, Int(Fn('v', 't'))),
+							pred => {
+								return int(
+									λ('s', w =>
+										λ('v', e => {
+											const pred_ = bnd
+												? λ(conjunct, x =>
+														app(v(pred), bind(binding, v(x), v(x))),
+													)
+												: v(pred);
+											return app(
+												app(
+													or,
+													app(app(unint(app(uncont(v(l)), pred_)), v(w)), v(e)),
+												),
+												app(app(unint(app(uncont(v(r)), pred_)), v(w)), v(e)),
+											);
+										}),
+									),
+								);
+							},
+						),
+					),
+				),
+			);
+		},
+	],
 	[
 		'rí',
 		(conjunct, bnd) =>
@@ -1101,7 +1375,7 @@ export const clausalConjunctions = new Map<string, Conjunction>([
 							if (!bnd) return v(x);
 							const binding: Binding = { type: 'head', head: 'rı' };
 							return cont(
-								λ(Fn(Bind(binding, conjunct), 't'), pred =>
+								λ(Fn(Bind(binding, conjunct), Int(Fn('v', 't'))), pred =>
 									app(
 										uncont(v(x)),
 										λ(conjunct, x_ =>
@@ -1117,29 +1391,74 @@ export const clausalConjunctions = new Map<string, Conjunction>([
 	],
 	[
 		'kéo',
-		(conjunct, bnd) =>
-			λ(Cont(conjunct), r =>
+		(conjunct, bnd) => {
+			const binding: Binding = { type: 'head', head: 'keo' };
+			return λ(Cont(conjunct), r =>
 				λ(Cont(conjunct), l =>
 					andMap(
 						app(bg, contrast(v(l), v(r))),
-						λ('()', () => {
-							const binding: Binding = { type: 'head', head: 'keo' };
-							return cont(
-								λ(Fn(bnd ? Bind(binding, conjunct) : conjunct, 't'), pred => {
-									const pred_ = bnd
-										? λ(conjunct, x => app(v(pred), bind(binding, v(x), v(x))))
-										: v(pred);
-									return app(
-										app(and, app(uncont(v(l)), pred_)),
-										app(uncont(v(r)), pred_),
-									);
-								}),
-							);
-						}),
+						λ('()', () =>
+							cont(
+								λ(
+									Fn(
+										bnd ? Bind(binding, conjunct) : conjunct,
+										Int(Fn('v', 't')),
+									),
+									pred => {
+										return int(
+											λ('s', w =>
+												λ('v', e =>
+													some(
+														λ('v', el =>
+															some(
+																λ('v', er => {
+																	const pred_ = bnd
+																		? λ(conjunct, x =>
+																				app(v(pred), bind(binding, v(x), v(x))),
+																			)
+																		: v(pred);
+																	return app(
+																		app(
+																			and,
+																			equals(v(e), app(app(sum, v(el)), v(er))),
+																		),
+																		app(
+																			app(
+																				and,
+																				app(
+																					app(
+																						unint(app(uncont(v(l)), pred_)),
+																						v(w),
+																					),
+																					v(el),
+																				),
+																			),
+																			app(
+																				app(
+																					unint(app(uncont(v(r)), pred_)),
+																					v(w),
+																				),
+																				v(er),
+																			),
+																		),
+																	);
+																}),
+															),
+														),
+													),
+												),
+											),
+										);
+									},
+								),
+							),
+						),
 					),
 				),
-			),
+			);
+		},
 	],
+	// TODO: ró
 ]);
 
 export const pluralCoordinator = λ(Int(Pl('e')), r =>

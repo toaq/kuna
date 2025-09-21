@@ -91,9 +91,10 @@ enum Precedence {
 	Equals = 8,
 	Among = 9,
 	Union = 10,
-	Apply = 11,
-	Prefix = 12,
-	Bracket = 13,
+	Sum = 11,
+	Apply = 12,
+	Prefix = 13,
+	Bracket = 14,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -133,6 +134,7 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 		associativity: 'none',
 	},
 	union: { symbol: '∪', precedence: Precedence.Union, associativity: 'any' },
+	sum: { symbol: '⊔', precedence: Precedence.Sum, associativity: 'any' },
 };
 
 export class PlainText extends Renderer<RichExpr, string> {

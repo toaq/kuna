@@ -441,7 +441,10 @@ export function cont(body: Expr): Expr {
 	return app(
 		{
 			head: 'constant',
-			type: Fn(Fn(Fn(inner, 't'), 't'), Cont(inner)),
+			type: Fn(
+				Fn(Fn(inner, Int(Fn('v', 't'))), Int(Fn('v', 't'))),
+				Cont(inner),
+			),
 			scope: [],
 			name: 'cont',
 		},
@@ -457,7 +460,10 @@ export function uncont(cont: Expr): Expr {
 	return app(
 		{
 			head: 'constant',
-			type: Fn(cont.type, Fn(Fn(cont.type.inner, 't'), 't')),
+			type: Fn(
+				cont.type,
+				Fn(Fn(cont.type.inner, Int(Fn('v', 't'))), Int(Fn('v', 't'))),
+			),
 			scope: [],
 			name: 'uncont',
 		},
@@ -1076,6 +1082,27 @@ export const animate: Expr = {
 	type: Int(Fn('e', 't')),
 	scope: [],
 	name: 'animate',
+};
+
+/**
+ * Sums two events together, returning the event that encompasses them both.
+ */
+export const sum: Expr = {
+	head: 'constant',
+	type: Fn('v', Fn('v', 'v')),
+	scope: [],
+	name: 'sum',
+};
+
+/**
+ * Negates an event predicate P, returning the event predicate which holds true
+ * of events representing the non-existence of any P events.
+ */
+export const neg: Expr = {
+	head: 'constant',
+	type: Fn(Int(Fn('v', 't')), Int(Fn('v', 't'))),
+	scope: [],
+	name: 'neg',
 };
 
 /**

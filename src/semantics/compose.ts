@@ -25,7 +25,6 @@ import {
 	chooseEffect,
 	composeFunctors,
 	contFunctor,
-	contMonad,
 	effectsEqual,
 	findEffect,
 	getApplicative,
@@ -196,22 +195,27 @@ function coerceInput_(
 		);
 		if (result !== null) return result;
 
-		// Straightforward coercion to the original type failed, but maybe we can
-		// coerce to Cont <original type> and join this with an expected Cont instead?
+		// Straightforward coercion to the desired type failed, but if the desired
+		// type looks like M α (where M is a monad), maybe we can coerce to M M α and
+		// then join the M's together?
+		const monad = getMonad(inputInner);
 		if (
-			typeof inputInner === 'object' &&
-			inputInner.head === 'cont' &&
-			inputSide !== 'out'
+			monad !== null &&
+			inputSide !== 'out' &&
+			(mayLower || getRunner(inputInner)?.runner.eager) &&
+			!monad.applicative.indexed
 		) {
-			const coercedInner = Cont(domainInner);
+			const coercedInner = monad.applicative.functor.wrap(
+				domainInner,
+				inputInner,
+			);
 			const coerced = wrap(coercedInner, input);
 			return coerceInput_(
 				λ(coerced, inputVal =>
 					app(
 						fn,
 						map(
-							() =>
-								λ(coercedInner, x => contMonad.join(() => v(x), coercedInner)),
+							() => λ(coercedInner, x => monad.join(() => v(x), coercedInner)),
 							() => v(inputVal),
 							coerced,
 							domain,
@@ -269,7 +273,7 @@ function coerceInput_(
 								() =>
 									λ(inputInner, x =>
 										cont(
-											λ(Fn(unwrappedInner, 't'), pred =>
+											λ(Fn(unwrappedInner, Int(Fn('v', 't'))), pred =>
 												run(() =>
 													functor.map(
 														() => v(pred),
@@ -278,7 +282,7 @@ function coerceInput_(
 																? v(x)
 																: gather(() => v(x), inputInner),
 														rewrappedInner,
-														functor.wrap('t', inputInner),
+														functor.wrap(Int(Fn('v', 't')), inputInner),
 													),
 												),
 											),
@@ -510,7 +514,7 @@ function coerceInput_(
 		if (
 			runner !== null &&
 			(runner.runner.eager || mayLower) &&
-			subtype(wrap('t', input), domain)
+			subtype(wrap(Int(Fn('v', 't')), input), domain)
 		) {
 			const coercedInner = wrap(runner.input, input);
 			return coerceInput_(
@@ -521,7 +525,7 @@ function coerceInput_(
 							() => λ(runner.input, inner => runner.runner.run(() => v(inner))),
 							() => v(inputVal),
 							coercedInner,
-							wrap('t', input),
+							wrap(Int(Fn('v', 't')), input),
 						),
 					),
 				),
@@ -599,9 +603,7 @@ function coerceInput_(
 				coerced,
 				inputSide,
 				mode,
-				under === null
-					? distributive.functor
-					: composeFunctors(distributive.functor, under),
+				composeFunctors(under ?? idFunctor, distributive.functor),
 				mayLower,
 				mayLift,
 			);

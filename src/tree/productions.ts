@@ -428,12 +428,7 @@ export function makeAdjunctPT(
 }
 
 export function makeT1QP([modal, tp]: [Leaf & { word: Word }, Tree]) {
-	return qp(modal, null, {
-		label: 'CP',
-		left: makeNull('C'),
-		right: tp,
-		source: tp.source,
-	});
+	return qp(modal, null, tp);
 }
 
 export function makeSigmaT1QP([sigma, modal, tp]: [

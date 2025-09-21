@@ -13,13 +13,16 @@ import {
 	flatMap,
 	implies,
 	map,
+	not,
 	or,
 	pair,
 	single,
+	some,
 	topic,
 	trueExpr,
 	unbind,
 	unindef,
+	unint,
 	unpair,
 	unqn,
 	v,
@@ -648,15 +651,13 @@ function reduce_(expr: Expr): Expr {
 				}
 			}
 
-			// every (λy implies (among y (_ f)) g)
+			// _ (λy _ (among y (_ f)) g)
 			if (
 				expr.fn.head === 'constant' &&
-				expr.fn.name === 'every' &&
 				expr.arg.head === 'lambda' &&
 				expr.arg.body.head === 'apply' &&
 				expr.arg.body.fn.head === 'apply' &&
 				expr.arg.body.fn.fn.head === 'constant' &&
-				expr.arg.body.fn.fn.name === 'implies' &&
 				expr.arg.body.fn.arg.head === 'apply' &&
 				expr.arg.body.fn.arg.fn.head === 'apply' &&
 				expr.arg.body.fn.arg.fn.fn.head === 'constant' &&
@@ -669,76 +670,85 @@ function reduce_(expr: Expr): Expr {
 				const g = expr.arg.body.arg;
 				const originalDomain = expr.arg.param;
 
-				// every (λy implies (among y (single f)) g) = (λy g) f
+				// some/every (λy and/implies (among y (_ f)) g)
 				if (
-					expr.arg.body.fn.arg.arg.fn.head === 'constant' &&
-					expr.arg.body.fn.arg.arg.fn.name === 'single' &&
-					f.scope[0] === undefined
+					(expr.fn.name === 'some' || expr.fn.name === 'every') &&
+					expr.arg.body.fn.fn.name ===
+						(expr.fn.name === 'some' ? 'and' : 'implies')
 				) {
-					const ff = rewriteScope(f, i => {
-						if (i === 0) throw new Impossible('Variable deleted');
-						return i - 1;
-					});
-					return reduce(
-						app(
-							λ(originalDomain, () => g),
-							ff,
-						),
-					);
-				}
-
-				// every (λy implies (among y (_ x f)) g)
-				if (
-					expr.arg.body.fn.arg.arg.fn.head === 'apply' &&
-					expr.arg.body.fn.arg.arg.fn.fn.head === 'constant'
-				) {
-					const x = expr.arg.body.fn.arg.arg.fn.arg;
-
-					// every (λy implies (among y (map x f)) g) = every (λz implies (among z x) ((λy g) (f z)))
+					// some/every (λy and/implies (among y (single f)) g) = (λy g) f
 					if (
-						expr.arg.body.fn.arg.arg.fn.fn.name === 'map' &&
-						x.scope[0] === undefined &&
+						expr.arg.body.fn.arg.arg.fn.head === 'constant' &&
+						expr.arg.body.fn.arg.arg.fn.name === 'single' &&
 						f.scope[0] === undefined
 					) {
-						assertPl(x.type);
-						const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
-						return reduce(
-							every(
-								λ(x.type.inner, z =>
-									app(
-										app(implies, among(v(z), x)),
-										app(
-											λ(originalDomain, () => gg),
-											app(f, v(z)),
-										),
-									),
-								),
-							),
+						return substitute(
+							0,
+							rewriteScope(f, i => {
+								if (i === 0) throw new Impossible('Variable deleted');
+								return i - 1;
+							}),
+							g,
 						);
 					}
 
-					// every (λy implies (among y (flat_map x f)) g) = every (λz implies (among z x) (every (λy implies (among y (f z)) g)))
+					// some/every (λy and/implies (among y (_ x f)) g)
 					if (
-						expr.arg.body.fn.arg.arg.fn.fn.name === 'flat_map' &&
-						x.scope[0] === undefined
+						expr.arg.body.fn.arg.arg.fn.head === 'apply' &&
+						expr.arg.body.fn.arg.arg.fn.fn.head === 'constant'
 					) {
-						assertPl(x.type);
-						const ff = rewriteScope(f, i => (i === 0 ? 0 : i + 1));
-						const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
-						return reduce(
-							every(
-								λ(x.type.inner, z =>
-									app(
-										app(implies, among(v(z), x)),
-										every(
-											λ(originalDomain, y =>
-												app(app(implies, among(v(y), app(ff, v(z)))), gg),
+						const x = expr.arg.body.fn.arg.arg.fn.arg;
+
+						// some/every (λy and/implies (among y (map x f)) g) = some/every (λz and/implies (among z x) ((λy g) (f z)))
+						if (
+							expr.arg.body.fn.arg.arg.fn.fn.name === 'map' &&
+							x.scope[0] === undefined &&
+							f.scope[0] === undefined
+						) {
+							assertPl(x.type);
+							const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
+							const quantify = expr.fn.name === 'some' ? some : every;
+							const conjoin = expr.fn.name === 'some' ? and : implies;
+							return reduce(
+								quantify(
+									λ(x.type.inner, z =>
+										app(
+											app(conjoin, among(v(z), x)),
+											app(
+												λ(originalDomain, () => gg),
+												app(f, v(z)),
 											),
 										),
 									),
 								),
-							),
-						);
+							);
+						}
+
+						// some/every (λy and/implies (among y (flat_map x f)) g) = some/every (λz and/implies (among z x) (some/every (λy and/implies (among y (f z)) g)))
+						if (
+							expr.arg.body.fn.arg.arg.fn.fn.name === 'flat_map' &&
+							x.scope[0] === undefined
+						) {
+							assertPl(x.type);
+							const ff = rewriteScope(f, i => (i === 0 ? 0 : i + 1));
+							const gg = rewriteScope(g, i => (i === 0 ? 0 : i + 1));
+							const quantify = expr.fn.name === 'some' ? some : every;
+							const conjoin = expr.fn.name === 'some' ? and : implies;
+							return reduce(
+								quantify(
+									λ(x.type.inner, z =>
+										app(
+											app(conjoin, among(v(z), x)),
+											quantify(
+												λ(originalDomain, y =>
+													app(app(conjoin, among(v(y), app(ff, v(z)))), gg),
+												),
+											),
+										),
+									),
+								),
+							);
+						}
 					}
 				}
 			}
@@ -801,6 +811,185 @@ function reduce_(expr: Expr): Expr {
 				if (expr.arg.head === 'constant' && expr.arg.name === 'false')
 					return reduce(expr.fn.arg);
 			}
+
+			// some (λe unint (neg f) w e) = not (some (λe unint f w e))
+			if (
+				expr.fn.head === 'constant' &&
+				expr.fn.name === 'some' &&
+				expr.arg.head === 'lambda' &&
+				expr.arg.body.head === 'apply' &&
+				expr.arg.body.fn.head === 'apply' &&
+				expr.arg.body.fn.fn.head === 'apply' &&
+				expr.arg.body.fn.fn.fn.head === 'constant' &&
+				expr.arg.body.fn.fn.fn.name === 'unint' &&
+				expr.arg.body.fn.fn.arg.head === 'apply' &&
+				expr.arg.body.fn.fn.arg.fn.head === 'constant' &&
+				expr.arg.body.fn.fn.arg.fn.name === 'neg' &&
+				expr.arg.body.fn.arg.scope[0] === undefined &&
+				expr.arg.body.fn.fn.arg.arg.scope[0] === undefined &&
+				expr.arg.body.arg.head === 'variable' &&
+				expr.arg.body.arg.index === 0
+			) {
+				const f = expr.arg.body.fn.fn.arg.arg;
+				const w = expr.arg.body.fn.arg;
+				return reduce(app(not, some(λ('v', e => app(app(unint(f), w), v(e))))));
+			}
+
+			// Push event quantifiers inwards as they are likely to be referenced on only
+			// one side of a logical connective
+			// some (λe some (λx f)) = some (λx some (λe f))
+			if (
+				expr.fn.head === 'constant' &&
+				expr.fn.name === 'some' &&
+				expr.arg.head === 'lambda' &&
+				expr.arg.param === 'v' &&
+				expr.arg.body.head === 'apply' &&
+				expr.arg.body.fn.head === 'constant' &&
+				expr.arg.body.fn.name === 'some' &&
+				expr.arg.body.arg.head === 'lambda' &&
+				expr.arg.body.arg.param !== 'v'
+			) {
+				const f = expr.arg.body.arg.body;
+				const ff = rewriteScope(f, i => (i === 0 ? 1 : i === 1 ? 0 : i));
+				const x = expr.arg.body.arg.param;
+				return reduce(some(λ(x, () => some(λ('v', () => ff)))));
+			}
+
+			// some (λx and f g) = and f (some (λx g))
+			if (
+				expr.fn.head === 'constant' &&
+				expr.fn.name === 'some' &&
+				expr.arg.head === 'lambda' &&
+				expr.arg.body.head === 'apply' &&
+				expr.arg.body.fn.head === 'apply' &&
+				expr.arg.body.fn.fn.head === 'constant' &&
+				expr.arg.body.fn.fn.name === 'and' &&
+				expr.arg.body.fn.arg.scope[0] === undefined
+			) {
+				const f = expr.arg.body.fn.arg;
+				const ff = rewriteScope(f, i => {
+					if (i === 0) throw new Impossible('Variable deleted');
+					return i - 1;
+				});
+				const g = expr.arg.body.arg;
+				const x = expr.arg.param;
+				return app(app(and, ff), some(λ(x, () => g)));
+			}
+
+			// not (some/every (λx f)) = every/some (λx not f)
+			if (
+				expr.fn.head === 'constant' &&
+				expr.fn.name === 'not' &&
+				expr.arg.head === 'apply' &&
+				expr.arg.fn.head === 'constant' &&
+				(expr.arg.fn.name === 'some' || expr.arg.fn.name === 'every') &&
+				expr.arg.arg.head === 'lambda' &&
+				expr.arg.arg.param !== 'v'
+			) {
+				const f = expr.arg.arg.body;
+				const x = expr.arg.arg.param;
+				const quantify = expr.arg.fn.name === 'some' ? every : some;
+				return reduce(quantify(λ(x, () => app(not, f))));
+			}
+
+			// not (and/implies f g) = implies/and f (not g)
+			if (
+				expr.fn.head === 'constant' &&
+				expr.fn.name === 'not' &&
+				expr.arg.head === 'apply' &&
+				expr.arg.fn.head === 'apply' &&
+				expr.arg.fn.fn.head === 'constant' &&
+				(expr.arg.fn.fn.name === 'and' || expr.arg.fn.fn.name === 'implies')
+			) {
+				const conjoin = expr.arg.fn.fn.name === 'and' ? implies : and;
+				return reduce(
+					app(app(conjoin, expr.arg.fn.arg), app(not, expr.arg.arg)),
+				);
+			}
+
+			// some (λe some (λe1 some (λe2 and (equals e (sum e1 e2)) (and f g))))
+			// = and (some (λe f)) (some (λe g))
+			if (
+				expr.fn.head === 'constant' &&
+				expr.fn.name === 'some' &&
+				expr.arg.head === 'lambda' &&
+				expr.arg.body.head === 'apply' &&
+				expr.arg.body.fn.head === 'constant' &&
+				expr.arg.body.fn.name === 'some' &&
+				expr.arg.body.arg.head === 'lambda' &&
+				expr.arg.body.arg.body.head === 'apply' &&
+				expr.arg.body.arg.body.fn.head === 'constant' &&
+				expr.arg.body.arg.body.fn.name === 'some' &&
+				expr.arg.body.arg.body.arg.head === 'lambda' &&
+				expr.arg.body.arg.body.arg.body.head === 'apply' &&
+				expr.arg.body.arg.body.arg.body.fn.head === 'apply' &&
+				expr.arg.body.arg.body.arg.body.fn.fn.head === 'constant' &&
+				expr.arg.body.arg.body.arg.body.fn.fn.name === 'and' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.head === 'apply' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.fn.head === 'apply' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.fn.fn.head === 'constant' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.fn.fn.name === 'equals' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.fn.arg.head === 'variable' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.fn.arg.index === 2 &&
+				expr.arg.body.arg.body.arg.body.fn.arg.arg.head === 'apply' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.arg.fn.head === 'apply' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.arg.fn.fn.head === 'constant' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.arg.fn.fn.name === 'sum' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.arg.fn.arg.head === 'variable' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.arg.fn.arg.index === 1 &&
+				expr.arg.body.arg.body.arg.body.fn.arg.arg.arg.head === 'variable' &&
+				expr.arg.body.arg.body.arg.body.fn.arg.arg.arg.index === 0 &&
+				expr.arg.body.arg.body.arg.body.arg.head === 'apply' &&
+				expr.arg.body.arg.body.arg.body.arg.fn.head === 'apply' &&
+				expr.arg.body.arg.body.arg.body.arg.fn.fn.head === 'constant' &&
+				expr.arg.body.arg.body.arg.body.arg.fn.fn.name === 'and' &&
+				expr.arg.body.arg.body.arg.body.arg.scope[2] === undefined &&
+				expr.arg.body.arg.body.arg.body.arg.fn.arg.scope[0] === undefined &&
+				expr.arg.body.arg.body.arg.body.arg.arg.scope[1] === undefined
+			) {
+				const f = expr.arg.body.arg.body.arg.body.arg.fn.arg;
+				const ff = rewriteScope(f, i => {
+					if (i === 0 || i === 2) throw new Impossible('Variable deleted');
+					return i === 1 ? 0 : i - 2;
+				});
+				const g = expr.arg.body.arg.body.arg.body.arg.arg;
+				const gg = rewriteScope(g, i => {
+					if (i === 1 || i === 2) throw new Impossible('Variable deleted');
+					return i === 0 ? 0 : i - 2;
+				});
+				return reduce(
+					app(app(and, some(λ('v', () => ff))), some(λ('v', () => gg))),
+				);
+			}
+
+			// some (λx or f g) = or (some (λx f)) (some (λx g))
+			if (
+				expr.fn.head === 'constant' &&
+				expr.fn.name === 'some' &&
+				expr.arg.head === 'lambda' &&
+				expr.arg.body.head === 'apply' &&
+				expr.arg.body.fn.head === 'apply' &&
+				expr.arg.body.fn.fn.head === 'constant' &&
+				expr.arg.body.fn.fn.name === 'or'
+			) {
+				const f = expr.arg.body.fn.arg;
+				const g = expr.arg.body.arg;
+				const x = expr.arg.param;
+				return reduce(
+					app(app(or, some(λ(x, () => f))), some(λ(expr.arg.param, () => g))),
+				);
+			}
+
+			// neg (neg f) = f
+			// not (not f) = f
+			if (
+				expr.fn.head === 'constant' &&
+				(expr.fn.name === 'neg' || expr.fn.name === 'not') &&
+				expr.arg.head === 'apply' &&
+				expr.arg.fn.head === 'constant' &&
+				expr.arg.fn.name === expr.fn.name
+			)
+				return reduce(expr.arg.arg);
 
 			// and_map/and_then (topic x y) (λz f)
 			if (

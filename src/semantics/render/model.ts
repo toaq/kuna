@@ -61,7 +61,8 @@ interface Infix extends ExprBase {
 		| 'implies'
 		| 'equals'
 		| 'not_equals'
-		| 'union';
+		| 'union'
+		| 'sum';
 	left: RichExpr;
 	right: RichExpr;
 }
@@ -376,7 +377,8 @@ export function enrich(e: Expr): RichExpr {
 					e.fn.fn.name === 'xor' ||
 					e.fn.fn.name === 'implies' ||
 					e.fn.fn.name === 'equals' ||
-					e.fn.fn.name === 'union')
+					e.fn.fn.name === 'union' ||
+					e.fn.fn.name === 'sum')
 			)
 				return {
 					type: e.type,

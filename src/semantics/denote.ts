@@ -57,6 +57,7 @@ import {
 	app,
 	ask,
 	assertFn,
+	assertInt,
 	bg,
 	bind,
 	cont,
@@ -78,7 +79,7 @@ import { reduce } from './reduce';
 import { typeToPlainText } from './render';
 import {
 	findEffect,
-	getBigFunctor,
+	getBigFunctorUntil,
 	getFunctor,
 	idFunctor,
 	unwrapEffects,
@@ -156,14 +157,21 @@ function incorpObject_(
 	// it in a trivial Pl effect.
 	return single(
 		cont(
-			λ(Fn(Fn(type.domain, 't'), 't'), pred =>
+			λ(Fn(Int(Fn('v', 't')), Int(Fn('v', 't'))), pred =>
 				app(
 					uncont(v(objectVar)),
 					λ(objectType, obj =>
 						app(
 							v(pred),
-							λ(type.domain, arg =>
-								app(applyArgs(app(v(relVar), v(obj))), v(arg)),
+							int(
+								λ('s', w =>
+									λ(type.domain, arg =>
+										app(
+											applyArgs(app(app(unint(v(relVar)), v(w)), v(obj))),
+											v(arg),
+										),
+									),
+								),
 							),
 						),
 					),
@@ -174,19 +182,29 @@ function incorpObject_(
 }
 
 function incorpObject(e: Expr): Expr {
-	const functor = getBigFunctor(e.type) ?? idFunctor;
+	const functor =
+		getBigFunctorUntil(
+			e.type,
+			t =>
+				typeof t === 'object' &&
+				t.head === 'int' &&
+				typeof t.inner === 'object' &&
+				t.inner.head === 'fn',
+		) ?? idFunctor;
 	const inner = functor.unwrap(e.type);
-	assertFn(inner);
+	assertInt(inner);
+	assertFn(inner.inner);
+	const { domain, range } = inner.inner;
 	return functor.map(
 		() =>
 			λ(inner, rel =>
-				λ(Cont(inner.domain), object =>
-					incorpObject_(inner.range, rel, object, inner.domain, e => e),
+				λ(Cont(domain), object =>
+					incorpObject_(range, rel, object, domain, e => e),
 				),
 			),
 		() => e,
 		e.type,
-		functor.wrap(Fn(Cont(inner.domain), inner.range), e.type),
+		functor.wrap(Fn(Cont(domain), Int(range)), e.type),
 	);
 }
 
@@ -284,8 +302,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Unrecognized(`𝘷 for type ${typeToPlainText(type)}`);
 		}
 
-		if (cCommand?.label === "Cond'")
-			return λ(unwrapEffects(cCommand.denotation.type), pred => v(pred));
+		if (cCommand?.label === "Cond'") return unit;
 
 		if (leaf.word.entry?.toaq === 'nä') return cleftVerb;
 		throw new Unrecognized(`𝘷: ${leaf.word.entry?.toaq ?? leaf.word.text}`);
@@ -311,7 +328,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		else toaq = leaf.word.entry.toaq.replace(/-$/, '');
 
 		// TODO: chum will need a different type
-		return lex(toaq, Int(Fn(Fn('v', 't'), Fn('i', 't'))));
+		return lex(toaq, Int(Fn(Fn('v', 't'), Fn('i', Fn('v', 't')))));
 	}
 
 	if (leaf.label === 'T') {
@@ -324,8 +341,12 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		return lex(
 			toaq,
 			toaq === 'sula'
-				? Fn(Fn('i', 't'), 't')
-				: Dx(pronominalTenses.has(toaq) ? 'i' : Fn(Fn('i', 't'), 't')),
+				? Fn(Fn('i', Fn('v', 't')), Fn('v', 't'))
+				: Dx(
+						pronominalTenses.has(toaq)
+							? 'i'
+							: Fn(Fn('i', Fn('v', 't')), Fn('v', 't')),
+					),
 		);
 	}
 
@@ -517,10 +538,16 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 		return (
 			quantifiers.get(toaq)?.(indef.domain) ??
-			λ(Indef(indef.domain, 't'), g =>
+			λ(Indef(indef.domain, Int(Fn('v', 't'))), g =>
 				unindef(
 					v(g),
-					lex(toaq, Fn(Fn(indef.domain, 't'), Fn(Fn(indef.domain, 't'), 't'))),
+					lex(
+						toaq,
+						Fn(
+							Fn(indef.domain, 't'),
+							Fn(Fn(indef.domain, Int(Fn('v', 't'))), Int(Fn('v', 't'))),
+						),
+					),
 				),
 			)
 		);
@@ -564,8 +591,12 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (toaq === 'róı') return pluralCoordinator;
 		const conjunct = unwrapEffects(cCommand.denotation.type);
 		const data = clausalConjunctions.get(toaq);
-		if (data === undefined) throw new Unrecognized('&: ${toaq}');
-		return data(conjunct === 'e' ? Int(Pl('e')) : conjunct, conjunct === 'e');
+		if (data === undefined) throw new Unrecognized(`&: ${toaq}`);
+		return data(
+			// TODO: We ought not to need the Int on Int(conjunct)
+			conjunct === 'e' ? Int(Pl('e')) : Int(conjunct),
+			conjunct === 'e',
+		);
 	}
 
 	if (leaf.label === 'Focus') {

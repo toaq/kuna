@@ -28,12 +28,11 @@ import {
 	bind,
 	bindingsEqual,
 	cont,
-	every,
 	flatMap,
-	implies,
 	indef,
 	int,
 	map,
+	neg,
 	pair,
 	pure,
 	qn,
@@ -90,6 +89,11 @@ export interface Functor {
 
 export interface Applicative {
 	functor: Functor;
+	/**
+	 * Whether effects in this applicative functor carry a second type parameter
+	 * which is convoluted when sequencing actions.
+	 */
+	indexed: boolean;
 	/**
 	 * Lifts a value into the applicative functor.
 	 */
@@ -182,6 +186,7 @@ const intFunctor: Functor = {
 
 const intApplicative: Applicative = {
 	functor: intFunctor,
+	indexed: false,
 	pure: e => int(λ('s', () => e())),
 	apply: (fn, arg) =>
 		int(λ('s', w => app(app(unint(fn()), v(w)), app(unint(arg()), v(w))))),
@@ -196,7 +201,7 @@ export const contFunctor: Functor = {
 	map: (fn, arg, _domain, range) => {
 		assertCont(range);
 		return cont(
-			λ(Fn(range.inner, 't'), pred => {
+			λ(Fn(range.inner, Int(Fn('v', 't'))), pred => {
 				const arg_ = arg();
 				assertCont(arg_.type);
 				return app(
@@ -210,13 +215,15 @@ export const contFunctor: Functor = {
 
 const contApplicative: Applicative = {
 	functor: contFunctor,
-	pure: (e, type) => cont(λ(Fn(type, 't'), pred => app(v(pred), e()))),
+	indexed: false,
+	pure: (e, type) =>
+		cont(λ(Fn(type, Int(Fn('v', 't'))), pred => app(v(pred), e()))),
 	apply: (fn, arg, fnType) => {
 		assertCont(fnType);
 		assertFn(fnType.inner);
 		const { domain, range } = fnType.inner;
 		return cont(
-			λ(Fn(range, 't'), pred =>
+			λ(Fn(range, Int(Fn('v', 't'))), pred =>
 				app(
 					uncont(fn()),
 					λ(fnType.inner, project =>
@@ -237,7 +244,7 @@ export const contMonad: Monad = {
 		assertCont(type);
 		assertCont(type.inner);
 		return cont(
-			λ(Fn(type.inner.inner, 't'), pred =>
+			λ(Fn(type.inner.inner, Int(Fn('v', 't'))), pred =>
 				app(
 					uncont(e()),
 					λ(type.inner, c => app(uncont(v(c)), v(pred))),
@@ -253,7 +260,7 @@ const contRunner: Runner = {
 	run: e =>
 		app(
 			uncont(e()),
-			λ('t', t => v(t)),
+			λ(Int(Fn('v', 't')), p => v(p)),
 		),
 };
 
@@ -268,6 +275,7 @@ const plFunctor: Functor = {
 
 const plApplicative: Applicative = {
 	functor: plFunctor,
+	indexed: false,
 	pure: e => single(e()),
 	apply: (fn, arg) => {
 		const fn_ = fn();
@@ -283,7 +291,24 @@ const plApplicative: Applicative = {
 const plRunner: Runner = {
 	functor: plFunctor,
 	eager: true,
-	run: e => every(λ('t', t => app(app(implies, among(v(t), e())), v(t)))),
+	run: expr =>
+		app(
+			neg,
+			int(
+				λ('s', w =>
+					λ('v', e =>
+						some(
+							λ(Int(Fn('v', 't')), p =>
+								app(
+									app(and, among(v(p), expr())),
+									app(app(unint(app(neg, v(p))), v(w)), v(e)),
+								),
+							),
+						),
+					),
+				),
+			),
+		),
 };
 
 const indefOrQnMonad = (
@@ -329,6 +354,7 @@ const indefOrQnMonad = (
 				);
 			},
 		},
+		indexed: true,
 		pure: (e, _type, like) => {
 			if (typeof like === 'string' || like.head !== head)
 				throw new Impossible(`${typeToPlainText(like)} is not a ${head} type`);
@@ -463,15 +489,28 @@ const indefFunctor = indefApplicative.functor;
 const indefRunner: Runner = {
 	functor: indefFunctor,
 	eager: false,
-	run: e => {
-		const e_ = e();
-		assertIndef(e_.type);
-		const { domain } = e_.type;
+	run: expr => {
+		const expr_ = expr();
+		assertIndef(expr_.type);
+		const { domain } = expr_.type;
 		return unindef(
-			e_,
+			expr_,
 			λ(Fn(domain, 't'), r =>
-				λ(Fn(domain, 't'), b =>
-					some(λ(domain, d => app(app(and, app(v(r), v(d))), app(v(b), v(d))))),
+				λ(Fn(domain, Int(Fn('v', 't'))), b =>
+					int(
+						λ('s', w =>
+							λ('v', e =>
+								some(
+									λ(domain, d =>
+										app(
+											app(and, app(v(r), v(d))),
+											app(app(unint(app(v(b), v(d))), v(w)), v(e)),
+										),
+									),
+								),
+							),
+						),
+					),
 				),
 			),
 		);
@@ -583,6 +622,7 @@ const refFunctor: Functor = {
 
 const refApplicative: Applicative = {
 	functor: refFunctor,
+	indexed: false,
 	pure: (e, _type, like) => {
 		assertRef(like);
 		return ref(
@@ -681,7 +721,13 @@ const subjectReflexiveRunner: Runner = {
 	gather: (e, type) => {
 		assertBind(type);
 		const bindUnwrapped = type.inner;
-		const functor = getBigFunctorUntilSubjRef(bindUnwrapped);
+		const functor = getBigFunctorUntil(
+			bindUnwrapped,
+			t =>
+				typeof t === 'object' &&
+				t.head === 'ref' &&
+				(t.binding.type === 'subject' || t.binding.type === 'reflexive'),
+		);
 		if (functor === null)
 			throw new Impossible(
 				`Ref áq(na) not found in ${typeToPlainText(type.inner)}`,
@@ -703,16 +749,14 @@ const subjectReflexiveRunner: Runner = {
 	},
 };
 
-function getBigFunctorUntilSubjRef(t: ExprType): Functor | null {
-	if (
-		typeof t === 'object' &&
-		t.head === 'ref' &&
-		(t.binding.type === 'subject' || t.binding.type === 'reflexive')
-	)
-		return idFunctor;
+export function getBigFunctorUntil(
+	t: ExprType,
+	until: (t: ExprType) => boolean,
+): Functor | null {
+	if (until(t)) return idFunctor;
 	const outer = getFunctor(t);
 	if (outer === null) return null;
-	const inner = getBigFunctorUntilSubjRef(outer.unwrap(t));
+	const inner = getBigFunctorUntil(outer.unwrap(t), until);
 	return inner && composeFunctors(outer, inner);
 }
 
@@ -745,6 +789,7 @@ const opMonad = <T extends ExprType>(
 			},
 			map: (fn, arg) => andMap(arg(), fn()),
 		},
+		indexed: false,
 		pure: (e, _type, like) => {
 			assertDxOrAct(like);
 			return pure(e(), like.head);
@@ -1152,11 +1197,17 @@ export function getRunner(
 ): { runner: Runner; input: ExprType } | null {
 	if (typeof t === 'string') return null;
 	if (t.head === 'cont')
-		return { runner: contRunner, input: contFunctor.wrap('t', t) };
+		return {
+			runner: contRunner,
+			input: contFunctor.wrap(Int(Fn('v', 't')), t),
+		};
 	if (t.head === 'pl')
-		return { runner: plRunner, input: plFunctor.wrap('t', t) };
+		return { runner: plRunner, input: plFunctor.wrap(Int(Fn('v', 't')), t) };
 	if (t.head === 'indef')
-		return { runner: indefRunner, input: indefFunctor.wrap('t', t) };
+		return {
+			runner: indefRunner,
+			input: indefFunctor.wrap(Int(Fn('v', 't')), t),
+		};
 	if (
 		t.head === 'bind' &&
 		(t.binding.type === 'subject' || t.binding.type === 'reflexive') &&
@@ -1168,10 +1219,16 @@ export function getRunner(
 		if (refEffect !== null)
 			return {
 				runner: subjectReflexiveRunner,
-				input: bindFunctor.wrap(refFunctor.wrap('t', refEffect), t),
+				input: bindFunctor.wrap(
+					refFunctor.wrap(Int(Fn('v', 't')), refEffect),
+					t,
+				),
 			};
 		if (t.binding.type === 'subject')
-			return { runner: subjectRunner, input: bindFunctor.wrap('t', t) };
+			return {
+				runner: subjectRunner,
+				input: bindFunctor.wrap(Int(Fn('v', 't')), t),
+			};
 	}
 	return null;
 }
