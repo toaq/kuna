@@ -26,7 +26,7 @@ test('object incorporation', () => {
 	snapshot('Rụınua hôq jí nháo.');
 	snapshot('Sạtao súq râq tú raı ba.');
 	snapshot('Họqdua sía poq.');
-	snapshot('Tao sâ raı tú poq râq ráı.');
+	snapshot('Marao sá poq gûq sîa hoe.');
 });
 
 test('relative clauses', () => {

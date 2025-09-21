@@ -61,13 +61,11 @@ import {
 	assertInt,
 	bg,
 	bind,
-	cont,
 	empathize,
 	int,
 	lex,
 	quote,
 	ref,
-	single,
 	topic,
 	uncont,
 	unindef,
@@ -145,33 +143,28 @@ function incorpObject_(
 	relVar: number,
 	objectVar: number,
 	objectType: ExprType,
+	worldVar: number,
 	applyArgs: (e: Expr) => Expr,
 ): Expr {
 	assertFn(type);
 	if (typeof type.range === 'object' && type.range.head === 'fn')
 		return λ(type.domain, arg =>
-			incorpObject_(type.range, relVar, objectVar, objectType, e =>
+			incorpObject_(type.range, relVar, objectVar, objectType, worldVar, e =>
 				app(applyArgs(e), v(arg)),
 			),
 		);
-	// This Cont should have highest possible precedence. To achieve this, we wrap
-	// it in a trivial Pl effect.
-	return single(
-		cont(
-			λ(Fn(Int(Fn('v', 't')), Int(Fn('v', 't'))), pred =>
-				app(
-					uncont(v(objectVar)),
-					λ(objectType, obj =>
-						app(
-							v(pred),
-							int(
-								λ('s', w =>
-									λ(type.domain, arg =>
-										app(
-											applyArgs(app(app(unint(v(relVar)), v(w)), v(obj))),
-											v(arg),
-										),
-									),
+
+	return app(
+		unint(
+			app(
+				uncont(v(objectVar)),
+				λ(objectType, obj =>
+					int(
+						λ('s', w =>
+							λ(type.domain, arg =>
+								app(
+									applyArgs(app(app(unint(v(relVar)), v(w)), v(obj))),
+									v(arg),
 								),
 							),
 						),
@@ -179,6 +172,7 @@ function incorpObject_(
 				),
 			),
 		),
+		v(worldVar),
 	);
 }
 
@@ -200,7 +194,9 @@ function incorpObject(e: Expr): Expr {
 		() =>
 			λ(inner, rel =>
 				λ(Cont(domain), object =>
-					incorpObject_(range, rel, object, domain, e => e),
+					int(
+						λ('s', w => incorpObject_(range, rel, object, domain, w, e => e)),
+					),
 				),
 			),
 		() => e,
