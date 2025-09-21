@@ -51,6 +51,7 @@
 	{ "type": "predicate", "toaq": "gaq", "gloss": "accompany", "frame": "c c", "distribution": "d d", "pronominal_class": "ta", "subject": "individual" },
 	{ "type": "predicate", "toaq": "kueq", "gloss": "gather", "frame": "c", "distribution": "n", "pronominal_class": "ta", "subject": "individual" },
 	{ "type": "predicate", "toaq": "kueqtua", "gloss": "collect", "frame": "c c", "distribution": "d n", "pronominal_class": "ho", "subject": "agent" },
+	{ "type": "predicate", "toaq": "lıeı", "gloss": "follow", "frame": "c c", "distribution": "d d", "pronominal_class": "ta", "subject": "free" },
 	{ "type": "prefix", "toaq": "ce-", "gloss": "of.concept" },
 	{ "type": "prefix", "toaq": "e-", "gloss": "event.of" },
 	{ "type": "prefix", "toaq": "hao-", "gloss": "INTR" },
