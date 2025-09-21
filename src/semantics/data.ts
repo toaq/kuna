@@ -458,6 +458,34 @@ export const knownVerbs = new Map<string, Expr>([
 	],
 ]);
 
+export const aspects = new Map<string, Expr>([
+	[
+		'tam',
+		int(
+			λ('s', w =>
+				λ(Fn('v', 't'), pred =>
+					λ('i', t =>
+						λ('v', e =>
+							app(
+								app(
+									and,
+									app(
+										app(subinterval, app(app(unint(trace), v(w)), v(e))),
+										v(t),
+									),
+								),
+								app(v(pred), v(e)),
+							),
+						),
+					),
+				),
+			),
+		),
+	],
+]);
+
+export const tenses = new Map<string, Expr>([['tuom', salient('i')]]);
+
 export const pronominalTenses = new Set(['tuom', 'naı', 'jıa', 'pu']);
 
 export const polarities = new Map<string, Expr>([
@@ -965,7 +993,10 @@ export const eventAccessor = indef(
 																						app(
 																							app(
 																								subinterval,
-																								app(trace, v(e)),
+																								app(
+																									app(unint(trace), v(w)),
+																									v(e),
+																								),
 																							),
 																							v(t),
 																						),

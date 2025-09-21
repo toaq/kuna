@@ -622,7 +622,8 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 				if (
 					e.body.head === 'infix' &&
 					((e.q === 'every' && e.body.op === 'implies') ||
-						(e.q === 'some' && e.body.op === 'and'))
+						(e.q === 'some' && e.body.op === 'and')) &&
+					!(e.body.left.head === 'infix' && e.body.left.op === 'subinterval')
 				) {
 					const infix = infixes[e.body.op];
 					return wrap(

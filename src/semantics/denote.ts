@@ -21,6 +21,7 @@ import {
 import { compose } from './compose';
 import {
 	adjuncts,
+	aspects,
 	clausalConjunctions,
 	cleftVerb,
 	conditionals,
@@ -43,6 +44,7 @@ import {
 	serialFrames,
 	speechActParticles,
 	subjectSharingAdverbial,
+	tenses,
 	wrapInBindings,
 } from './data';
 import {
@@ -332,7 +334,10 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		else toaq = leaf.word.entry.toaq.replace(/-$/, '');
 
 		// TODO: chum will need a different type
-		return lex(toaq, Int(Fn(Fn('v', 't'), Fn('i', Fn('v', 't')))));
+		return (
+			aspects.get(toaq) ??
+			lex(toaq, Int(Fn(Fn('v', 't'), Fn('i', Fn('v', 't')))))
+		);
 	}
 
 	if (leaf.label === 'T') {
@@ -342,15 +347,18 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 			throw new Unrecognized(`T: ${leaf.word.text}`);
 		else toaq = leaf.word.entry.toaq.replace(/-$/, '');
 
-		return lex(
-			toaq,
-			toaq === 'sula'
-				? Fn(Fn('i', Fn('v', 't')), Fn('v', 't'))
-				: Dx(
-						pronominalTenses.has(toaq)
-							? 'i'
-							: Fn(Fn('i', Fn('v', 't')), Fn('v', 't')),
-					),
+		return (
+			tenses.get(toaq) ??
+			lex(
+				toaq,
+				toaq === 'sula'
+					? Fn(Fn('i', Fn('v', 't')), Fn('v', 't'))
+					: Dx(
+							pronominalTenses.has(toaq)
+								? 'i'
+								: Fn(Fn('i', Fn('v', 't')), Fn('v', 't')),
+						),
+			)
 		);
 	}
 

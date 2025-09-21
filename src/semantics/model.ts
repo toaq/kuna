@@ -1110,7 +1110,7 @@ export const neg: Expr = {
  */
 export const trace: Expr = {
 	head: 'constant',
-	type: Fn('v', 'i'),
+	type: Int(Fn('v', 'i')),
 	scope: [],
 	name: 'trace',
 };
