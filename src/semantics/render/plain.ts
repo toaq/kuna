@@ -92,9 +92,10 @@ enum Precedence {
 	Among = 9,
 	Union = 10,
 	Sum = 11,
-	Apply = 12,
-	Prefix = 13,
-	Bracket = 14,
+	Subinterval = 12,
+	Apply = 13,
+	Prefix = 14,
+	Bracket = 15,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -135,6 +136,17 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 	},
 	union: { symbol: '∪', precedence: Precedence.Union, associativity: 'any' },
 	sum: { symbol: '⊔', precedence: Precedence.Sum, associativity: 'any' },
+	subinterval: {
+		symbol: '⊆',
+		precedence: Precedence.Subinterval,
+		associativity: 'none',
+	},
+};
+
+const constants: Partial<
+	Record<(RichExpr & { head: 'constant' })['name'], string>
+> = {
+	trace: 'τ',
 };
 
 export class PlainText extends Renderer<RichExpr, string> {
@@ -268,7 +280,7 @@ export class PlainText extends Renderer<RichExpr, string> {
 			case 'quote':
 				return token(`"${e.text}"`);
 			case 'constant':
-				return token(e.name);
+				return token(constants[e.name] ?? e.name);
 		}
 	}
 

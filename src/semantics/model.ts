@@ -1106,6 +1106,16 @@ export const neg: Expr = {
 };
 
 /**
+ * Gets the temporal trace of an event.
+ */
+export const trace: Expr = {
+	head: 'constant',
+	type: Fn('v', 'i'),
+	scope: [],
+	name: 'trace',
+};
+
+/**
  * Determines whether two events overlap each other (that is, whether their
  * temporal traces overlap and they share a common sub-event).
  */
@@ -1114,6 +1124,16 @@ export const overlap: Expr = {
 	type: Int(Fn('v', Fn('v', 't'))),
 	scope: [],
 	name: 'overlap',
+};
+
+/**
+ * Determines whether one time interval lies fully within another interval.
+ */
+export const subinterval: Expr = {
+	head: 'constant',
+	type: Fn('i', Fn('i', 't')),
+	scope: [],
+	name: 'subinterval',
 };
 
 /**

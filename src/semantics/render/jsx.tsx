@@ -416,10 +416,11 @@ enum Precedence {
 	Among = 9,
 	Union = 10,
 	Sum = 11,
-	Apply = 12,
-	Prefix = 13,
-	Subscript = 14,
-	Bracket = 15,
+	Subinterval = 12,
+	Apply = 13,
+	Prefix = 14,
+	Subscript = 15,
+	Bracket = 16,
 }
 
 const quantifiers: Record<(RichExpr & { head: 'quantify' })['q'], string> = {
@@ -468,6 +469,17 @@ const infixes: Record<(RichExpr & { head: 'infix' })['op'], Infix> = {
 		precedence: Precedence.Sum,
 		associativity: 'any',
 	},
+	subinterval: {
+		symbol: '⊆',
+		precedence: Precedence.Subinterval,
+		associativity: 'none',
+	},
+};
+
+const constants: Partial<
+	Record<(RichExpr & { head: 'constant' })['name'], string>
+> = {
+	trace: 'τ',
 };
 
 const TypeHover: FC<{
@@ -815,7 +827,9 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 			case 'quote':
 				return token(<mi className="kuna-quote">{e.text}</mi>);
 			case 'constant':
-				return token(<mi className="kuna-constant">{e.name}</mi>);
+				return token(
+					<mi className="kuna-constant">{constants[e.name] ?? e.name}</mi>,
+				);
 		}
 	}
 

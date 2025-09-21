@@ -46,7 +46,9 @@ import {
 	salient,
 	single,
 	some,
+	subinterval,
 	sum,
+	trace,
 	trueExpr,
 	uncont,
 	unindef,
@@ -932,6 +934,66 @@ export const overtComplementizers = new Map<string, Expr>([
 	],
 	['ꝡë', relativeClause('resumptive')],
 ]);
+
+export const eventAccessor = indef(
+	λ('i', () => trueExpr),
+	λ('i', t =>
+		λ(Cont(Int(Fn('v', 't'))), pred =>
+			int(
+				λ('s', w =>
+					λ(Int(Pl('e')), xx =>
+						every(
+							λ('e', x =>
+								app(
+									app(implies, among(v(x), app(unint(v(xx)), v(w)))),
+									some(
+										λ('v', e =>
+											app(
+												app(and, equals(v(e), v(x))),
+												app(
+													app(
+														unint(
+															app(
+																uncont(v(pred)),
+																λ(Int(Fn('v', 't')), p =>
+																	int(
+																		λ('s', w =>
+																			λ('v', e =>
+																				app(
+																					app(
+																						and,
+																						app(
+																							app(
+																								subinterval,
+																								app(trace, v(e)),
+																							),
+																							v(t),
+																						),
+																					),
+																					app(app(unint(v(p)), v(w)), v(e)),
+																				),
+																			),
+																		),
+																	),
+																),
+															),
+														),
+														v(w),
+													),
+													v(e),
+												),
+											),
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
+		),
+	),
+);
 
 export const covertCp = salient(Int('t'));
 

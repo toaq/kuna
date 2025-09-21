@@ -189,7 +189,9 @@ interface Constant extends ExprBase {
 		| 'animate'
 		| 'sum'
 		| 'neg'
+		| 'trace'
 		| 'overlap'
+		| 'subinterval'
 		| 'accessibility';
 }
 

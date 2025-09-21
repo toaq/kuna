@@ -29,6 +29,7 @@ import {
 	covertV,
 	determiners,
 	distributiveLittleV,
+	eventAccessor,
 	knownVerbs,
 	littleNs,
 	nondistributiveLittleV,
@@ -106,6 +107,7 @@ function getVerbWord_(verb: StrictTree): Word | CovertWord {
 	switch (verb.label) {
 		case 'V':
 		case 'C':
+		case 'EvA':
 		case 'VP':
 			return getVerbWord(verb);
 		case 'mıP':
@@ -496,6 +498,8 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (data === undefined) throw new Unrecognized(`C: ${toaq}`);
 		return data;
 	}
+
+	if (leaf.label === 'EvA') return eventAccessor;
 
 	if (leaf.label === 'CP') {
 		if (!leaf.word.covert) throw new Impossible('Overt CP');

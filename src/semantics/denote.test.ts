@@ -141,3 +141,9 @@ test('questions', () => {
 test('fronted adjuncts', () => {
 	snapshot('Dûo kóacao nä bu sula nıaoshua.');
 });
+
+test('event accessors', () => {
+	snapshot('Gaı jí é sı sía mea nhána jí.');
+	snapshot('Nıe jí jío dûo hú ë ruqshua.');
+	// TODO: hụ́'e
+});

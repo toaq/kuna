@@ -62,10 +62,23 @@ interface Infix extends ExprBase {
 		| 'equals'
 		| 'not_equals'
 		| 'union'
-		| 'sum';
+		| 'sum'
+		| 'subinterval';
 	left: RichExpr;
 	right: RichExpr;
 }
+
+const infixes: (Expr & { head: 'constant' })['name'][] = [
+	'among',
+	'and',
+	'or',
+	'xor',
+	'implies',
+	'equals',
+	'union',
+	'sum',
+	'subinterval',
+];
 
 interface Subscript extends ExprBase {
 	head: 'subscript';
@@ -371,20 +384,13 @@ export function enrich(e: Expr): RichExpr {
 			if (
 				e.fn.head === 'apply' &&
 				e.fn.fn.head === 'constant' &&
-				(e.fn.fn.name === 'among' ||
-					e.fn.fn.name === 'and' ||
-					e.fn.fn.name === 'or' ||
-					e.fn.fn.name === 'xor' ||
-					e.fn.fn.name === 'implies' ||
-					e.fn.fn.name === 'equals' ||
-					e.fn.fn.name === 'union' ||
-					e.fn.fn.name === 'sum')
+				infixes.includes(e.fn.fn.name)
 			)
 				return {
 					type: e.type,
 					scope: e.scope,
 					head: 'infix',
-					op: e.fn.fn.name,
+					op: e.fn.fn.name as Infix['op'],
 					left: enrich(e.fn.arg),
 					right: enrich(e.arg),
 				};
