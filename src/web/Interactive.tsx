@@ -6,12 +6,57 @@ import { Button } from './Button';
 import { Inspector } from './Inspector';
 import { InteractionView } from './InteractionView';
 import type { Interaction } from './InteractionView';
-import type { Configuration } from './Settings';
+import type { Configuration, Mode } from './Settings';
 import TreeIcon from './icons/TreeIcon';
 import { InspectContext } from './inspect';
 
 declare const __COMMIT_HASH__: string;
 declare const __COMMIT_DATE__: string;
+
+export function parseCommand(command: string, lastMode: Mode): Configuration {
+	const config: Configuration = {
+		treeFormat: 'react',
+		roofLabels: '',
+		trimNulls: false,
+		showMovement: false,
+		meaningCompact: true,
+		mode: lastMode,
+		text: command,
+	};
+
+	let m: RegExpMatchArray | null = null;
+	m = command.match(/^\/boxes\s+(.*)$/);
+	if (m) {
+		config.mode = 'boxes-flat';
+		config.text = m[1].trim();
+	}
+
+	m = command.match(/^\/tree\s+(.*)$/);
+	if (m) {
+		config.mode = 'syntax-tree';
+		config.text = m[1].trim();
+	}
+
+	m = command.match(/^\/gloss\s+(.*)$/);
+	if (m) {
+		config.mode = 'gloss';
+		config.text = m[1].trim();
+	}
+
+	m = command.match(/^\/tokens\s+(.*)$/);
+	if (m) {
+		config.mode = 'tokens';
+		config.text = m[1].trim();
+	}
+
+	m = command.match(/^\/help/);
+	if (m) {
+		config.mode = 'help';
+		config.text = '';
+	}
+
+	return config;
+}
 
 export function Interactive(props: { isDarkMode: boolean }) {
 	const [dismissed, setDismissed] = useLocalStorage(
@@ -25,17 +70,13 @@ export function Interactive(props: { isDarkMode: boolean }) {
 	const [pastInteractions, setPastInteractions] = useState<Interaction[]>();
 	const [currentId, setCurrentId] = useState<number>(1);
 	const interactionsRef = useRef<HTMLDivElement>(null);
+	const [lastMode, setLastMode] = useLocalStorage<Mode>('mode', 'syntax-tree');
 
-	const baseConfiguration: Configuration = {
-		treeFormat: 'react',
-		roofLabels: '',
-		trimNulls: false,
-		showMovement: false,
-		meaningCompact: true,
-		mode: 'semantics-tree',
-		text: '',
-	};
-
+	function parseCmd(command: string): Configuration {
+		const config = parseCommand(command, lastMode);
+		setLastMode(config.mode);
+		return config;
+	}
 	return (
 		<InspectContext.Provider
 			value={{
@@ -104,10 +145,7 @@ export function Interactive(props: { isDarkMode: boolean }) {
 											i === index
 												? {
 														...interaction,
-														configuration: {
-															...baseConfiguration,
-															text: command,
-														},
+														configuration: parseCmd(command),
 													}
 												: interaction,
 										),
@@ -136,7 +174,7 @@ export function Interactive(props: { isDarkMode: boolean }) {
 									{
 										id: currentId,
 										command: command,
-										configuration: { ...baseConfiguration, text: command },
+										configuration: parseCmd(command),
 									},
 								]);
 								setCurrentCommand('');
@@ -151,7 +189,6 @@ export function Interactive(props: { isDarkMode: boolean }) {
 							scrollToBottom={() => {
 								setTimeout(() => {
 									if (interactionsRef.current) {
-										// Scroll smoothly
 										interactionsRef.current.scrollTo({
 											top: interactionsRef.current.scrollHeight,
 											behavior: 'smooth',

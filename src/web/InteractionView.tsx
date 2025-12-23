@@ -89,9 +89,13 @@ export function InteractionView(props: {
 								paletteIndex !== undefined
 							) {
 								e.preventDefault();
-								props.setCommand(`/${paletteCommands[paletteIndex].name} `);
+								const completion = `/${paletteCommands[paletteIndex].name} `;
+								props.setCommand(completion);
 								setPaletteIndex(undefined);
 								setPaletteOpen(false);
+								if (paletteCommands[paletteIndex].instant) {
+									props.onSubmit(completion);
+								}
 							} else if (e.key === 'Enter') {
 								props.onSubmit(e.currentTarget.value);
 							}

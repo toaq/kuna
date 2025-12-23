@@ -28,7 +28,8 @@ export type Mode =
 	| 'english'
 	| 'gf1'
 	| 'gf2'
-	| 'tokens';
+	| 'tokens'
+	| 'help';
 
 export type TreeFormat =
 	| 'png-latex'
@@ -232,6 +233,10 @@ export function Settings(props: SettingsProps) {
 			break;
 
 		case 'tokens':
+			modeSettings = <div />;
+			break;
+
+		case 'help':
 			modeSettings = <div />;
 			break;
 	}
