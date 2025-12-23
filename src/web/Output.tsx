@@ -64,6 +64,7 @@ export function Output(props: OutputProps) {
 		meaningCompact,
 		mode,
 	} = props.configuration;
+
 	const treeImg = useRef<HTMLImageElement>(null);
 	let trees: Tree[];
 	let error = 'No parse';
@@ -80,6 +81,59 @@ export function Output(props: OutputProps) {
 
 	const needsParse =
 		mode !== 'tokens' && mode !== 'gloss' && mode !== 'technical-gloss';
+
+	if (mode === 'help') {
+		return (
+			<div className="my-4 ml-6.5 prose-sm prose-a:text-blue prose-a:hover:underline max-w-prose leading-normal">
+				<h2>About Kuna</h2>
+				<p>
+					Kuna is a parser for the constructed language{' '}
+					<a href="https://toaq.net" target="_blank" rel="noopener noreferrer">
+						Toaq
+					</a>
+					. It can parse Toaq sentences and convert them to a variety of output
+					formats, including formulas that describe the meaning of the sentence.
+				</p>
+				<p>
+					To use Kuna, simply type a Toaq sentence into the textbox below and
+					press Enter. Type a slash (/) to bring up a list of other available
+					commands. If you don't specify a command, Kuna will repeat the last
+					output format used.
+				</p>
+				<p>
+					You can edit old inputs and resubmit them by pressing Enter, or delete
+					them with the ✕ button.
+				</p>
+				<p>
+					The current version of Kuna is called Meırıe. You can read about which
+					grammar is supported in the{' '}
+					<a
+						href="https://github.com/toaq/kuna/releases/tag/meirie"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						release notes
+					</a>
+					. The source code is available on{' '}
+					<a
+						href="https://github.com/toaq/kuna"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						GitHub
+					</a>
+					.
+				</p>
+				<p>
+					If you'd like to understand the syntax trees and formulas produced by
+					Kuna, check out{' '}
+					<a href="https://laqme.github.io/koitieq/meiaq/">Méı'aq</a>, an
+					introduction to modern Toaqology.
+				</p>
+			</div>
+		);
+	}
+
 	if (needsParse && parseCount === 0) {
 		return <div className="mx-4 my-2">{error}</div>;
 	}

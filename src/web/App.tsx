@@ -4,7 +4,7 @@ import { Sentences } from './Sentences';
 import { Treepad } from './Treepad';
 import './App.css';
 import { useState } from 'react';
-import { NavLink, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { Help } from './Help';
 
 export function Top(props: {
@@ -12,23 +12,23 @@ export function Top(props: {
 	setShowHelp: (showHelp: boolean) => void;
 }) {
 	const darkMode = useDarkMode();
-	const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-		`${isActive ? 'bg-blue dark:bg-blue-dark font-bold ' : ''}px-3 hover:underline`;
+	// const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+	// 	`${isActive ? 'bg-blue dark:bg-blue-dark font-bold ' : ''}px-3 hover:underline`;
 
 	return (
 		<>
 			<header className="bg-mio dark:bg-mio-dark flex w-full items-center text-white leading-10 px-3">
 				<img src="logo.svg" aria-label="Kúna" width={52} className="mr-3" />
 				<nav className="flex">
-					<NavLink to="/" className={navLinkClass}>
-						Interactive
-					</NavLink>
-					<NavLink to="/sentences" className={navLinkClass}>
+					{/* <NavLink to="/" className={navLinkClass}>
+						Kuna
+					</NavLink> */}
+					{/* <NavLink to="/sentences" className={navLinkClass}>
 						Sentences
 					</NavLink>
 					<NavLink to="/treepad" className={navLinkClass}>
 						Treepad
-					</NavLink>
+					</NavLink> */}
 				</nav>
 				<button
 					className="cursor-pointer px-3 hover:underline"
