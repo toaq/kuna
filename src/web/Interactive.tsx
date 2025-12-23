@@ -68,7 +68,9 @@ export function Interactive(props: { isDarkMode: boolean }) {
 
 	function parseCmd(command: string): Configuration {
 		const config = parseCommand(command, lastMode);
-		setLastMode(config.mode);
+		if (config.mode !== 'help') {
+			setLastMode(config.mode);
+		}
 		return config;
 	}
 	return (
