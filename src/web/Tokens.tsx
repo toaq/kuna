@@ -1,11 +1,12 @@
 import { keyFor } from '../core/misc';
 import { Glosser } from '../morphology/gloss';
-import type { ToaqToken } from '../morphology/tokenize';
+import { type ToaqToken, bare, clean } from '../morphology/tokenize';
 import './Tokens.css';
 import { type Entry, dictionary } from '../morphology/dictionary';
 
 function Token({ token }: { token: ToaqToken }) {
-	const entry: Entry | undefined = dictionary.get(token.value);
+	const entry: Entry | undefined =
+		dictionary.get(clean(token.value)) ?? dictionary.get(bare(token.value));
 	const tokenType =
 		entry?.type === 'predicate' ? (
 			<span>
