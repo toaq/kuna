@@ -1,12 +1,13 @@
 import { bare } from '../../morphology/tokenize';
 import type { ExprType } from '../types';
+import type { RichExpr } from './model';
 
 export type Associativity = 'left' | 'right' | 'any' | 'none';
 
 interface Token<Out> {
 	type: 'token';
 	content: Out;
-	exprType?: ExprType;
+	expr?: RichExpr;
 }
 
 interface Join<Out> {
@@ -14,7 +15,7 @@ interface Join<Out> {
 	precedence: number;
 	associativity: Associativity;
 	parts: Render<Out>[];
-	exprType?: ExprType;
+	expr?: RichExpr;
 }
 
 interface Wrap<Out> {
@@ -22,7 +23,7 @@ interface Wrap<Out> {
 	precedence: number | null;
 	wrapper: (inner: Out) => Out;
 	inner: Render<Out>;
-	exprType?: ExprType;
+	expr?: RichExpr;
 }
 
 export type Render<Out> = Token<Out> | Join<Out> | Wrap<Out>;

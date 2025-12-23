@@ -484,9 +484,9 @@ const constants: Partial<
 
 const TypeHover: FC<{
 	tooltipId: string;
-	tooltipTypeMap: { [id: string]: ExprType };
+	tooltipMap: { [id: string]: RichExpr };
 	render: Render<ReactNode>;
-}> = ({ tooltipId, tooltipTypeMap, render }) => {
+}> = ({ tooltipId, tooltipMap, render }) => {
 	let inner: ReactNode;
 	switch (render.type) {
 		case 'token':
@@ -496,7 +496,7 @@ const TypeHover: FC<{
 			inner = render.parts.map((part, i) => (
 				<TypeHover
 					tooltipId={tooltipId}
-					tooltipTypeMap={tooltipTypeMap}
+					tooltipMap={tooltipMap}
 					render={part}
 					// biome-ignore lint/suspicious/noArrayIndexKey: rendering static tree
 					key={i}
@@ -507,7 +507,7 @@ const TypeHover: FC<{
 			inner = render.wrapper(
 				<TypeHover
 					tooltipId={tooltipId}
-					tooltipTypeMap={tooltipTypeMap}
+					tooltipMap={tooltipMap}
 					render={render.inner}
 				/>,
 			);
@@ -515,9 +515,9 @@ const TypeHover: FC<{
 	}
 
 	const id = useId();
-	if (render.exprType !== undefined) tooltipTypeMap[id] = render.exprType;
+	if (render.expr !== undefined) tooltipMap[id] = render.expr;
 
-	return render.exprType ? (
+	return render.expr ? (
 		<mrow
 			className="type-hover"
 			data-tooltip-id={tooltipId}
@@ -532,8 +532,8 @@ const TypeHover: FC<{
 
 const ExprRender: FC<{
 	r: Render<ReactNode>;
-	typeMap: { [id: string]: ExprType };
-}> = ({ r, typeMap }) => {
+	tooltipMap: { [id: string]: RichExpr };
+}> = ({ r, tooltipMap }) => {
 	const id = useId();
 	return (
 		<>
@@ -542,19 +542,37 @@ const ExprRender: FC<{
 				opacity={1}
 				className="dark-mode"
 				style={{
-					textAlign: 'center',
+					textAlign: 'left',
 					transition: 'none',
 					zIndex: 2,
 					backgroundColor: 'var(--color-gray-800)',
 				}}
-				render={({ content }) => {
-					if (content === null) return undefined;
-					const type = typeMap[content];
-					return type && <SiteleqType t={type} />;
+				render={({ content: id }) => {
+					if (id === null) return undefined;
+					const expr: RichExpr | undefined = tooltipMap[id];
+					if (expr === undefined) return undefined;
+					const siteleq = <SiteleqType t={expr.type} />;
+					return (
+						<div className="flex flex-col gap-2">
+							{expr.head === 'constant' ? (
+								<>
+									<span className="text-sm">
+										<span className="kuna-constant">{expr.name}</span>{' '}
+										<span className="text-gray-400">:</span> {siteleq}
+									</span>
+									<span className="text-xs text-gray-400 max-w-xs">
+										{expr.description}
+									</span>
+								</>
+							) : (
+								siteleq
+							)}
+						</div>
+					);
 				}}
 			/>
 			<math>
-				<TypeHover tooltipId={id} tooltipTypeMap={typeMap} render={r} />
+				<TypeHover tooltipId={id} tooltipMap={tooltipMap} render={r} />
 			</math>
 		</>
 	);
@@ -835,7 +853,10 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 	}
 
 	private go(e: RichExpr, names: Names): Render<ReactNode> {
-		return { ...this.go_(e, names), exprType: e.type };
+		return {
+			...this.go_(e, names),
+			expr: e,
+		};
 	}
 
 	protected sub(e: RichExpr): Render<ReactNode> {
@@ -857,7 +878,7 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 				),
 				r,
 			),
-			exprType: r.exprType,
+			expr: r.expr,
 		};
 	}
 
@@ -871,6 +892,6 @@ export class Jsx extends Renderer<RichExpr, ReactNode> {
 	render(input: RichExpr): ReactNode {
 		const raw = this.sub(input);
 		const bracketed = this.bracketAll(raw);
-		return <ExprRender r={bracketed} typeMap={{}} />;
+		return <ExprRender r={bracketed} tooltipMap={{}} />;
 	}
 }

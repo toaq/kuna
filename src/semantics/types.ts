@@ -193,6 +193,7 @@ interface Constant extends ExprBase {
 		| 'overlap'
 		| 'subinterval'
 		| 'accessibility';
+	description: string;
 }
 
 /**

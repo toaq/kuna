@@ -135,6 +135,7 @@ interface Quote extends ExprBase {
 interface Constant extends ExprBase {
 	head: 'constant';
 	name: (Expr & { head: 'constant' })['name'] | 'new';
+	description: string;
 }
 
 /**
@@ -513,6 +514,8 @@ export function enrich(e: Expr): RichExpr {
 				const { param, body } = enrichLambda(e.arg);
 				assertIndef(e.type);
 				const newType = Indef(e.type.domain, e.type.domain);
+				const newDescription =
+					'Creates a new indefinite discourse referent satisfying a given predicate.';
 				return {
 					type: e.type,
 					scope: e.scope,
@@ -524,7 +527,13 @@ export function enrich(e: Expr): RichExpr {
 							e.fn.arg.head === 'lambda' &&
 							e.fn.arg.body.head === 'constant' &&
 							e.fn.arg.body.name === 'true'
-								? { type: newType, scope: [], head: 'constant', name: 'new' }
+								? {
+										type: newType,
+										scope: [],
+										head: 'constant',
+										name: 'new',
+										description: newDescription,
+									}
 								: {
 										type: newType,
 										scope: e.fn.arg.scope,
@@ -534,6 +543,7 @@ export function enrich(e: Expr): RichExpr {
 											scope: [],
 											head: 'constant',
 											name: 'new',
+											description: newDescription,
 										},
 										arg: enrich(e.fn.arg),
 									},

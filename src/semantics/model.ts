@@ -410,6 +410,7 @@ export function int(body: Expr): Expr {
 			type: Fn(Fn('s', inner), Int(inner)),
 			scope: [],
 			name: 'int',
+			description: 'Constructs an intension.',
 		},
 		body,
 	);
@@ -426,6 +427,7 @@ export function unint(int: Expr): Expr {
 			type: Fn(int.type, Fn('s', int.type.inner)),
 			scope: [],
 			name: 'unint',
+			description: 'Deconstructs an intension.',
 		},
 		int,
 	);
@@ -447,6 +449,7 @@ export function cont(body: Expr): Expr {
 			),
 			scope: [],
 			name: 'cont',
+			description: 'Constructs a continuation.',
 		},
 		body,
 	);
@@ -466,6 +469,7 @@ export function uncont(cont: Expr): Expr {
 			),
 			scope: [],
 			name: 'uncont',
+			description: 'Deconstructs a continuation.',
 		},
 		cont,
 	);
@@ -475,7 +479,14 @@ export function uncont(cont: Expr): Expr {
  * Creates a plurality containing every value of a given type.
  */
 export function universe(inner: ExprType): Expr {
-	return { head: 'constant', type: Pl(inner), scope: [], name: 'universe' };
+	return {
+		head: 'constant',
+		type: Pl(inner),
+		scope: [],
+		name: 'universe',
+		description:
+			'The plurality containing every possible value of a given type.',
+	};
 }
 
 /**
@@ -488,6 +499,7 @@ export function single(element: Expr): Expr {
 			type: Fn(element.type, Pl(element.type)),
 			scope: [],
 			name: 'single',
+			description: 'Creates a plurality containing a single element.',
 		},
 		element,
 	);
@@ -506,6 +518,8 @@ export function union(left: Expr, right: Expr): Expr {
 				type: Fn(left.type, Fn(left.type, left.type)),
 				scope: [],
 				name: 'union',
+				description:
+					'Creates a plurality containing all elements found in the left plurality and/or the right plurality.',
 			},
 			left,
 		),
@@ -527,6 +541,8 @@ export function map(pl: Expr, project: Expr): Expr {
 				type: Fn(pl.type, Fn(Fn(pl.type.inner, range), Pl(range))),
 				scope: [],
 				name: 'map',
+				description:
+					'Projects each element of a plurality with a given function.',
 			},
 			pl,
 		),
@@ -549,6 +565,8 @@ export function flatMap(pl: Expr, project: Expr): Expr {
 				type: Fn(Pl(domain), Fn(project.type, range)),
 				scope: [],
 				name: 'flat_map',
+				description:
+					'Projects each element of a plurality with a given function and takes the union of all projections.',
 			},
 			pl,
 		),
@@ -568,6 +586,8 @@ export function filter(pl: Expr, predicate: Expr): Expr {
 				type: Fn(pl.type, Fn(Fn(pl.type.inner, 't'), pl.type)),
 				scope: [],
 				name: 'filter',
+				description:
+					'Filters the elements of a plurality, keeping only the elements that match a given predicate.',
 			},
 			pl,
 		),
@@ -594,6 +614,8 @@ export function indef(restriction: Expr, body: Expr): Expr {
 				),
 				scope: [],
 				name: 'indef',
+				description:
+					'Constructs an indefinite reference, taking a restriction and a body as arguments.',
 			},
 			restriction,
 		),
@@ -625,6 +647,7 @@ export function unindef(indef: Expr, project: Expr): Expr {
 				),
 				scope: [],
 				name: 'unindef',
+				description: 'Deconstructs an indefinite reference.',
 			},
 			indef,
 		),
@@ -651,6 +674,8 @@ export function qn(restriction: Expr, body: Expr): Expr {
 				),
 				scope: [],
 				name: 'qn',
+				description:
+					'Constructs a question, taking a restriction and a body as arguments.',
 			},
 			restriction,
 		),
@@ -682,6 +707,7 @@ export function unqn(qn: Expr, project: Expr): Expr {
 				),
 				scope: [],
 				name: 'unqn',
+				description: 'Deconstructs a question.',
 			},
 			qn,
 		),
@@ -700,6 +726,8 @@ export function some(predicate: Expr): Expr {
 			type: Fn(Fn(predicate.type.domain, 't'), 't'),
 			scope: [],
 			name: 'some',
+			description:
+				'Determines whether something in the domain satisfies a given predicate.',
 		},
 		predicate,
 	);
@@ -716,6 +744,8 @@ export function every(predicate: Expr): Expr {
 			type: Fn(Fn(predicate.type.domain, 't'), 't'),
 			scope: [],
 			name: 'every',
+			description:
+				'Determines whether everything in the domain satisfies a given predicate.',
 		},
 		predicate,
 	);
@@ -735,6 +765,7 @@ export function pair(body: Expr, supplement: Expr): Expr {
 				),
 				scope: [],
 				name: 'pair',
+				description: 'Constructs a pair of meanings.',
 			},
 			body,
 		),
@@ -760,6 +791,7 @@ export function unpair(pair: Expr, project: Expr): Expr {
 				),
 				scope: [],
 				name: 'unpair',
+				description: 'Deconstructs a pair of meanings.',
 			},
 			pair,
 		),
@@ -779,6 +811,7 @@ export function bind(binding: Binding, value: Expr, body: Expr): Expr {
 				type: Fn(Int(Pl('e')), Fn(inner, Bind(binding, inner))),
 				scope: [],
 				name: 'bind',
+				description: 'Constructs an expression that binds a variable.',
 			},
 			value,
 		),
@@ -804,6 +837,7 @@ export function unbind(bind: Expr, project: Expr): Expr {
 				),
 				scope: [],
 				name: 'unbind',
+				description: 'Deconstructs an expression that binds a variable.',
 			},
 			bind,
 		),
@@ -823,6 +857,7 @@ export function ref(binding: Binding, body: Expr): Expr {
 			type: Fn(Fn(Int(Pl('e')), inner), Ref(binding, inner)),
 			scope: [],
 			name: 'ref',
+			description: 'Constructs an expression that references a variable.',
 		},
 		body,
 	);
@@ -839,6 +874,7 @@ export function unref(ref: Expr): Expr {
 			type: Fn(ref.type, Fn(Int(Pl('e')), ref.type.inner)),
 			scope: [],
 			name: 'unref',
+			description: 'Deconstructs an expression that references a variable.',
 		},
 		ref,
 	);
@@ -848,12 +884,16 @@ export function unref(ref: Expr): Expr {
  * Lifts a value into a deixis or speech act operation that does nothing.
  */
 export function pure(e: Expr, head: 'dx' | 'act'): Expr {
+	const dxDescription =
+		'Lifts a value into a deixis operation that does nothing.';
+	const actDescription = 'Lifts a value into a speech act that does nothing.';
 	return app(
 		{
 			head: 'constant',
 			type: Fn(e.type, { head, inner: e.type }),
 			scope: [],
 			name: 'pure',
+			description: head === 'dx' ? dxDescription : actDescription,
 		},
 		e,
 	);
@@ -863,6 +903,8 @@ export function pure(e: Expr, head: 'dx' | 'act'): Expr {
  * Projects the value returned by a deixis or speech act operation.
  */
 export function andMap(op: Expr, project: Expr): Expr {
+	const dxDescription = 'Projects the value returned by a deixis operation.';
+	const actDescription = 'Projects the value returned by a speech act.';
 	assertDxOrAct(op.type);
 	assertFn(project.type);
 	const range = project.type.range;
@@ -876,6 +918,7 @@ export function andMap(op: Expr, project: Expr): Expr {
 				),
 				scope: [],
 				name: 'and_map',
+				description: op.type.head === 'dx' ? dxDescription : actDescription,
 			},
 			op,
 		),
@@ -888,6 +931,10 @@ export function andMap(op: Expr, project: Expr): Expr {
  * on the value returned by the first.
  */
 export function andThen(first: Expr, continuation: Expr): Expr {
+	const dxDescription =
+		'Sequences two deixis operations, with the second operation being dependent on the value returned by the first.';
+	const actDescription =
+		'Sequences two speech acts, with the second speech act being dependent on the value returned by the first.';
 	assertFn(continuation.type);
 	const { domain, range } = continuation.type;
 	assertDxOrAct(range);
@@ -901,6 +948,7 @@ export function andThen(first: Expr, continuation: Expr): Expr {
 				),
 				scope: [],
 				name: 'and_then',
+				description: range.head === 'dx' ? dxDescription : actDescription,
 			},
 			first,
 		),
@@ -908,12 +956,16 @@ export function andThen(first: Expr, continuation: Expr): Expr {
 	);
 }
 
+/**
+ * Picks out a salient value from deictic context.
+ */
 export function salient(inner: ExprType): Expr {
 	return {
 		head: 'constant',
 		type: Dx(inner),
 		scope: [],
 		name: 'salient',
+		description: 'Picks out a salient value from the deictic context.',
 	};
 }
 
@@ -925,22 +977,33 @@ export const address: Expr = {
 	type: Fn(Pl('e'), Dx('()')),
 	scope: [],
 	name: 'address',
+	description:
+		'Indicates who the current addressees are within the deictic context.',
 };
 
+/**
+ * Evaluates deictic references relative to a given topic.
+ */
 export function topic(inner: ExprType): Expr {
 	return {
 		head: 'constant',
 		type: Fn(Pl('e'), Fn(Dx(inner), Dx(inner))),
 		scope: [],
 		name: 'topic',
+		description: 'Evaluates deictic references relative to a given topic.',
 	};
 }
 
+/**
+ * Backgrounds a speech act, indicating that its content is not at-issue.
+ */
 export const bg: Expr = {
 	head: 'constant',
 	type: Fn(Act('()'), Act('()')),
 	scope: [],
 	name: 'bg',
+	description:
+		'Backgrounds a speech act, indicating that its content is not at-issue.',
 };
 
 /**
@@ -955,6 +1018,8 @@ export function contrast(left: Expr, right: Expr): Expr {
 				type: Fn(left.type, Fn(left.type, Act('()'))),
 				scope: [],
 				name: 'contrast',
+				description:
+					'Claims that there is a certain contrast between the two arguments.',
 			},
 			left,
 		),
@@ -963,24 +1028,28 @@ export function contrast(left: Expr, right: Expr): Expr {
 }
 
 /**
- * Asks whether someone is in the position to produce a given speech act.
+ * Asks whether one is in the position to produce a given speech act.
  */
 export const ask: Expr = {
 	head: 'constant',
 	type: Fn(Act('()'), Act('()')),
 	scope: [],
 	name: 'ask',
+	description:
+		'Asks whether one is in the position to produce a given speech act.',
 };
 
 /**
- * Expresses empathy with someone by acknowledging that they are in the position
- * to produce a given speech act.
+ * Expresses empathy by acknowledging that one is in the position to produce a
+ * given speech act.
  */
 export const empathize: Expr = {
 	head: 'constant',
 	type: Fn(Act('()'), Act('()')),
 	scope: [],
 	name: 'empathize',
+	description:
+		'Expresses empathy by acknowledging that one is in the position to produce a given speech act.',
 };
 
 export const unit: Expr = {
@@ -988,6 +1057,7 @@ export const unit: Expr = {
 	type: '()',
 	scope: [],
 	name: 'unit',
+	description: 'A value with no meaningful content.',
 };
 
 export const trueExpr: Expr = {
@@ -995,6 +1065,7 @@ export const trueExpr: Expr = {
 	type: 't',
 	scope: [],
 	name: 'true',
+	description: 'A constant truth value.',
 };
 
 export const falseExpr: Expr = {
@@ -1002,6 +1073,7 @@ export const falseExpr: Expr = {
 	type: 't',
 	scope: [],
 	name: 'false',
+	description: 'A constant truth value.',
 };
 
 export const not: Expr = {
@@ -1009,6 +1081,7 @@ export const not: Expr = {
 	type: Fn('t', 't'),
 	scope: [],
 	name: 'not',
+	description: 'Negates a truth value.',
 };
 
 export const and: Expr = {
@@ -1016,6 +1089,7 @@ export const and: Expr = {
 	type: Fn('t', Fn('t', 't')),
 	scope: [],
 	name: 'and',
+	description: 'Logical and; requires both truth values to be true.',
 };
 
 export const or: Expr = {
@@ -1023,6 +1097,7 @@ export const or: Expr = {
 	type: Fn('t', Fn('t', 't')),
 	scope: [],
 	name: 'or',
+	description: 'Logical or; requires at least one truth value to be true.',
 };
 
 export const xor: Expr = {
@@ -1030,6 +1105,7 @@ export const xor: Expr = {
 	type: Fn('t', Fn('t', 't')),
 	scope: [],
 	name: 'xor',
+	description: 'Exclusive or; requires exactly one truth value to be true.',
 };
 
 export const implies: Expr = {
@@ -1037,6 +1113,8 @@ export const implies: Expr = {
 	type: Fn('t', Fn('t', 't')),
 	scope: [],
 	name: 'implies',
+	description:
+		'Material implication; requires the second truth value to be true in case the first is true.',
 };
 
 export function equals(left: Expr, right: Expr): Expr {
@@ -1048,6 +1126,7 @@ export function equals(left: Expr, right: Expr): Expr {
 				type: Fn(left.type, Fn(right.type, 't')),
 				scope: [],
 				name: 'equals',
+				description: 'Determines whether two values are extensionally equal.',
 			},
 			left,
 		),
@@ -1067,6 +1146,7 @@ export function among(el: Expr, pl: Expr): Expr {
 				type: Fn(pl.type.inner, Fn(pl.type, 't')),
 				scope: [],
 				name: 'among',
+				description: 'Determines whether something is among a given plurality.',
 			},
 			el,
 		),
@@ -1082,6 +1162,7 @@ export const animate: Expr = {
 	type: Int(Fn('e', 't')),
 	scope: [],
 	name: 'animate',
+	description: 'Determines whether an individual is animate.',
 };
 
 /**
@@ -1092,6 +1173,8 @@ export const sum: Expr = {
 	type: Fn('v', Fn('v', 'v')),
 	scope: [],
 	name: 'sum',
+	description:
+		'Sums two events together, returning the event that encompasses them both.',
 };
 
 /**
@@ -1103,6 +1186,8 @@ export const neg: Expr = {
 	type: Fn(Int(Fn('v', 't')), Int(Fn('v', 't'))),
 	scope: [],
 	name: 'neg',
+	description:
+		'Negates an event predicate 𝑃, returning the event predicate which holds true of events representing the non-existence of any 𝑃 events.',
 };
 
 /**
@@ -1113,6 +1198,7 @@ export const trace: Expr = {
 	type: Int(Fn('v', 'i')),
 	scope: [],
 	name: 'trace',
+	description: 'Gets the temporal trace of an event.',
 };
 
 /**
@@ -1124,6 +1210,8 @@ export const overlap: Expr = {
 	type: Int(Fn('v', Fn('v', 't'))),
 	scope: [],
 	name: 'overlap',
+	description:
+		'Determines whether two events overlap each other (that is, whether their temporal traces overlap and they share a common sub-event).',
 };
 
 /**
@@ -1134,6 +1222,8 @@ export const subinterval: Expr = {
 	type: Fn('i', Fn('i', 't')),
 	scope: [],
 	name: 'subinterval',
+	description:
+		'Determines whether one time interval lies fully within another interval.',
 };
 
 /**
@@ -1144,4 +1234,5 @@ export const accessibility: Expr = {
 	type: Dx(Fn('s', Fn('s', 't'))),
 	scope: [],
 	name: 'accessibility',
+	description: 'Picks out a salient accessibility relation on worlds.',
 };

@@ -411,8 +411,8 @@ math .kuna-cont {
 	padding-block-start: 2px;
 }
 
-.dark-mode math .kuna-constant,
-.dark-mode math .kuna-quote {
+.dark-mode .kuna-constant,
+.dark-mode .kuna-quote {
 	color: #ff8888;
 }
 
