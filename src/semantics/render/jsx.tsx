@@ -9,7 +9,8 @@ import {
 } from 'react';
 import { Tooltip } from 'react-tooltip';
 import { Impossible } from '../../core/error';
-import { bare } from '../../morphology/tokenize';
+import { dictionary } from '../../morphology/dictionary';
+import { bare, clean } from '../../morphology/tokenize';
 import { Tone, inTone } from '../../morphology/tone';
 import {
 	type AnimacyClass,
@@ -530,6 +531,12 @@ const TypeHover: FC<{
 	);
 };
 
+function lexemeDescription(name: string): string | undefined {
+	const entry = dictionary.get(clean(name)) ?? dictionary.get(bare(name));
+	if (entry === undefined) return undefined;
+	return `${entry.type}: ${entry.english}`;
+}
+
 const ExprRender: FC<{
 	r: Render<ReactNode>;
 	tooltipMap: { [id: string]: RichExpr };
@@ -552,20 +559,32 @@ const ExprRender: FC<{
 					const expr: RichExpr | undefined = tooltipMap[id];
 					if (expr === undefined) return undefined;
 					const siteleq = <SiteleqType t={expr.type} />;
+					const name =
+						expr.head === 'constant'
+							? expr.name
+							: expr.head === 'lexeme'
+								? expr.name
+								: undefined;
+					const description =
+						expr.head === 'constant'
+							? expr.description
+							: expr.head === 'lexeme'
+								? lexemeDescription(expr.name)
+								: undefined;
 					return (
 						<div className="flex flex-col gap-2">
-							{expr.head === 'constant' ? (
-								<>
-									<span className="text-sm">
-										<span className="kuna-constant">{expr.name}</span>{' '}
-										<span className="text-gray-400">:</span> {siteleq}
-									</span>
-									<span className="text-xs text-gray-400 max-w-xs">
-										{expr.description}
-									</span>
-								</>
+							{name ? (
+								<span className="text-sm">
+									<span className="kuna-constant">{name}</span>{' '}
+									<span className="text-gray-400">:</span> {siteleq}
+								</span>
 							) : (
 								siteleq
+							)}
+							{description && (
+								<span className="text-xs text-gray-400 max-w-xs">
+									{description}
+								</span>
 							)}
 						</div>
 					);
