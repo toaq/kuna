@@ -58,7 +58,7 @@ export function App() {
 	return (
 		<div className={containerClass}>
 			<Top showHelp={showHelp} setShowHelp={setShowHelp} />
-			<main className="flex-1 min-h-0 min-w-0 bg-neutral-50 text-neutral-900 dark:bg-gray-950 dark:text-gray-200">
+			<main className="flex-1 min-h-0 min-w-0 bg-[#fcfcfd] text-neutral-900 dark:bg-gray-950 dark:text-gray-200">
 				{showHelp && <Help closeSelf={() => setShowHelp(false)} />}
 				<Routes>
 					<Route
