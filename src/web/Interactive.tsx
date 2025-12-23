@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 
 import type { ReactNode } from 'react';
-import { Button } from './Button';
 import { Inspector } from './Inspector';
 import { InteractionView } from './InteractionView';
 import type { Interaction } from './InteractionView';
@@ -19,7 +18,7 @@ export function parseCommand(command: string, lastMode: Mode): Configuration {
 		roofLabels: '',
 		trimNulls: false,
 		showMovement: false,
-		meaningCompact: true,
+		meaningCompact: false,
 		mode: lastMode,
 		text: command,
 	};
@@ -59,11 +58,6 @@ export function parseCommand(command: string, lastMode: Mode): Configuration {
 }
 
 export function Interactive(props: { isDarkMode: boolean }) {
-	const [dismissed, setDismissed] = useLocalStorage(
-		'explanationDismissed',
-		false,
-	);
-
 	const [inspectee, setInspectee] = useState<ReactNode>();
 	const [inspecteePath, setInspecteePath] = useState<string>();
 	const [currentCommand, setCurrentCommand] = useState<string>('');
@@ -110,21 +104,6 @@ export function Interactive(props: { isDarkMode: boolean }) {
 								</div>
 							</div>
 						</div>
-						{!dismissed && (
-							<div className="mx-4 my-2 border rounded max-w-prose py-2 px-4 flex flex-col gap-2 items-start">
-								<p>
-									This is a parser for the constructed language{' '}
-									<a href="https://toaq.net/">Toaq</a>. It can interpret Toaq
-									sentences and convert them to a variety of output formats.
-								</p>
-								<p>
-									Write some Toaq in the textbox below — like{' '}
-									<strong>Cho jí ní zu da!</strong> — then click one of the
-									buttons to see the output.
-								</p>
-								<Button onClick={() => setDismissed(true)}>Dismiss</Button>
-							</div>
-						)}
 						{pastInteractions?.map((interaction, index) => (
 							<InteractionView
 								key={interaction.id}
