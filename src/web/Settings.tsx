@@ -63,14 +63,17 @@ export function Settings(props: SettingsProps) {
 	const [trimNulls, setTrimNulls] = useState(false);
 	const [showMovement, setShowMovement] = useState(false);
 	// const [meaningCompact, setMeaningCompact] = useState(false);
-	const [lastMode, setLastMode] = useLocalStorage<Mode>('mode', 'syntax-tree');
+	const [lastMode, setLastMode] = useLocalStorage<Mode>(
+		'mode-1',
+		'syntax-tree',
+	);
 	const [boxesFormat, setBoxesFormat] = useLocalStorage<Mode>(
 		'boxes-format',
 		'boxes-flat',
 	);
 
 	const [formulaFormat, setFormulaFormat] = useLocalStorage<Mode>(
-		'formula-format',
+		'formula-format-1',
 		'formula-math',
 	);
 
