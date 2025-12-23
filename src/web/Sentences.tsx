@@ -164,8 +164,8 @@ export function Sentences(props: { isDarkMode: boolean }) {
 					<option value="technical-gloss">Technical gloss</option>
 					<option value="english">English</option>
 					<option value="gf">GF</option>
-					<option value="logical-form">Formula (text)</option>
-					<option value="logical-form-latex">Formula (LaTeX code)</option>
+					<option value="formula">Formula (text)</option>
+					<option value="formula-latex">Formula (LaTeX code)</option>
 				</select>
 				<select onChange={e => setShowScores(e.target.value)}>
 					<option value="01234">Show all sentences</option>

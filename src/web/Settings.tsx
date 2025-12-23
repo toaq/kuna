@@ -22,9 +22,9 @@ export type Mode =
 	| TreeMode
 	| 'gloss'
 	| 'technical-gloss'
-	| 'logical-form-math'
-	| 'logical-form-text'
-	| 'logical-form-latex'
+	| 'formula-math'
+	| 'formula-text'
+	| 'formula-latex'
 	| 'english'
 	| 'gf1'
 	| 'gf2'
@@ -71,7 +71,7 @@ export function Settings(props: SettingsProps) {
 
 	const [formulaFormat, setFormulaFormat] = useLocalStorage<Mode>(
 		'formula-format',
-		'logical-form-math',
+		'formula-math',
 	);
 
 	const [raw, setRaw] = useState(false);
@@ -201,9 +201,9 @@ export function Settings(props: SettingsProps) {
 			modeSettings = <div />;
 			break;
 
-		case 'logical-form-math':
-		case 'logical-form-text':
-		case 'logical-form-latex':
+		case 'formula-math':
+		case 'formula-text':
+		case 'formula-latex':
 			modeSettings = (
 				<div>
 					<label htmlFor="formula-format">Formula format: </label>
@@ -215,9 +215,9 @@ export function Settings(props: SettingsProps) {
 							render(e.target.value as Mode);
 						}}
 					>
-						<option value="logical-form-math">MathML</option>
-						<option value="logical-form-text">Text</option>
-						<option value="logical-form-latex">LaTeX</option>
+						<option value="formula-math">MathML</option>
+						<option value="formula-text">Text</option>
+						<option value="formula-latex">LaTeX</option>
 					</select>
 				</div>
 			);

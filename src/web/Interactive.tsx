@@ -32,7 +32,7 @@ export function parseCommand(command: string, lastMode: Mode): Configuration {
 
 	m = command.match(/^\/tree\s+(.*)$/);
 	if (m) {
-		config.mode = 'syntax-tree';
+		config.mode = 'semantics-tree';
 		config.text = m[1].trim();
 	}
 
@@ -45,6 +45,12 @@ export function parseCommand(command: string, lastMode: Mode): Configuration {
 	m = command.match(/^\/tokens\s+(.*)$/);
 	if (m) {
 		config.mode = 'tokens';
+		config.text = m[1].trim();
+	}
+
+	m = command.match(/^\/formula\s+(.*)$/);
+	if (m) {
+		config.mode = 'formula-math';
 		config.text = m[1].trim();
 	}
 
