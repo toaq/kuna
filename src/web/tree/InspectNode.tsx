@@ -105,7 +105,7 @@ const CompositionStepsSlider: FC<{ mode: CompositionMode }> = ({ mode }) => {
 			</div>
 			<div className="flex flex-col w-full mt-6">
 				<span className="text-sm text-neutral-500 dark:text-gray-400 dark">
-					Composition step {stepIndex + 1} / {steps.length}
+					Composition step {stepIndex + 1}/{steps.length}
 				</span>
 				<input
 					type="range"
@@ -129,7 +129,7 @@ export function InspectNode(props: {
 	const { tree, breadcrumbs } = props;
 
 	return (
-		<div className="mt-8 mb-16 w-fit">
+		<div className="mt-6 mb-12 w-fit">
 			<h2 className="text-2xl my-2 font-bold">
 				{tree.fullCategoryLabel ?? <TreeLabel label={tree.categoryLabel} />}
 			</h2>

@@ -88,12 +88,12 @@ export function Interactive(props: { isDarkMode: boolean }) {
 				setInspecteePath,
 			}}
 		>
-			<div className="h-full flex">
+			<div className="h-full flex flex-col md:flex-row">
 				<div
-					className="h-full flex-1 overflow-auto scroll-smooth"
+					className="flex-1 overflow-auto scroll-smooth"
 					ref={interactionsRef}
 				>
-					<div className="flex flex-col items-start overflow-hidden">
+					<div className="flex flex-col items-stretch w-full">
 						<div className="mr-4 ml-8 mt-8">
 							<div className="flex flex-row items-top">
 								<div>

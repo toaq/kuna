@@ -50,13 +50,13 @@ export function InteractionView(props: {
 		<div
 			className={`grid !transition-all duration-200 ${deleting ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}
 		>
-			<div className="relative overflow-hidden gap-2 mx-4 mt-4 p-4 w-full border-gray-300">
+			<div className="relative gap-2 mx-4 mt-4 p-4 w-full border-gray-300">
 				<div className="flex flex-row gap-2 items-baseline">
 					({props.interaction.id})
 					<input
 						placeholder={hints[props.interaction.id % hints.length]}
 						type="text"
-						className="!bg-transparent !border-t-0 !border-x-0 !border-b-2 focus:!border-blue focus:outline-none field-sizing-content"
+						className="!bg-transparent !border-t-0 !border-x-0 !border-b-2 focus:!border-blue focus:outline-none field-sizing-content min-w-[calc(100svw-120px)] md:min-w-80"
 						value={props.interaction.command}
 						onChange={e => {
 							props.setCommand(e.currentTarget.value);
