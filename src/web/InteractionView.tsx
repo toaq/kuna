@@ -16,19 +16,20 @@ const paletteCommands: {
 	instant?: boolean;
 }[] = [
 	{ name: 'boxes', description: 'Visualize grammar' },
+	{ name: 'formula', description: 'Interpret Toaq text' },
+	{ name: 'gloss', description: 'Translate each word' },
 	{ name: 'help', description: 'Show help', instant: true },
 	{ name: 'tokens', description: 'Show a table of tokens' },
-	{ name: 'tree', description: 'Show a denotation tree' },
-	{ name: 'gloss', description: 'Translate each word' },
+	{ name: 'tree', description: 'Show a syntax tree' },
 ];
 
 const hints = [
 	'Enter some Toaq',
-	'Try “/boxes De cháq”',
+	'Try: /boxes De cháq',
 	'Enter some Toaq',
-	'Try “/gloss Toe ji2 ke2 zeo”',
+	'Try: /gloss Toe ji2 ke2 zeo',
 	'Enter some Toaq',
-	'Try “/tokens bu nai fi nuo”',
+	'Try: /tokens bu nai fi nuo',
 ];
 
 export function InteractionView(props: {

@@ -234,7 +234,9 @@ export function Output(props: OutputProps) {
 	): ReactNode {
 		const expr: any = denote(recover(trees[parseIndex])).denotation;
 		if (!expr) return 'No denotation';
-		return renderer(expr, meaningCompact);
+		return (
+			<div className="px-4 py-2 w-fit">{renderer(expr, meaningCompact)}</div>
+		);
 	}
 
 	function getEnglish(): ReactElement {
@@ -273,11 +275,11 @@ export function Output(props: OutputProps) {
 				return getGloss(true);
 			case 'technical-gloss':
 				return getGloss(false);
-			case 'logical-form-math':
+			case 'formula-math':
 				return <>{getLogicalForm(toJsx)}</>;
-			case 'logical-form-text':
+			case 'formula-text':
 				return <>{getLogicalForm(toPlainText)}</>;
-			case 'logical-form-latex':
+			case 'formula-latex':
 				return <>{getLogicalForm(toLatex)}</>;
 			case 'english':
 				return getEnglish();

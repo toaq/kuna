@@ -245,8 +245,8 @@ button {
 	justify-content: center;
 }
 
-.output-logical-form-text,
-.output-logical-form-latex {
+.output-formula-text,
+.output-formula-latex {
 	max-width: 35em;
 }
 
