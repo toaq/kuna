@@ -359,7 +359,7 @@ math {
 	font-family: "Fira Math", "Fira Sans", sans-serif;
 }
 
-math .kuna-lexeme {
+.kuna-lexeme {
 	font-weight: 900;
 }
 
@@ -417,7 +417,7 @@ math .kuna-cont {
 	color: #ff8888;
 }
 
-.dark-mode math .kuna-lexeme {
+.dark-mode .kuna-lexeme {
 	color: #99eeff;
 }
 

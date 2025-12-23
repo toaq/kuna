@@ -534,7 +534,7 @@ const TypeHover: FC<{
 function lexemeDescription(name: string): string | undefined {
 	const entry = dictionary.get(clean(name)) ?? dictionary.get(bare(name));
 	if (entry === undefined) return undefined;
-	return `${entry.type}: ${entry.english}`;
+	return `${entry.type}: ${entry.english ?? entry.gloss}`;
 }
 
 const ExprRender: FC<{
@@ -560,11 +560,11 @@ const ExprRender: FC<{
 					if (expr === undefined) return undefined;
 					const siteleq = <SiteleqType t={expr.type} />;
 					const name =
-						expr.head === 'constant'
-							? expr.name
-							: expr.head === 'lexeme'
-								? expr.name
-								: undefined;
+						expr.head === 'constant' ? (
+							<span className="kuna-constant">{expr.name}</span>
+						) : expr.head === 'lexeme' ? (
+							<span className="kuna-lexeme">{expr.name}</span>
+						) : undefined;
 					const description =
 						expr.head === 'constant'
 							? expr.description
@@ -575,8 +575,7 @@ const ExprRender: FC<{
 						<div className="flex flex-col gap-2">
 							{name ? (
 								<span className="text-sm">
-									<span className="kuna-constant">{name}</span>{' '}
-									<span className="text-gray-400">:</span> {siteleq}
+									{name} <span className="text-gray-400">:</span> {siteleq}
 								</span>
 							) : (
 								siteleq
