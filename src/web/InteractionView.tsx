@@ -10,11 +10,16 @@ export interface Interaction {
 	configuration?: Configuration;
 }
 
-const paletteCommands: [string, string][] = [
-	['boxes', 'Visualize grammar'],
-	['tokens', 'Show a table of tokens'],
-	['tree', 'Show a denotation tree'],
-	['gloss', 'Translate each word'],
+const paletteCommands: {
+	name: string;
+	description: string;
+	instant?: boolean;
+}[] = [
+	{ name: 'boxes', description: 'Visualize grammar' },
+	{ name: 'help', description: 'Show help', instant: true },
+	{ name: 'tokens', description: 'Show a table of tokens' },
+	{ name: 'tree', description: 'Show a denotation tree' },
+	{ name: 'gloss', description: 'Translate each word' },
 ];
 
 const hints = [
@@ -56,8 +61,8 @@ export function InteractionView(props: {
 							props.setCommand(e.currentTarget.value);
 							if (e.currentTarget.value.match(/^\/[a-z-]*$/) !== null) {
 								setPaletteOpen(true);
-								const i = paletteCommands.findIndex(([command]) =>
-									command.startsWith(e.currentTarget.value.slice(1)),
+								const i = paletteCommands.findIndex(command =>
+									command.name.startsWith(e.currentTarget.value.slice(1)),
 								);
 								if (i !== -1) setPaletteIndex(i);
 								else if (paletteIndex === undefined) setPaletteIndex(0);
@@ -84,7 +89,7 @@ export function InteractionView(props: {
 								paletteIndex !== undefined
 							) {
 								e.preventDefault();
-								props.setCommand(`/${paletteCommands[paletteIndex][0]} `);
+								props.setCommand(`/${paletteCommands[paletteIndex].name} `);
 								setPaletteIndex(undefined);
 								setPaletteOpen(false);
 							} else if (e.key === 'Enter') {
@@ -106,18 +111,18 @@ export function InteractionView(props: {
 				{paletteOpen ? (
 					<div className="z-20 bg-white dark:bg-gray-900 w-fit mt-2 border border-gray-400">
 						<div className="flex flex-col gap-0">
-							{paletteCommands.map(([command, description], index) => (
+							{paletteCommands.map(({ name, description }, index) => (
 								// biome-ignore lint/a11y/useKeyWithClickEvents: keyboard handled elsewhere
 								<div
-									key={command}
+									key={name}
 									className={`px-2 py-1 !duration-0 ${index === paletteIndex ? 'bg-blue/20 dark:bg-blue/40' : ''}`}
 									onClick={() => {
-										props.setCommand(`/${command} `);
+										props.setCommand(`/${name} `);
 										setPaletteIndex(undefined);
 										setPaletteOpen(false);
 									}}
 								>
-									<strong className="w-16 inline-block">/{command}</strong>{' '}
+									<strong className="w-16 inline-block">/{name}</strong>{' '}
 									{description}
 								</div>
 							))}

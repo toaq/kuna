@@ -7,7 +7,11 @@ import { Inspector } from './Inspector';
 import { InteractionView } from './InteractionView';
 import type { Interaction } from './InteractionView';
 import type { Configuration } from './Settings';
+import TreeIcon from './icons/TreeIcon';
 import { InspectContext } from './inspect';
+
+declare const __COMMIT_HASH__: string;
+declare const __COMMIT_DATE__: string;
 
 export function Interactive(props: { isDarkMode: boolean }) {
 	const [dismissed, setDismissed] = useLocalStorage(
@@ -47,6 +51,24 @@ export function Interactive(props: { isDarkMode: boolean }) {
 					ref={interactionsRef}
 				>
 					<div className="flex flex-col items-start overflow-hidden">
+						<div className="mr-4 ml-8 mt-8">
+							<div className="flex flex-row items-top">
+								<div>
+									<TreeIcon className="mr-3 mt-[2px] h-4 w-4" />
+								</div>
+								<div>
+									Kuna Meırıe, a Toaq Delta parser
+									<br />
+									version {__COMMIT_HASH__} (
+									{new Date(Number(__COMMIT_DATE__) * 1000).toLocaleDateString(
+										'en-US',
+										{ year: 'numeric', month: 'short', day: 'numeric' },
+									)}
+									)<br />
+									Type <b>/help</b> for more information.
+								</div>
+							</div>
+						</div>
 						{!dismissed && (
 							<div className="mx-4 my-2 border rounded max-w-prose py-2 px-4 flex flex-col gap-2 items-start">
 								<p>
