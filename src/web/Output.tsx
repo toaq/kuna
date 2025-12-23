@@ -287,6 +287,9 @@ export function Output(props: OutputProps) {
 				return getGf(GfTarget.LibraryBrowser);
 			case 'tokens':
 				return getTokens();
+			case 'help':
+				// Already returned earlier in this function
+				return <div />;
 		}
 	}
 
