@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import { DeleteButton } from './DeleteButton';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Output } from './Output';
@@ -45,6 +45,7 @@ export function InteractionView(props: {
 	const [paletteOpen, setPaletteOpen] = useState(false);
 	const [paletteIndex, setPaletteIndex] = useState<number>();
 	const [deleting, setDeleting] = useState(false);
+	const inputRef = useRef<HTMLInputElement>(null);
 
 	return (
 		<div
@@ -54,6 +55,9 @@ export function InteractionView(props: {
 				<div className="flex flex-row gap-2 items-baseline">
 					({props.interaction.id})
 					<input
+						// biome-ignore lint/a11y/noAutofocus: only field worth focusing
+						autoFocus={props.current}
+						ref={inputRef}
 						placeholder={hints[props.interaction.id % hints.length]}
 						type="text"
 						className="!bg-transparent !border-t-0 !border-x-0 !border-b-2 focus:!border-blue focus:outline-none field-sizing-content min-w-[calc(100svw-120px)] md:min-w-80"
@@ -125,6 +129,7 @@ export function InteractionView(props: {
 										props.setCommand(`/${name} `);
 										setPaletteIndex(undefined);
 										setPaletteOpen(false);
+										inputRef.current?.focus();
 									}}
 								>
 									<strong className="w-16 inline-block">/{name}</strong>{' '}
