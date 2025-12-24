@@ -81,12 +81,17 @@ export function InteractionView(props: {
 							if (e.key === 'ArrowUp') {
 								e.preventDefault();
 								setPaletteIndex(
-									paletteIndex === undefined ? 0 : paletteIndex - 1,
+									paletteIndex === undefined
+										? 0
+										: (paletteIndex - 1 + paletteCommands.length) %
+												paletteCommands.length,
 								);
 							} else if (e.key === 'ArrowDown') {
 								e.preventDefault();
 								setPaletteIndex(
-									paletteIndex === undefined ? 0 : paletteIndex + 1,
+									paletteIndex === undefined
+										? 0
+										: (paletteIndex + 1) % paletteCommands.length,
 								);
 							} else if (
 								paletteOpen &&
@@ -143,11 +148,13 @@ export function InteractionView(props: {
 				) : null}
 				{props.interaction.configuration && (
 					<ErrorBoundary>
-						<Output
-							configuration={props.interaction.configuration}
-							isDarkMode={props.isDarkMode}
-							inspect={props.setInspectee}
-						/>
+						<div className="ml-4 mt-2">
+							<Output
+								configuration={props.interaction.configuration}
+								isDarkMode={props.isDarkMode}
+								inspect={props.setInspectee}
+							/>
+						</div>
 					</ErrorBoundary>
 				)}
 			</div>

@@ -97,7 +97,7 @@ export function Interactive(props: { isDarkMode: boolean }) {
 						<div className="mr-4 ml-8 mt-8">
 							<div className="flex flex-row items-top">
 								<div>
-									<TreeIcon className="mr-3 mt-[2px] h-4 w-4" />
+									<TreeIcon className="mr-4 mt-[2px] h-4 w-4" />
 								</div>
 								<div>
 									Kuna Meırıe, a Toaq Delta parser

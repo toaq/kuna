@@ -84,7 +84,7 @@ export function Output(props: OutputProps) {
 
 	if (mode === 'help') {
 		return (
-			<div className="my-4 ml-6.5 prose-sm prose-a:text-blue prose-a:hover:underline max-w-prose leading-normal">
+			<div className="px-4 py-2 prose-sm prose-a:text-blue prose-a:dark:text-blue-300 prose-a:hover:underline max-w-prose leading-normal">
 				<h2>About Kuna</h2>
 				<p>
 					Kuna is a parser for the constructed language{' '}
@@ -234,9 +234,7 @@ export function Output(props: OutputProps) {
 	): ReactNode {
 		const expr: any = denote(recover(trees[parseIndex])).denotation;
 		if (!expr) return 'No denotation';
-		return (
-			<div className="px-4 py-2 w-fit">{renderer(expr, meaningCompact)}</div>
-		);
+		return <div className="w-fit">{renderer(expr, meaningCompact)}</div>;
 	}
 
 	function getEnglish(): ReactElement {
