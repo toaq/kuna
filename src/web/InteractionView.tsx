@@ -1,4 +1,4 @@
-import { type ReactNode, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { DeleteButton } from './DeleteButton';
 import { ErrorBoundary } from './ErrorBoundary';
 import { Output } from './Output';
@@ -36,7 +36,6 @@ export function InteractionView(props: {
 	interaction: Interaction;
 	current: boolean;
 	isDarkMode: boolean;
-	setInspectee: (inspectee: ReactNode) => void;
 	setCommand: (command: string) => void;
 	onSubmit: (input: string) => void;
 	delete?: () => void;
@@ -152,7 +151,6 @@ export function InteractionView(props: {
 							<Output
 								configuration={props.interaction.configuration}
 								isDarkMode={props.isDarkMode}
-								inspect={props.setInspectee}
 							/>
 						</div>
 					</ErrorBoundary>

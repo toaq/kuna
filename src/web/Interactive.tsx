@@ -118,7 +118,6 @@ export function Interactive(props: { isDarkMode: boolean }) {
 								interaction={interaction}
 								current={false}
 								isDarkMode={props.isDarkMode}
-								setInspectee={setInspectee}
 								setCommand={command =>
 									setPastInteractions(
 										pastInteractions?.map((interaction, i) =>
@@ -153,7 +152,6 @@ export function Interactive(props: { isDarkMode: boolean }) {
 							}}
 							current={true}
 							isDarkMode={props.isDarkMode}
-							setInspectee={setInspectee}
 							setCommand={command => setCurrentCommand(command)}
 							onSubmit={command => {
 								setPastInteractions([
