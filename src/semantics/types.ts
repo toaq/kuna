@@ -208,6 +208,25 @@ export type DTree = (Leaf | (Branch<DTree> & { mode: CompositionMode })) & {
 	denotation: Expr;
 };
 
+/**
+ * A tree with a denotation error occurring in the root node.
+ */
+export type ETree = (Leaf | Branch<DTree>) & { error: unknown };
+
+/**
+ * A tree with denotations, or possibly denotation errors.
+ */
+export type DETree =
+	| DTree
+	| ETree
+	| ((Leaf | Branch<DETree>) & { errors: ETree[] }); // Propagated errors
+
+export function getErrors(tree: DETree): ETree[] {
+	if ('error' in tree) return [tree];
+	if ('errors' in tree) return tree.errors;
+	return [];
+}
+
 export type BasicMode =
 	| '>' // Functional application
 	| '<' // Reverse functional application

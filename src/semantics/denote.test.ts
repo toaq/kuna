@@ -8,13 +8,15 @@ function snapshot(toaq: string) {
 	const parses = parse(toaq);
 	if (parses.length > 1)
 		throw new Error(`"${toaq}" is syntactically ambiguous`);
-	let denotation: string;
-	try {
-		denotation = toPlainText(denote(recover(parses[0])).denotation);
-	} catch (e) {
-		throw new Error(`Could not denote "${toaq}"`, { cause: e });
-	}
-	expect(denotation).toMatchSnapshot(toaq);
+	const denoted = denote(recover(parses[0]));
+	if ('error' in denoted)
+		throw new Error(`Could not denote "${toaq}"`, { cause: denoted.error });
+	if ('errors' in denoted)
+		throw new Error(
+			`Could not denote "${toaq}" (${denoted.errors.length} errors)`,
+			{ cause: denoted.errors[0].error },
+		);
+	expect(toPlainText(denoted.denotation)).toMatchSnapshot(toaq);
 }
 
 test('predicatizers', () => {

@@ -86,7 +86,14 @@ import {
 	idFunctor,
 	unwrapEffects,
 } from './structures';
-import type { DTree, Expr, ExprType } from './types';
+import {
+	type DETree,
+	type DTree,
+	type ETree,
+	type Expr,
+	type ExprType,
+	getErrors,
+} from './types';
 
 function findVp(tree: StrictTree): StrictTree | null {
 	if (
@@ -692,36 +699,51 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	throw new Unimplemented(`TODO: ${leaf.label}`);
 }
 
-export function denote_(tree: StrictTree, cCommand: DTree | null): DTree {
+function denote_(tree: StrictTree, cCommand: DTree | null): DETree {
 	if ('word' in tree) {
-		const denotation = denoteLeaf(tree, cCommand);
-		return { ...tree, denotation };
+		try {
+			const denotation = denoteLeaf(tree, cCommand);
+			return { ...tree, denotation };
+		} catch (error) {
+			return { ...tree, error };
+		}
 	}
 
-	let left: DTree;
-	let right: DTree;
+	let left: DETree;
+	let right: DETree;
 	if ('word' in tree.left && tree.right.label !== '𝘷') {
 		right = denote_(tree.right, null);
-		left = denote_(tree.left, right);
+		left = denote_(tree.left, 'denotation' in right ? right : null);
 	} else {
 		left = denote_(tree.left, null);
-		right = denote_(tree.right, left);
+		right = denote_(tree.right, 'denotation' in left ? left : null);
 	}
 
-	const result = compose(left.denotation, right.denotation);
-	const denotation = reduce(result.denotation);
-	return {
-		...tree,
-		left,
-		right,
-		denotation,
-		mode: result.mode,
-	};
+	if ('denotation' in left && 'denotation' in right) {
+		try {
+			const result = compose(left.denotation, right.denotation);
+			const denotation = reduce(result.denotation);
+			return {
+				...tree,
+				left,
+				right,
+				denotation,
+				mode: result.mode,
+			};
+		} catch (error) {
+			return { ...tree, left, right, error };
+		}
+	}
+
+	const errors: ETree[] = [];
+	errors.push(...getErrors(left));
+	errors.push(...getErrors(right));
+	return { ...tree, left, right, errors };
 }
 
 /**
  * Annotates a tree with denotations.
  */
-export function denote(tree: StrictTree): DTree {
+export function denote(tree: StrictTree): DETree {
 	return denote_(tree, null);
 }

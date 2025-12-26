@@ -22,7 +22,7 @@ import { trimTree } from '../tree/trim';
 import { keyFor } from '../core/misc';
 import { GfTarget, GfTranslator } from '../gf';
 import { ToaqTokenizer } from '../morphology/tokenize';
-import type { Expr } from '../semantics/types';
+import { type ETree, type Expr, getErrors } from '../semantics/types';
 import type { Tree } from '../tree';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
 import { toScene } from '../tree/scene';
@@ -229,12 +229,25 @@ export function Output(props: OutputProps) {
 		);
 	}
 
+	function renderError(tree: ETree): ReactNode {
+		if ('word' in tree)
+			return <div>{`Error denoting ‘${tree.source}’: ${tree.error}`}</div>;
+		return (
+			<div>{`Error composing ‘${tree.left.source}’ and ‘${tree.right.source}’: ${tree.error}`}</div>
+		);
+	}
+
 	function getLogicalForm(
 		renderer: (e: Expr, compact?: boolean) => ReactNode,
 	): ReactNode {
-		const expr: any = denote(recover(trees[parseIndex])).denotation;
-		if (!expr) return 'No denotation';
-		return <div className="w-fit">{renderer(expr, meaningCompact)}</div>;
+		const result = denote(recover(trees[parseIndex]));
+		if ('denotation' in result)
+			return (
+				<div className="w-fit">
+					{renderer(result.denotation, meaningCompact)}
+				</div>
+			);
+		return <div className="w-fit">{getErrors(result).map(renderError)}</div>;
 	}
 
 	function getEnglish(): ReactElement {
