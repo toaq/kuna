@@ -18,7 +18,7 @@ export type Siteleq = { precedence: Precedence } & (
 	| { head: 'pair'; left: Siteleq; right: Siteleq }
 	| { head: 'prefix'; prefix: 'indef' | 'dx'; body: Siteleq | null }
 	| { head: 'suffix'; suffix: 'qn' | 'act'; body: Siteleq | null }
-	| { head: 'bracket'; inner: Siteleq }
+	| { head: 'bracket'; inner: Siteleq | null }
 	| { head: 'int'; inner: Siteleq }
 	| { head: 'cont'; inner: Siteleq | null }
 	| { head: 'pl'; inner: Siteleq }
@@ -199,7 +199,7 @@ const SiteleqTypePart: FC<{ t: Siteleq }> = ({ t }) => {
 			return (
 				<>
 					<mo>(</mo>
-					<SiteleqTypePart t={t.inner} />
+					{t.inner && <SiteleqTypePart t={t.inner} />}
 					<mo>)</mo>
 				</>
 			);
@@ -237,14 +237,16 @@ const SiteleqTypePart: FC<{ t: Siteleq }> = ({ t }) => {
 };
 
 export const SiteleqType: FC<{ t: ExprType }> = ({ t }) => {
-	const siteleq = typeToSiteleq(t);
+	const siteleq = typeToSiteleq(t) ?? {
+		head: 'bracket',
+		inner: null,
+		precedence: Precedence.Bracket,
+	};
 	return (
-		siteleq && (
-			<math>
-				<mrow>
-					<SiteleqTypePart t={siteleq} />
-				</mrow>
-			</math>
-		)
+		<math>
+			<mrow>
+				<SiteleqTypePart t={siteleq} />
+			</mrow>
+		</math>
 	);
 };
