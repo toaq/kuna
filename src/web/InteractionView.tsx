@@ -59,7 +59,7 @@ export function InteractionView(props: {
 						ref={inputRef}
 						placeholder={hints[props.interaction.id % hints.length]}
 						type="text"
-						className="!bg-transparent !border-t-0 !border-x-0 !border-b-2 focus:!border-blue focus:outline-none field-sizing-content min-w-[calc(100svw-120px)] md:min-w-80"
+						className="!bg-transparent !border-t-0 !border-x-0 !border-b-2 focus:!border-blue focus:outline-none field-sizing-content min-w-[calc(100svw-120px)] md:min-w-80 max-w-160"
 						value={props.interaction.command}
 						onChange={e => {
 							props.setCommand(e.currentTarget.value);
