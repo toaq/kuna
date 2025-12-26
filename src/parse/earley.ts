@@ -10,11 +10,11 @@
 //
 // Note that they index the input string from 1, but we index from 0.
 
-export type Symbol<T, N> = { terminal: T } | { nonterminal: N };
+export type Symb<T, N> = { terminal: T } | { nonterminal: N };
 
 export interface Rule<T, N> {
 	head: N;
-	body: Symbol<T, N>[];
+	body: Symb<T, N>[];
 }
 export interface Grammar<T, N> {
 	start: N;
@@ -22,7 +22,7 @@ export interface Grammar<T, N> {
 }
 
 export interface SppfNode<T, N> {
-	symbol: Symbol<T, N> | { ruleNumber: number; passed: number };
+	symbol: Symb<T, N> | { ruleNumber: number; passed: number };
 	startIndex: number;
 	endIndex: number;
 	families: SppfNode<T, N>[][];
@@ -39,12 +39,17 @@ export class EarleyParser<T, N> {
 	constructor(
 		public grammar: Grammar<T, N>,
 		private showTerminal: (terminal: T) => string,
+		private debugSink?: (text: string) => void,
 	) {}
 
-	private showSymbol(symbol: Symbol<T, N>): string {
+	private showSymbol(symbol: Symb<T, N>): string {
 		return 'terminal' in symbol
 			? this.showTerminal(symbol.terminal)
 			: String(symbol.nonterminal);
+	}
+
+	private debug(text: string): void {
+		this.debugSink?.(text);
 	}
 
 	/**
@@ -64,6 +69,14 @@ export class EarleyParser<T, N> {
 	}
 
 	/**
+	 * Render a grammar rule into a string.
+	 */
+	public showRule(rule: Rule<T, N>): string {
+		const symbols = rule.body.map(this.showSymbol.bind(this)).join(' ');
+		return `(${rule.head} → ${symbols})`;
+	}
+
+	/**
 	 * Parse a string of terminals, returning a table of Earley items and a
 	 * "shared packed parse forest" of all the derivations.
 	 */
@@ -77,6 +90,8 @@ export class EarleyParser<T, N> {
 		let Qprime: EarleyItem<T, N>[] = [];
 		let V: SppfNode<T, N>[] = [];
 
+		this.debug('Initializing Earley parser:');
+
 		// for all (S ::= α) ∈ P { if α ∈ ΣN add (S ::= ·α, 0, null) to E0
 		//                         if α = a1 α′ add (S ::= ·α, 0, null) to Q′ }
 		for (let r = 0; r < this.grammar.rules.length; r++) {
@@ -88,6 +103,9 @@ export class EarleyParser<T, N> {
 					originPosition: 0,
 					sppfNode: null,
 				};
+				this.debug(
+					`* Rule "${this.showRule(rule)}" makes item ${this.showItem(item)}`,
+				);
 				if (rule.body.length === 0 || 'nonterminal' in rule.body[0]) {
 					E[0].push(item);
 				} else if (rule.body[0].terminal === input[0]) {
@@ -101,6 +119,8 @@ export class EarleyParser<T, N> {
 		}
 
 		for (let i = 0; i <= n; i++) {
+			this.debug(`\n## Step ${i}`);
+
 			// At three points in the algorithm, an Earley item is either added
 			// to R or to Q or neither depending on some conditions. We extract
 			// this step into a small subroutine:
@@ -144,6 +164,9 @@ export class EarleyParser<T, N> {
 					const w = Λ.sppfNode;
 					for (let r = 0; r < this.grammar.rules.length; r++) {
 						if (this.grammar.rules[r].head === C.nonterminal) {
+							this.debug(
+								`Expanding ${this.showItem(Λ)} using rule ${this.showRule(this.grammar.rules[r])}`,
+							);
 							update({
 								ruleNumber: r,
 								passed: 0,
@@ -254,6 +277,12 @@ export class EarleyParser<T, N> {
 						originPosition: h,
 						sppfNode: y,
 					});
+					E[i + 1].push({
+						ruleNumber: Λ.ruleNumber,
+						passed: j,
+						originPosition: h,
+						sppfNode: y,
+					});
 				}
 			}
 		}
@@ -283,7 +312,7 @@ export class EarleyParser<T, N> {
 		V: SppfNode<T, N>[],
 	): SppfNode<T, N> {
 		const rule = this.grammar.rules[ruleNumber];
-		const s: Symbol<T, N> | { ruleNumber: number; passed: number } =
+		const s: Symb<T, N> | { ruleNumber: number; passed: number } =
 			rule.body.length === passed
 				? { nonterminal: rule.head }
 				: { ruleNumber, passed };

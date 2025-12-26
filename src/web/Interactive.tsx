@@ -48,6 +48,12 @@ export function parseCommand(command: string, lastMode: Mode): Configuration {
 		config.text = m[1].trim();
 	}
 
+	m = command.match(/^\/earley\s+(.*)$/);
+	if (m) {
+		config.mode = 'earley';
+		config.text = m[1].trim();
+	}
+
 	m = command.match(/^\/formula\s+(.*)$/);
 	if (m) {
 		config.mode = 'formula-math';
