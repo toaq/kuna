@@ -17,7 +17,7 @@ export function Top(props: {
 
 	return (
 		<>
-			<header className="bg-mio dark:bg-mio-dark flex w-full items-center text-white leading-10 px-3">
+			<header className="bg-mio dark:bg-mio-dark flex w-full items-center text-white leading-10 px-4 md:px-5">
 				<img src="logo.svg" aria-label="Kúna" width={52} className="mr-3" />
 				<nav className="flex">
 					{/* <NavLink to="/" className={navLinkClass}>

@@ -94,7 +94,7 @@ export function Interactive(props: { isDarkMode: boolean }) {
 					ref={interactionsRef}
 				>
 					<div className="flex flex-col items-stretch w-full">
-						<div className="mr-4 ml-8 mt-8">
+						<div className="mr-4 ml-4 md:ml-7 mt-6 md:mt-7">
 							<div className="flex flex-row items-top">
 								<div>
 									<TreeIcon className="mr-4 mt-[2px] h-4 w-4" />

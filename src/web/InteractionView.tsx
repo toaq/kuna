@@ -51,7 +51,7 @@ export function InteractionView(props: {
 		<div
 			className={`grid !transition-all duration-200 ${deleting ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}
 		>
-			<div className="relative gap-2 mx-4 mt-4 p-4 w-full border-gray-300">
+			<div className="relative gap-2 p-4 md:p-7 w-full border-gray-300">
 				<div className="flex flex-row gap-2 items-baseline">
 					({props.interaction.id})
 					<input
