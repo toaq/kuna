@@ -224,7 +224,9 @@ export function toScene(
 						: tree.word.text
 				: undefined;
 		const children = roof ? [] : treeChildren(tree).map(walk);
-		const source = tree.source;
+		const source =
+			tree.source ||
+			('word' in tree && tree.word.covert ? tree.word.value : '?');
 
 		let textStyle = SceneTextStyle.Plain;
 		let id: MovementID | undefined = undefined;
