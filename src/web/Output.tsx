@@ -23,6 +23,12 @@ import { trimTree } from '../tree/trim';
 import { keyFor } from '../core/misc';
 import { GfTarget, GfTranslator } from '../gf';
 import { ToaqTokenizer } from '../morphology/tokenize';
+import {
+	EarleyParser,
+	type Grammar,
+	type Rule,
+	type Symb,
+} from '../parse/earley';
 import { type ETree, type Expr, getErrors } from '../semantics/types';
 import type { Tree } from '../tree';
 import { denotationRenderLatex, denotationRenderText } from '../tree/place';
@@ -30,6 +36,7 @@ import { toScene } from '../tree/scene';
 import { themes } from '../tree/theme';
 import { Boxes } from './Boxes';
 import { Button } from './Button';
+import { EarleyTable } from './EarleyTable';
 import GfResult from './GfResult';
 import type { Configuration } from './Settings';
 import { Tokens } from './Tokens';
@@ -84,6 +91,31 @@ export const Output = memo<OutputProps>(
 
 		const needsParse =
 			mode !== 'tokens' && mode !== 'gloss' && mode !== 'technical-gloss';
+
+		if (mode === 'earley') {
+			type NT = string;
+			type T = string;
+			const cleaned = text.replaceAll('->', '→').replaceAll(/\s/g, '');
+			const rules = cleaned.split(';');
+			const last = rules.pop() as string;
+			const inputString: T[] = [...last];
+			function parseSymb(s: string): Symb<T, NT> {
+				return /^[A-Z]$/.test(s) ? { nonterminal: s } : { terminal: s };
+			}
+			function parseRule(r: string): Rule<T, NT> {
+				return {
+					head: r.split('→')[0],
+					body: [...r.split('→')[1]].map(s => parseSymb(s)),
+				};
+			}
+			const grammar: Grammar<T, NT> = {
+				start: 'S',
+				rules: rules.map(r => parseRule(r)),
+			};
+			const parser = new EarleyParser<T, NT>(grammar, s => s);
+			const table = parser.parse(inputString).table;
+			return <EarleyTable parser={parser} table={table} />;
+		}
 
 		if (mode === 'help') {
 			return (
@@ -309,6 +341,7 @@ export const Output = memo<OutputProps>(
 				case 'tokens':
 					return getTokens();
 				case 'help':
+				case 'earley':
 					// Already returned earlier in this function
 					return <div />;
 			}

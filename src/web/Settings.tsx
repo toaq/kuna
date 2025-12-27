@@ -29,7 +29,8 @@ export type Mode =
 	| 'gf1'
 	| 'gf2'
 	| 'tokens'
-	| 'help';
+	| 'help'
+	| 'earley';
 
 export type TreeFormat =
 	| 'png-latex'
