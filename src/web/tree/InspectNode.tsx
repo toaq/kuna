@@ -170,6 +170,12 @@ export function InspectNode(props: {
 					</div>
 				</>
 			)}
+			{tree.error !== undefined && (
+				<>
+					<h3 className="text-lg mt-4 mb-2 font-bold">Error</h3>
+					{`${tree.error}`}
+				</>
+			)}
 		</div>
 	);
 }

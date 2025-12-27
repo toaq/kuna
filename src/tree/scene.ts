@@ -62,6 +62,10 @@ export interface SceneNode<Denotation, Placement> {
 	 */
 	mode?: CompositionMode;
 	/**
+	 * Error that occurred while processing this node.
+	 */
+	error?: unknown;
+	/**
 	 * Whether to draw a roof at this node. If true, the node should not have
 	 * any children.
 	 */
@@ -211,6 +215,7 @@ export function toScene(
 		const denotation =
 			'denotation' in tree && tree.denotation ? tree.denotation : undefined;
 		const mode = 'mode' in tree && tree.mode ? tree.mode : undefined;
+		const error = 'error' in tree ? tree.error : undefined;
 		const gloss =
 			'word' in tree && !tree.word.covert ? tree.word.entry?.gloss : undefined;
 		const roof = roofLabels.includes(tree.label);
@@ -251,6 +256,7 @@ export function toScene(
 			},
 			fullCategoryLabel: describeLabel(tree.label),
 			denotation,
+			error,
 			mode,
 			roof,
 			text,
