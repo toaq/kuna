@@ -2,7 +2,8 @@ import { type CSSProperties, useContext } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { InspectContext } from './inspect';
 
-const minSidebarWidth = 350;
+const naturalWidth = 350;
+const minWidth = 180;
 
 export function Inspector() {
 	const { inspectee, setInspectee, setInspecteePath } =
@@ -10,7 +11,8 @@ export function Inspector() {
 	const sidebarRef = useRef<HTMLDivElement>(null);
 	const contentRef = useRef<HTMLDivElement>(null);
 	const [isResizing, setIsResizing] = useState(false);
-	const [sidebarWidth, setSidebarWidth] = useState(minSidebarWidth);
+	const [width, setWidth] = useState(naturalWidth);
+	const hideInspectee = isResizing && width < minWidth;
 
 	const startResizing = useCallback(() => {
 		document.body.classList.toggle('moving', true);
@@ -20,15 +22,19 @@ export function Inspector() {
 	const stopResizing = useCallback(() => {
 		document.body.classList.toggle('moving', false);
 		setIsResizing(false);
-	}, []);
+		if (hideInspectee) {
+			setInspectee(undefined);
+			setInspecteePath(undefined);
+		}
+	}, [hideInspectee, setInspectee, setInspecteePath]);
 
 	const resize = useCallback(
 		(mouseMoveEvent: { clientX: number }) => {
 			if (isResizing && sidebarRef.current) {
-				setSidebarWidth(
+				const newWidth =
 					sidebarRef.current.getBoundingClientRect().right -
-						mouseMoveEvent.clientX,
-				);
+					mouseMoveEvent.clientX;
+				setWidth(newWidth);
 			}
 		},
 		[isResizing],
@@ -46,21 +52,17 @@ export function Inspector() {
 	useEffect(() => {
 		if (inspectee && contentRef.current) {
 			const contentWidth = contentRef.current.scrollWidth;
-			const maxSidebarWidth = window.innerWidth * 0.75;
-			setSidebarWidth(
-				Math.min(Math.max(contentWidth + 72, minSidebarWidth), maxSidebarWidth),
-			);
+			const maxWidth = window.innerWidth * 0.75;
+			setWidth(Math.min(Math.max(contentWidth + 72, naturalWidth), maxWidth));
 		}
 	}, [inspectee]);
-
-	const open = sidebarWidth >= 100;
 
 	return (
 		<div
 			className="inspector sticky md:overflow-x-hidden overflow-y-auto md:my-2 md:min-w-[32px] md:w-[var(--sidebar-width)] max-md:max-h-[80svh] shadow-lg max-md:rounded-t-2xl md:rounded-l-2xl md:border-l-2 border-y-1 border-neutral-200 bg-white dark:border-gray-800 dark:bg-gray-900 transition-[opacity,width] [.moving_&]:transition-none"
 			style={
 				{
-					'--sidebar-width': `${open && inspectee ? sidebarWidth : 32}px`,
+					'--sidebar-width': `${inspectee && !hideInspectee ? width : 32}px`,
 				} as unknown as CSSProperties
 			}
 			ref={sidebarRef}
@@ -69,7 +71,7 @@ export function Inspector() {
 				if (Math.abs(e.clientX - rect.left) < 20) e.preventDefault();
 			}}
 		>
-			{open && inspectee ? (
+			{inspectee && !hideInspectee && (
 				<div className="ps-6">
 					<div className="md:w-1000 md:overflow-hidden">
 						<div className="w-fit" ref={contentRef}>
@@ -97,21 +99,13 @@ export function Inspector() {
 						</svg>
 					</button>
 				</div>
-			) : inspectee ? (
-				<button
-					type="button"
-					className="[writing-mode:vertical-lr] pl-3 h-full text-center cursor-pointer"
-					onClick={() => setSidebarWidth(400)}
-				>
-					Expand
-				</button>
-			) : undefined}
-			{inspectee ? (
+			)}
+			{inspectee && (
 				<div
 					className="max-md:hidden start-0 top-0 bottom-0 w-6 absolute cursor-ew-resize rounded-l-2xl border-l-1 border-transparent hover:border-current [.moving_&]:border-current transition-colors"
 					onMouseDown={startResizing}
 				/>
-			) : undefined}
+			)}
 		</div>
 	);
 }
