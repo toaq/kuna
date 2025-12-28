@@ -133,14 +133,16 @@ export function Interactive(props: { isDarkMode: boolean }) {
 								}
 								onSubmit={(command: string) => {
 									setPastInteractions(
-										pastInteractions?.map((interaction, i) =>
-											i === index
+										pastInteractions?.map((interaction, i) => {
+											const configuration = parseCmd(command);
+											return i === index
 												? {
 														...interaction,
-														configuration: parseCmd(command),
+														command: configuration.text,
+														configuration,
 													}
-												: interaction,
-										),
+												: interaction;
+										}),
 									);
 								}}
 								delete={() => {
