@@ -8,8 +8,7 @@ import aSentencesTxt from '../../sentences/a.txt?raw';
 import refgramSentencesTxt from '../../sentences/refgram.txt?raw';
 import { denote } from '../semantics/denote';
 import { recover } from '../syntax/recover';
-import { Output } from './Output';
-import type { Mode } from './Settings';
+import { type Mode, Output } from './Output';
 
 const rSentences: string[] = refgramSentencesTxt.split('\n');
 const aSentences: string[] = aSentencesTxt.split('\n');

@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { Inspector } from './Inspector';
 import { InteractionView } from './InteractionView';
 import type { Interaction } from './InteractionView';
-import type { Configuration, Mode } from './Settings';
+import type { Configuration, Mode } from './Output';
 import TreeIcon from './icons/TreeIcon';
 import { InspectContext } from './inspect';
 

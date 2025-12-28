@@ -1,8 +1,7 @@
 import { useRef, useState } from 'react';
 import { DeleteButton } from './DeleteButton';
 import { ErrorBoundary } from './ErrorBoundary';
-import { Output } from './Output';
-import type { Configuration } from './Settings';
+import { type Configuration, Output } from './Output';
 
 export interface Interaction {
 	id: number;

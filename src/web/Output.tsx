@@ -38,9 +38,48 @@ import { Boxes } from './Boxes';
 import { Button } from './Button';
 import { EarleyTable } from './EarleyTable';
 import GfResult from './GfResult';
-import type { Configuration } from './Settings';
 import { Tokens } from './Tokens';
 import { TreeBrowser } from './tree/TreeBrowser';
+
+export type TreeMode =
+	| 'syntax-tree'
+	| 'semantics-tree'
+	| 'semantics-tree-compact'
+	| 'raw-tree';
+
+export type Mode =
+	| 'boxes-flat'
+	| 'boxes-nest'
+	| 'boxes-split'
+	| TreeMode
+	| 'gloss'
+	| 'technical-gloss'
+	| 'formula-math'
+	| 'formula-text'
+	| 'formula-latex'
+	| 'english'
+	| 'gf1'
+	| 'gf2'
+	| 'tokens'
+	| 'help'
+	| 'earley';
+
+export type TreeFormat =
+	| 'png-latex'
+	| 'png-text'
+	| 'textual'
+	| 'json'
+	| 'react';
+
+export interface Configuration {
+	text: string;
+	treeFormat: TreeFormat;
+	roofLabels: string;
+	trimNulls: boolean;
+	showMovement: boolean;
+	meaningCompact: boolean;
+	mode: Mode;
+}
 
 function errorString(e: any): string {
 	const string = String(e);
