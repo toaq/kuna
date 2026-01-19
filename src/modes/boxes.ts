@@ -51,7 +51,7 @@ function isArgument(tree: Tree): boolean {
 	return tree.label === 'DP' || tree.label === 'CP';
 }
 
-interface SplitBoxes {
+export interface SplitBoxes {
 	main: BoxSentence | BoxFragment;
 	subclauses: BoxClause[];
 	cpIndices: Map<Tree, number>;

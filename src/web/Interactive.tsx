@@ -3,9 +3,12 @@ import { useLocalStorage } from 'usehooks-ts';
 
 import type { ReactNode } from 'react';
 import { Inspector } from './Inspector';
-import { InteractionView } from './InteractionView';
-import type { Interaction } from './InteractionView';
-import type { Configuration, Mode } from './Output';
+import {
+	type Configuration,
+	type Interaction,
+	InteractionView,
+	type Mode,
+} from './InteractionView';
 import TreeIcon from './icons/TreeIcon';
 import { InspectContext } from './inspect';
 

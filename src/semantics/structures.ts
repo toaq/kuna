@@ -26,7 +26,6 @@ import {
 	assertPl,
 	assertRef,
 	bind,
-	bindingsEqual,
 	cont,
 	flatMap,
 	indef,
@@ -39,10 +38,7 @@ import {
 	ref,
 	single,
 	some,
-	subtype,
 	trueExpr,
-	typesCompatible,
-	typesEqual,
 	unbind,
 	uncont,
 	unindef,
@@ -55,6 +51,13 @@ import {
 } from './model';
 import { typeToPlainText } from './render';
 import type { AnimacyClass, Binding, Expr, ExprType } from './types';
+import {
+	bindingsEqual,
+	findEffect,
+	subtype,
+	typesCompatible,
+	typesEqual,
+} from './utils';
 
 export interface Semigroup {
 	/**
@@ -1231,56 +1234,4 @@ export function getRunner(
 			};
 	}
 	return null;
-}
-
-/**
- * Determines whether the outermost effects in two types are equal.
- */
-export function effectsEqual(left: ExprType, right: ExprType): boolean {
-	return (
-		typeof left !== 'string' &&
-		typeof right !== 'string' &&
-		left.head === right.head &&
-		(left.head === 'int' ||
-			left.head === 'cont' ||
-			left.head === 'pl' ||
-			left.head === 'indef' ||
-			left.head === 'qn' ||
-			(left.head === 'pair' &&
-				typesEqual(
-					left.supplement,
-					(right as ExprType & object & { head: 'pair' }).supplement,
-				)) ||
-			(left.head === 'bind' &&
-				bindingsEqual(
-					left.binding,
-					(right as ExprType & object & { head: 'bind' }).binding,
-				)) ||
-			(left.head === 'ref' &&
-				bindingsEqual(
-					left.binding,
-					(right as ExprType & object & { head: 'ref' }).binding,
-				)) ||
-			left.head === 'dx' ||
-			left.head === 'act')
-	);
-}
-
-/**
- * Given a type and a type constructor to search for, find the type given by
- * unwrapping every effect above the matching type constructor.
- */
-export function findEffect(
-	inType: ExprType,
-	like: ExprType,
-): (ExprType & object) | null {
-	if (typeof inType === 'string' || typeof like === 'string') return null;
-	if (effectsEqual(inType, like)) return inType;
-	const functor = getFunctor(inType);
-	return functor && findEffect(functor.unwrap(inType), like);
-}
-
-export function unwrapEffects(type: ExprType): ExprType {
-	const functor = getFunctor(type);
-	return functor === null ? type : unwrapEffects(functor.unwrap(type));
 }

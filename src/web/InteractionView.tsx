@@ -1,7 +1,67 @@
-import { useRef, useState } from 'react';
+import { range } from 'lodash-es';
+import { type ReactNode, useMemo, useRef, useState } from 'react';
+import { Ungrammatical } from '../core/error';
+import { treeToEnglish } from '../english/tree';
+import { GfTarget, GfTranslator } from '../gf';
+import { boxify } from '../modes/boxes';
+import { parse } from '../modes/parse';
+import { Glosser } from '../morphology/gloss';
+import { ToaqTokenizer } from '../morphology/tokenize';
+import {
+	EarleyParser,
+	type Grammar,
+	type Rule,
+	type Symb,
+} from '../parse/earley';
+import { denote } from '../semantics/denote';
+import { toJsx, toLatex, toPlainText } from '../semantics/render';
+import type { DETree, Expr } from '../semantics/types';
+import { getErrors, isUngrammatical } from '../semantics/utils';
+import { recover } from '../syntax/recover';
+import { Button } from './Button';
 import { DeleteButton } from './DeleteButton';
 import { ErrorBoundary } from './ErrorBoundary';
-import { type Configuration, Output } from './Output';
+import { type KunaOutput, Output } from './Output';
+
+export type TreeMode =
+	| 'syntax-tree'
+	| 'semantics-tree'
+	| 'semantics-tree-compact'
+	| 'raw-tree';
+
+export type Mode =
+	| 'boxes-flat'
+	| 'boxes-nest'
+	| 'boxes-split'
+	| TreeMode
+	| 'gloss'
+	| 'technical-gloss'
+	| 'formula-math'
+	| 'formula-text'
+	| 'formula-latex'
+	| 'english'
+	| 'gf1'
+	| 'gf2'
+	| 'tokens'
+	| 'help'
+	| 'earley';
+
+export type TreeFormat =
+	| 'png-latex'
+	| 'png-text'
+	| 'textual'
+	| 'json'
+	| 'react';
+
+export interface Configuration {
+	text: string;
+	treeFormat: TreeFormat;
+	roofLabels: string;
+	trimNulls: boolean;
+	showMovement: boolean;
+	meaningCompact: boolean;
+	mode: Mode;
+}
 
 export interface Interaction {
 	id: number;
@@ -44,6 +104,176 @@ export function InteractionView(props: {
 	const [paletteIndex, setPaletteIndex] = useState<number>();
 	const [deleting, setDeleting] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
+	const config = props.interaction.configuration;
+
+	const trees: DETree[] | { output: KunaOutput; star: boolean } =
+		useMemo(() => {
+			if (config === undefined) return [];
+			try {
+				const trees = parse(config.text);
+				if (trees.length === 0)
+					return {
+						output: { type: 'error', error: new Ungrammatical('No parse') },
+						star: true,
+					};
+				return trees.map(recover).map(denote);
+			} catch (error) {
+				return {
+					output: {
+						type: 'error',
+						error,
+					},
+					star: error instanceof Ungrammatical,
+				};
+			}
+		}, [config]);
+
+	const outputs: { output: KunaOutput; star: boolean }[] = useMemo(() => {
+		if (config === undefined) return [];
+		const { mode, text } = config;
+		const star = 'output' in trees ? trees.star : trees.every(isUngrammatical);
+
+		try {
+			if (mode === 'tokens') {
+				const tokenizer = new ToaqTokenizer();
+				tokenizer.reset(text);
+				return [
+					{
+						output: { type: 'tokens', tokens: tokenizer.tokens },
+						star,
+					},
+				];
+			}
+
+			if (mode === 'gloss' || mode === 'technical-gloss')
+				return [
+					{
+						output: {
+							type: 'gloss',
+							gloss: new Glosser(mode === 'gloss').glossSentence(text),
+						},
+						star,
+					},
+				];
+
+			if (mode === 'help') return [{ output: { type: 'help' }, star }];
+
+			if (mode === 'earley') {
+				type NT = string;
+				type T = string;
+				const cleaned = text.replaceAll('->', '→').replaceAll(/\s/g, '');
+				const rules = cleaned.split(';');
+				const last = rules.pop() as string;
+				const inputString: T[] = [...last];
+				function parseSymb(s: string): Symb<T, NT> {
+					return /^[A-Z]$/.test(s) ? { nonterminal: s } : { terminal: s };
+				}
+				function parseRule(r: string): Rule<T, NT> {
+					return {
+						head: r.split('→')[0],
+						body: [...r.split('→')[1]].map(s => parseSymb(s)),
+					};
+				}
+				const grammar: Grammar<T, NT> = {
+					start: 'S',
+					rules: rules.map(r => parseRule(r)),
+				};
+				const parser = new EarleyParser<T, NT>(grammar, s => s);
+				return [
+					{
+						output: {
+							type: 'earley',
+							parser,
+							table: parser.parse(inputString).table,
+						},
+						star,
+					},
+				];
+			}
+		} catch (error) {
+			return [{ output: { type: 'error', error }, star }];
+		}
+
+		if ('output' in trees) return [trees];
+		return trees.map(tree => {
+			const star = isUngrammatical(tree);
+			try {
+				switch (mode) {
+					case 'boxes-flat':
+						return {
+							output: { type: 'boxes', strategy: 'flat', boxes: boxify(tree) },
+							star,
+						};
+					case 'boxes-nest':
+						return {
+							output: { type: 'boxes', strategy: 'nest', boxes: boxify(tree) },
+							star,
+						};
+					case 'boxes-split':
+						return {
+							output: { type: 'boxes', strategy: 'split', boxes: boxify(tree) },
+							star,
+						};
+					case 'syntax-tree':
+					case 'semantics-tree':
+					case 'semantics-tree-compact':
+					case 'raw-tree':
+						return {
+							output: {
+								type: 'tree',
+								tree,
+								showMovement: config.showMovement,
+								meaningCompact: config.meaningCompact,
+								roofLabels: config.roofLabels.trim().split(/[\s,]+/),
+							},
+							star,
+						};
+					case 'english':
+						return {
+							output: { type: 'english', english: treeToEnglish(tree).text },
+							star,
+						};
+					case 'gf1':
+					case 'gf2': {
+						const target =
+							mode === 'gf1' ? GfTarget.ResourceDemo : GfTarget.LibraryBrowser;
+						const translator = new GfTranslator(target);
+						const gf = translator.showGf(translator.treeToGf(tree));
+						return { output: { type: 'gf', target, gf }, star };
+					}
+				}
+
+				// All remaining output modes require a denotation
+				if (!('denotation' in tree)) {
+					return {
+						output: { type: 'error', error: `${getErrors(tree)[0]}` },
+						star,
+					};
+				}
+				let renderer: (e: Expr) => ReactNode;
+				switch (mode) {
+					case 'formula-math':
+						renderer = toJsx;
+						break;
+					case 'formula-text':
+						renderer = toPlainText;
+						break;
+					case 'formula-latex':
+						renderer = toLatex;
+				}
+				return {
+					output: { type: 'formula', expr: tree.denotation, renderer },
+					star,
+				};
+			} catch (error) {
+				return { output: { type: 'error', error }, star };
+			}
+		});
+	}, [config, trees]);
+
+	const [outputIndex, setOutputIndex] = useState(0);
+	if (outputs.length > 0 && outputIndex >= outputs.length) setOutputIndex(0);
+	const output = outputs[outputIndex];
 
 	return (
 		<div
@@ -51,7 +281,7 @@ export function InteractionView(props: {
 		>
 			<div className="relative gap-2 p-4 md:p-7 w-full border-gray-300">
 				<div className="flex flex-row gap-2 items-baseline">
-					({props.interaction.id})
+					({props.interaction.id}) {output?.star && '*'}
 					<input
 						// biome-ignore lint/a11y/noAutofocus: only field worth focusing
 						autoFocus={props.current}
@@ -144,13 +374,40 @@ export function InteractionView(props: {
 				) : props.current ? (
 					<div className="h-40" />
 				) : null}
-				{props.interaction.configuration && (
+				{output && (
 					<ErrorBoundary>
 						<div className="ml-4 mt-2">
-							<Output
-								configuration={props.interaction.configuration}
-								isDarkMode={props.isDarkMode}
-							/>
+							{outputs.length === 1 ? (
+								<div className={'px-4 py-2'}>
+									<Output
+										output={output.output}
+										isDarkMode={props.isDarkMode}
+									/>
+								</div>
+							) : (
+								<div className="card center ml-4 my-2">
+									<div className="mb-2 px-4 py-2">
+										❗ Kuna found multiple parses for this sentence.{' '}
+										<a
+											className="text-blue-500 underline"
+											href="https://github.com/toaq/kuna/issues/new"
+										>
+											Report issue
+										</a>
+										<div className="flex mt-2 gap-1">
+											{range(outputs.length).map(i => (
+												<Button key={i} onClick={() => setOutputIndex(i)}>
+													{i + 1}
+												</Button>
+											))}
+										</div>
+									</div>
+									<Output
+										output={output.output}
+										isDarkMode={props.isDarkMode}
+									/>
+								</div>
+							)}
 						</div>
 					</ErrorBoundary>
 				)}

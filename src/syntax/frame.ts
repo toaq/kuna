@@ -111,7 +111,11 @@ export function describeSerial(
 	let didSerialize = false;
 	for (let i = n - 2; i >= 0; i--) {
 		const frame = splitNonEmpty(frames[i], ' ');
-		const last = frame.at(-1)!;
+		const last = frame.at(-1);
+		if (last === undefined)
+			throw new Ungrammatical(
+				`Nullary verb ‘${children[i].source}’ cannot serialize`,
+			);
 		if (/c/.test(last)) {
 			// Wipe the whole description, it was just an adjective:
 			slots = frame.map((_, j) => [{ verbIndex: i, slotIndex: j }]);

@@ -221,12 +221,6 @@ export type DETree =
 	| ETree
 	| ((Leaf | Branch<DETree>) & { errors: ETree[] }); // Propagated errors
 
-export function getErrors(tree: DETree): ETree[] {
-	if ('error' in tree) return [tree];
-	if ('errors' in tree) return tree.errors;
-	return [];
-}
-
 export type BasicMode =
 	| '>' // Functional application
 	| '<' // Reverse functional application

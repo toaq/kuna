@@ -79,21 +79,9 @@ import {
 } from './model';
 import { reduce } from './reduce';
 import { typeToPlainText } from './render';
-import {
-	findEffect,
-	getBigFunctorUntil,
-	getFunctor,
-	idFunctor,
-	unwrapEffects,
-} from './structures';
-import {
-	type DETree,
-	type DTree,
-	type ETree,
-	type Expr,
-	type ExprType,
-	getErrors,
-} from './types';
+import { getBigFunctorUntil, getFunctor, idFunctor } from './structures';
+import type { DETree, DTree, ETree, Expr, ExprType } from './types';
+import { findEffect, getErrors, unwrapEffects } from './utils';
 
 function findVp(tree: StrictTree): StrictTree | null {
 	if (

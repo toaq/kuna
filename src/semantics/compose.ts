@@ -10,10 +10,7 @@ import {
 	assertFn,
 	assertRef,
 	bind,
-	bindingsEqual,
 	cont,
-	subtype,
-	typesEqual,
 	unbind,
 	unref,
 	v,
@@ -25,8 +22,6 @@ import {
 	chooseEffect,
 	composeFunctors,
 	contFunctor,
-	effectsEqual,
-	findEffect,
 	getApplicative,
 	getBigTraversable,
 	getComonad,
@@ -40,7 +35,6 @@ import {
 	getRunner,
 	idFunctor,
 	invertibleBinding,
-	unwrapEffects,
 } from './structures';
 import type {
 	Binding,
@@ -49,6 +43,14 @@ import type {
 	Expr,
 	ExprType,
 } from './types';
+import {
+	bindingsEqual,
+	effectsEqual,
+	findEffect,
+	subtype,
+	typesEqual,
+	unwrapEffects,
+} from './utils';
 
 export interface CompositionResult {
 	denotation: Expr;

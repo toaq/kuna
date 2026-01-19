@@ -9,7 +9,7 @@ import {
 } from './tokenize';
 import { Tone, tone } from './tone';
 
-interface Gloss {
+export interface Gloss {
 	toaq: string;
 	english: string;
 }

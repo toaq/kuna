@@ -2,7 +2,7 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-	--color-mio: #0a36a6;
+	--color-mio: #1c44a8;
 	--color-mio-dark: #08287f;
 	--color-blue: #2969e8;
 	--color-blue-dark: #154ec2;

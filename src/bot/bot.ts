@@ -7,7 +7,7 @@ import {
 	type Client,
 	type Interaction,
 } from 'discord.js';
-import _ from 'lodash';
+import { sampleSize } from 'lodash-es';
 import { toEnglish } from '../english/tree';
 import { parse } from '../modes/parse';
 import { pngGlossSentence } from '../modes/png-gloss';
@@ -101,7 +101,7 @@ export class KunaBot {
 		}
 		const lines = [];
 		for (let i = 0; i < 5; i++) {
-			const [a, b] = _.sampleSize(predicates, 2);
+			const [a, b] = sampleSize(predicates, 2);
 			const oaomo = /^{aeıou}/.test(b.toaq) ? "'" : '';
 			const compound = a.toaq + oaomo + b.toaq;
 			lines.push(`* **${compound}** (${a.gloss}-${b.gloss})`);

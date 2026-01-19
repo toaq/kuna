@@ -44,3 +44,13 @@ export class Unimplemented extends Error {
 		Object.setPrototypeOf(this, new.target.prototype);
 	}
 }
+
+export function isKunaError(e: unknown): boolean {
+	return (
+		e instanceof Error &&
+		(e instanceof Ungrammatical ||
+			e instanceof Unrecognized ||
+			e instanceof Impossible ||
+			e instanceof Unimplemented)
+	);
+}

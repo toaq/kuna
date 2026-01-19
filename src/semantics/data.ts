@@ -63,13 +63,9 @@ import {
 } from './model';
 import { reduce } from './reduce';
 import { typeToPlainText } from './render';
-import {
-	getBigFunctor,
-	getFunctor,
-	idFunctor,
-	unwrapEffects,
-} from './structures';
+import { getBigFunctor, getFunctor, idFunctor } from './structures';
 import type { AnimacyClass, Binding, Expr, ExprType } from './types';
+import { unwrapEffects } from './utils';
 
 export const covertV = lex('raı', Int(Fn('e', Fn('v', 't'))));
 
