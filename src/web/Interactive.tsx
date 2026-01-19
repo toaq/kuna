@@ -165,12 +165,13 @@ export function Interactive(props: { isDarkMode: boolean }) {
 							isDarkMode={props.isDarkMode}
 							setCommand={command => setCurrentCommand(command)}
 							onSubmit={command => {
+								const configuration = parseCmd(command);
 								setPastInteractions([
 									...(pastInteractions ?? []),
 									{
 										id: currentId,
-										command: command,
-										configuration: parseCmd(command),
+										command: configuration.text,
+										configuration,
 									},
 								]);
 								setCurrentCommand('');
