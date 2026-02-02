@@ -259,7 +259,7 @@ export class KunaBot {
 
 		const formattedEntries = data.results.map((entry: any) => {
 			const scorePrefix = entry.score >= 0 ? '+' : '';
-			return `**${entry.head}** _(${entry.user} ${scorePrefix}${entry.score})_ — ${entry.body}`;
+			return `[**${entry.head}**](https://toadua.uakci.space/##${entry.id}) (${entry.user}, ${scorePrefix}${entry.score}) — ${entry.body}`;
 		});
 
 		return formattedEntries.join('\n');
