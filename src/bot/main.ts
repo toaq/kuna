@@ -27,6 +27,7 @@ const client = new Client({
 		GatewayIntentBits.DirectMessageReactions,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.GuildMessageReactions,
+		GatewayIntentBits.MessageContent,
 	],
 });
 
@@ -38,6 +39,10 @@ client.on(Events.ClientReady, () => {
 
 client.on(Events.InteractionCreate, async interaction => {
 	kunaBot.respond(interaction);
+});
+
+client.on(Events.MessageCreate, async message => {
+	kunaBot.handleMessage(message);
 });
 
 client.login(TOKEN);
