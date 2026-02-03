@@ -55,7 +55,7 @@ export class KunaBot {
 		if (message.author.bot) return;
 
 		const content = message.content.trim();
-		const match = content.match(/^%(\d+)?\s+(.+)$/);
+		const match = content.match(/^%(\d+)?\s*(.+)$/);
 		if (!match) return;
 
 		const limit = match[1] ? Math.max(1, Math.min(+match[1], 10)) : 1;
