@@ -8,7 +8,7 @@ import {
 	type Interaction,
 	type Message,
 } from 'discord.js';
-import { sampleSize } from 'lodash-es';
+import { sample, sampleSize } from 'lodash-es';
 import { toEnglish } from '../english/tree';
 import { parse } from '../modes/parse';
 import { pngGlossSentence } from '../modes/png-gloss';
@@ -138,9 +138,10 @@ export class KunaBot {
 		amount = Math.max(0, Math.min(amount, 10));
 		const entries: ToaduaEntry[] = [];
 		while (entries.length < amount) {
-			const newEntry = _.sample(
+			const newEntry = sample(
 				toaduaEntries.filter(
 					entry =>
+						entry?.head &&
 						!entry.head.includes(' ') &&
 						!entries.some(previous => entry.user === previous.user),
 				),
@@ -200,7 +201,7 @@ export class KunaBot {
 			return;
 		}
 
-		const entries = _.sampleSize(candidates, r + p);
+		const entries = sampleSize(candidates, r + p);
 		const questions = `Quizzing **${
 			author ?? mode
 		}** words. Translate the following between Toaq and English:\n${entries.map((e, i) => `${i + 1}. ${i < r ? e.head : e.body}`).join('\n')}`;
