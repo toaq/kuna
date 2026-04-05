@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`adjectives > Hú marao de 1`] = `"λ𝑤 (𝑡 ⇐ salient, 𝑃 ⇐ ⟦hú⟧ (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡 ∧ ⟦marao⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' ⟦de⟧ 𝑤 𝑒 𝑒'))); 𝑃 ⇒ márao, 𝑃 ⇒ hó; 𝑃)"`;
+exports[`adjectives > Hú marao de 1`] = `"λ𝑤 (𝑡 ⇐ salient, 𝑃 ⇐ ⟦hú⟧ (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡 ∧ ⟦marao⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦de⟧ 𝑤 𝑎 𝑒'))); 𝑃 ⇒ márao, 𝑃 ⇒ hó; 𝑃)"`;
 
 exports[`adjectives > Ní poq naq 1`] = `"λ𝑤 (𝑡 ⇐ salient, 𝑃 ⇐ ⟦ní⟧ (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡 ∧ ⟦poq⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦naq⟧ 𝑤 𝑎 𝑒'))); 𝑃 ⇒ póq, 𝑃 ⇒ hó; 𝑃)"`;
 

@@ -570,7 +570,9 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		if (cCommand === null) throw new Isolated(leaf.label);
 
 		let data: (distributive: boolean) => Expr;
-		if (leaf.word.covert || leaf.word.entry?.toaq === '◌̂') {
+		if (leaf.word.covert || leaf.word.entry?.toaq === 'kı-')
+			data = subjectSharingAdverbial;
+		else if (leaf.word.entry?.toaq === '◌̂') {
 			const vp = findVp(cCommand);
 			if (vp === null)
 				throw new Impossible("Can't find the VP for this Adjunct");
@@ -585,8 +587,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 					`${word.entry.toaq} may not be used as an adverbial adjunct`,
 				);
 			data = data_;
-		} else if (leaf.word.entry?.toaq === 'kı-') data = subjectSharingAdverbial;
-		else throw new Unrecognized(`Adjunct: ${leaf.word.text}`);
+		} else throw new Unrecognized(`Adjunct: ${leaf.word.text}`);
 
 		const predicate = unwrapEffects(cCommand.denotation.type);
 		assertFn(predicate);
