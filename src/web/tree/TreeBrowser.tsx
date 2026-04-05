@@ -107,8 +107,7 @@ export function Subtree(props: {
 
 						pointerEvents: 'none',
 						position: 'absolute',
-						background: options.theme.textColor,
-						width: 1,
+						borderLeft: `1px ${options.theme.textColor} solid`,
 						height: Math.hypot(30, props.lineDx) + 1,
 						transformOrigin: '0.5px 0.5px',
 						transform: `rotate(${Math.atan2(props.lineDx, -30)}rad)`,

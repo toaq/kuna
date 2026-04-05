@@ -59,7 +59,7 @@ export function Inspector() {
 
 	return (
 		<div
-			className="inspector sticky md:overflow-x-hidden overflow-y-auto md:my-2 md:min-w-[32px] md:w-[var(--sidebar-width)] max-md:max-h-[80svh] shadow-lg max-md:rounded-t-2xl md:rounded-l-2xl md:border-l-2 border-y-1 border-neutral-200 bg-white dark:border-gray-800 dark:bg-gray-900 transition-[opacity,width] [.moving_&]:transition-none"
+			className="inspector sticky md:overflow-x-hidden overflow-y-auto md:my-2 md:min-w-[32px] md:w-[var(--sidebar-width)] max-md:max-h-[80svh] shadow-lg max-md:rounded-t-2xl md:rounded-l-2xl md:border-l-2 border-y-1 border-neutral-200 bg-white dark:border-gray-800 dark:bg-gray-900 transition-[opacity,width] [.moving_&]:transition-none print:hidden"
 			style={
 				{
 					'--sidebar-width': `${inspectee && !hideInspectee ? width : 32}px`,

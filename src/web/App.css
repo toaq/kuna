@@ -27,7 +27,19 @@ select {
 	transition: background-color 0.3s;
 }
 
-@custom-variant dark (&:where(.dark-mode, .dark-mode *));
+@custom-variant dark {
+	@media screen {
+		&:where(.dark-mode, .dark-mode *) {
+			@slot;
+		}
+	}
+}
+
+@custom-variant screen {
+	@media screen {
+		@slot;
+	}
+}
 
 @font-face {
 	font-family: "Iosevka Toaq Aile";
@@ -85,6 +97,12 @@ body {
 
 .dark-mode {
 	color-scheme: dark;
+}
+
+@media print {
+	button {
+		display: none;
+	}
 }
 
 /*
@@ -412,13 +430,15 @@ math .kuna-cont {
 	padding-block-start: 2px;
 }
 
-.dark-mode .kuna-constant,
-.dark-mode .kuna-quote {
-	color: #ff8888;
-}
+@media screen {
+	.dark-mode .kuna-constant,
+	.dark-mode .kuna-quote {
+		color: #ff8888;
+	}
 
-.dark-mode .kuna-lexeme {
-	color: #99eeff;
+	.dark-mode .kuna-lexeme {
+		color: #99eeff;
+	}
 }
 
 .type-hover {

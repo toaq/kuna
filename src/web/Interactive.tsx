@@ -99,11 +99,11 @@ export function Interactive(props: { isDarkMode: boolean }) {
 		>
 			<div className="h-full flex flex-col md:flex-row">
 				<div
-					className="flex-1 overflow-auto scroll-smooth"
+					className="flex-1 screen:overflow-auto scroll-smooth"
 					ref={interactionsRef}
 				>
-					<div className="flex flex-col items-stretch w-full">
-						<div className="mr-4 ml-4 md:ml-7 mt-6 md:mt-7">
+					<div className="flex flex-col items-stretch w-full gap-4 md:gap-7">
+						<div className="mr-4 ml-4 md:ml-7 mt-6 md:mt-7 print:hidden">
 							<div className="flex flex-row items-top">
 								<div>
 									<TreeIcon className="mr-4 mt-[2px] h-4 w-4" />

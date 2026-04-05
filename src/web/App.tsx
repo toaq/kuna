@@ -17,7 +17,7 @@ export function Top(props: {
 
 	return (
 		<>
-			<header className="bg-mio dark:bg-mio-dark flex w-full items-center text-white leading-10 px-4 md:px-5">
+			<header className="bg-mio dark:bg-mio-dark flex w-full items-center text-white leading-10 px-4 md:px-5 print:hidden">
 				<img src="logo.svg" aria-label="Kúna" width={52} className="mr-3" />
 				<nav className="flex">
 					{/* <NavLink to="/" className={navLinkClass}>
@@ -58,7 +58,7 @@ export function App() {
 	return (
 		<div className={containerClass}>
 			<Top showHelp={showHelp} setShowHelp={setShowHelp} />
-			<main className="flex-1 min-h-0 min-w-0 bg-[#fcfcfd] text-neutral-900 dark:bg-gray-950 dark:text-gray-200">
+			<main className="flex-1 min-h-0 min-w-0 screen:bg-[#fcfcfd] text-neutral-900 screen:dark:bg-gray-950 dark:text-gray-200">
 				{showHelp && <Help closeSelf={() => setShowHelp(false)} />}
 				<Routes>
 					<Route
