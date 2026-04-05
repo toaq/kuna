@@ -71,14 +71,7 @@ export function getDistribution(verb: Tree): string {
 }
 
 function makevP(verb: Tree, args: Tree[], serialTail: boolean): Tree {
-	const v = makeNull(
-		'𝘷',
-		serialTail ||
-			args.length === 0 ||
-			('word' in args[0] && args[0].word.covert && args[0].word.value === 'PRO')
-			? '∅'
-			: 'SUBJ',
-	);
+	const v = makeNull('𝘷', serialTail || args.length === 0 ? '∅' : 'SUBJ');
 
 	if ('word' in verb) {
 		moveUp(verb, v);

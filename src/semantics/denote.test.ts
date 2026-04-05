@@ -36,7 +36,9 @@ test('relative clauses', () => {
 });
 
 test('possessives', () => {
-	snapshot('Maı póq tú cheqbo.');
+	// TODO: Decide whether to bring this usage of chéq back? It conflicts with
+	// subject-sharing adjectives.
+	// snapshot('Maı póq tú cheqbo.');
 	snapshot('Paı jí báq poq da. Hobo ní chea.');
 });
 
@@ -76,6 +78,11 @@ test('adjuncts', () => {
 	snapshot('Nuo súq dûo géodıo.');
 	snapshot('Marao úmo gâq nhána.');
 	snapshot('Kueq áma fâ sóaq.');
+});
+
+test('adjectives', () => {
+	snapshot('Ní poq naq');
+	snapshot('Hú marao de');
 });
 
 test('reflexives and reciprocals', () => {

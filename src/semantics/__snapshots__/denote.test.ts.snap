@@ -1,5 +1,9 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`adjectives > Hú marao de 1`] = `"λ𝑤 (𝑡 ⇐ salient, 𝑃 ⇐ ⟦hú⟧ (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡 ∧ ⟦marao⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' ⟦de⟧ 𝑤 𝑒 𝑒'))); 𝑃 ⇒ márao, 𝑃 ⇒ hó; 𝑃)"`;
+
+exports[`adjectives > Ní poq naq 1`] = `"λ𝑤 (𝑡 ⇐ salient, 𝑃 ⇐ ⟦ní⟧ (λ𝑃 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡 ∧ ⟦poq⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦naq⟧ 𝑤 𝑎 𝑒'))); 𝑃 ⇒ póq, 𝑃 ⇒ hó; 𝑃)"`;
+
 exports[`adjuncts > Kueq áma fâ sóaq. 1`] = `"𝑡 ⇐ salient, 𝑃 ⇐ ⟦áma⟧; 𝑄 ⇐ sóaq; 𝑄 ⇒ sóaq, 𝑄 ⇒ máq; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡 ∧ ⟦kueq⟧ 𝑤 (𝑃 𝑤) 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦fa⟧ 𝑤 𝑏 𝑎 𝑒'))))"`;
 
 exports[`adjuncts > Marao úmo gâq nhána. 1`] = `"𝑡 ⇐ salient, 𝑃 ⇐ ⟦úmo⟧, 𝑄 ⇐ ⟦nhána⟧; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∀𝑏 𝑏 ≺ 𝑄 𝑤 → (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡 ∧ ⟦marao⟧ 𝑤 𝑎 𝑒 ∧ (∃𝑒' overlap 𝑤 𝑒' 𝑒 ∧ ⟦gaq⟧ 𝑤 𝑏 𝑎 𝑒'))))"`;
@@ -69,8 +73,6 @@ exports[`object incorporation > Rụınua hôq jí nháo. 1`] = `"𝑡 ⇐ salie
 exports[`object incorporation > Sạtao súq râq tú raı ba. 1`] = `"𝑡 ⇐ salient, 𝑃 ⇐ ⟦súq⟧, 𝑡' ⇐ salient, 𝑡'' ⇐ salient; ⟦ba⟧ (λ𝑤 ∀𝑄 (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡'' ∧ ⟦raı⟧ 𝑤 (𝑄 𝑤) 𝑒) → (∀𝑎 𝑎 ≺ 𝑃 𝑤 → (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡 ∧ (∃𝑅 (∀𝑏 𝑏 ≺ 𝑅 𝑤 → (∃𝑒' τ 𝑤 𝑒' ⊆ 𝑡' ∧ ⟦raı⟧ 𝑤 𝑏 𝑒')) ∧ neg (λ𝑤' λ𝑒' ∃𝑏 𝑏 ≺ 𝑅 𝑤 ∧ neg (λ𝑤'' λ𝑒'' ⟦tao⟧ 𝑤'' 𝑏 𝑎 𝑒'') 𝑤' 𝑒') 𝑤 𝑒) ∧ (∃𝑒' ⟦raq⟧ 𝑤 (𝑄 𝑤) 𝑒 𝑒'))))"`;
 
 exports[`parentheticals > Kóacao (kïo he cho jí báq koacao kı) bï baı jí báq nıaopoq. 1`] = `"𝑡 ⇐ salient, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ salient; bg (⟦da⟧ (λ𝑤 ∃𝑒 ⟦he⟧ (λ𝑄 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∃𝑒' τ 𝑤 𝑒' ⊆ 𝑡' ∧ ⟦koacao⟧ 𝑤 𝑎 𝑒')) (λ𝑄 λ𝑤' neg (λ𝑤'' λ𝑒' ∃𝑎 𝑎 ≺ 𝑃 𝑤' ∧ (∃𝑏 𝑏 ≺ 𝑄 𝑤' ∧ neg (λ𝑤''' λ𝑒'' τ 𝑤''' 𝑒'' ⊆ 𝑡 ∧ ⟦cho⟧ 𝑤''' 𝑏 𝑎 𝑒'') 𝑤'' 𝑒')) 𝑤') 𝑤 𝑒)); 𝑄 ⇐ kóacao; 𝑄 ⇒ kóacao, 𝑄 ⇒ hóq; λ𝑤 (𝑡'', 𝑅, 𝑡''' ⇐ topic (𝑄 𝑤) (𝑡'' ⇐ salient, 𝑅 ⇐ ⟦jí⟧, 𝑡''' ⇐ salient; 𝑡'', 𝑅, 𝑡'''); λ𝑤' (𝑆 ⇐ new (λ𝑆 ∀𝑎 𝑎 ≺ 𝑆 𝑤' → (∃𝑒 τ 𝑤' 𝑒 ⊆ 𝑡''' ∧ ⟦nıaopoq⟧ 𝑤' 𝑎 𝑒)); 𝑆 ⇒ níaopoq, 𝑆 ⇒ tá; ⟦da⟧ (λ𝑤'' ∀𝑎 𝑎 ≺ 𝑅 𝑤'' → (∀𝑏 𝑏 ≺ 𝑆 𝑤'' → (∃𝑒 τ 𝑤'' 𝑒 ⊆ 𝑡'' ∧ ⟦baı⟧ 𝑤'' 𝑏 𝑎 𝑒)))))"`;
-
-exports[`possessives > Maı póq tú cheqbo. 1`] = `"𝑡 ⇐ salient, 𝑡' ⇐ salient, 𝑃 ⇐ salient; 𝑄 ⇐ póq; 𝑄 ⇒ póq, 𝑄 ⇒ hó; ⟦da⟧ (λ𝑤 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∀𝑅 (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡' ∧ 𝑃 𝑤 [𝑏 | 𝑏 ⇐ 𝑄 𝑤, 𝑏 ≠ 𝑎] [𝑅 𝑤] 𝑒) → (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡 ∧ ⟦maı⟧ 𝑤 (𝑅 𝑤) 𝑎 𝑒)))"`;
 
 exports[`possessives > Paı jí báq poq da. Hobo ní chea. 1`] = `"λ𝑤 (𝑡 ⇐ salient, 𝑃 ⇐ ⟦jí⟧, 𝑡' ⇐ salient, 𝑡'' ⇐ salient, 𝑡''' ⇐ salient, 𝑄 ⇐ ⟦ní⟧ (λ𝑄 ∀𝑎 𝑎 ≺ 𝑄 𝑤 → (∃𝑒 τ 𝑤 𝑒 ⊆ 𝑡''' ∧ ⟦chea⟧ 𝑤 𝑎 𝑒)), 𝑅 ⇐ salient; λ𝑤' (𝑆 ⇐ new (λ𝑆 ∀𝑎 𝑎 ≺ 𝑆 𝑤' → (∃𝑒 τ 𝑤' 𝑒 ⊆ 𝑡' ∧ ⟦poq⟧ 𝑤' 𝑎 𝑒)); 𝑆 ⇒ póq, 𝑆 ⇒ hó, 𝑄 ⇒ chéa, 𝑄 ⇒ máq; ⟦da⟧ (λ𝑤'' ∀𝑎 𝑎 ≺ 𝑃 𝑤'' → (∀𝑏 𝑏 ≺ 𝑆 𝑤'' → (∃𝑒 τ 𝑤'' 𝑒 ⊆ 𝑡 ∧ ⟦paı⟧ 𝑤'' 𝑏 𝑎 𝑒))), ⟦da⟧ (λ𝑤'' ∃𝑒 τ 𝑤'' 𝑒 ⊆ 𝑡'' ∧ 𝑅 𝑤'' (𝑆 𝑤'') (𝑄 𝑤'') 𝑒)))"`;
 
