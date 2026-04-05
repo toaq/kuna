@@ -6,8 +6,9 @@ import {
 	type ChatInputCommandInteraction,
 	type Client,
 	type Interaction,
+	type Message,
 } from 'discord.js';
-import { sampleSize } from 'lodash-es';
+import { sample, sampleSize } from 'lodash-es';
 import { toEnglish } from '../english/tree';
 import { parse } from '../modes/parse';
 import { pngGlossSentence } from '../modes/png-gloss';
@@ -36,6 +37,8 @@ export class KunaBot {
 				this.respondWhodunnit(interaction);
 			} else if (interaction.commandName === 'quiz') {
 				this.respondQuiz(interaction);
+			} else if (interaction.commandName === 'search') {
+				this.respondSearch(interaction);
 			} else {
 				await interaction.reply(
 					`Error: unknown command "${interaction.commandName}"`,
@@ -44,6 +47,25 @@ export class KunaBot {
 		} catch (e) {
 			await interaction.reply(`Error: \n\`\`\`\n${e}\n\`\`\``);
 			return;
+		}
+	}
+
+	public async handleMessage(message: Message) {
+		// Ignore messages from the bot itself
+		if (message.author.bot) return;
+
+		const content = message.content.trim();
+		const match = content.match(/^%(\d+)?\s*(.+)$/);
+		if (!match) return;
+
+		const limit = match[1] ? Math.max(1, Math.min(+match[1], 10)) : 1;
+		const query = match[2];
+
+		try {
+			const result = await this.performSearch(query, limit);
+			await message.reply(result);
+		} catch (error) {
+			await message.reply(`Error querying Toadua: ${error}`);
 		}
 	}
 
@@ -116,9 +138,10 @@ export class KunaBot {
 		amount = Math.max(0, Math.min(amount, 10));
 		const entries: ToaduaEntry[] = [];
 		while (entries.length < amount) {
-			const newEntry = _.sample(
+			const newEntry = sample(
 				toaduaEntries.filter(
 					entry =>
+						entry?.head &&
 						!entry.head.includes(' ') &&
 						!entries.some(previous => entry.user === previous.user),
 				),
@@ -178,7 +201,7 @@ export class KunaBot {
 			return;
 		}
 
-		const entries = _.sampleSize(candidates, r + p);
+		const entries = sampleSize(candidates, r + p);
 		const questions = `Quizzing **${
 			author ?? mode
 		}** words. Translate the following between Toaq and English:\n${entries.map((e, i) => `${i + 1}. ${i < r ? e.head : e.body}`).join('\n')}`;
@@ -210,5 +233,49 @@ export class KunaBot {
 			message.channel.send(answers);
 			result.update({ components: [] });
 		});
+	}
+
+	private async performSearch(query: string, limit: number): Promise<string> {
+		const response = await fetch('https://toadua.uakci.space/api', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				action: 'search',
+				query: query,
+				limit: limit,
+			}),
+		});
+
+		if (!response.ok) {
+			return `Error: Toadua API returned ${response.status}`;
+		}
+
+		const data = await response.json();
+
+		if (!data.results || data.results.length === 0) {
+			return 'No results found.';
+		}
+
+		const formattedEntries = data.results.map((entry: any) => {
+			const scorePrefix = entry.score >= 0 ? '+' : '';
+			return `[**${entry.head}**](<https://toadua.uakci.space/##${entry.id}>) (${entry.user}, ${scorePrefix}${entry.score}) — ${entry.body}`;
+		});
+
+		return formattedEntries.join('\n');
+	}
+
+	private async respondSearch(interaction: ChatInputCommandInteraction) {
+		const query = interaction.options.getString('query', true);
+		let limit = interaction.options.getInteger('limit', false) ?? 1;
+		limit = Math.max(1, Math.min(limit, 10));
+
+		try {
+			const result = await this.performSearch(query, limit);
+			await interaction.reply(result);
+		} catch (error) {
+			await interaction.reply(`Error querying Toadua: ${error}`);
+		}
 	}
 }

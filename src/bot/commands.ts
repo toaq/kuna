@@ -91,4 +91,22 @@ export const commands = [
 			},
 		],
 	},
+	{
+		name: 'search',
+		description: 'Search Toadua dictionary',
+		options: [
+			{
+				name: 'query',
+				description: 'Search query (e.g., "hello scope:en user:official")',
+				type: stringType,
+				required: true,
+			},
+			{
+				name: 'limit',
+				description: 'Number of results to show (default 1)',
+				type: integerType,
+				required: false,
+			},
+		],
+	},
 ];
