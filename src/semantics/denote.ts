@@ -80,7 +80,7 @@ import {
 import { reduce } from './reduce';
 import { typeToPlainText } from './render';
 import { getBigFunctorUntil, getFunctor, idFunctor } from './structures';
-import type { DETree, DTree, ETree, Expr, ExprType } from './types';
+import type { DETree, DTree, Expr, ExprType } from './types';
 import { findEffect, getErrors, unwrapEffects } from './utils';
 
 function findVp(tree: StrictTree): StrictTree | null {
@@ -240,6 +240,14 @@ function findIndef(
 	return functor && findIndef(functor.unwrap(t));
 }
 
+export class Isolated extends Error {
+	constructor(label: string) {
+		super(`Cannot denote this ${label} in isolation`);
+		this.name = 'Isolated';
+		Object.setPrototypeOf(this, new.target.prototype);
+	}
+}
+
 function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	if (leaf.label === 'V' || leaf.label === 'VP') {
 		if (leaf.word.covert) return covertV;
@@ -281,7 +289,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === '𝘷') {
-		if (cCommand === null) throw new Impossible("Can't denote 𝘷 in isolation");
+		if (cCommand === null) throw new Isolated(leaf.label);
 
 		if (leaf.word.covert) {
 			const type = unwrapEffects(cCommand.denotation.type);
@@ -371,8 +379,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 
 	if (leaf.label === 'D') {
 		if (leaf.word.covert) throw new Impossible('Covert D');
-		if (cCommand === null)
-			throw new Impossible('Cannot denote a D in isolation');
+		if (cCommand === null) throw new Isolated(leaf.label);
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`D: ${leaf.word.text}`);
 
@@ -476,8 +483,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === '𝘯') {
-		if (cCommand === null)
-			throw new Impossible('Cannot denote an 𝘯 in isolation');
+		if (cCommand === null) throw new Isolated(leaf.label);
 		if (!leaf.word.covert) throw new Impossible('Overt 𝘯');
 
 		const data = littleNs.get(leaf.word.value);
@@ -510,8 +516,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === 'SA') {
-		if (cCommand === null)
-			throw new Impossible('Cannot denote an SA in isolation');
+		if (cCommand === null) throw new Isolated(leaf.label);
 		let toaq: string;
 		if (leaf.word.covert) {
 			toaq =
@@ -535,8 +540,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === 'Q') {
-		if (cCommand === null)
-			throw new Impossible('Cannot denote a Q in isolation');
+		if (cCommand === null) throw new Isolated(leaf.label);
 		if (leaf.word.covert) throw new Impossible('Covert Q');
 		const toaq = leaf.word.bare;
 		const indef = findIndef(cCommand.denotation.type);
@@ -563,8 +567,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === 'Adjunct') {
-		if (cCommand === null)
-			throw new Impossible('Cannot denote an Adjunct in isolation');
+		if (cCommand === null) throw new Isolated(leaf.label);
 
 		let data: (distributive: boolean) => Expr;
 		if (leaf.word.covert || leaf.word.entry?.toaq === '◌̂') {
@@ -591,7 +594,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === '&') {
-		if (cCommand === null) throw new Impossible('Cannot denote & in isolation');
+		if (cCommand === null) throw new Isolated(leaf.label);
 		if (leaf.word.covert) throw new Impossible('Covert &');
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`&: ${leaf.word.text}`);
@@ -624,8 +627,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 	}
 
 	if (leaf.label === 'Topic') {
-		if (cCommand === null)
-			throw new Impossible('Cannot denote Topic in isolation');
+		if (cCommand === null) throw new Isolated(leaf.label);
 		const deixis = findEffect(cCommand.denotation.type, Dx('()'));
 		if (deixis === null) throw new Ungrammatical('Nothing to topicalize');
 		const { inner } = deixis as ExprType & object & { head: 'dx' };
@@ -653,8 +655,7 @@ function denoteLeaf(leaf: Leaf, cCommand: DTree | null): Expr {
 		leaf.label === 'buq' ||
 		leaf.label === 'Telicity'
 	) {
-		if (cCommand === null)
-			throw new Impossible(`Cannot denote a ${leaf.label} in isolation`);
+		if (cCommand === null) throw new Isolated(leaf.label);
 		if (leaf.word.covert) throw new Impossible(`Covert ${leaf.label}`);
 		if (leaf.word.entry === undefined)
 			throw new Unrecognized(`${leaf.label}: ${leaf.word.text}`);
@@ -723,9 +724,12 @@ function denote_(tree: StrictTree, cCommand: DTree | null): DETree {
 		}
 	}
 
-	const errors: ETree[] = [];
-	errors.push(...getErrors(left));
-	errors.push(...getErrors(right));
+	let errors = [...getErrors(left), ...getErrors(right)];
+	// Filter out errors due to a node being denoted in isolation, since these are
+	// often just a noisy side effect of the "real" errors
+	const filteredErrors = errors.filter(e => !(e.error instanceof Isolated));
+	if (filteredErrors.length > 0) errors = filteredErrors;
+
 	return { ...tree, left, right, errors };
 }
 
