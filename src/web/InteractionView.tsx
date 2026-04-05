@@ -246,7 +246,7 @@ export function InteractionView(props: {
 				// All remaining output modes require a denotation
 				if (!('denotation' in tree)) {
 					return {
-						output: { type: 'error', error: `${getErrors(tree)[0]}` },
+						output: { type: 'error', error: getErrors(tree)[0].error },
 						star,
 					};
 				}
