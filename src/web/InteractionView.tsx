@@ -195,25 +195,29 @@ export function InteractionView(props: {
 		}
 
 		if ('output' in trees) return [trees];
+
+		if (
+			mode === 'boxes-flat' ||
+			mode === 'boxes-nest' ||
+			mode === 'boxes-split'
+		) {
+			const strategy = mode.slice('boxes-'.length) as 'flat' | 'nest' | 'split';
+			return parse(text).map(surfaceTree => {
+				try {
+					return {
+						output: { type: 'boxes', strategy, boxes: boxify(surfaceTree) },
+						star,
+					};
+				} catch (error) {
+					return { output: { type: 'error', error }, star };
+				}
+			});
+		}
+
 		return trees.map(tree => {
 			const star = isUngrammatical(tree);
 			try {
 				switch (mode) {
-					case 'boxes-flat':
-						return {
-							output: { type: 'boxes', strategy: 'flat', boxes: boxify(tree) },
-							star,
-						};
-					case 'boxes-nest':
-						return {
-							output: { type: 'boxes', strategy: 'nest', boxes: boxify(tree) },
-							star,
-						};
-					case 'boxes-split':
-						return {
-							output: { type: 'boxes', strategy: 'split', boxes: boxify(tree) },
-							star,
-						};
 					case 'syntax-tree':
 					case 'semantics-tree':
 					case 'semantics-tree-compact':
